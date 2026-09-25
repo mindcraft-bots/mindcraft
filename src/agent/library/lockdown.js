@@ -8,7 +8,6 @@ import 'ses';
 let lockeddown = false;
 export function lockdown() {
   if (lockeddown) return;
-  lockeddown = true;
   globalThis.lockdown({
     // basic devex and quality of life improvements
     localeTaming: 'unsafe',
@@ -19,6 +18,7 @@ export function lockdown() {
     // (mineflayer dep "protodef" uses eval)
     evalTaming: 'unsafeEval',
   });
+  lockeddown = true;
 }
 
 export const makeCompartment = (endowments = {}) => {
