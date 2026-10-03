@@ -80,11 +80,8 @@ You can configure the agent's name, model, and prompts in their profile like `an
 
 For more comprehensive model configuration and syntax, see [Model Specifications](#model-specifications).
 
-For local models we support [ollama](https://ollama.com/) and we provide our own finetuned models for you to use. 
-To install our models, install ollama and run the following terminal command:
-```bash
-ollama pull sweaterdog/andy-4:micro-q8_0 && ollama pull embeddinggemma
-```
+For local models, we recommend you use **LM Studio** for the Andy series of models. Ollama breaks current models, and should be avoided.
+Please see our [huggingface page for more info.](https://huggingface.co/collections/Mindcraft-CE)
 
 ## Online Servers
 To connect to online servers your bot will need an official Microsoft/Minecraft account. You can use your own personal one, but will need another account if you want to connect too and play with it. To connect, change these lines in `settings.js`:

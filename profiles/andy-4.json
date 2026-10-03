@@ -1,7 +1,0 @@
-{
-    "name": "andy_4",
-
-    "model": "ollama/sweaterdog/andy-4:micro-q8_0",
-    
-    "embedding": "ollama"
-}
