@@ -88,6 +88,83 @@ const modes_list = [
         }
     },
     {
+        name: 'fall_protection',
+        description: 'Use water bucket to break a long fall (MLG water). Requires a water bucket in inventory.',
+        interrupts: ['all'],
+        on: true,
+        active: false,
+        fallStartY: null,
+        update: async function (agent) {
+            const bot = agent.bot;
+            const pos = bot.entity.position;
+            const vel = bot.entity.velocity;
+
+            // Detect if falling (negative Y velocity)
+            if (vel.y < -0.5) {
+                if (this.fallStartY === null) {
+                    this.fallStartY = pos.y;
+                }
+
+                const fallDistance = this.fallStartY - pos.y;
+
+                // If falling more than 10 blocks and still accelerating, try MLG water
+                if (fallDistance > 10 && vel.y < -0.5) {
+                    const waterBucket = bot.inventory.items().find(item => item.name === 'water_bucket');
+                    if (waterBucket && !this.active) {
+                        // Check if ground is near (scan up to 6 blocks below)
+                        let groundNear = false;
+                        for (let dy = 1; dy <= 6; dy++) {
+                            const block = bot.blockAt(pos.offset(0, -dy, 0));
+                            if (block && block.name !== 'air' && block.name !== 'water') {
+                                groundNear = true;
+                                break;
+                            }
+                        }
+                        if (groundNear) {
+                            execute(this, agent, async () => {
+                                const currentPos = bot.entity.position.clone();
+                                say(agent, 'MLG water!');
+                                try {
+                                    await bot.equip(waterBucket, 'hand');
+                                    await bot.lookAt(currentPos.offset(0, -3, 0));
+                                    bot.activateItem();
+                                    // Wait until the bot has actually landed
+                                    await new Promise(resolve => {
+                                        const start = Date.now();
+                                        const checkLanding = () => {
+                                            if (bot.entity.onGround || bot.entity.velocity.y >= 0) {
+                                                return resolve();
+                                            }
+                                            if (Date.now() - start > 2000) {
+                                                return resolve();
+                                            }
+                                            setTimeout(checkLanding, 50);
+                                        };
+                                        checkLanding();
+                                    });
+                                    // Pick up water after landing
+                                    const waterBlock = world.getNearestBlock(bot, 'water', 3);
+                                    if (waterBlock) {
+                                        const emptyBucket = bot.inventory.items().find(item => item.name === 'bucket');
+                                        if (emptyBucket) {
+                                            await bot.equip(emptyBucket, 'hand');
+                                            await bot.lookAt(waterBlock.position);
+                                            bot.activateItem();
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.log('[FALL_PROTECTION] Error:', e.message);
+                                }
+                            });
+                        }
+                    }
+                }
+            } else {
+                this.fallStartY = null;
+            }
+        }
+    },
+    {
         name: 'unstuck',
         description: 'Attempt to get unstuck when in the same place for a while. Interrupts some actions.',
         interrupts: ['all'],
@@ -167,6 +244,34 @@ const modes_list = [
                     await skills.defendSelf(agent.bot, 8);
                 });
             }
+        }
+    },
+    {
+        name: 'auto_sleep',
+        description: 'Automatically sleep in a nearby bed when night falls to skip the night and avoid monsters.',
+        interrupts: ['action:followPlayer'],
+        on: true,
+        active: false,
+        lastSleepCheck: 0,
+        update: async function (agent) {
+            const bot = agent.bot;
+
+            // Only check every 30 seconds to avoid spamming
+            if (Date.now() - this.lastSleepCheck < 30000) return;
+            this.lastSleepCheck = Date.now();
+
+            // Check if it's nighttime (time >= 13000 ticks) and we're not already sleeping
+            const time = bot.time.timeOfDay;
+            const isNight = time >= 13000;
+            if (!isNight || bot.isSleeping) return;
+
+            // Let skills.goToBed handle finding and sleeping in a bed
+            execute(this, agent, async () => {
+                const result = await skills.goToBed(bot);
+                if (result) {
+                    say(agent, 'It\'s getting dark, I should sleep.');
+                }
+            });
         }
     },
     {
