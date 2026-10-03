@@ -20,6 +20,7 @@ export const queryList = [
             let pos = bot.entity.position;
             // display position to 2 decimal places
             res += `\n- Position: x: ${pos.x.toFixed(2)}, y: ${pos.y.toFixed(2)}, z: ${pos.z.toFixed(2)}`;
+            res += `\n- Dimension: ${(bot.game.dimension || 'overworld').replace('minecraft:', '')}`;
             // Gameplay
             res += `\n- Gamemode: ${bot.game.gameMode}`;
             res += `\n- Health: ${Math.round(bot.health)} / 20`;
@@ -61,6 +62,13 @@ export const queryList = [
 
             res += '\n' + agent.bot.modes.getMiniDocs() + '\n';
             return pad(res);
+        }
+    },
+    {
+        name: "!gameProgress",
+        description: "Get a checklist of progress towards beating the game (killing the ender dragon) and the recommended next step.",
+        perform: function (agent) {
+            return pad(getGameProgress(agent.bot));
         }
     },
     {
@@ -345,3 +353,60 @@ export const queryList = [
         }
     },
 ];
+
+function getGameProgress(bot) {
+    const inv = world.getInventoryCounts(bot);
+    const has = (name, n = 1) => (inv[name] || 0) >= n;
+    const count = (name) => inv[name] || 0;
+    const any = (...names) => names.some(n => has(n));
+    const dimension = (bot.game.dimension || 'overworld').replace('minecraft:', '');
+    const armor = bot.inventory.slots.slice(5, 9).filter(Boolean).map(i => i.name);
+
+    // eyes of ender we have or can make right now
+    const eyes = count('ender_eye');
+    const eye_potential = eyes + Math.min(count('ender_pearl'), count('blaze_powder') + count('blaze_rod') * 2);
+
+    const steps = [
+        {done: any('stone_pickaxe', 'iron_pickaxe', 'diamond_pickaxe', 'netherite_pickaxe'), text: 'Stone tools',
+            next: 'Collect logs, craft planks, sticks, a crafting_table and a wooden_pickaxe, then mine cobblestone for a stone_pickaxe.'},
+        {done: any('iron_pickaxe', 'diamond_pickaxe', 'netherite_pickaxe'), text: 'Iron pickaxe',
+            next: 'Mine iron_ore (dig down to y=16 or explore caves), smelt raw_iron in a furnace, craft an iron_pickaxe.'},
+        {done: any('iron_sword', 'diamond_sword', 'netherite_sword') && armor.length >= 2, text: 'Sword and some armor',
+            next: 'Get more iron: craft an iron_sword, iron_chestplate, iron_leggings, and a shield.'},
+        {done: has('bow') && count('arrow') >= 16, text: 'Bow and arrows',
+            next: 'Craft a bow (3 sticks, 3 string from spiders) and arrows (flint, stick, feather from chickens).'},
+        {done: any('diamond_pickaxe', 'netherite_pickaxe') || dimension !== 'overworld' || eyes > 0, text: 'Diamond pickaxe (to mine obsidian)',
+            next: 'Find diamond_ore around y=-58 with an iron_pickaxe, craft a diamond_pickaxe.'},
+        {done: (has('obsidian', 10) && any('flint_and_steel', 'fire_charge')) || dimension !== 'overworld' || eyes >= 12, text: '10 obsidian and flint_and_steel',
+            next: 'Find a lava pool and use !makeObsidian(10) (needs a water_bucket and diamond_pickaxe). Craft flint_and_steel from iron_ingot and flint (from gravel).'},
+        {done: count('blaze_rod') + count('blaze_powder') / 2 >= 6 || eye_potential >= 12, text: 'Blaze rods (6+)',
+            next: dimension === 'the_nether'
+                ? 'Use !collectBlazeRods(7). It finds a fortress and kills blazes; bring armor, food, and a bow if you have one.'
+                : 'Build a nether portal (!buildNetherPortal), go to the nether (!enterPortal nether_portal), find a fortress and kill blazes.'},
+        {done: eye_potential >= 12 || count('ender_pearl') >= 12, text: 'Ender pearls (12)',
+            next: 'Use !collectEnderPearls(12). Endermen are common at night in the overworld and in warped forests in the nether.'},
+        {done: eyes >= 12, text: '12 eyes of ender',
+            next: 'Craft blaze_powder from blaze_rod, then craft ender_eye from ender_pearl and blaze_powder until you have 12.'},
+        {done: dimension === 'the_end', text: 'Find the stronghold and open the end portal',
+            next: dimension === 'the_nether'
+                ? 'Go back to the overworld through your portal (!enterPortal nether_portal).'
+                : 'Use !goToStronghold, then !activateEndPortal. Before entering, stock up: bow, 64 arrows, 64 cobblestone, food, iron armor, sword. Then !enterPortal end_portal.'},
+        {done: false, text: 'Kill the ender dragon',
+            next: 'Use !fightEnderDragon. When it dies, !enterPortal end_portal to finish the game.'},
+    ];
+
+    // later milestones imply the earlier ones (no need for a pickaxe once you hold 12 eyes)
+    for (let i = steps.length - 2; i >= 0; i--) {
+        if (steps[i + 1].done) steps[i].done = true;
+    }
+
+    let res = 'GAME PROGRESS (goal: kill the ender dragon)';
+    res += `\n- Dimension: ${dimension}`;
+    for (const step of steps) {
+        res += `\n- [${step.done ? 'x' : ' '}] ${step.text}`;
+    }
+    // once in the end, the dragon is the only thing that matters
+    const next = dimension === 'the_end' ? steps[steps.length - 1] : steps.find(s => !s.done);
+    res += `\nNext step: ${next.next}`;
+    return res;
+}

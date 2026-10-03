@@ -29,6 +29,9 @@ const modes_list = [
         on: true,
         active: false,
         fall_blocks: ['sand', 'gravel', 'concrete_powder'], // includes matching substrings like 'sandstone' and 'red_sand'
+        good_food: ['cooked_beef', 'cooked_porkchop', 'cooked_mutton', 'cooked_chicken', 'cooked_salmon', 'cooked_cod',
+            'golden_carrot', 'baked_potato', 'bread', 'cooked_rabbit', 'pumpkin_pie', 'mushroom_stew', 'apple', 'carrot'],
+        last_heal: 0,
         update: async function (agent) {
             const bot = agent.bot;
             let block = bot.blockAt(bot.entity.position);
@@ -81,6 +84,20 @@ const modes_list = [
                 execute(this, agent, async () => {
                     await skills.moveAway(bot, 20);
                 });
+            }
+            else if (bot.health <= 10 && Date.now() - bot.lastDamageTime > 4000 && Date.now() - this.last_heal > 10000 &&
+                     !world.getNearestEntityWhere(bot, entity => mc.isThreat(bot, entity), 12)) {
+                // hurt but safe for the moment: heal up with a golden apple, or top up hunger so health regenerates
+                const items = bot.inventory.items();
+                const heal_item = items.find(i => i.name === 'enchanted_golden_apple' || i.name === 'golden_apple') ||
+                    (bot.food < 18 ? items.find(i => this.good_food.includes(i.name)) : null);
+                if (heal_item) {
+                    this.last_heal = Date.now();
+                    say(agent, `Healing up with ${heal_item.name.replace(/_/g, ' ')}.`);
+                    execute(this, agent, async () => {
+                        await skills.consume(bot, heal_item.name);
+                    });
+                }
             }
             else if (agent.isIdle()) {
                 bot.clearControlStates(); // clear jump if not in danger or doing anything else
@@ -144,7 +161,7 @@ const modes_list = [
         on: true,
         active: false,
         update: async function (agent) {
-            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isHostile(entity), 16);
+            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isThreat(agent.bot, entity), 16);
             if (enemy && await world.isClearPath(agent.bot, enemy)) {
                 say(agent, `Aaa! A ${enemy.name.replace("_", " ")}!`);
                 execute(this, agent, async () => {
@@ -160,8 +177,10 @@ const modes_list = [
         on: true,
         active: false,
         update: async function (agent) {
-            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isHostile(entity), 8);
-            if (enemy && await world.isClearPath(agent.bot, enemy)) {
+            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isThreat(agent.bot, entity), 8);
+            // creepers and skeletons are worth engaging even without a clear walking path, they'll come to us
+            const engage = enemy && (enemy.position.distanceTo(agent.bot.entity.position) < 4 || await world.isClearPath(agent.bot, enemy));
+            if (engage) {
                 say(agent, `Fighting ${enemy.name}!`);
                 execute(this, agent, async () => {
                     await skills.defendSelf(agent.bot, 8);

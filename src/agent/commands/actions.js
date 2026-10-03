@@ -489,6 +489,115 @@ export const actionsList = [
         })
     },
     {
+        name: '!travel',
+        description: 'Travel a long distance over land to the given x, z coordinates (hundreds or thousands of blocks). Use instead of goToCoordinates when far away or the y coordinate is unknown.',
+        params: {
+            'x': {type: 'float', description: 'The x coordinate.', domain: [-Infinity, Infinity]},
+            'z': {type: 'float', description: 'The z coordinate.', domain: [-Infinity, Infinity]}
+        },
+        perform: runAsAction(async (agent, x, z) => {
+            await skills.travelTo(agent.bot, x, z);
+        }, false, 20)
+    },
+    {
+        name: '!explore',
+        description: 'Explore in a new direction to discover new terrain, blocks, and mobs. Use when you can\'t find something nearby.',
+        params: {'distance': { type: 'int', description: 'How far to explore.', domain: [20, 1000] }},
+        perform: runAsAction(async (agent, distance) => {
+            await skills.explore(agent.bot, distance);
+        }, false, 10)
+    },
+    {
+        name: '!pillarUp',
+        description: 'Tower straight up by placing blocks under yourself, digging through anything above. Needs dirt/cobblestone or similar.',
+        params: {'height': { type: 'int', description: 'How many blocks to go up.', domain: [1, 100] }},
+        perform: runAsAction(async (agent, height) => {
+            await skills.pillarUp(agent.bot, height);
+        })
+    },
+    {
+        name: '!shoot',
+        description: 'Shoot the nearest entity of a given type with a bow until it dies. Needs a bow and arrows. Good for end crystals, blazes, ghasts, and the ender dragon.',
+        params: {
+            'type': { type: 'string', description: 'The type of entity to shoot.' },
+            'max_shots': { type: 'int', description: 'Maximum number of arrows to fire.', domain: [1, 64] }
+        },
+        perform: runAsAction(async (agent, type, max_shots) => {
+            await skills.shootNearest(agent.bot, type, max_shots);
+        })
+    },
+    {
+        name: '!buildNetherPortal',
+        description: 'Build and light a nether portal next to you. Needs 10 obsidian, flint_and_steel, and a few cobblestone/dirt.',
+        perform: runAsAction(async (agent) => {
+            await skills.buildNetherPortal(agent.bot);
+        })
+    },
+    {
+        name: '!enterPortal',
+        description: 'Walk into the nearest portal to travel between dimensions.',
+        params: {'portal_type': { type: 'string', description: 'Either "nether_portal" or "end_portal".' }},
+        perform: runAsAction(async (agent, portal_type) => {
+            if (portal_type !== 'nether_portal' && portal_type !== 'end_portal') {
+                skills.log(agent.bot, `Unknown portal type ${portal_type}, use "nether_portal" or "end_portal".`);
+                return;
+            }
+            await skills.enterPortal(agent.bot, portal_type);
+        })
+    },
+    {
+        name: '!locateStronghold',
+        description: 'Throw eyes of ender from two spots to estimate where the stronghold (end portal) is. Needs at least 2 ender_eye.',
+        perform: runAsAction(async (agent) => {
+            await skills.locateStronghold(agent.bot);
+        }, false, 10)
+    },
+    {
+        name: '!goToStronghold',
+        description: 'Find the stronghold with eyes of ender, travel there, and dig down to the end portal room. Needs several ender_eye (12 are needed to open the portal).',
+        perform: runAsAction(async (agent) => {
+            await skills.goToStronghold(agent.bot);
+        }, false, 40)
+    },
+    {
+        name: '!activateEndPortal',
+        description: 'Fill the nearby end portal frames with eyes of ender to open the portal to the end.',
+        perform: runAsAction(async (agent) => {
+            await skills.activateEndPortal(agent.bot);
+        })
+    },
+    {
+        name: '!makeObsidian',
+        description: 'Make obsidian by pouring water on lava sources, then mine it. Needs a water_bucket (or bucket) and a diamond_pickaxe, and lava nearby.',
+        params: {'num': { type: 'int', description: 'How much obsidian to end up with.', domain: [1, 64] }},
+        perform: runAsAction(async (agent, num) => {
+            await skills.makeObsidian(agent.bot, num);
+        }, false, 15)
+    },
+    {
+        name: '!collectBlazeRods',
+        description: 'In the nether: find a fortress and kill blazes until you have enough blaze rods.',
+        params: {'num': { type: 'int', description: 'How many blaze rods to collect.', domain: [1, 64] }},
+        perform: runAsAction(async (agent, num) => {
+            await skills.collectBlazeRods(agent.bot, num);
+        }, false, 25)
+    },
+    {
+        name: '!collectEnderPearls',
+        description: 'Hunt endermen until you have enough ender pearls (eyes of ender count too).',
+        params: {'num': { type: 'int', description: 'How many ender pearls to collect.', domain: [1, 64] }},
+        perform: runAsAction(async (agent, num) => {
+            await skills.collectEnderPearls(agent.bot, num);
+        }, false, 25)
+    },
+    {
+        name: '!fightEnderDragon',
+        description: 'In the end: shoot the end crystals, then fight the ender dragon until it dies. Bring a bow, 64+ arrows, blocks, food, armor, and a good sword.',
+        perform: runAsAction(async (agent) => {
+            await skills.fightEnderDragon(agent.bot);
+        }, false, 20)
+    },
+    {
         name: '!useOn',
         description: 'Use (right click) the given tool on the nearest target of the given type.',
         params: {
