@@ -4,7 +4,7 @@ import { setSettings } from './settings.js';
 import { getFullState } from './library/full_state.js';
 
 // agent's individual connection to the mindserver
-// always connect to localhost
+// use IPv4 loopback to avoid localhost IPv6 resolution mismatches in containers
 
 class MindServerProxy {
     constructor() {
@@ -22,7 +22,7 @@ class MindServerProxy {
         if (this.connected) return;
         
         this.name = name;
-        this.socket = io(`http://localhost:${port}`);
+        this.socket = io(`http://127.0.0.1:${port}`);
 
         await new Promise((resolve, reject) => {
             this.socket.on('connect', resolve);
