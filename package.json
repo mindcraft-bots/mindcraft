@@ -16,9 +16,9 @@
         "globals": "^15.11.0",
         "google-translate-api-x": "^10.7.1",
         "groq-sdk": "^0.15.0",
-        "minecraft-data": "^3.97.0",
+        "minecraft-data": "3.97.0",
         "minecraft-assets": "^1.16.0",
-        "mineflayer": "^4.33.0",
+        "mineflayer": "4.33.0",
         "mineflayer-armor-manager": "^2.0.1",
         "mineflayer-auto-eat": "^3.3.6",
         "mineflayer-collectblock": "^1.4.1",
@@ -39,7 +39,8 @@
     },
     "overrides": {
       "canvas": "^3.1.0",
-      "gl": "^8.1.6"
+      "gl": "^8.1.6",
+      "tar": "^7.5.11"
     },
     "scripts": {
         "postinstall": "patch-package",
