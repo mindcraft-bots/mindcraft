@@ -829,7 +829,14 @@ export async function equip(bot, itemName) {
         await bot.equip(item, 'off-hand');
     }
     else {
-        await bot.equip(item, 'hand');
+        try {
+            if (bot.currentWindow) bot.closeWindow(bot.currentWindow);
+            await bot.equip(item, 'hand');
+        } catch (err) {
+            console.warn('Failed to equip tool, continuing without equip:', err.message);
+            log(bot, `Failed to equip ${itemName}.`);
+            return false;
+        }
     }
     log(bot, `Equipped ${itemName}.`);
     return true;
