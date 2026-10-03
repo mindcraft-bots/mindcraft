@@ -141,17 +141,28 @@ export function getNearestBlocks(bot, block_types=null, distance=8, count=10000)
     return getNearestBlocksWhere(bot, block_ids, distance, count);  
 }
 
+// bot.findBlocks is synchronous and scans a volume that grows with the cube of maxDistance. With the
+// default count (10000) a search for a rare or absent block never early-exits, so a large radius walks
+// a huge volume on the main thread and blocks the event loop -- long enough that mineflayer misses
+// keep-alive packets and the server drops the bot mid-task. !searchForBlock lets the model pass a
+// radius up to 512, so this is reachable in normal play. Cap the radius (a search beyond the loaded
+// view distance returns nothing useful anyway) and the count so one search can't stall the connection.
+const MAX_SEARCH_DISTANCE = 128;
+const MAX_SEARCH_COUNT = 4000;
+
 export function getNearestBlocksWhere(bot, predicate, distance=8, count=10000) {
     /**
      * Get a list of the nearest blocks that satisfy the given predicate.
      * @param {Bot} bot - The bot to get the nearest blocks for.
      * @param {function} predicate - The predicate to filter the blocks.
-     * @param {number} distance - The maximum distance to search, default 16.
-     * @param {number} count - The maximum number of blocks to find, default 10000.
+     * @param {number} distance - The maximum distance to search, default 16 (capped at 128).
+     * @param {number} count - The maximum number of blocks to find, default 10000 (capped at 4000).
      * @returns {Block[]} - The nearest blocks that satisfy the given predicate.
      * @example
      * let waterBlocks = world.getNearestBlocksWhere(bot, block => block.name === 'water', 16, 10);
      **/
+    distance = Math.min(distance, MAX_SEARCH_DISTANCE);
+    count = Math.min(count, MAX_SEARCH_COUNT);
     let positions = bot.findBlocks({matching: predicate, maxDistance: distance, count: count});
     let blocks = positions.map(position => bot.blockAt(position));
     return blocks;

@@ -128,7 +128,7 @@ export const actionsList = [
         description: 'Find and go to the nearest block of a given type in a given range.',
         params: {
             'type': { type: 'BlockName', description: 'The block type to go to.' },
-            'search_range': { type: 'float', description: 'The range to search for the block. Minimum 32.', domain: [10, 512] }
+            'search_range': { type: 'float', description: 'The range to search for the block. Minimum 32, maximum 128.', domain: [10, 128, '[]'] }
         },
         perform: runAsAction(async (agent, block_type, range) => {
             if (range < 32) {
