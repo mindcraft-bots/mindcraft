@@ -86,6 +86,24 @@ To install our models, install ollama and run the following terminal command:
 ollama pull sweaterdog/andy-4:micro-q8_0 && ollama pull embeddinggemma
 ```
 
+## Structured Action Logging
+
+Set `"action_logging": true` in `settings.js` to write optional structured `ACTION` logs for successful wrapped skill calls. These logs can help debug and analyze block and item interactions.
+
+Logs are written to:
+
+```text
+./bots/<bot-name>/logs/log_<timestamp>.txt
+```
+
+Example log line:
+
+```text
+ACTION function=placeBlock args=["dirt",4,-61,1] status=success item=dirt result_block=dirt result_coord=[4,-61,1] clicked_block=unknown clicked_face=unknown player_pos=[3.472681,-60.000000,2.516543] yaw=-493.917 pitch=58.176 sneaking=false standing_on=[3,-61,2] standing_on_block=grass_block hand=main_hand tick=1011330 timestamp=2026-05-02T16:56:42.367Z
+```
+
+Logged entries include the wrapped skill function name, serializable arguments, and common bot context where available. Exact action-specific fields such as clicked block and clicked face may be `unknown` when the wrapper cannot obtain them generically. Currently wrapped skill calls include block breaking, ordinary block placement, fluid placement, bucket use, and generic item use on blocks. Actions that bypass the instrumented shared skill functions are not automatically logged.
+
 ## Online Servers
 To connect to online servers your bot will need an official Microsoft/Minecraft account. You can use your own personal one, but will need another account if you want to connect too and play with it. To connect, change these lines in `settings.js`:
 ```javascript

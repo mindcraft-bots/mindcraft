@@ -3,12 +3,17 @@ import * as world from "./world.js";
 import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
+import { withActionLogging } from '../action_logger.js';
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
 const useDelay = blockPlaceDelay > 0;
 
 export function log(bot, message) {
     bot.output += message + '\n';
+}
+
+function logCoordFromXYZ(x, y, z) {
+    return { x, y, z };
 }
 
 async function autoLight(bot) {
@@ -558,7 +563,7 @@ export async function pickupNearbyItems(bot) {
 }
 
 
-export async function breakBlockAt(bot, x, y, z) {
+async function breakBlockAtImpl(bot, x, y, z) {
     /**
      * Break the block at the given position. Will use the bot's equipped item.
      * @param {MinecraftBot} bot, reference to the minecraft bot.
@@ -607,8 +612,17 @@ export async function breakBlockAt(bot, x, y, z) {
     return true;
 }
 
+export const breakBlockAt = withActionLogging('breakBlockAt', breakBlockAtImpl, ([, x, y, z]) => {
+    const coord = logCoordFromXYZ(x, y, z);
+    return {
+        resultCoord: coord,
+        clickedBlock: coord,
+        clickedFace: 'unknown',
+    };
+});
 
-export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dontCheat=false) {
+
+async function placeBlockImpl(bot, blockType, x, y, z, placeOn='bottom', dontCheat=false) {
     /**
      * Place the given block type at the given position. It will build off from any adjacent blocks. Will fail if there is a block in the way or nothing to build off of.
      * @param {MinecraftBot} bot, reference to the minecraft bot.
@@ -787,6 +801,11 @@ export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dont
         return false;
     }
 }
+
+export const placeBlock = withActionLogging('placeBlock', placeBlockImpl, ([, , x, y, z]) => ({
+    resultCoord: logCoordFromXYZ(x, y, z),
+    clickedFace: 'unknown',
+}));
 
 export async function equip(bot, itemName) {
     /**
@@ -2041,7 +2060,7 @@ export async function useToolOn(bot, toolName, targetName) {
     return true;
  }
 
- export async function useToolOnBlock(bot, toolName, block) {
+ async function useToolOnBlockImpl(bot, toolName, block) {
     /**
      * Use a tool on a specific block.
      * @param {MinecraftBot} bot
@@ -2091,3 +2110,9 @@ export async function useToolOn(bot, toolName, targetName) {
     log(bot, `Used ${toolName} on ${block.name}.`);
     return true;
  }
+
+export const useToolOnBlock = withActionLogging('useToolOnBlock', useToolOnBlockImpl, ([, , block]) => ({
+    resultCoord: block?.position,
+    clickedBlock: block?.position,
+    clickedFace: 'unknown',
+}));

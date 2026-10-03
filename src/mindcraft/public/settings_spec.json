@@ -136,5 +136,10 @@
         "type": "number",
         "description": "Number of seconds allowed for the bot to spawn before throwing an error. Increase when spawning takes a while.",
         "default": 30
+    },
+    "action_logging": {
+        "type": "boolean",
+        "description": "Whether to write structured ACTION logs for successful bot block and item actions.",
+        "default": false
     }
 }

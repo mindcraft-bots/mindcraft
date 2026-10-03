@@ -55,6 +55,7 @@ const settings = {
 
     "spawn_timeout": 30, // num seconds allowed for the bot to spawn before throwing error. Increase when spawning takes a while.
     "block_place_delay": 0, // delay between placing blocks (ms) if using newAction. helps avoid bot being kicked by anti-cheat mechanisms on servers.
+    "action_logging": false, // when true, write structured ACTION logs for successful bot block/item actions.
   
     "log_all_prompts": false, // log ALL prompts to file
 };
