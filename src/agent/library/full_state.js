@@ -76,6 +76,18 @@ export function getFullState(agent) {
             kind: activity.kind,
             isIdle: agent.isIdle()
         },
+        autonomousTask: {
+            status: agent.self_prompter.isActive()
+                ? 'active'
+                : (agent.self_prompter.isPaused() ? 'paused' : 'stopped'),
+            goal: agent.self_prompter.prompt || '',
+            plan: agent.self_prompter.plan || [],
+            currentStep: agent.self_prompter.current_step || '',
+            stepsTaken: agent.self_prompter.steps_taken || 0,
+            consecutiveFailures: agent.self_prompter.consecutive_failures || 0,
+            lastCommand: agent.self_prompter.last_command || '',
+            lastResult: String(agent.self_prompter.last_result || '').slice(0, 800)
+        },
         surroundings: {
             below,
             legs,

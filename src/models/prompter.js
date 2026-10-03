@@ -211,6 +211,64 @@ export class Prompter {
         this.last_prompt_time = Date.now();
     }
 
+    async getCommandOutput(commandName) {
+        const command = getCommand(commandName);
+        if (!command) return `${commandName}: unavailable`;
+        try {
+            return await command.perform(this.agent);
+        } catch (error) {
+            return `${commandName}: observation failed: ${error.message}`;
+        }
+    }
+
+    async promptTaskStep(context) {
+        await this.checkCooldown();
+        const systemPrompt = `You are the autonomous task controller for Minecraft bot ${this.agent.name}.
+You operate in a closed observe-plan-act loop. Re-evaluate the world after every command. Do not assume an action succeeded; use its reported result and the current observation.
+
+Return exactly one JSON object and no markdown:
+{
+  "status": "active" | "completed" | "blocked",
+  "plan": ["short ordered step", "..."],
+  "current_step": "the single step being attempted now",
+  "reason": "brief evidence-based reason",
+  "command": "one valid !command with all arguments"
+}
+
+Rules:
+- Use status "completed" only when the observation proves the goal is complete. Leave command empty then.
+- Use status "blocked" only when the goal cannot proceed with available capabilities after trying alternatives.
+- For status "active", issue exactly one command. Never issue !goal, !endGoal, or !stfu.
+- Keep the plan at 3-8 concrete steps and revise it when evidence changes.
+- After a failure or repeated action, diagnose the cause and choose a materially different command.
+- Prefer information queries when uncertain. Preserve health, food, valuable items, and avoid unnecessary destruction.
+- Item and block identifiers must use Minecraft names such as oak_log or wooden_pickaxe.
+
+${getCommandDocs(this.agent)}`;
+
+        const messages = [{
+            role: 'user',
+            content: JSON.stringify(context, null, 2)
+        }];
+        const { parseTaskDecision } = await import('../agent/self_prompter.js');
+        let lastError = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            const response = await this.chat_model.sendRequest(messages, systemPrompt);
+            await this._saveLog(systemPrompt, messages, response, 'autonomousTask');
+            try {
+                return parseTaskDecision(response);
+            } catch (error) {
+                lastError = error;
+                messages.push({ role: 'assistant', content: String(response) });
+                messages.push({
+                    role: 'user',
+                    content: `Invalid controller response: ${error.message}. Return only a corrected JSON object.`
+                });
+            }
+        }
+        throw new Error(`Task controller returned invalid output three times: ${lastError?.message}`);
+    }
+
     async promptConvo(messages) {
         this.most_recent_msg_time = Date.now();
         let current_msg_time = this.most_recent_msg_time;

@@ -362,7 +362,7 @@ export const actionsList = [
     },
     {
         name: '!goal',
-        description: 'Set a goal prompt to endlessly work towards with continuous self-prompting.',
+        description: 'Start an autonomous goal with iterative planning, observation, action verification, and failure recovery. Use for multi-step tasks.',
         params: {
             'selfPrompt': { type: 'string', description: 'The goal prompt.' },
         },
@@ -371,7 +371,7 @@ export const actionsList = [
                 agent.self_prompter.setPromptPaused(prompt);
             }
             else {
-                agent.self_prompter.start(prompt);
+                return agent.self_prompter.start(prompt);
             }
         }
     },
@@ -380,7 +380,7 @@ export const actionsList = [
         description: 'Call when you have accomplished your goal. It will stop self-prompting and the current action. ',
         perform: async function (agent) {
             agent.self_prompter.stop();
-            return 'Self-prompting stopped.';
+            return 'Autonomous goal stopped.';
         }
     },
     {

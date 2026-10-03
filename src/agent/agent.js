@@ -198,7 +198,11 @@ export class Agent {
             if (init_message) {
                 this.history.add('system', init_message);
             }
-            await this.self_prompter.handleLoad(save_data.self_prompt, save_data.self_prompting_state);
+            await this.self_prompter.handleLoad(
+                save_data.self_prompt,
+                save_data.self_prompting_state,
+                save_data.autonomous_task_progress
+            );
         }
         if (save_data?.last_sender) {
             this.last_sender = save_data.last_sender;

@@ -7,6 +7,9 @@ scratch.js
 bots/**/action-code/**
 bots/**/
 keys.json
+test-output/
+ui-preview.*.log
+mindcraft.*.log
 services/viaproxy/jars/**
 services/viaproxy/logs/**
 services/viaproxy/plugins/**
