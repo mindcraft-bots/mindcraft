@@ -1,8 +1,8 @@
 import { readFileSync , writeFileSync, existsSync} from 'fs';
 import { executeCommand } from '../commands/index.js';
-import { getPosition } from '../library/world.js';
 import { ConstructionTaskValidator, Blueprint } from './construction_tasks.js';
 import { CookingTaskInitiator } from './cooking_tasks.js';
+import { BeatGameTaskValidator } from './beat_game_tasks.js';
 
 const PROGRESS_FILE = './hells_kitchen_progress.json';
 
@@ -232,7 +232,7 @@ class CookingCraftingTaskValidator {
 }
 
 export class Task {
-    constructor(agent, task_data, taskStartTime = null) {
+    constructor(agent, task_data, taskStartTime = null, taskSplits = []) {
         this.agent = agent;
         this.data = null;
         if (taskStartTime !== null)
@@ -278,6 +278,8 @@ export class Task {
             } else if (this.task_type === 'cooking' || this.task_type === 'techtree') {
                 this.validator = new CookingCraftingTaskValidator(this.data, this.agent);
 
+            } else if (this.task_type === 'beat_game') {
+                this.validator = new BeatGameTaskValidator(this.data, this.agent, this.taskStartTime, taskSplits);
             } else {
                 this.validator = null;
             }
@@ -288,8 +290,9 @@ export class Task {
                 this.blocked_actions = [];
             }
             this.restrict_to_inventory = !!this.data.restrict_to_inventory;
+            // a task's goal has to keep going until the task ends: !stfu turns self-prompting off just like !endGoal
             if (this.data.goal)
-                this.blocked_actions.push('!endGoal');
+                this.blocked_actions.push('!endGoal', '!stfu');
             if (this.conversation)
                 this.blocked_actions.push('!endConversation');
         }
@@ -363,6 +366,8 @@ export class Task {
     }
 
     isDone() {
+        if (this.initializing)
+            return false;
         let res = null;
         if (this.validator)
             res = this.validator.validate();
@@ -406,6 +411,20 @@ export class Task {
     }
 
     async initBotTask() {
+        // the update loop is already checking the task, so don't score it off last session's inventory while it's reset
+        this.initializing = true;
+        try {
+            await this.setUpTask();
+        } finally {
+            this.initializing = false;
+        }
+    }
+
+    async setUpTask() {
+        // make it day first thing: the rest of the setup takes a few seconds, and a bot that logged in at night where
+        // the last run ended was shot by a skeleton before it was done
+        if (this.task_type === 'beat_game')
+            this.agent.bot.chat('/time set day');
         await this.agent.bot.chat(`/clear ${this.name}`);
         console.log(`Cleared ${this.name}'s inventory.`);
 
@@ -480,7 +499,7 @@ export class Task {
             await this.initiator.init();
         }
 
-        await this.teleportBots();
+        await this.prepareWorld();
 
         if (this.data.agent_count && this.data.agent_count > 1) {
             // TODO wait for other bots to join
@@ -508,53 +527,49 @@ export class Task {
         await this.setAgentGoal();
     }
     
-    async teleportBots() {
-        console.log('\n\nTeleporting bots');
-        function getRandomOffset(range) {
-            return Math.floor(Math.random() * (range * 2 + 1)) - range;
+    async moveToSurface() {
+        // a fresh run starts where the last one stopped, which can be underground, underwater, in the nether or the end.
+        // start it on the overworld surface instead, like a new world. spreadplayers never lands on water or lava,
+        // so look further out when the column straight up is sea, and fall back to the world spawn
+        const bot = this.agent.bot;
+        const dimension = (bot.game.dimension || '').replace('minecraft:', '');
+        const pos = bot.entity.position.clone();
+        if (dimension === 'overworld' && !bot.entity.isInWater && bot.blockAt(pos)?.skyLight === 15) {
+            console.log(`${this.name} is already on the surface at ${pos.floored()}.`);
+            return;
         }
-
-        let human_player_name = null;
-        let bot = this.agent.bot;
-
-        // Finding if there is a human player on the server
-        for (const playerName in bot.players) {
-            const player = bot.players[playerName];
-            if (!this.available_agents.some((n) => n === playerName)) {
-                console.log('Found human player:', player.username);
-                human_player_name = player.username
-                break;
+        // spreadplayers refuses a range of 1 ("too many entities for space"), so the tightest that works is a few blocks
+        const tries = [[pos, 4], [pos, 32], [pos, 128]];
+        if (bot.spawnPoint) tries.push([bot.spawnPoint, 64]);
+        for (const [center, range] of tries) {
+            const moved = new Promise((resolve) => {
+                const done = () => { clearTimeout(timer); resolve(true); };
+                const timer = setTimeout(() => { bot.removeListener('forcedMove', done); resolve(false); }, 3000);
+                bot.once('forcedMove', done);
+            });
+            bot.chat(`/execute in minecraft:overworld run spreadplayers ${Math.floor(center.x)} ${Math.floor(center.z)} 0 ${range} false ${this.name}`);
+            if (await moved) {
+                console.log(`Starting ${this.name} on the surface at ${bot.entity.position.floored()}.`);
+                return;
             }
         }
+        console.log(`Couldn't move ${this.name} to the surface, so it starts at ${pos.floored()}.`);
+    }
 
-        // go the human if there is one and not required for the task
-        if (human_player_name && this.data.human_count === 0) {
-            console.log(`Teleporting ${this.name} to human ${human_player_name}`)
-            bot.chat(`/tp ${this.name} ${human_player_name}`)
-        }
-        else {
-            console.log(`Teleporting ${this.name} to ${this.available_agents[0]}`)
-            bot.chat(`/tp ${this.name} ${this.available_agents[0]}`);
-        }
+    async prepareWorld() {
+        // bots used to be teleported to a human player and spread out here. that's gone: the /tp read the bot's
+        // position before the server had moved it, so the spread started from wherever it logged out and could
+        // leave it inside a wall. bots now start where they are
+        let bot = this.agent.bot;
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
-
-        // now all bots are teleport on top of each other (which kinda looks ugly)
-        // Thus, we need to teleport them to random distances to make it look better
-
-        /*
-        Note : We don't want randomness for construction task as the reference point matters a lot.
-        Another reason for no randomness for construction task is because, often times the user would fly in the air,
-        then set a random block to dirt and teleport the bot to stand on that block for starting the construction,
-        */
-
-
-        if (this.data.type !== 'construction') {
-            const pos = getPosition(bot);
-            const xOffset = getRandomOffset(5);
-            const zOffset = getRandomOffset(5);
-            bot.chat(`/tp ${this.name} ${Math.floor(pos.x + xOffset)} ${pos.y + 3} ${Math.floor(pos.z + zOffset)}`);
-            await new Promise((resolve) => setTimeout(resolve, 200));
+        if (this.task_type === 'beat_game') {
+            await this.moveToSurface();
+            // a new world starts in the morning. starting a run empty-handed at night got the bot killed within minutes
+            bot.chat('/time set day');
+            // and with full health and hunger: they carry over from the last session, and one run started on 4 health
+            bot.chat(`/effect clear ${this.name}`);
+            bot.chat(`/effect give ${this.name} minecraft:instant_health 1 10 true`);
+            bot.chat(`/effect give ${this.name} minecraft:saturation 1 20 true`);
         }
 
         if (this.data.agent_count && this.data.agent_count > 1) {

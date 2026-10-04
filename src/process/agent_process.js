@@ -14,7 +14,8 @@ export class AgentProcess {
         this.count_id = count_id;
         this.running = true;
 
-        let args = [init_agent_path, this.name];
+        // more heap than node's ~4 GB default, as headroom for big path searches
+        let args = ['--max-old-space-size=8192', init_agent_path, this.name];
         args.push('-n', this.name);
         args.push('-c', count_id);
         if (load_memory)
@@ -34,7 +35,9 @@ export class AgentProcess {
             this.running = false;
             logoutAgent(this.name);
             
-            if (code > 1) {
+            // small codes above 1 are the agent deliberately ending the task. crashes exit with 128 and up (134 when
+            // node runs out of memory) and a forced kill on Windows with 4294967295: restart those like code 1
+            if (code > 1 && code < 128) {
                 console.log(`Ending task`);
                 process.exit(code);
             }

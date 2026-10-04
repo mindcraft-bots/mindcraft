@@ -3,8 +3,9 @@ import { Coder } from './coder.js';
 import { VisionInterpreter } from './vision/vision_interpreter.js';
 import { Prompter } from '../models/prompter.js';
 import { initModes } from './modes.js';
-import { initBot } from '../utils/mcdata.js';
+import { initBot, JUNK_ITEMS } from '../utils/mcdata.js';
 import { containsCommand, commandExists, executeCommand, truncCommandMessage, isAction, blacklistCommands } from './commands/index.js';
+import { getNextStepHint } from './commands/queries.js';
 import { ActionManager } from './action_manager.js';
 import { NPCContoller } from './npc/controller.js';
 import { MemoryBank } from './memory_bank.js';
@@ -53,17 +54,20 @@ export class Agent {
             save_data = this.history.load();
         }
         let taskStart = null;
+        let taskSplits = [];
         if (save_data) {
             taskStart = save_data.taskStart;
+            taskSplits = save_data.taskSplits || [];
         } else {
             taskStart = Date.now();
         }
-        this.task = new Task(this, settings.task, taskStart);
+        this.task = new Task(this, settings.task, taskStart, taskSplits);
         this.blocked_actions = settings.blocked_actions.concat(this.task.blocked_actions || []);
         blacklistCommands(this.blocked_actions);
 
         console.log(this.name, 'logging into minecraft...');
         this.bot = initBot(this.name);
+        this.actions.installInterruptFlag(this.bot);
         
         // Connection Handler
         const onDisconnect = (event, reason) => {
@@ -118,7 +122,10 @@ export class Agent {
                 
                 console.log(`${this.name} spawned.`);
                 this.clearBotLogs();
-              
+                // the init message below already checks the task, so don't score it until initBotTask has reset it
+                if (!load_mem && settings.task)
+                    this.task.initializing = true;
+
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
               
@@ -188,11 +195,38 @@ export class Agent {
         });
 
         // Set up auto-eat
-        this.bot.autoEat.options = {
-            priority: 'foodPoints',
-            startAt: 14,
-            bannedFood: ["rotten_flesh", "spider_eye", "poisonous_potato", "pufferfish", "chicken"]
+        // underground, where every block can be dug through, each step of the path search makes up to ~20 new nodes,
+        // and 10s of searching ran the agent out of memory (4 GB) mining iron, so keep the default 5s. a searchRadius
+        // cap didn't stop it happening again, and with careful movements (digging a block costs ~22) it ruled out any
+        // dug route over ~7 blocks: "No path to the goal" on ore after ore
+        this.bot.pathfinder.thinkTimeout = 5000;
+
+        // equip waits for the server to confirm the inventory change with no time limit, so when that confirmation
+        // went missing a collectBlocks hung on equipping a pickaxe and couldn't even be stopped. give every equip
+        // (tools, weapons, the shield, food) 5 seconds, then resync the inventory with the server
+        const equip = this.bot.equip.bind(this.bot);
+        this.bot.equip = (item, destination) => {
+            let timer;
+            const timeout = new Promise((_, reject) => {
+                timer = setTimeout(() => {
+                    this.bot._client.write('close_window', {windowId: 0});
+                    this.bot._syncWindow?.(this.bot.inventory).catch(() => {});
+                    reject(new Error(`Equipping ${item?.name ?? 'an item'} timed out.`));
+                }, 5000);
+            });
+            return Promise.race([equip(item, destination), timeout]).finally(() => clearTimeout(timer));
         };
+
+        // change only these: replacing the whole options object dropped eatingTimeout, so the bot stopped eating as
+        // soon as it started, and checkOnItemPickup. the default banned foods already cover raw chicken, rotten flesh
+        // and golden apples (self_preservation saves those for healing)
+        Object.assign(this.bot.autoEat.options, {
+            priority: 'foodPoints',
+            // health only regenerates at 18+ hunger, so starting at 14 could leave the bot hurt for a whole run
+            startAt: 18,
+            // eating from the off-hand left the food there (taking the shield's place) and out of the furnace's reach
+            offhand: false,
+        });
 
         if (save_data?.self_prompt) {
             if (init_message) {
@@ -232,10 +266,28 @@ export class Agent {
 
     requestInterrupt() {
         this.bot.interrupt_code = true;
-        this.bot.stopDigging();
-        this.bot.collectBlock.cancelTask();
-        this.bot.pathfinder.stop();
-        this.bot.pvp.stop();
+        this.stopBotActivity();
+    }
+
+    stopBotActivity() {
+        // cancel whatever the bot is physically busy with, so awaiting actions settle right away
+        const bot = this.bot;
+        bot.stopDigging();
+        bot.collectBlock.cancelTask().catch(() => {});
+        bot.pvp.stop();
+        // pathfinder.stop() only raises a flag that is checked when the bot reaches its next path node, which
+        // never happens while it's stuck or still searching for a path. re-applying the movements makes the
+        // stop happen right now (rejecting any pending goto) and consumes the flag, so it can't cancel the next path.
+        if (bot.pathfinder.goal || bot.pathfinder.isMoving()) {
+            bot.pathfinder.stop();
+            bot.pathfinder.setMovements(bot.pathfinder.movements);
+        }
+        else {
+            bot.pathfinder.setGoal(null);
+        }
+        bot.clearControlStates();
+        if (bot.usingHeldItem) bot.deactivateItem();
+        if (bot.currentWindow) bot.closeWindow(bot.currentWindow);
     }
 
     clearBotLogs() {
@@ -364,8 +416,12 @@ export class Agent {
                 console.log('Agent executed:', command_name, 'and got:', execute_res);
                 used_command = true;
 
-                if (execute_res)
+                if (execute_res) {
+                    // in a beat_game run, end each result with the next step, so a turn isn't spent on !gameProgress
+                    if (this.task?.task_type === 'beat_game' && command_name !== '!gameProgress')
+                        execute_res += '\n' + getNextStepHint(this.bot);
                     this.history.add('system', execute_res);
+                }
                 else
                     break;
             }
@@ -487,7 +543,7 @@ export class Agent {
         });
         this.bot.on('idle', () => {
             this.bot.clearControlStates();
-            this.bot.pathfinder.stop(); // clear any lingering pathfinder
+            this.bot.pathfinder.setGoal(null); // clear any lingering pathfinder goal (stop() would leave a stale flag)
             this.bot.modes.unPauseAll();
             setTimeout(() => {
                 if (this.isIdle()) {
@@ -514,6 +570,32 @@ export class Agent {
             }
         }, INTERVAL);
 
+        // MINDCRAFT_STATUS_SECONDS=10 prints where the bot is and what it's doing every 10s, for watching a run from its log
+        const status_secs = Number(process.env.MINDCRAFT_STATUS_SECONDS);
+        if (status_secs > 0) {
+            // the agent ran out of memory (8 GB) within a minute while collecting ore underground. log big path
+            // searches, and the heap every 2s once it's over 1 GB, to see what grows
+            this.bot.on('path_update', (r) => {
+                if (r.generatedNodes > 100000)
+                    console.log(`[path] ${r.status} visited=${r.visitedNodes} generated=${r.generatedNodes} time=${Math.round(r.time)}ms action=${this.actions.currentActionLabel || 'idle'}`);
+            });
+            setInterval(() => {
+                const heap = Math.round(process.memoryUsage().heapUsed / 1048576);
+                if (heap > 1024)
+                    console.log(`[heap] ${heap}MB action=${this.actions.currentActionLabel || 'idle'} path=${this.bot.pathfinder.isMoving() ? 'moving' : this.bot.pathfinder.goal ? 'planning' : 'none'}`);
+            }, 2000);
+            setInterval(() => {
+                const bot = this.bot;
+                const p = bot.entity?.position;
+                if (!p) return;
+                const dimension = (bot.game.dimension || '').replace('minecraft:', '');
+                const path = bot.pathfinder.isMoving() ? 'moving' : bot.pathfinder.goal ? 'planning' : 'none';
+                const heap = Math.round(process.memoryUsage().heapUsed / 1048576);
+                const dig = bot.targetDigBlock ? ` dig=${bot.targetDigBlock.name}` : '';
+                console.log(`[status] ${dimension} (${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}) hp=${Math.round(bot.health)} food=${bot.food} air=${bot.oxygenLevel} water=${bot.entity.isInWater} path=${path}${dig} heap=${heap}MB action=${this.actions.currentActionLabel || 'idle'}`);
+            }, status_secs * 1000);
+        }
+
         this.bot.emit('idle');
     }
 
@@ -521,6 +603,36 @@ export class Agent {
         await this.bot.modes.update();
         this.self_prompter.update(delta);
         await this.checkTaskDone();
+        this.keepShieldInOffhand(delta);
+        this.tossJunkWhenFull(delta);
+    }
+
+    tossJunkWhenFull(delta) {
+        // digging fills the inventory with stone and dirt (one run had 187 cobblestone), and a full inventory makes
+        // collecting fail. when it's nearly full, between actions, throw away the junk and keep one stack of cobblestone
+        this.junk_check = (this.junk_check || 0) + delta;
+        if (this.junk_check < 10000 || !this.isIdle() || this.bot.currentWindow) return;
+        this.junk_check = 0;
+        if (this.bot.inventory.emptySlotCount() > 5) return;
+        const keep = { cobblestone: 64 };
+        (async () => {
+            for (const name of [...JUNK_ITEMS, ...Object.keys(keep)]) {
+                const have = this.bot.inventory.items().filter(i => i.name === name).reduce((n, i) => n + i.count, 0);
+                const extra = have - (keep[name] || 0);
+                if (extra > 0) await this.bot.toss(this.bot.registry.itemsByName[name].id, null, extra).catch(() => {});
+            }
+        })();
+    }
+
+    keepShieldInOffhand(delta) {
+        // a shield only blocks from the off-hand. check every 5s, between actions (while the model is thinking) and with
+        // no window open, so equipping doesn't get in the way of anything
+        this.shield_check = (this.shield_check || 0) + delta;
+        if (this.shield_check < 5000 || !this.isIdle() || this.bot.currentWindow) return;
+        this.shield_check = 0;
+        if (this.bot.inventory.slots[45]?.name === 'shield') return;
+        const shield = this.bot.inventory.items().find(item => item.name === 'shield');
+        if (shield) this.bot.equip(shield, 'off-hand').catch(() => {});
     }
 
     isIdle() {

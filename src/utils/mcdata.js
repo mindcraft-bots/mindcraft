@@ -18,6 +18,9 @@ let Item = null;
 */
 
 export const WOOD_TYPES = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove', 'cherry'];
+// stone and dirt that pile up from digging and are thrown away when the inventory fills (one stack of cobblestone
+// is kept for building and hiding). item_collecting leaves them on the ground so they aren't picked straight back up
+export const JUNK_ITEMS = ['dirt', 'granite', 'diorite', 'andesite', 'tuff', 'gravel', 'calcite', 'cobbled_deepslate'];
 export const MATCHING_WOOD_BLOCKS = [
     'log',
     'planks',
@@ -67,6 +70,23 @@ export function initBot(username) {
 
     const bot = createBot(options);
 
+    // node-minecraft-protocol hashes the last seen chat messages in storage order, but vanilla hashes them
+    // oldest to newest. once more than 20 signed messages have been seen the two differ, the checksum is wrong
+    // and the server kicks the bot ("Checksum mismatch on last seen update"), so recompute it the vanilla way.
+    const checksumTypes = {};
+    const fixChatChecksum = (name, data) => {
+        if (name !== 'chat_message' && name !== 'chat_command' && name !== 'chat_command_signed') return data;
+        if (typeof data?.checksum !== 'number') return data;
+        const checksum = lastSeenChecksum(bot._client._lastSeenMessages);
+        if (checksum === null) return data;
+        if (!(name in checksumTypes)) {
+            const fields = minecraftData(bot.version)?.protocol?.play?.toServer?.types?.['packet_' + name]?.[1];
+            checksumTypes[name] = Array.isArray(fields) ? fields.find(f => f.name === 'checksum')?.type : undefined;
+        }
+        const signed = checksumTypes[name] === 'i8';
+        return { ...data, checksum: signed && checksum > 127 ? checksum - 256 : checksum };
+    };
+
     // Throttle position packets to avoid kicks on Paper/Spigot servers
     // Paper enforces stricter packet rate limits than vanilla, causing ECONNRESET
     // when mineflayer sends position updates faster than 50ms apart
@@ -75,6 +95,7 @@ export function initBot(username) {
     const POSITION_THROTTLE_MS = 50;
     const originalWrite = bot._client.write.bind(bot._client);
     bot._client.write = function(name, data) {
+        data = fixChatChecksum(name, data);
         if (name === 'position' || name === 'position_look' || name === 'look') {
             const now = Date.now();
             if (now - lastPositionUpdate < POSITION_THROTTLE_MS) {
@@ -123,13 +144,62 @@ export function initBot(username) {
         bot.acceptResourcePack();
     });
 
+    // going home through the end's exit portal, the server waits for the client to ask to respawn, after the
+    // credits (value 1) or straight away when they've been seen before (value 0). mineflayer only answers the
+    // first, so every later trip home left the bot stuck in limbo
+    bot._client.on('game_state_change', (packet) => {
+        if ((packet.reason === 4 || packet.reason === 'win_game') && packet.gameMode === 0)
+            bot._client.write('client_command', bot.supportFeature('respawnIsPayload') ? { payload: 0 } : { actionId: 0 });
+    });
+
     bot.once('login', () => {
         mc_version = bot.version;
         mcdata = minecraftData(mc_version);
         Item = prismarine_items(mc_version);
+        fixToolMaterials(bot.registry);
+        fixToolMaterials(mcdata);
+        // armor-manager reads the item off every collected entity, which throws if the server never sent that
+        // entity's item metadata. thrown inside a packet handler, that takes down the whole agent process.
+        for (const listener of bot.listeners('playerCollect')) {
+            bot.removeListener('playerCollect', listener);
+            bot.on('playerCollect', (...args) => {
+                try {
+                    listener(...args);
+                } catch (err) {
+                    console.warn('Ignored error while handling a collected item:', err.message);
+                }
+            });
+        }
     });
 
     return bot;
+}
+
+function lastSeenChecksum(lastSeen) {
+    /* The vanilla last seen messages checksum: Arrays.hashCode of each tracked signature, combined from the
+       oldest entry to the newest, cast to a byte (and never 0). Returns null for chat formats without a ring. */
+    if (!lastSeen || typeof lastSeen.offset !== 'number' || !lastSeen.capacity) return null;
+    let checksum = 1;
+    for (let i = 0; i < lastSeen.capacity; i++) {
+        const signature = lastSeen[(lastSeen.offset + i) % lastSeen.capacity]?.signature;
+        if (!signature) continue;
+        let hash = 1;
+        for (const byte of signature) hash = (Math.imul(31, hash) + byte) | 0;
+        checksum = (Math.imul(31, checksum) + hash) | 0;
+    }
+    const result = checksum & 0xff;
+    return result === 0 ? 1 : result;
+}
+
+function fixToolMaterials(registry) {
+    /* minecraft-data files blocks that need a stone or better pickaxe (ores, obsidian...) under materials like
+       'incorrect_for_wooden_tool', which have no pickaxe speeds. dig times then come out as if mined by hand
+       (75s for obsidian with a diamond pickaxe instead of 9.4s) and tool choice suffers. They're all pickaxe blocks. */
+    if (!registry?.blocksArray || !registry.materials?.['mineable/pickaxe']) return;
+    for (const block of registry.blocksArray) {
+        if (block.material?.startsWith('incorrect_for_'))
+            block.material = 'mineable/pickaxe';
+    }
 }
 
 export function isHuntable(mob) {
@@ -141,6 +211,60 @@ export function isHuntable(mob) {
 export function isHostile(mob) {
     if (!mob || !mob.name) return false;
     return  (mob.type === 'mob' || mob.type === 'hostile') && mob.name !== 'iron_golem' && mob.name !== 'snow_golem';
+}
+
+// hostile-classified mobs that leave you alone unless provoked. attacking them first
+// usually makes things worse (a whole pack of zombified piglins, an enderman teleporting around)
+const NEUTRAL_MOBS = ['enderman', 'zombified_piglin', 'piglin'];
+// mobs that self defense should never try to melee: they are either bosses with their own
+// strategy or can't be reached from the ground
+const NO_AUTO_FIGHT = ['ender_dragon', 'wither', 'ghast', 'phantom', 'shulker'];
+
+export function isNeutral(mob) {
+    if (!mob || !mob.name) return false;
+    return NEUTRAL_MOBS.includes(mob.name);
+}
+
+export function isThreat(bot, mob) {
+    // a hostile mob that should be dealt with now. neutral mobs only count if they are close
+    // and we were just hurt, which is the best signal we have that they were provoked.
+    if (!isHostile(mob) || NO_AUTO_FIGHT.includes(mob.name)) return false;
+    if (!isNeutral(mob)) return true;
+    const recently_hurt = Date.now() - (bot.lastDamageTime || 0) < 5000;
+    return recently_hurt && bot.entity.position.distanceTo(mob.position) < 5;
+}
+
+// approximate melee damage, used to pick the best weapon. prismarine items don't carry attack damage.
+const MATERIAL_TIERS = ['wooden', 'golden', 'stone', 'iron', 'diamond', 'netherite'];
+export function getMeleeDamage(itemName) {
+    if (!itemName) return 1;
+    const tier = MATERIAL_TIERS.findIndex(m => itemName.startsWith(m + '_'));
+    if (itemName.endsWith('_sword')) {
+        return [4, 4, 5, 6, 7, 8][tier] ?? 1;
+    }
+    if (itemName.endsWith('_axe') && !itemName.endsWith('pickaxe')) {
+        // axes hit harder but swing much slower, so rank them below the same tier of sword
+        return ([7, 7, 9, 9, 9, 10][tier] ?? 1) * 0.6;
+    }
+    if (itemName === 'trident') return 9;
+    if (itemName === 'mace') return 6;
+    if (itemName.endsWith('_pickaxe')) return ([2, 2, 3, 4, 5, 6][tier] ?? 1);
+    if (itemName.endsWith('_shovel')) return ([2.5, 2.5, 3.5, 4.5, 5.5, 6.5][tier] ?? 1) * 0.9;
+    return 1;
+}
+
+// seconds between full-strength hits for a weapon (1.9+ attack cooldown)
+export function getAttackCooldown(itemName) {
+    if (!itemName) return 0.25;
+    if (itemName.endsWith('_sword')) return 0.625;
+    if (itemName.endsWith('_axe') && !itemName.endsWith('pickaxe')) {
+        return itemName.startsWith('wooden') || itemName.startsWith('stone') ? 1.25 : 1.0;
+    }
+    if (itemName === 'trident') return 0.91;
+    if (itemName.endsWith('_pickaxe')) return 0.83;
+    if (itemName.endsWith('_shovel')) return 1.0;
+    if (itemName.endsWith('_hoe')) return 0.5;
+    return 0.25;
 }
 
 // blocks that don't work with collectBlock, need to be manually collected
