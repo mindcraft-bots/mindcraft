@@ -23,23 +23,102 @@ async function say(agent, message) {
 // to perform longer actions, use the execute function which won't block the update loop
 const modes_list = [
     {
+        // the stages pause unstuck (it ended them while a path was being planned), and an opening then stood still
+        // "moving" towards stone for over a minute until the runner's stone pickaxe deadline reset the run. this
+        // doesn't interrupt anything: it drops the stalled goal, so the path call fails and the stage tries another
+        // block (or tunnels to it)
+        name: 'path_stall',
+        description: 'Give up on a path that has stopped moving. Interrupts nothing.',
+        interrupts: ['all'],
+        on: true,
+        active: false,
+        prev_location: null,
+        prev_dig: null,
+        since: 0,
+        max_stall: 15, // seconds "moving" without moving or digging something new
+        max_planning: 25, // seconds with a goal and no path: an opening "planned" a path for over a minute on one spot
+        update: async function (agent) {
+            const bot = agent.bot;
+            if (!bot._path_stall_hooked) {
+                // fights and following set a goal that moves with its target, and standing still next to it is fine
+                bot.on('goal_updated', (goal, dynamic) => { bot._goal_dynamic = !!dynamic; });
+                bot._path_stall_hooked = true;
+            }
+            const dig = bot.targetDigBlock?.position?.toString() || null;
+            const pathing = bot.pathfinder.goal && !bot._goal_dynamic;
+            if (!pathing || !this.prev_location ||
+                    this.prev_location.distanceTo(bot.entity.position) >= 1 || dig !== this.prev_dig) {
+                this.prev_location = bot.entity.position.clone();
+                this.prev_dig = dig;
+                this.since = Date.now();
+                return;
+            }
+            const limit = bot.pathfinder.isMoving() ? this.max_stall : this.max_planning;
+            if (Date.now() - this.since > limit * 1000) {
+                console.log(`path_stall: no progress for ${limit}s at ${bot.entity.position.floored()}, dropping the path`);
+                bot.modes.behavior_log += 'My path stalled, trying another way.\n';
+                this.since = Date.now();
+                bot.pathfinder.setGoal(null);
+            }
+        }
+    },
+    {
         name: 'self_preservation',
         description: 'Respond to drowning, burning, and damage at low health. Interrupts all actions.',
         interrupts: ['all'],
         on: true,
         active: false,
         fall_blocks: ['sand', 'gravel', 'concrete_powder'], // includes matching substrings like 'sandstone' and 'red_sand'
+        good_food: ['cooked_beef', 'cooked_porkchop', 'cooked_mutton', 'cooked_chicken', 'cooked_salmon', 'cooked_cod',
+            'golden_carrot', 'baked_potato', 'bread', 'cooked_rabbit', 'pumpkin_pie', 'mushroom_stew', 'apple', 'carrot'],
+        last_heal: 0,
+        underwater_since: null,
+        fireball_id: null,
+        fireball_dist: null,
         update: async function (agent) {
             const bot = agent.bot;
             let block = bot.blockAt(bot.entity.position);
             let blockAbove = bot.blockAt(bot.entity.position.offset(0, 1, 0));
             if (!block) block = {name: 'air'}; // hacky fix when blocks are not loaded
             if (!blockAbove) blockAbove = {name: 'air'};
-            if (blockAbove.name === 'water') {
+            // the eyes (1.62 up) can be underwater while the block just above the feet isn't
+            const head_in_water = skills.isWaterBlock(blockAbove) || skills.isWaterBlock(bot.blockAt(bot.entity.position.offset(0, 1.62, 0)));
+            // a ghast fireball killed the bot from 19 health seconds after it reached the nether. one coming closer
+            // gets blocked with the shield, or punched back
+            const fireball = world.getNearestEntityWhere(bot, e => e.name === 'fireball', 20);
+            const fb_dist = fireball ? fireball.position.distanceTo(bot.entity.position) : null;
+            const incoming = fireball && this.fireball_id === fireball.id && fb_dist < this.fireball_dist - 0.1;
+            this.fireball_id = fireball?.id; this.fireball_dist = fb_dist;
+            if (incoming) {
+                execute(this, agent, async () => {
+                    await skills.blockFireball(bot, fireball);
+                });
+                return;
+            }
+            if (!head_in_water) this.underwater_since = null;
+            else if (!this.underwater_since) this.underwater_since = Date.now();
+            // a full breath is 20 and lasts 15 seconds. come up while there's still time, whatever we're doing:
+            // paths to things underwater dive and never surface, and moving away when hurt swims along under the water.
+            // the server doesn't always report air before it runs low, so time the dive as well
+            const low_air = bot.oxygenLevel != null && bot.oxygenLevel < 12;
+            if (head_in_water && (low_air || Date.now() - this.underwater_since > 7000)) {
+                say(agent, 'Coming up for air!');
+                execute(this, agent, async () => {
+                    await skills.swimToAir(bot);
+                });
+            }
+            else if (blockAbove.name === 'water') {
                 // does not call execute so does not interrupt other actions
                 if (!bot.pathfinder.goal) {
                     bot.setControlState('jump', true);
                 }
+            }
+            else if (blockAbove.boundingBox === 'block' && blockAbove.diggable && Date.now() - bot.lastDamageTime < 3000) {
+                // suffocating inside a block, e.g. gravel fell on us: moving away can't work from in there, so dig out
+                say(agent, 'I\'m stuck in a block!');
+                execute(this, agent, async () => {
+                    await skills.digOut(bot);
+                });
             }
             else if (this.fall_blocks.some(name => blockAbove.name.includes(name))) {
                 execute(this, agent, async () => {
@@ -49,38 +128,54 @@ const modes_list = [
             else if (block.name === 'lava' || block.name === 'fire' ||
                 blockAbove.name === 'lava' || blockAbove.name === 'fire') {
                 say(agent, 'I\'m on fire!');
-                // if you have a water bucket, use it
-                let waterBucket = bot.inventory.findInventoryItem('water_bucket');
-                if (waterBucket) {
-                    execute(this, agent, async () => {
-                        let success = await skills.placeBlock(bot, 'water_bucket', block.position.x, block.position.y, block.position.z);
-                        if (success) say(agent, 'Placed some water, ahhhh that\'s better!');
-                    });
-                }
-                else {
-                    execute(this, agent, async () => {
-                        let waterBucket = bot.inventory.findInventoryItem('water_bucket');
-                        if (waterBucket) {
-                            let success = await skills.placeBlock(bot, 'water_bucket', block.position.x, block.position.y, block.position.z);
-                            if (success) say(agent, 'Placed some water, ahhhh that\'s better!');
-                            return;
-                        }
-                        let nearestWater = world.getNearestBlock(bot, 'water', 20);
-                        if (nearestWater) {
-                            const pos = nearestWater.position;
-                            let success = await skills.goToPosition(bot, pos.x, pos.y, pos.z, 0.2);
-                            if (success) say(agent, 'Found some water, ahhhh that\'s better!');
-                            return;
-                        }
-                        await skills.moveAway(bot, 5);
-                    });
-                }
+                // out of the lava the shortest way first, then water on the flames if we have some (not in the nether,
+                // where water boils away at once: pouring it there used up the seconds a practice bot needed to get out
+                // of the lava). pouring water while still standing in lava is what burned a casting bot to death.
+                // and start for the edge right now, before the action we take over from has stopped
+                if (block.name === 'lava' || blockAbove.name === 'lava') skills.startLavaEscape(bot);
+                execute(this, agent, async () => {
+                    if (await skills.escapeLava(bot)) return;
+                    const nether = (bot.game.dimension || '').includes('nether');
+                    const nearestWater = nether ? null : world.getNearestBlock(bot, 'water', 20);
+                    if (nearestWater) {
+                        const pos = nearestWater.position;
+                        await skills.goToPosition(bot, pos.x, pos.y, pos.z, 0.2);
+                    }
+                });
+            }
+            else if (bot.blockAt(bot.entity.position.offset(0, -0.2, 0))?.name === 'magma_block') {
+                // a heart a second while we stand on it: a practice bot died on the nether's magma ("discovered the
+                // floor was lava"). paths keep off it, so this is standing still on one, fighting or waiting
+                say(agent, 'Standing on magma!');
+                execute(this, agent, async () => {
+                    await skills.moveAway(bot, 3);
+                });
             }
             else if (Date.now() - bot.lastDamageTime < 3000 && (bot.health < 5 || bot.lastDamageTaken >= bot.health)) {
                 say(agent, 'I\'m dying!');
                 execute(this, agent, async () => {
-                    await skills.moveAway(bot, 20);
+                    // hide from whatever is hurting us, or run from it: a random direction can lead straight into it
+                    if (world.getNearestEntityWhere(bot, entity => mc.isThreat(bot, entity), 16)) {
+                        if (!await skills.bunkerDown(bot))
+                            await skills.avoidEnemies(bot, 16);
+                    }
+                    else
+                        await skills.moveAway(bot, 20);
                 });
+            }
+            else if (bot.health <= 10 && Date.now() - bot.lastDamageTime > 4000 && Date.now() - this.last_heal > 10000 &&
+                     !world.getNearestEntityWhere(bot, entity => mc.isThreat(bot, entity), 12)) {
+                // hurt but safe for the moment: heal up with a golden apple, or top up hunger so health regenerates
+                const items = bot.inventory.items();
+                const heal_item = items.find(i => i.name === 'enchanted_golden_apple' || i.name === 'golden_apple') ||
+                    (bot.food < 18 ? items.find(i => this.good_food.includes(i.name)) : null);
+                if (heal_item) {
+                    this.last_heal = Date.now();
+                    say(agent, `Healing up with ${heal_item.name.replace(/_/g, ' ')}.`);
+                    execute(this, agent, async () => {
+                        await skills.consume(bot, heal_item.name);
+                    });
+                }
             }
             else if (agent.isIdle()) {
                 bot.clearControlStates(); // clear jump if not in danger or doing anything else
@@ -97,7 +192,7 @@ const modes_list = [
         distance: 2,
         stuck_time: 0,
         last_time: Date.now(),
-        max_stuck_time: 20,
+        max_stuck_time: 12, // seconds without moving or making digging progress during an action: 20 wasted a lot of a speedrun
         prev_dig_block: null,
         update: async function (agent) {
             if (agent.isIdle()) { 
@@ -123,10 +218,17 @@ const modes_list = [
                 say(agent, 'I\'m stuck!');
                 this.stuck_time = 0;
                 execute(this, agent, async () => {
-                    const crashTimeout = setTimeout(() => { agent.cleanKill("Got stuck and couldn't get unstuck") }, 10000);
-                    await skills.moveAway(bot, 5);
-                    clearTimeout(crashTimeout);
-                    say(agent, 'I\'m free.');
+                    // moveAway digs or towers out if it has to, and gives up on its own if it makes no progress
+                    const start = bot.entity.position.clone();
+                    try {
+                        await skills.moveAway(bot, 5);
+                    } catch (err) {
+                        console.warn('unstuck: moveAway failed:', err.message);
+                    }
+                    if (bot.entity.position.distanceTo(start) >= 2)
+                        say(agent, 'I\'m free.');
+                    else
+                        say(agent, 'I\'m still stuck.');
                 });
             }
             this.last_time = Date.now();
@@ -144,7 +246,7 @@ const modes_list = [
         on: true,
         active: false,
         update: async function (agent) {
-            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isHostile(entity), 16);
+            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isThreat(agent.bot, entity), 16);
             if (enemy && await world.isClearPath(agent.bot, enemy)) {
                 say(agent, `Aaa! A ${enemy.name.replace("_", " ")}!`);
                 execute(this, agent, async () => {
@@ -160,13 +262,77 @@ const modes_list = [
         on: true,
         active: false,
         update: async function (agent) {
-            const enemy = world.getNearestEntityWhere(agent.bot, entity => mc.isHostile(entity), 8);
-            if (enemy && await world.isClearPath(agent.bot, enemy)) {
-                say(agent, `Fighting ${enemy.name}!`);
+            const bot = agent.bot;
+            const enemy = world.getNearestEntityWhere(bot, entity => mc.isThreat(bot, entity), 8);
+            // creepers and skeletons are worth engaging even without a clear walking path, they'll come to us
+            const engage = enemy && (enemy.position.distanceTo(bot.entity.position) < 4 || await world.isClearPath(bot, enemy));
+            if (!engage) return;
+            // a fight we can't win loses everything: bare hands against a zombie at night, or a crowd at low health.
+            // run instead, and come back when we've healed or have a weapon
+            const threats = world.getNearbyEntities(bot, 10).filter(entity => mc.isThreat(bot, entity)).length;
+            const items = bot.inventory.items();
+            const weapon = Math.max(1, ...items.map(item => mc.getMeleeDamage(item.name)));
+            // a creeper's blast can kill from full health without armor, and backing off once it starts to fuse is
+            // often too late. only take one on with a shield to block the blast, or a bow to shoot it from range
+            const has_shield = items.some(item => item.name === 'shield') || bot.inventory.slots[45]?.name === 'shield';
+            const has_bow = items.some(item => item.name === 'bow') && items.some(item => item.name.includes('arrow'));
+            // archers keep hitting from range while we close in, and nothing blocks their arrows without a shield
+            const archer = ['skeleton', 'stray', 'bogged', 'pillager'].includes(enemy.name);
+            // swimming there are no crits, we move slowly, and our air runs out: get out instead of fighting there.
+            // standing in shallow water is fine though: running from a drowned at a lake's edge every time cancelled
+            // the bot's search for lava over and over
+            const deep_water = bot.entity.isInWater && skills.isWaterBlock(bot.blockAt(bot.entity.position.offset(0, 1, 0)));
+            const outmatched = bot.health <= 8 || threats >= 4 || deep_water || (weapon < 4 && (bot.health < 14 || threats >= 2)) ||
+                (enemy.name === 'creeper' && !has_shield && !has_bow) || (archer && !has_shield && bot.health < 14);
+            if (outmatched) {
+                // hurt at night there's no outrunning them all: dig in and seal the hole instead
+                const night = bot.time.timeOfDay >= 13000 && bot.time.timeOfDay < 23000;
+                const hide = bot.health <= 8 || (night && bot.health <= 12);
+                say(agent, `Too dangerous to fight the ${enemy.name}, ${hide ? 'hiding' : 'running'}!`);
+                console.log(`[fight] not fighting ${enemy.name}: health ${bot.health}, ${threats} threats, weapon ${weapon}, deep water ${deep_water}, shield ${has_shield}, night ${night}`);
                 execute(this, agent, async () => {
-                    await skills.defendSelf(agent.bot, 8);
+                    if (!hide || !await skills.bunkerDown(bot))
+                        await skills.avoidEnemies(bot, 16);
                 });
             }
+            else {
+                say(agent, `Fighting ${enemy.name}!`);
+                execute(this, agent, async () => {
+                    await skills.defendSelf(bot, 8);
+                });
+            }
+        }
+    },
+    {
+        name: 'night_shelter',
+        description: 'At nightfall in the overworld, get off the surface: dig into a sealed hole and carry on underground until morning. Interrupts all actions.',
+        interrupts: ['all'],
+        on: true,
+        active: false,
+        last_try: 0,
+        update: async function (agent) {
+            // most deaths in a run came at night on the surface (skeletons, spiders, creepers, zombies), and the model
+            // often ignored the hint to go underground. so do it for it, whatever it was doing
+            const bot = agent.bot;
+            if ((bot.game.dimension || '').replace('minecraft:', '') !== 'overworld') return;
+            const t = bot.time.timeOfDay;
+            if (t < 12800 || t >= 23000) return;
+            if (Date.now() - this.last_try < 30000) return;
+            if (bot.entity.isInWater) return; // self preservation gets us out of water first
+            // not in the middle of a scripted stretch of a speedrun (on easy, with a sword): the nether stage goes up
+            // for water, and a run went up, got dug in, went up again and got dug in again, four times over
+            if (agent.actions.currentActionLabel?.startsWith('action:speedrun')) return;
+            // already under cover? (the sky light read at our own head was 0 out in the open, so this never dug in)
+            if (!world.isOpenToSky(bot, bot.entity.position)) return;
+            this.last_try = Date.now();
+            say(agent, 'Night is falling, digging in until morning.');
+            execute(this, agent, async () => {
+                if (await skills.bunkerDown(bot)) {
+                    skills.log(bot, `It's night: you're dug in underground. Stay below ground until morning and mine what you need down here (iron_ore, coal_ore, gravel, lava), don't go back up to the surface.`);
+                    return;
+                }
+                await skills.digStairsDown(bot, 6);
+            });
         }
     },
     {
@@ -196,7 +362,8 @@ const modes_list = [
         prev_item: null,
         noticed_at: -1,
         update: async function (agent) {
-            let item = world.getNearestEntityWhere(agent.bot, entity => entity.name === 'item', 8);
+            let item = world.getNearestEntityWhere(agent.bot, entity => entity.name === 'item' &&
+                !mc.JUNK_ITEMS.includes(entity.getDroppedItem?.()?.name), 8);
             let empty_inv_slots = agent.bot.inventory.emptySlotCount();
             if (item && item !== this.prev_item && await world.isClearPath(agent.bot, item) && empty_inv_slots > 1) {
                 if (this.noticed_at === -1) {
@@ -304,7 +471,9 @@ const modes_list = [
 ];
 
 async function execute(mode, agent, func, timeout=-1) {
-    if (agent.self_prompter.isActive())
+    // idle-time modes (picking up items, hunting) run while the model is thinking, and stopping the loop for them
+    // threw away the command it was about to give. only the modes that interrupt actions take over from it
+    if (mode.interrupts.includes('all') && agent.self_prompter.isActive())
         agent.self_prompter.stopLoop();
     let interrupted_action = agent.actions.currentActionLabel;
     mode.active = true;

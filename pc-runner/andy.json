@@ -1,0 +1,16 @@
+{
+    "name": "andy",
+    "model": {
+        "api": "ollama",
+        "model": "qwen3.5:4b",
+        "url": "http://127.0.0.1:11434",
+        "params": {
+            "think": false,
+            "keep_alive": "2h",
+            "options": {
+                "num_ctx": 16384
+            }
+        }
+    },
+    "embedding": "none"
+}

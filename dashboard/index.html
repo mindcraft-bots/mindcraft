@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Andy • Mindcraft Live</title>
+<style>
+:root{
+  --bg:#07100b;--panel:#0d1811;--panel2:#101f16;--line:#1d3525;
+  --text:#edf7ef;--muted:#8da494;--green:#59e391;--green2:#24b968;
+  --lime:#a8f05e;--gold:#ffd166;--red:#ff6b6b;--blue:#6cc6ff;
+  --shadow:0 18px 50px rgba(0,0,0,.28)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+ radial-gradient(circle at 15% -10%,rgba(67,185,105,.16),transparent 32rem),
+ radial-gradient(circle at 90% 10%,rgba(86,134,255,.10),transparent 26rem),
+ var(--bg);color:var(--text);font-family:Inter,Segoe UI,system-ui,sans-serif}
+body{padding:28px}
+.shell{max-width:1320px;margin:auto}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:24px}
+.brand small{display:block;text-transform:uppercase;letter-spacing:.22em;color:var(--green);font-weight:800;font-size:11px;margin-bottom:7px}
+.brand h1{font-size:clamp(28px,4vw,48px);line-height:1;margin:0;letter-spacing:-.04em}
+.brand p{color:var(--muted);margin:9px 0 0}
+.live{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:rgba(13,24,17,.8);padding:10px 14px;border-radius:999px;color:var(--muted);font-size:13px;font-weight:700}
+.dot{width:9px;height:9px;border-radius:50%;background:#66736b;box-shadow:0 0 0 0 rgba(89,227,145,.45)}
+.live.on .dot{background:var(--green);animation:pulse 1.7s infinite}.live.on{color:var(--green)}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(89,227,145,0)}100%{box-shadow:0 0 0 0 rgba(89,227,145,0)}}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:linear-gradient(180deg,rgba(17,32,23,.96),rgba(12,23,16,.96));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.metrics{grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;overflow:hidden}
+.metric{padding:22px 24px;background:rgba(255,255,255,.012);min-width:0}
+.metric+.metric{border-left:1px solid var(--line)}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:800}
+.big{margin-top:7px;font-size:clamp(24px,3vw,38px);font-weight:850;letter-spacing:-.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.big.green{color:var(--green)}.big.blue{color:var(--blue)}.big.gold{color:var(--gold)}
+.status{grid-column:span 5;padding:22px}
+.progress{grid-column:span 7;padding:22px}
+.viewer{grid-column:span 12;padding:18px;overflow:hidden}
+.viewer-shell{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#020704;aspect-ratio:16/9;min-height:380px}
+.viewer-shell iframe{width:100%;height:100%;border:0;display:block;background:#020704}
+.viewer-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.viewer-title{display:flex;align-items:center;gap:10px}
+.viewer-title h2{font-size:16px;margin:0}.viewer-title span{font-size:12px;color:var(--green);font-weight:800}
+.viewer-actions{display:flex;gap:8px}
+.viewer-btn{appearance:none;border:1px solid var(--line);background:#132219;color:var(--text);padding:8px 12px;border-radius:10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.viewer-btn:hover{border-color:#31563d;background:#172a1e}
+.viewer-note{position:absolute;left:12px;bottom:12px;padding:7px 10px;border-radius:999px;background:rgba(2,7,4,.74);backdrop-filter:blur(8px);font-size:11px;color:#b7c9bc;border:1px solid rgba(255,255,255,.08);pointer-events:none}
+.activity{grid-column:span 8;padding:22px}
+.side{grid-column:span 4;display:grid;gap:16px}
+.side .card{padding:20px}
+.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card-title h2{font-size:16px;margin:0;letter-spacing:-.01em}
+.card-title span{font-size:12px;color:var(--muted)}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{padding:15px;border-radius:14px;border:1px solid var(--line);background:rgba(4,10,6,.28)}
+.stat .value{margin-top:6px;font-size:20px;font-weight:800;word-break:break-word}
+.stat.wide{grid-column:1/-1}
+.barrow{margin-top:16px}.barhead{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:7px}
+.track{height:11px;border-radius:999px;background:#07100b;border:1px solid #1a2e21;overflow:hidden}
+.fill{height:100%;width:0%;border-radius:inherit;transition:width .35s ease;background:linear-gradient(90deg,var(--green2),var(--green))}
+.fill.food{background:linear-gradient(90deg,#d7aa35,var(--gold))}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stage{position:relative;padding:14px 14px 13px 42px;min-height:66px;border:1px solid var(--line);border-radius:14px;background:rgba(4,10,6,.25);transition:.2s ease}
+.stage .badge{position:absolute;left:13px;top:15px;width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:#17251b;color:#627266;font-size:12px;font-weight:900;border:1px solid #27402e}
+.stage .name{font-weight:800;font-size:13px}.stage .time{font-size:12px;color:var(--muted);margin-top:4px}
+.stage.done{border-color:rgba(89,227,145,.35);background:rgba(44,152,83,.08)}
+.stage.done .badge{background:var(--green);border-color:var(--green);color:#04210e}
+.stage.done .time{color:var(--green)}
+.stage.current{box-shadow:inset 0 0 0 1px rgba(255,209,102,.45);border-color:rgba(255,209,102,.38)}
+.events{display:flex;flex-direction:column;gap:8px}
+.event{display:grid;grid-template-columns:8px 1fr;gap:12px;align-items:start;padding:11px 12px;border-radius:12px;background:rgba(3,9,5,.25);border:1px solid transparent}
+.event .mark{width:8px;height:8px;border-radius:50%;margin-top:6px;background:#6c7b70}
+.event.success .mark,.event.work .mark{background:var(--green)}
+.event.best{border-color:rgba(255,209,102,.28);background:rgba(255,209,102,.055)}.event.best .mark{background:var(--gold)}
+.event.danger{border-color:rgba(255,107,107,.20);background:rgba(255,107,107,.045)}.event.danger .mark{background:var(--red)}
+.event.action .mark{background:var(--blue)}
+.event .txt{font-size:13px;line-height:1.5}.empty{color:var(--muted);padding:20px 0}
+.split{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.split:last-child{border-bottom:0}.split span{color:var(--muted);font-size:13px}.split b{font-size:16px}
+.result{font-size:13px;line-height:1.55;color:#c9d7cd}
+.footer{display:flex;justify-content:space-between;gap:15px;color:#617266;font-size:11px;margin-top:16px;padding:0 4px}
+.flash{animation:flash .45s ease}@keyframes flash{0%{filter:brightness(1.5)}100%{filter:brightness(1)}}
+.offline-overlay{display:none;margin-bottom:16px;padding:13px 16px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);color:#ff9d9d;border-radius:14px}
+.offline-overlay.show{display:block}
+@media(max-width:900px){body{padding:16px}.metrics{grid-template-columns:1fr 1fr}.metric:nth-child(3){border-left:0;border-top:1px solid var(--line)}.metric:nth-child(4){border-top:1px solid var(--line)}.status,.progress,.activity,.side{grid-column:span 12}.stages{grid-template-columns:1fr 1fr}.topbar{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){.metrics{grid-template-columns:1fr}.metric+.metric{border-left:0;border-top:1px solid var(--line)}.stages{grid-template-columns:1fr}.status-grid{grid-template-columns:1fr}.stat.wide{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <small>Mindcraft speedrun telemetry</small>
+      <h1>Andy Live</h1>
+      <p>Furrywall • live progress without page reloads</p>
+    </div>
+    <div id="liveBadge" class="live"><span class="dot"></span><span id="liveText">Connecting…</span></div>
+  </div>
+
+  <div id="offline" class="offline-overlay">Waiting for the Mindcraft runner…</div>
+
+  <main class="grid">
+    <section class="card metrics">
+      <div class="metric"><div class="kicker">Current run</div><div id="run" class="big green">—</div></div>
+      <div class="metric"><div class="kicker">Elapsed</div><div id="elapsed" class="big">00:00</div></div>
+      <div class="metric"><div class="kicker">Dimension</div><div id="dimension" class="big blue">—</div></div>
+      <div class="metric"><div class="kicker">Position</div><div id="position" class="big gold">—</div></div>
+    </section>
+
+    <section class="card viewer">
+      <div class="viewer-top">
+        <div class="viewer-title"><h2>Andy live view</h2><span>PRISMARINE • LIVE</span></div>
+        <div class="viewer-actions">
+          <button class="viewer-btn" onclick="reconnectViewer()">Reconnect</button>
+          <button class="viewer-btn" onclick="fullscreenViewer()">Fullscreen</button>
+        </div>
+      </div>
+      <div id="viewerShell" class="viewer-shell">
+        <iframe id="viewerFrame" src="http://127.0.0.1:3000" allow="fullscreen" title="Andy Prismarine Viewer"></iframe>
+        <div class="viewer-note">Live world view • controls stay inside this panel</div>
+      </div>
+    </section>
+
+    <section class="card status">
+      <div class="card-title"><h2>Current state</h2><span id="activityState">LIVE</span></div>
+      <div class="status-grid">
+        <div class="stat wide"><div class="kicker">Action</div><div id="action" class="value">—</div></div>
+        <div class="stat"><div class="kicker">Path</div><div id="path" class="value">—</div></div>
+        <div class="stat"><div class="kicker">Mining</div><div id="digging" class="value">—</div></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>Health</span><span id="hpText">— / 20</span></div>
+        <div class="track"><div id="hpBar" class="fill"></div></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>Food</span><span id="foodText">— / 20</span></div>
+        <div class="track"><div id="foodBar" class="fill food"></div></div>
+      </div>
+    </section>
+
+    <section class="card progress">
+      <div class="card-title"><h2>Speedrun progress</h2><span id="progressCount">0 / 9</span></div>
+      <div id="stages" class="stages"></div>
+    </section>
+
+    <section class="card activity">
+      <div class="card-title"><h2>Recent activity</h2><span>updates every second</span></div>
+      <div id="events" class="events"><div class="empty">Waiting for activity…</div></div>
+    </section>
+
+    <aside class="side">
+      <section class="card">
+        <div class="card-title"><h2>Best splits</h2><span>today / runner log</span></div>
+        <div class="split"><span>Stone pickaxe</span><b id="bestStone">—</b></div>
+        <div class="split"><span>Iron pickaxe</span><b id="bestIron">—</b></div>
+        <div class="split"><span>Portal kit</span><b id="bestKit">—</b></div>
+      </section>
+      <section class="card">
+        <div class="card-title"><h2>Previous result</h2><span>latest reset</span></div>
+        <div id="lastResult" class="result">—</div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="footer">
+    <span id="file">No run loaded</span>
+    <span>Last data: <span id="updated">—</span></span>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let lastValues = {};
+let viewerRun = null;
+
+function reconnectViewer() {
+  const frame = $('viewerFrame');
+  frame.src = 'http://127.0.0.1:3000/?_=' + Date.now();
+}
+function fullscreenViewer() {
+  const shell = $('viewerShell');
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (shell.requestFullscreen) shell.requestFullscreen();
+}
+
+function pretty(v) {
+  if (v === null || v === undefined || v === '' || v === 'none') return '—';
+  return String(v).replaceAll('_',' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function setText(id, value) {
+  const el = $(id);
+  const next = String(value ?? '—');
+  if (lastValues[id] !== undefined && lastValues[id] !== next) {
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+  el.textContent = next;
+  lastValues[id] = next;
+}
+function renderMilestones(items) {
+  const done = items.filter(x => x.done).length;
+  setText('progressCount', done + ' / ' + items.length);
+  const current = items.findIndex(x => !x.done);
+  $('stages').innerHTML = items.map((m,i) => `
+    <div class="stage ${m.done?'done':''} ${i===current?'current':''}">
+      <div class="badge">${m.done?'✓':i+1}</div>
+      <div class="name">${m.label}</div>
+      <div class="time">${m.done ? (m.value || 'Complete') : (i===current ? 'In progress' : 'Waiting')}</div>
+    </div>`).join('');
+}
+function renderEvents(events) {
+  if (!events || !events.length) {
+    $('events').innerHTML = '<div class="empty">No major events yet.</div>';
+    return;
+  }
+  $('events').innerHTML = events.map(e => `
+    <div class="event ${e.type || 'info'}">
+      <div class="mark"></div><div class="txt">${escapeHtml(e.text)}</div>
+    </div>`).join('');
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function pct(v,max=20){ return Math.max(0,Math.min(100,((Number(v)||0)/max)*100)); }
+
+async function update() {
+  try {
+    const res = await fetch('/api/status?_=' + Date.now(), {cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const d = await res.json();
+
+    if (!d.online) {
+      $('offline').classList.add('show');
+      $('liveBadge').classList.remove('on');
+      setText('liveText','Waiting');
+      return;
+    }
+
+    $('offline').classList.remove('show');
+    $('liveBadge').classList.add('on');
+    setText('liveText','LIVE • 1s');
+
+    if (viewerRun === null) viewerRun = d.run;
+    else if (viewerRun !== d.run) {
+      viewerRun = d.run;
+      reconnectViewer();
+    }
+
+    setText('run','#' + d.run);
+    setText('elapsed',d.elapsed);
+    setText('dimension',pretty(d.status.dimension));
+    setText('position',d.status.position);
+    setText('action',pretty(d.status.action));
+    setText('path',pretty(d.status.path));
+    setText('digging',pretty(d.status.digging));
+
+    setText('hpText',(d.status.hp ?? '—') + ' / 20');
+    setText('foodText',(d.status.food ?? '—') + ' / 20');
+    $('hpBar').style.width = pct(d.status.hp) + '%';
+    $('foodBar').style.width = pct(d.status.food) + '%';
+
+    renderMilestones(d.milestones || []);
+    renderEvents(d.events || []);
+
+    setText('bestStone',d.best?.stone || '—');
+    setText('bestIron',d.best?.iron || '—');
+    setText('bestKit',d.best?.kit || '—');
+    setText('lastResult',d.lastResult || '—');
+    setText('file',d.file || '—');
+    setText('updated',new Date(d.updatedAt).toLocaleTimeString());
+
+    const dim = String(d.status.dimension || '').toLowerCase();
+    $('dimension').style.color = dim.includes('nether') ? 'var(--red)' : dim.includes('end') ? '#d49cff' : 'var(--blue)';
+  } catch (err) {
+    $('liveBadge').classList.remove('on');
+    setText('liveText','Disconnected');
+  }
+}
+update();
+setInterval(update,1000);
+</script>
+</body>
+</html>

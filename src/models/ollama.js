@@ -30,7 +30,10 @@ export class Ollama {
                     ...(this.params || {})
                 });
                 if (apiResponse) {
-                    res = apiResponse['message']['content'];
+                    res = apiResponse['message']['content'] || '';
+                    // with thinking enabled, ollama returns the reasoning separately. if that's all there is, use it
+                    if (!res.trim() && apiResponse['message']['thinking'])
+                        res = apiResponse['message']['thinking'];
                 } else {
                     res = 'No response data.';
                 }
@@ -54,8 +57,10 @@ export class Ollama {
             if (hasCloseTag && !hasOpenTag) {
                 res = '<think>' + res;
             }
-            if (hasOpenTag && hasCloseTag) {
-                res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+            if (hasCloseTag) {
+                const stripped = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+                // some models put their whole answer inside the think block. answering with that beats answering with nothing
+                res = stripped || res.replace(/<\/?think>/g, '').trim();
             }
             finalRes = res;
             break;

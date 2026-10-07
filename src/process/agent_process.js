@@ -14,7 +14,11 @@ export class AgentProcess {
         this.count_id = count_id;
         this.running = true;
 
-        let args = [init_agent_path, this.name];
+        // more heap than node's ~4 GB default, as headroom for big path searches. on a small machine that also runs
+        // the Minecraft server, cap it lower (MINDCRAFT_MAX_HEAP_MB): one runaway grew the bot to 6.5 GB on a 7.6 GB
+        // box, swapped the server out and crashed it. capped, only the bot dies, and it restarts
+        const heap_mb = parseInt(process.env.MINDCRAFT_MAX_HEAP_MB) || 8192;
+        let args = [`--max-old-space-size=${heap_mb}`, init_agent_path, this.name];
         args.push('-n', this.name);
         args.push('-c', count_id);
         if (load_memory)
@@ -34,17 +38,28 @@ export class AgentProcess {
             this.running = false;
             logoutAgent(this.name);
             
-            if (code > 1) {
+            // small codes above 1 are the agent deliberately ending the task. crashes exit with 128 and up (134 when
+            // node runs out of memory) and a forced kill on Windows with 4294967295: restart those like code 1
+            if (code > 1 && code < 128) {
                 console.log(`Ending task`);
                 process.exit(code);
             }
 
             if (code !== 0 && signal !== 'SIGINT') {
-                // agent must run for at least 10 seconds before restarting
+                // dying within 10 seconds is usually the server being down (it crashed at 3:35 one night and the bot
+                // gave up after one try, leaving the run stalled for 3 hours). keep trying every 30 seconds, and after
+                // half an hour end the process so a runner can start afresh
                 if (Date.now() - last_restart < 10000) {
-                    console.error(`Agent process exited too quickly and will not be restarted.`);
+                    this.quick_fails = (this.quick_fails || 0) + 1;
+                    if (this.quick_fails > 60) {
+                        console.error(`Agent process keeps exiting straight away, giving up.`);
+                        process.exit(1);
+                    }
+                    console.error(`Agent process exited too quickly (${this.quick_fails} in a row), trying again in 30 seconds.`);
+                    setTimeout(() => this.start(true, 'Agent process restarted.', count_id, this.port), 30000);
                     return;
                 }
+                this.quick_fails = 0;
                 console.log('Restarting agent...');
                 this.start(true, 'Agent process restarted.', count_id, this.port);
                 last_restart = Date.now();

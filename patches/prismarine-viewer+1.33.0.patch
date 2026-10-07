@@ -1,3 +1,28 @@
+diff --git a/node_modules/prismarine-viewer/lib/mineflayer.js b/node_modules/prismarine-viewer/lib/mineflayer.js
+index 06634bf..88efa8a 100644
+--- a/node_modules/prismarine-viewer/lib/mineflayer.js
++++ b/node_modules/prismarine-viewer/lib/mineflayer.js
+@@ -1,7 +1,7 @@
+ const EventEmitter = require('events')
+ const { WorldView } = require('../viewer')
+ 
+-module.exports = (bot, { viewDistance = 6, firstPerson = false, port = 3000, prefix = '' }) => {
++module.exports = (bot, { viewDistance = 6, firstPerson = false, port = 3000, prefix = '', host = undefined }) => {
+   const express = require('express')
+ 
+   const app = express()
+@@ -78,8 +78,9 @@ module.exports = (bot, { viewDistance = 6, firstPerson = false, port = 3000, pre
+     })
+   })
+ 
+-  http.listen(port, () => {
+-    console.log(`Prismarine viewer web server running on *:${port}`)
++  // host lets it listen on localhost only, behind a reverse proxy
++  http.listen(port, host, () => {
++    console.log(`Prismarine viewer web server running on ${host || '*'}:${port}${prefix}`)
+   })
+ 
+   bot.viewer.close = () => {
 diff --git a/node_modules/prismarine-viewer/viewer/lib/entity/Entity.js b/node_modules/prismarine-viewer/viewer/lib/entity/Entity.js
 index 8945452..dab25be 100644
 --- a/node_modules/prismarine-viewer/viewer/lib/entity/Entity.js

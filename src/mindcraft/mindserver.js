@@ -210,13 +210,17 @@ export function createMindServer(host_public = false, port = 8080) {
             const agent = agent_connections[agentName];
             if (agent) {
                 agent.setSettings(settings);
-                agent.socket.emit('restart-agent');
+                agent.socket?.emit('restart-agent');
             }
         });
 
         socket.on('restart-agent', (agentName) => {
             console.log(`Restarting agent: ${agentName}`);
-            agent_connections[agentName].socket.emit('restart-agent');
+            // between the agent process exiting and its replacement connecting there's no socket, and emitting on
+            // it crashed the whole MindServer. it's already restarting then
+            const socket = agent_connections[agentName]?.socket;
+            if (socket) socket.emit('restart-agent');
+            else console.log(`${agentName} isn't connected, it may already be restarting.`);
         });
 
         socket.on('stop-agent', (agentName) => {

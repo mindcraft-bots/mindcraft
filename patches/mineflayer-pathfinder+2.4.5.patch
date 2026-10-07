@@ -1,5 +1,5 @@
 diff --git a/node_modules/mineflayer-pathfinder/index.js b/node_modules/mineflayer-pathfinder/index.js
-index b38bd30..2ca8205 100644
+index b38bd30..776cc14 100644
 --- a/node_modules/mineflayer-pathfinder/index.js
 +++ b/node_modules/mineflayer-pathfinder/index.js
 @@ -14,6 +14,7 @@ const interactableBlocks = require('./lib/interactable.json')
@@ -21,7 +21,19 @@ index b38bd30..2ca8205 100644
      const generator = bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal, { timeout })
      const { value: { result, astarContext: context } } = generator.next()
      astarContext = context
-@@ -170,6 +175,16 @@ function inject (bot) {
+@@ -80,8 +85,9 @@ function inject (bot) {
+       const p = startPos.floored()
+       const dy = startPos.y - p.y
+       const b = bot.blockAt(p) // The block we are standing in
+-      // Offset the floored bot position by one if we are standing on a block that has not the full height but is solid
+-      const offset = (b && dy > 0.001 && bot.entity.onGround && !stateMovements.emptyBlocks.has(b.type)) ? 1 : 0
++      // Offset the floored bot position by one if we are standing on a block that has not the full height but is solid,
++      // or if we are mid jump above a full block (e.g. one we just placed under ourselves while towering up)
++      const offset = (b && dy > 0.001 && (bot.entity.onGround || b.boundingBox === 'block') && !stateMovements.emptyBlocks.has(b.type)) ? 1 : 0
+       start = new Move(p.x, p.y + offset, p.z, movements.countScaffoldingItems(), 0)
+     }
+     if (movements.allowEntityDetection) {
+@@ -170,6 +176,16 @@ function inject (bot) {
        const curPoint = path[i]
        if (curPoint.toBreak.length > 0 || curPoint.toPlace.length > 0) break
        const b = bot.blockAt(new Vec3(curPoint.x, curPoint.y, curPoint.z))
@@ -38,7 +50,7 @@ index b38bd30..2ca8205 100644
        if (b && (b.type === waterType || ((b.type === ladderId || b.type === vineId) && i + 1 < path.length && path[i + 1].y < curPoint.y))) {
          curPoint.x = Math.floor(curPoint.x) + 0.5
          curPoint.y = Math.floor(curPoint.y)
-@@ -524,6 +539,9 @@ function inject (bot) {
+@@ -524,6 +540,9 @@ function inject (bot) {
          bot.activateBlock(bot.blockAt(new Vec3(placingBlock.x, placingBlock.y, placingBlock.z))).then(() => {
            lockUseBlock.release()
            placingBlock = nextPoint.toPlace.shift()
@@ -48,15 +60,19 @@ index b38bd30..2ca8205 100644
          }, err => {
            console.error(err)
            lockUseBlock.release()
-@@ -550,6 +568,7 @@ function inject (bot) {
+@@ -550,6 +569,11 @@ function inject (bot) {
              lockEquipItem.release()
              const refBlock = bot.blockAt(new Vec3(placingBlock.x, placingBlock.y, placingBlock.z), false)
              if (!lockPlaceBlock.tryAcquire()) return
-+            bot.world.setBlockStateId(refBlock.position.offset(placingBlock.dx, placingBlock.dy, placingBlock.dz), 1)
++            // predict the block so pathing can go on, but undo it if the placement fails: a leftover ghost block the
++            // bot stands on looks like flying to the server, which kicks it
++            const dest = refBlock.position.offset(placingBlock.dx, placingBlock.dy, placingBlock.dz)
++            const prevStateId = bot.blockAt(dest, false)?.stateId ?? 0
++            bot.world.setBlockStateId(dest, 1)
              if (interactableBlocks.includes(refBlock.name)) {
                bot.setControlState('sneak', true)
              }
-@@ -557,6 +576,7 @@ function inject (bot) {
+@@ -557,9 +581,11 @@ function inject (bot) {
                .then(function () {
                  // Dont release Sneak if the block placement was not successful
                  bot.setControlState('sneak', false)
@@ -64,7 +80,11 @@ index b38bd30..2ca8205 100644
                  if (bot.pathfinder.LOSWhenPlacingBlocks && placingBlock.returnPos) returningPos = placingBlock.returnPos.clone()
                })
                .catch(_ignoreError => {
-@@ -576,7 +596,7 @@ function inject (bot) {
++                if (bot.blockAt(dest, false)?.stateId === 1) bot.world.setBlockStateId(dest, prevStateId)
+                 resetPath('place_error')
+               })
+               .then(() => {
+@@ -576,7 +602,7 @@ function inject (bot) {
      let dx = nextPoint.x - p.x
      const dy = nextPoint.y - p.y
      let dz = nextPoint.z - p.z
@@ -73,7 +93,7 @@ index b38bd30..2ca8205 100644
        // arrived at next point
        lastNodeTime = performance.now()
        if (stopPathing) {
-@@ -611,6 +631,9 @@ function inject (bot) {
+@@ -611,6 +637,9 @@ function inject (bot) {
      if (bot.entity.isInWater) {
        bot.setControlState('jump', true)
        bot.setControlState('sprint', false)
@@ -84,7 +104,7 @@ index b38bd30..2ca8205 100644
        bot.setControlState('jump', false)
        bot.setControlState('sprint', true)
 diff --git a/node_modules/mineflayer-pathfinder/lib/movements.js b/node_modules/mineflayer-pathfinder/lib/movements.js
-index a7e3505..84a0841 100644
+index a7e3505..9e2bd1a 100644
 --- a/node_modules/mineflayer-pathfinder/lib/movements.js
 +++ b/node_modules/mineflayer-pathfinder/lib/movements.js
 @@ -50,7 +50,12 @@ class Movements {
@@ -180,7 +200,25 @@ index a7e3505..84a0841 100644
        toPlace.push({ x: node.x + dir.x, y: node.y, z: node.z + dir.z, dx: 0, dy: 0, dz: 0, useOne: true }) // Indicate that a block should be used on this block not placed
      } else {
        cost += this.safeOrBreak(blockC, toBreak)
-@@ -554,6 +584,54 @@ class Movements {
+@@ -427,13 +457,10 @@ class Movements {
+     cost2 += this.safeOrBreak(blockC2, toBreak2)
+     if (blockD2.height - block0.height > 1.2) cost2 += this.safeOrBreak(blockD2, toBreak2)
+ 
+-    if (cost1 < cost2) {
+-      cost += cost1
+-      toBreak.push(...toBreak1)
+-    } else {
+-      cost += cost2
+-      toBreak.push(...toBreak2)
+-    }
++    // the bot's hitbox cuts across both side blocks when moving diagonally, so both have to be clear.
++    // allowing it with only one side open got the bot stuck on the corner of the other one
++    cost += cost1 + cost2
++    toBreak.push(...toBreak1, ...toBreak2)
+     if (cost > 100) return
+ 
+     cost += this.safeOrBreak(this.getBlock(node, dir.x, y, dir.z), toBreak)
+@@ -554,6 +581,54 @@ class Movements {
      neighbors.push(new Move(node.x, node.y + 1, node.z, node.remainingBlocks - toPlace.length, cost, toBreak, toPlace))
    }
  
@@ -235,7 +273,7 @@ index a7e3505..84a0841 100644
    // Jump up, down or forward over a 1 block gap
    getMoveParkourForward (node, dir, neighbors) {
      const block0 = this.getBlock(node, 0, -1, 0)
-@@ -656,8 +734,27 @@ class Movements {
+@@ -656,8 +731,27 @@ class Movements {
      this.getMoveDown(node, neighbors)
      this.getMoveUp(node, neighbors)
  

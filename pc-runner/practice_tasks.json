@@ -1,0 +1,52 @@
+{
+    "practice_nether": {
+        "goal": "Speedrun practice from the portal kit: you start with an iron pickaxe, sword, shield, chestplate, golden boots, 2 buckets, flint_and_steel and cobblestone. Get into the nether (!speedrunNether), then get blaze rods (!collectBlazeRods). Every command result ends with your next step, so go straight on to it.",
+        "initial_inventory": {
+            "0": {
+                "iron_pickaxe": 1,
+                "iron_sword": 1,
+                "shield": 1,
+                "iron_chestplate": 1,
+                "golden_boots": 1,
+                "bucket": 2,
+                "flint_and_steel": 1,
+                "cobblestone": 64,
+                "coal": 16,
+                "cooked_beef": 16,
+                "oak_planks": 16,
+                "crafting_table": 1,
+                "furnace": 1
+            }
+        },
+        "agent_count": 1,
+        "type": "beat_game",
+        "timeout": 3600
+    },
+    "practice_opening": {
+        "goal": "Speedrun practice from nothing to the nether: get wood, stone tools, an iron pickaxe and the portal kit, then get into the nether. Every command result ends with your next step, so go straight on to it.",
+        "initial_inventory": {
+            "0": {}
+        },
+        "agent_count": 1,
+        "type": "beat_game",
+        "timeout": 1800
+    },
+    "practice_kit": {
+        "goal": "Speedrun practice from the iron pickaxe: get the gear and portal kit (!speedrunKit), then into the nether (!speedrunNether). Every command result ends with your next step, so go straight on to it.",
+        "initial_inventory": {
+            "0": {
+                "iron_pickaxe": 1,
+                "stone_sword": 1,
+                "furnace": 1,
+                "oak_planks": 10,
+                "stick": 4,
+                "coal": 4,
+                "cobblestone": 24,
+                "beef": 2
+            }
+        },
+        "agent_count": 1,
+        "type": "beat_game",
+        "timeout": 1800
+    }
+}

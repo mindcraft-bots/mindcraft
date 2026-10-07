@@ -93,7 +93,7 @@ export class Hyperbolic {
                 completionContent = '<think>' + completionContent;
             }
 
-            if (hasOpenTag && hasCloseTag) {
+            if (hasCloseTag) {
                 completionContent = completionContent.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
             }
 

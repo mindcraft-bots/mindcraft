@@ -1,0 +1,35 @@
+diff --git a/node_modules/mineflayer-collectblock/lib/CollectBlock.js b/node_modules/mineflayer-collectblock/lib/CollectBlock.js
+index 445df38..a5b75f2 100644
+--- a/node_modules/mineflayer-collectblock/lib/CollectBlock.js
++++ b/node_modules/mineflayer-collectblock/lib/CollectBlock.js
+@@ -39,8 +39,15 @@ function collectAll(bot, options) {
+                         break;
+                     const tempEvents = new TemporarySubscriber_1.TemporarySubscriber(bot);
+                     const waitForPickup = new Promise(resolve => {
++                        // a drop we can't actually touch (caught in leaves, on a ledge) never goes, and waiting for it
++                        // forever hung every collect after it too, since each one first waits for the last to finish
++                        const timer = setTimeout(() => {
++                            tempEvents.cleanup();
++                            resolve();
++                        }, 8000);
+                         tempEvents.subscribeTo('entityGone', (entity) => {
+                             if (entity === closest) {
++                                clearTimeout(timer);
+                                 tempEvents.cleanup();
+                                 resolve();
+                             }
+@@ -247,7 +254,13 @@ class CollectBlock {
+                 // @ts-expect-error
+                 this.bot.once('collectBlock_finished', cb);
+             }
+-            yield (0, events_1.once)(this.bot, 'collectBlock_finished');
++            // don't wait forever on a task that's stuck: give up on it and start clean
++            const finished = yield Promise.race([
++                (0, events_1.once)(this.bot, 'collectBlock_finished').then(() => true),
++                new Promise(resolve => setTimeout(() => resolve(false), 3000))
++            ]);
++            if (!finished)
++                this.targets.clear();
+         });
+     }
+ }

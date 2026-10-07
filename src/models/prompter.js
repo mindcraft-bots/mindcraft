@@ -84,7 +84,12 @@ export class Prompter {
                 embedding_model_profile = null;
             }
         }
-        if (embedding_model_profile) {
+        if (this.profile.embedding === 'none') {
+            // pick examples by word overlap, without asking for embeddings: with no embedding model installed every
+            // start printed a screenful of failed requests before falling back to this anyway
+            this.embedding_model = null;
+        }
+        else if (embedding_model_profile) {
             this.embedding_model = createModel(embedding_model_profile);
         }
         else {

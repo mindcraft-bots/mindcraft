@@ -1,4 +1,4 @@
-import { exec, spawn } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
@@ -83,20 +83,25 @@ async function processQueue() {
     }
 
     if (model === 'system') {
-        // system TTS
-        const cmd = isWin
-            ? `powershell -NoProfile -Command "Add-Type -AssemblyName System.Speech; \
-            $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate=2; \
-            $s.Speak('${txt.replace(/'/g,"''")}'); $s.Dispose()"`
-            : isMac
-            ? `say "${txt.replace(/"/g,'\\"')}"`
-            : `espeak "${txt.replace(/"/g,'\\"')}"`;
-
-        exec(cmd, err => {
+        // system TTS. the text never goes through a shell: it's passed as an argument (or an environment
+        // variable for powershell), so quotes, newlines and things like $(...) in chat can't break or inject commands
+        const spoken = txt.replace(/\s+/g, ' ').trim();
+        const done = err => {
             if (err) console.error('TTS error', err);
             isSpeaking = false;
             processQueue();
-        });
+        };
+        if (isWin) {
+            const script = 'Add-Type -AssemblyName System.Speech; ' +
+                '$s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate=2; ' +
+                '$s.Speak($env:MINDCRAFT_TTS_TEXT); $s.Dispose()';
+            execFile('powershell', ['-NoProfile', '-Command', script],
+                { env: { ...process.env, MINDCRAFT_TTS_TEXT: spoken } }, done);
+        }
+        else {
+            // a leading space keeps text that starts with '-' from being read as an option
+            execFile(isMac ? 'say' : 'espeak', [spoken.startsWith('-') ? ' ' + spoken : spoken], done);
+        }
 
     } 
     else {

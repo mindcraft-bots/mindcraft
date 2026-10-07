@@ -1,8 +1,9 @@
 import { readFileSync , writeFileSync, existsSync} from 'fs';
 import { executeCommand } from '../commands/index.js';
-import { getPosition } from '../library/world.js';
 import { ConstructionTaskValidator, Blueprint } from './construction_tasks.js';
 import { CookingTaskInitiator } from './cooking_tasks.js';
+import { BeatGameTaskValidator } from './beat_game_tasks.js';
+import * as world from '../library/world.js';
 
 const PROGRESS_FILE = './hells_kitchen_progress.json';
 
@@ -232,9 +233,11 @@ class CookingCraftingTaskValidator {
 }
 
 export class Task {
-    constructor(agent, task_data, taskStartTime = null) {
+    constructor(agent, task_data, taskStartTime = null, taskSplits = []) {
         this.agent = agent;
         this.data = null;
+        this.created = Date.now(); // when this process took the task on, as opposed to when the task started
+
         if (taskStartTime !== null)
             this.taskStartTime = taskStartTime;
         else
@@ -278,6 +281,8 @@ export class Task {
             } else if (this.task_type === 'cooking' || this.task_type === 'techtree') {
                 this.validator = new CookingCraftingTaskValidator(this.data, this.agent);
 
+            } else if (this.task_type === 'beat_game') {
+                this.validator = new BeatGameTaskValidator(this.data, this.agent, this.taskStartTime, taskSplits);
             } else {
                 this.validator = null;
             }
@@ -288,8 +293,9 @@ export class Task {
                 this.blocked_actions = [];
             }
             this.restrict_to_inventory = !!this.data.restrict_to_inventory;
+            // a task's goal has to keep going until the task ends: !stfu turns self-prompting off just like !endGoal
             if (this.data.goal)
-                this.blocked_actions.push('!endGoal');
+                this.blocked_actions.push('!endGoal', '!stfu');
             if (this.conversation)
                 this.blocked_actions.push('!endConversation');
         }
@@ -363,6 +369,8 @@ export class Task {
     }
 
     isDone() {
+        if (this.initializing)
+            return false;
         let res = null;
         if (this.validator)
             res = this.validator.validate();
@@ -377,7 +385,9 @@ export class Task {
         let other_names = this.available_agents.filter(n => n !== this.name);
         const elapsedTime = (Date.now() - this.taskStartTime) / 1000;
 
-        if (elapsedTime >= 30 && this.available_agents.length !== this.data.agent_count) {
+        // only a task for several bots can be missing one, and only after this process has had time to hear who's
+        // there: restarted 13 minutes into a run, a bot ended it at once, before the list of agents had arrived
+        if (this.data.agent_count > 1 && (Date.now() - this.created) / 1000 >= 30 && elapsedTime >= 30 && this.available_agents.length !== this.data.agent_count) {
             console.log('No other agents found. Task unsuccessful.');
             return {"message": 'No other agents found', "score": 0};
         }
@@ -406,6 +416,20 @@ export class Task {
     }
 
     async initBotTask() {
+        // the update loop is already checking the task, so don't score it off last session's inventory while it's reset
+        this.initializing = true;
+        try {
+            await this.setUpTask();
+        } finally {
+            this.initializing = false;
+        }
+    }
+
+    async setUpTask() {
+        // make it day first thing: the rest of the setup takes a few seconds, and a bot that logged in at night where
+        // the last run ended was shot by a skeleton before it was done
+        if (this.task_type === 'beat_game')
+            this.agent.bot.chat('/time set day');
         await this.agent.bot.chat(`/clear ${this.name}`);
         console.log(`Cleared ${this.name}'s inventory.`);
 
@@ -421,8 +445,9 @@ export class Task {
             this.initiator = null;
         }
 
-        //wait for a bit so bots are teleported
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        //wait for a bit so bots are teleported (nobody is teleported any more, and a speedrun's clock is running)
+        if (this.data.agent_count > 1)
+            await new Promise((resolve) => setTimeout(resolve, 3000));
 
         if (this.agent.count_id === 0 && this.data.human_count > 0) {
             console.log('Clearing human player inventories');
@@ -480,7 +505,7 @@ export class Task {
             await this.initiator.init();
         }
 
-        await this.teleportBots();
+        await this.prepareWorld();
 
         if (this.data.agent_count && this.data.agent_count > 1) {
             // TODO wait for other bots to join
@@ -505,56 +530,123 @@ export class Task {
             }
             await executeCommand(this.agent, `!startConversation("${other_name}", "${this.data.conversation}")`);
         }
+        // the opening never changes, so play it straight through before the model takes over: thinking between
+        // each of its steps took over a minute on a local model
+        if (this.task_type === 'beat_game')
+            await this.playOpening();
         await this.setAgentGoal();
     }
-    
-    async teleportBots() {
-        console.log('\n\nTeleporting bots');
-        function getRandomOffset(range) {
-            return Math.floor(Math.random() * (range * 2 + 1)) - range;
+
+    async playOpening() {
+        // the run is set up by now (inventory cleared, on the surface), so score it again: the splits the opening
+        // reaches only printed once it was over, and the runner resets a run with no stone pickaxe split by 2:30
+        this.initializing = false;
+        const opening = await this.runScripted('!speedrunOpening', 6);
+        // then everything for the nether, once the opening got the iron pickaxe: the model took 10-20 minutes over it
+        const pickaxe = this.agent.bot.inventory.items().some(i => i.name === 'iron_pickaxe' || i.name === 'diamond_pickaxe');
+        const kit = pickaxe ? await this.runScripted('!speedrunKit', 12) : null;
+        // then into the nether, once the kit has the buckets and flint_and_steel
+        const items = this.agent.bot.inventory.items();
+        const buckets = items.filter(i => ['bucket', 'water_bucket', 'lava_bucket'].includes(i.name)).reduce((n, i) => n + i.count, 0);
+        const lighter = items.some(i => i.name === 'flint_and_steel' || i.name === 'fire_charge');
+        const nether = kit && buckets >= 2 && lighter ? await this.runScripted('!speedrunNether', 12) : null;
+        // the model takes over from here: tell it how far they got, and where they stopped if they did
+        for (const [name, command, result] of [['Opening', '!speedrunOpening', opening], ['Kit', '!speedrunKit', kit], ['Nether', '!speedrunNether', nether]]) {
+            if (!result) continue;
+            console.log(`${name} result: ${result}`);
+            await this.agent.history.add('system', `${command} ran first. ${result}`);
         }
+    }
 
-        let human_player_name = null;
-        let bot = this.agent.bot;
-
-        // Finding if there is a human player on the server
-        for (const playerName in bot.players) {
-            const player = bot.players[playerName];
-            if (!this.available_agents.some((n) => n === playerName)) {
-                console.log('Found human player:', player.username);
-                human_player_name = player.username
-                break;
+    async runScripted(command, minutes, wait_for_resume = true) {
+        const bot = this.agent.bot;
+        // a scripted stretch of the run is one long action, and its output only came back at the end, where nothing
+        // printed it: echo it to the run log as it goes (the runner looks there for the first logs, and resets a run
+        // with none by 90 seconds, so every run with the opening was reset)
+        let printed = 0;
+        let echoed = '';
+        const echo = () => {
+            const output = bot.output || '';
+            if (output.length < printed) printed = 0;
+            const out = output.slice(printed).trim();
+            printed = output.length;
+            if (out) {
+                console.log(out);
+                echoed += out + '\n';
+            }
+        };
+        const timer = setInterval(echo, 1000);
+        let result;
+        try {
+            result = await executeCommand(this.agent, command);
+            // a mode cutting in (self defense, digging out of fallen gravel) stops it, and it resumes once the mode is
+            // done (no resume after a death): wait for that before the model takes over. not while self-prompting,
+            // where nothing resumes: the self-prompter's autopilot runs it again instead
+            const deadline = Date.now() + minutes * 60000;
+            while (wait_for_resume && (this.agent.actions.resume_func || this.agent.actions.executing) && Date.now() < deadline)
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            this.agent.actions.cancelResume();
+        } finally {
+            clearInterval(timer);
+        }
+        // a resumed run's result goes nowhere, so use the end of what it printed
+        return result || (echoed && `Its last output:\n${echoed.slice(-600)}`);
+    }
+    
+    async moveToSurface() {
+        // a fresh run starts where the last one stopped, which can be underground, underwater, in the nether or the end.
+        // start it on the overworld surface instead, like a new world. spreadplayers never lands on water or lava,
+        // so look further out when the column straight up is sea, and fall back to the world spawn
+        const bot = this.agent.bot;
+        const dimension = (bot.game.dimension || '').replace('minecraft:', '');
+        const pos = bot.entity.position.clone();
+        // somewhere crawling with mobs (a dark forest, a cave mouth) killed three runs in a row before they had a
+        // sword, so start those somewhere else nearby
+        const mobs = Object.values(bot.entities).filter(e => e.type === 'hostile' && e.position.distanceTo(pos) < 16).length;
+        // open sky from the blocks above, not the sky light at our feet, which read 0 out in the open
+        if (dimension === 'overworld' && !bot.entity.isInWater && world.isOpenToSky(bot, pos) && mobs < 2) {
+            console.log(`${this.name} is already on the surface at ${pos.floored()}.`);
+            return;
+        }
+        if (mobs >= 2) console.log(`${mobs} hostile mobs around ${pos.floored()}, starting somewhere else.`);
+        // spreadplayers refuses a range of 1 ("too many entities for space"), so the tightest that works is a few blocks
+        const tries = mobs >= 2 ? [[pos, 96], [pos, 192]] : [[pos, 4], [pos, 32], [pos, 128]];
+        if (bot.spawnPoint) tries.push([bot.spawnPoint, 64]);
+        for (const [center, range] of tries) {
+            const moved = new Promise((resolve) => {
+                const done = () => { clearTimeout(timer); resolve(true); };
+                const timer = setTimeout(() => { bot.removeListener('forcedMove', done); resolve(false); }, 3000);
+                bot.once('forcedMove', done);
+            });
+            bot.chat(`/execute in minecraft:overworld run spreadplayers ${Math.floor(center.x)} ${Math.floor(center.z)} 0 ${range} false ${this.name}`);
+            if (await moved) {
+                console.log(`Starting ${this.name} on the surface at ${bot.entity.position.floored()}.`);
+                return;
             }
         }
+        console.log(`Couldn't move ${this.name} to the surface, so it starts at ${pos.floored()}.`);
+    }
 
-        // go the human if there is one and not required for the task
-        if (human_player_name && this.data.human_count === 0) {
-            console.log(`Teleporting ${this.name} to human ${human_player_name}`)
-            bot.chat(`/tp ${this.name} ${human_player_name}`)
-        }
-        else {
-            console.log(`Teleporting ${this.name} to ${this.available_agents[0]}`)
-            bot.chat(`/tp ${this.name} ${this.available_agents[0]}`);
-        }
+    async prepareWorld() {
+        // bots used to be teleported to a human player and spread out here. that's gone: the /tp read the bot's
+        // position before the server had moved it, so the spread started from wherever it logged out and could
+        // leave it inside a wall. bots now start where they are
+        let bot = this.agent.bot;
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
-
-        // now all bots are teleport on top of each other (which kinda looks ugly)
-        // Thus, we need to teleport them to random distances to make it look better
-
-        /*
-        Note : We don't want randomness for construction task as the reference point matters a lot.
-        Another reason for no randomness for construction task is because, often times the user would fly in the air,
-        then set a random block to dirt and teleport the bot to stand on that block for starting the construction,
-        */
-
-
-        if (this.data.type !== 'construction') {
-            const pos = getPosition(bot);
-            const xOffset = getRandomOffset(5);
-            const zOffset = getRandomOffset(5);
-            bot.chat(`/tp ${this.name} ${Math.floor(pos.x + xOffset)} ${pos.y + 3} ${Math.floor(pos.z + zOffset)}`);
-            await new Promise((resolve) => setTimeout(resolve, 200));
+        if (this.task_type === 'beat_game') {
+            await this.moveToSurface();
+            // a new world starts in the morning. starting a run empty-handed at night got the bot killed within minutes
+            bot.chat('/time set day');
+            // and clear: in rain, zombies and skeletons don't burn in daylight, and a run started in a storm died to
+            // them twice before it had a sword
+            bot.chat('/weather clear');
+            // on easy, the difficulty Java speedruns are played on: zombies and skeletons in the mines killed 7 of 18
+            // runs in a day on normal, in fights with 3 or 4 at once
+            bot.chat('/difficulty easy');
+            // and with full health and hunger: they carry over from the last session, and one run started on 4 health
+            bot.chat(`/effect clear ${this.name}`);
+            bot.chat(`/effect give ${this.name} minecraft:instant_health 1 10 true`);
+            bot.chat(`/effect give ${this.name} minecraft:saturation 1 20 true`);
         }
 
         if (this.data.agent_count && this.data.agent_count > 1) {
