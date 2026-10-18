@@ -77,4 +77,6 @@ for (let profile of settings.profiles) {
     const profile_json = JSON.parse(readFileSync(profile, 'utf8'));
     settings.profile = profile_json;
     Mindcraft.createAgent(settings);
+    // stagger logins: Paper/Spigot reject logins from the same IP within connection-throttle (4 s by default)
+    await new Promise(r => setTimeout(r, 5000));
 }
