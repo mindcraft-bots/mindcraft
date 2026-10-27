@@ -1,7 +1,7 @@
 const settings = {
     "minecraft_version": "auto", // or specific version like "1.21.6"
-    "host": "127.0.0.1", // or "localhost", "your.ip.address.here"
-    "port": 55916, // set to -1 to automatically scan for open ports
+    "host": "192.168.1.30", // or "localhost", "your.ip.address.here"
+    "port": 25565, // set to -1 to automatically scan for open ports
     "auth": "offline", // or "microsoft"
 
     // the mindserver manages all agents and hosts the UI
@@ -10,10 +10,10 @@ const settings = {
     
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
     "profiles": [
-        "./andy.json",
+        // "./andy.json",
         // "./profiles/gpt.json",
         // "./profiles/claude.json",
-        // "./profiles/gemini.json",
+        "./profiles/gemini.json",
         // "./profiles/llama.json",
         // "./profiles/qwen.json",
         // "./profiles/grok.json",
