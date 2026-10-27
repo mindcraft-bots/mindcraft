@@ -18,7 +18,7 @@
         "groq-sdk": "^0.15.0",
         "minecraft-data": "^3.97.0",
         "minecraft-assets": "^1.16.0",
-        "mineflayer": "^4.33.0",
+        "mineflayer": "^4.39.0",
         "mineflayer-armor-manager": "^2.0.1",
         "mineflayer-auto-eat": "^3.3.6",
         "mineflayer-collectblock": "^1.4.1",

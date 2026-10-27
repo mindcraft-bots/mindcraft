@@ -45,6 +45,43 @@ Do not connect this bot to public servers with coding enabled. This project allo
 
 If you encounter issues, check the [FAQ](https://github.com/mindcraft-bots/mindcraft/blob/main/FAQ.md) or find support on [discord](https://discord.gg/mp73p35dzC). We are currently not very responsive to github issues. To run tasks please refer to [Minecollab Instructions](minecollab.md#installation)
 
+## Beating the Game
+
+The bot has commands for every step towards killing the ender dragon. It uses them on its own when you ask it to (for example "go kill the ender dragon"), and you can also type any of them into the chat yourself, e.g. `!collectBlazeRods(10)` or `!enterPortal("end_portal")`.
+
+| Command | What it does |
+| --- | --- |
+| `!gameProgress` | Checklist of progress towards beating the game, and the recommended next step. |
+| `!travel(x, z)` | Travel a long distance over land (hundreds or thousands of blocks) when the y coordinate is unknown. |
+| `!explore(distance)` | Head off in a new direction to find terrain, blocks or mobs that aren't nearby. |
+| `!pillarUp(height)` | Tower straight up by placing blocks underneath, digging through anything overhead. Needs dirt, cobblestone or similar. |
+| `!makeObsidian(num)` | Pour water onto lava and mine the obsidian. Needs a water bucket (or bucket) and a diamond pickaxe. |
+| `!buildNetherPortal` | Build and light a nether portal. Needs 10 obsidian and a flint and steel. |
+| `!enterPortal(portal_type)` | Walk into the nearest `"nether_portal"` or `"end_portal"`. Also used to go home through the exit portal after the dragon dies. |
+| `!collectBlazeRods(num)` | In the nether: find a fortress and kill blazes for blaze rods. |
+| `!collectEnderPearls(num)` | Hunt endermen for ender pearls. |
+| `!locateStronghold` | Throw eyes of ender from two spots to work out where the stronghold is. Needs at least 2 eyes of ender. |
+| `!goToStronghold` | Find the stronghold, travel there and dig down to the end portal room. |
+| `!activateEndPortal` | Fill the empty end portal frames with eyes of ender (up to 12). |
+| `!shoot(type, max_shots)` | Shoot the nearest mob of a type with a bow, e.g. blazes, ghasts or end crystals. |
+| `!fightEnderDragon` | In the end: destroy the end crystals (including caged ones), then kill the dragon. |
+
+The usual order is:
+
+1. `!makeObsidian` and `!buildNetherPortal`, then `!enterPortal("nether_portal")`.
+2. `!collectBlazeRods`, and `!collectEnderPearls` back in the overworld, then craft eyes of ender.
+3. `!goToStronghold` and `!activateEndPortal`.
+4. `!enterPortal("end_portal")` and `!fightEnderDragon`.
+5. `!enterPortal("end_portal")` again to go home.
+
+For the dragon fight, give the bot a bow, plenty of arrows (150 or more), a few stacks of building blocks, golden apples, food, armor, a sword and a water bucket. If `!fightEnderDragon` runs out of time (it stops after 20 minutes), run it again: it carries on where it left off.
+
+To run it as a task, use a fresh world (if the dragon is already dead, the exit portal is already open):
+
+`node main.js --task_path tasks/basic/beat_game.json --task_id beat_the_game`
+
+`beat_the_game` is a speedrun from an empty inventory. The task succeeds when the credits roll after the bot goes through the exit portal. If it times out, the score shows how far the bot got (out of 8 milestones: stone pickaxe, iron pickaxe, the nether, a blaze rod, 12 eyes of ender, the end, the dragon, and the credits). Each milestone prints a speedrun split in the terminal, like `Speedrun split 3/8: entered the nether at 31:05`, and beating the game prints all the splits. `beat_the_game_with_kit` starts the bot with eyes of ender and gear for the dragon fight, to test just the stronghold and the dragon.
+
 
 # Configuration
 ## Model Customization

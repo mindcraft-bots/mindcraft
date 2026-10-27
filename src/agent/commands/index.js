@@ -22,7 +22,9 @@ export function blacklistCommands(commands) {
             continue;
         }
         delete commandMap[command_name];
-        delete commandList.find(command => command.name === command_name);
+        // take it out of the docs the model sees too, not just out of the map
+        const index = commandList.findIndex(command => command.name === command_name);
+        if (index !== -1) commandList.splice(index, 1);
     }
 }
 

@@ -1,0 +1,35 @@
+{
+    "beat_the_game": {
+        "goal": "Speedrun Minecraft from scratch: beat the game as fast as you can. Kill the ender dragon, then walk through the exit portal in the end (!enterPortal with end_portal) so the credits roll. Only gather and craft what the run needs, and don't stop to build or explore for fun. Gather everything a step needs in one go (for example all the cobblestone for the pickaxe, sword and furnace at once) instead of going back for more. Eat and keep health up: a death loses everything. Every command result ends with your next step, so go straight on to it; use !gameProgress only when you want the full checklist.",
+        "initial_inventory": {
+            "0": {}
+        },
+        "agent_count": 1,
+        "type": "beat_game",
+        "timeout": 14400
+    },
+    "beat_the_game_with_kit": {
+        "goal": "Beat Minecraft: you start with 16 eyes of ender and gear for the dragon fight. Put on your armor, find the stronghold (!goToStronghold), fill the end portal (!activateEndPortal), go through it (!enterPortal with end_portal) and kill the ender dragon (!fightEnderDragon, run it again if it stops before the dragon is dead). Then walk through the exit portal (!enterPortal with end_portal) so the credits roll.",
+        "initial_inventory": {
+            "0": {
+                "diamond_pickaxe": 1,
+                "diamond_sword": 1,
+                "shield": 1,
+                "bow": 1,
+                "arrow": 192,
+                "iron_helmet": 1,
+                "iron_chestplate": 1,
+                "iron_leggings": 1,
+                "iron_boots": 1,
+                "ender_eye": 16,
+                "cobblestone": 192,
+                "golden_apple": 8,
+                "cooked_beef": 64,
+                "water_bucket": 1
+            }
+        },
+        "agent_count": 1,
+        "type": "beat_game",
+        "timeout": 7200
+    }
+}

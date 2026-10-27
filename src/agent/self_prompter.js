@@ -68,7 +68,14 @@ export class SelfPrompter {
             let used_command = await this.agent.handleMessage('system', msg, -1);
             if (!used_command) {
                 no_command_count++;
-                if (no_command_count >= MAX_NO_COMMAND) {
+                if (no_command_count >= MAX_NO_COMMAND && this.agent.task?.data) {
+                    // a task's goal must keep going: replies thrown away mid-generation count as no command, and
+                    // stopping here left the bot idle for the rest of the run
+                    console.warn(`No command in the last ${MAX_NO_COMMAND} auto-prompts, carrying on with the task.`);
+                    no_command_count = 0;
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+                else if (no_command_count >= MAX_NO_COMMAND) {
                     let out = `Agent did not use command in the last ${MAX_NO_COMMAND} auto-prompts. Stopping auto-prompting.`;
                     this.agent.openChat(out);
                     console.warn(out);
