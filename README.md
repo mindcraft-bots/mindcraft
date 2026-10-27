@@ -35,7 +35,7 @@ Do not connect this bot to public servers with coding enabled. This project allo
 
 2. Download the [latest release](https://github.com/mindcraft-bots/mindcraft/releases/latest) and unzip it, or clone the repository.
 
-3. Rename `keys.example.json` to `keys.json` and fill in your API keys (you only need one). The desired model is set in `andy.json` or other profiles. For other models refer to the table below.
+3. Rename `settings_llm_providers.example.json` to `settings_llm_providers.json` and fill in your API keys (you only need one). The desired model is set in `andy.json` or other profiles. For other models refer to the table below.
 
 4. In terminal/command prompt, run `npm install` from the installed directory
 
@@ -80,11 +80,8 @@ You can configure the agent's name, model, and prompts in their profile like `an
 
 For more comprehensive model configuration and syntax, see [Model Specifications](#model-specifications).
 
-For local models we support [ollama](https://ollama.com/) and we provide our own finetuned models for you to use. 
-To install our models, install ollama and run the following terminal command:
-```bash
-ollama pull sweaterdog/andy-4:micro-q8_0 && ollama pull embeddinggemma
-```
+For local models, we recommend you use **LM Studio** for the Andy series of models. Ollama breaks current models, and should be avoided.
+Please see our [huggingface page for more info.](https://huggingface.co/collections/Mindcraft-CE)
 
 ## Online Servers
 To connect to online servers your bot will need an official Microsoft/Minecraft account. You can use your own personal one, but will need another account if you want to connect too and play with it. To connect, change these lines in `settings.js`:
@@ -143,7 +140,7 @@ If you want more optimization and automatic launching of the minecraft world, yo
 If you intend to `allow_insecure_coding`, it is a good idea to run the app in a docker container to reduce risks of running unknown code. This is strongly recommended before connecting to remote servers, although still does not guarantee complete safety.
 
 ```bash
-docker build -t mindcraft . && docker run --rm --add-host=host.docker.internal:host-gateway -p 8080:8080 -p 3000-3003:3000-3003 -e SETTINGS_JSON='{"auto_open_ui":false,"profiles":["./profiles/gemini.json"],"host":"host.docker.internal"}' --volume ./keys.json:/app/keys.json --name mindcraft mindcraft
+docker build -t mindcraft . && docker run --rm --add-host=host.docker.internal:host-gateway -p 8080:8080 -p 3000-3003:3000-3003 -e SETTINGS_JSON='{"auto_open_ui":false,"profiles":["./profiles/gemini.json"],"host":"host.docker.internal"}' --volume ./settings_llm_providers.json:/app/settings_llm_providers.json --name mindcraft mindcraft
 ```
 or simply
 ```bash

@@ -1,0 +1,19 @@
+{
+    "name": "cerebras",
+    "model": {
+        "provider": "cerebras",
+        "model": "gpt-oss-120b"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

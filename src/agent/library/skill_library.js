@@ -27,6 +27,11 @@ export class SkillLibrary {
                 this.embedding_model = null;
             }
         }
+        if (!this.embedding_model) {
+            for (const doc of skillDocs) {
+                this.skill_docs_embeddings[doc] = doc;
+            }
+        }
         this.always_show_skills_docs = {};
         for (const skillName of this.always_show_skills) {
             this.always_show_skills_docs[skillName] = this.skill_docs.find(doc => doc.includes(skillName));

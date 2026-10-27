@@ -1,7 +1,19 @@
 {
     "name": "Grok",
-
-    "model": "grok-4-fast-reasoning",
-    
-    "embedding": "openai"
+    "model": {
+        "provider": "xai",
+        "model": "grok-4-fast-reasoning"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

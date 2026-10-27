@@ -1,6 +1,19 @@
 {
     "name": "andy",
-
-    "model": "gpt-5.4-mini"
-
+    "model": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

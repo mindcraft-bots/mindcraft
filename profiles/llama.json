@@ -1,10 +1,20 @@
 {
     "name": "LLama",
-
-    "model": "groq/llama-3.3-70b-versatile",
-
+    "model": {
+        "provider": "groq",
+        "model": "llama-3.3-70b-versatile"
+    },
     "max_tokens": 4000,
-
-    "embedding": "openai"
-    
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

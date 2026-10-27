@@ -1,12 +1,24 @@
 {
     "name": "gpt",
-
     "model": {
-        "model": "gpt-5.4",
+        "provider": "openai",
+        "model": "gpt-5.5",
         "params": {
             "reasoning": {
-                "effort": "low"
+                "effort": "medium"
             }
         }
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
     }
 }

@@ -70,8 +70,11 @@ if (process.env.SETTINGS_JSON) {
     }
 }
 
+if (settings.llm_providers) {
+    process.env.MINDCRAFT_LLM_PROVIDERS_PATH = settings.llm_providers;
+}
 
-Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui);
+Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui, settings);
 
 for (let profile of settings.profiles) {
     const profile_json = JSON.parse(readFileSync(profile, 'utf8'));

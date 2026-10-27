@@ -26,7 +26,7 @@
   - The bot will still get stuck occasionally, but not constantly.
     
 - `Why I added the api key but still prompted that the key can't be found?`
-  - Possible reason 1: Did not modify keys.example.json to keys.json.
+  - Possible reason 1: Did not modify settings_llm_providers.example.json to settings_llm_providers.json.
   - Possible reason 2: If you use vscode to edit, you need to `ctrl+s` to save the file for the changes to take effect.
   - Possible reason 3: Not setting the code path correctly in setting.js, use andy.js by default. 
 

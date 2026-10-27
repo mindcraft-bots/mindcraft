@@ -1,0 +1,19 @@
+{
+    "name": "openrouter",
+    "model": {
+        "provider": "openrouter",
+        "model": "moonshotai/kimi-k2.6"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

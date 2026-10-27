@@ -1,0 +1,302 @@
+{
+    "keys": {
+        "OPENAI_API_KEY": "",
+        "ANTHROPIC_API_KEY": "",
+        "GEMINI_API_KEY": "",
+        "GOOGLE_API_KEY": "",
+        "AZURE_OPENAI_API_KEY": "",
+        "KIMI_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "QWEN_API_KEY": "",
+        "DEEPSEEK_API_KEY": "",
+        "SILICONFLOW_API_KEY": "",
+        "MINIMAX_CN_API_KEY": "",
+        "MINIMAX_INTL_API_KEY": "",
+        "XAI_API_KEY": "",
+        "GROQCLOUD_API_KEY": "",
+        "MISTRAL_API_KEY": "",
+        "CEREBRAS_API_KEY": "",
+        "HUGGINGFACE_API_KEY": "",
+        "NOVITA_API_KEY": "",
+        "HYPERBOLIC_API_KEY": "",
+        "MERCURY_API_KEY": "",
+        "MERCURY_API_KEY_2": "",
+        "MY_PROVIDER_API_KEY": "",
+        "MY_RESPONSES_API_KEY": "",
+        "MY_EMBEDDING_API_KEY": "",
+        "OLLAMA_API_KEY": "",
+        "CODEX_CHATGPT_AUTH": {},
+        "REPLICATE_API_KEY": "",
+        "AI21_API_KEY": "",
+        "ANYSCALE_API_KEY": "",
+        "COHERE_API_KEY": "",
+        "DEEPINFRA_API_KEY": "",
+        "FIREWORKS_API_KEY": "",
+        "NVIDIA_API_KEY": "",
+        "PERPLEXITY_API_KEY": "",
+        "TOGETHER_API_KEY": ""
+    },
+    "models": {
+        "openai": {
+            "format": "openai-responses",
+            "keyName": "OPENAI_API_KEY",
+            "baseUrl": "https://api.openai.com/v1"
+        },
+        "anthropic": {
+            "format": "anthropic-messages",
+            "keyName": "ANTHROPIC_API_KEY",
+            "baseUrl": "https://api.anthropic.com"
+        },
+        "google": {
+            "format": "google-generative-ai",
+            "keyName": "GEMINI_API_KEY",
+            "baseUrl": "https://generativelanguage.googleapis.com"
+        },
+        "replicate": {
+            "format": "replicate",
+            "keyName": "REPLICATE_API_KEY",
+            "defaultModel": "google/gemini-2.5-flash",
+            "comment": "Replicate Predictions API; not OpenAI-compatible. Model input/output schemas are model-specific."
+        },
+        "azure": {
+            "format": "azure-openai-responses",
+            "baseUrl": "https://<your-resource>.openai.azure.com",
+            "params": {
+                "apiVersion": "2025-01-01-preview"
+            },
+            "keyName": "AZURE_OPENAI_API_KEY",
+            "defaultModel": "<chat-deployment-name>",
+            "comment": "Azure OpenAI uses deployment names as model names. Replace baseUrl and defaultModel with your Azure resource endpoint and chat deployment name."
+        },
+        "codex": {
+            "format": "openai-codex-responses",
+            "adapter": "codex",
+            "params": {
+                "keysPath": "settings_llm_providers.json"
+            },
+            "comment": "When the codex profile is selected, Mindcraft logs in through this project and stores ChatGPT auth in keys.CODEX_CHATGPT_AUTH. No fixed ~/.codex path is read."
+        },
+        "kimi": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.kimi.com/coding/v1",
+            "keyName": "KIMI_API_KEY",
+            "defaultModel": "kimi-k2.6",
+            "params": {
+                "transport": "curl",
+                "defaultHeaders": {
+                    "User-Agent": "KimiCLI/1.0.0"
+                }
+            }
+        },
+        "openrouter": {
+            "format": "openai-completions",
+            "baseUrl": "https://openrouter.ai/api/v1",
+            "keyName": "OPENROUTER_API_KEY"
+        },
+        "qwen_cn": {
+            "format": "openai-completions",
+            "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "keyName": "QWEN_API_KEY"
+        },
+        "deepseek": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.deepseek.com",
+            "keyName": "DEEPSEEK_API_KEY"
+        },
+        "siliconflow": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.siliconflow.cn/v1",
+            "keyName": "SILICONFLOW_API_KEY",
+            "defaultModel": "deepseek-ai/DeepSeek-V4-Flash"
+        },
+        "minimax_cn": {
+            "format": "anthropic-messages",
+            "baseUrl": "https://api.minimaxi.com/anthropic",
+            "keyName": "MINIMAX_CN_API_KEY",
+            "defaultModel": "MiniMax-M2.7"
+        },
+        "minimax_intl": {
+            "format": "anthropic-messages",
+            "baseUrl": "https://api.minimax.io/anthropic",
+            "keyName": "MINIMAX_INTL_API_KEY",
+            "defaultModel": "MiniMax-M2.7"
+        },
+        "xai": {
+            "format": "openai-completions",
+            "keyName": "XAI_API_KEY",
+            "baseUrl": "https://api.x.ai/v1"
+        },
+        "groq": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.groq.com/openai/v1",
+            "keyName": "GROQCLOUD_API_KEY"
+        },
+        "mistral": {
+            "format": "openai-completions",
+            "keyName": "MISTRAL_API_KEY",
+            "baseUrl": "https://api.mistral.ai/v1"
+        },
+        "cerebras": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.cerebras.ai/v1",
+            "keyName": "CEREBRAS_API_KEY"
+        },
+        "huggingface": {
+            "format": "openai-completions",
+            "baseUrl": "https://router.huggingface.co/v1",
+            "keyName": "HUGGINGFACE_API_KEY"
+        },
+        "novita": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.novita.ai/openai/v1",
+            "keyName": "NOVITA_API_KEY"
+        },
+        "hyperbolic": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.hyperbolic.xyz/v1",
+            "keyName": "HYPERBOLIC_API_KEY",
+            "defaultModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+        },
+        "mercury": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.inceptionlabs.ai/v1",
+            "keyName": "MERCURY_API_KEY"
+        },
+        "ollama": {
+            "format": "openai-completions",
+            "baseUrl": "https://ollama.com/v1",
+            "keyName": "OLLAMA_API_KEY",
+            "defaultModel": "gpt-oss:120b-cloud",
+            "comment": "Cloud usage is prefilled with gpt-oss:120b-cloud. For local Ollama, change baseUrl to http://127.0.0.1:11434/v1 and remove keyName if no API key is required."
+        },
+        "ollama_local": {
+            "format": "openai-completions",
+            "baseUrl": "http://127.0.0.1:11434/v1",
+            "comment": "Local Ollama OpenAI-compatible endpoint. Use this provider for locally installed Ollama models."
+        },
+        "vllm": {
+            "format": "openai-completions",
+            "baseUrl": "http://127.0.0.1:8000/v1"
+        },
+        "_example_openai_chat_completions": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.example.com/v1",
+            "keyName": "MY_PROVIDER_API_KEY"
+        },
+        "_example_openai_responses": {
+            "format": "openai-responses",
+            "baseUrl": "https://api.example.com/v1",
+            "keyName": "MY_RESPONSES_API_KEY"
+        },
+        "ai21": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.ai21.com/studio/v1",
+            "keyName": "AI21_API_KEY",
+            "defaultModel": "jamba-1.5-large"
+        },
+        "anyscale": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.endpoints.anyscale.com/v1",
+            "keyName": "ANYSCALE_API_KEY",
+            "defaultModel": "meta-llama/Meta-Llama-3-70B-Instruct"
+        },
+        "cohere": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.cohere.com/v1",
+            "keyName": "COHERE_API_KEY",
+            "defaultModel": "command-r-plus"
+        },
+        "deepinfra": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.deepinfra.com/v1/openai",
+            "keyName": "DEEPINFRA_API_KEY",
+            "defaultModel": "meta-llama/Meta-Llama-3-70B-Instruct"
+        },
+        "fireworks": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.fireworks.ai/inference/v1",
+            "keyName": "FIREWORKS_API_KEY",
+            "defaultModel": "accounts/fireworks/models/llama-v3p1-70b-instruct"
+        },
+        "nvidia": {
+            "format": "openai-completions",
+            "baseUrl": "https://integrate.api.nvidia.com/v1",
+            "keyName": "NVIDIA_API_KEY",
+            "defaultModel": "meta/llama3-70b-instruct"
+        },
+        "perplexity": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.perplexity.ai",
+            "keyName": "PERPLEXITY_API_KEY",
+            "defaultModel": "llama-3-sonar-large-32k-online"
+        },
+        "together": {
+            "format": "openai-completions",
+            "baseUrl": "https://api.together.xyz/v1",
+            "keyName": "TOGETHER_API_KEY",
+            "defaultModel": "meta-llama/Llama-3-70b-chat-hf"
+        },
+        "lmstudio": {
+            "format": "openai-completions",
+            "baseUrl": "http://127.0.0.1:1234/v1",
+            "keyName": null,
+            "defaultModel": "andy-4.2",
+            "comment": "Local LM Studio OpenAI-compatible server. Start LM Studio's local server and load the Andy 4.2 model before using profiles/andy-4.2.json."
+        }
+    },
+    "embeddings": {
+        "openai": {
+            "format": "openai-embeddings",
+            "defaultModel": "text-embedding-3-small",
+            "keyName": "OPENAI_API_KEY"
+        },
+        "azure": {
+            "format": "azure-openai-responses",
+            "baseUrl": "https://<your-resource>.openai.azure.com",
+            "defaultModel": "<embedding-deployment-name>",
+            "params": {
+                "apiVersion": "2025-01-01-preview"
+            },
+            "keyName": "AZURE_OPENAI_API_KEY",
+            "comment": "Azure OpenAI embeddings use the embedding deployment name as defaultModel. Replace this with your own deployment name."
+        },
+        "qwen_cn": {
+            "format": "openai-embeddings",
+            "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "defaultModel": "text-embedding-v3",
+            "keyName": "QWEN_API_KEY"
+        },
+        "ollama": {
+            "format": "openai-embeddings",
+            "baseUrl": "https://ollama.com/v1",
+            "keyName": "OLLAMA_API_KEY",
+            "defaultModel": "embeddinggemma",
+            "comment": "Ollama Cloud embeddings. For local Ollama use ollama_local."
+        },
+        "_example_openai_embeddings": {
+            "format": "openai-embeddings",
+            "baseUrl": "https://api.example.com/v1",
+            "defaultModel": "text-embedding-model-name",
+            "keyName": "MY_EMBEDDING_API_KEY"
+        },
+        "ollama_local": {
+            "format": "openai-embeddings",
+            "baseUrl": "http://127.0.0.1:11434/v1",
+            "defaultModel": "embeddinggemma",
+            "comment": "Local Ollama embeddings endpoint."
+        },
+        "replicate": {
+            "format": "replicate",
+            "keyName": "REPLICATE_API_KEY",
+            "defaultModel": "mark3labs/embeddings-gte-base"
+        },
+        "lmstudio": {
+            "format": "openai-embeddings",
+            "baseUrl": "http://127.0.0.1:1234/v1",
+            "keyName": null,
+            "defaultModel": "text-embedding-nomic-embed-text-v1.5",
+            "comment": "Local LM Studio embeddings endpoint for Andy 4.2 profile examples."
+        }
+    },
+    "schemaVersion": 1
+}

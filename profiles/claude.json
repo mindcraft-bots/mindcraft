@@ -1,7 +1,19 @@
 {
     "name": "claude",
-
-    "model": "claude-sonnet-4-6",
-    
-    "embedding": "openai"
+    "model": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

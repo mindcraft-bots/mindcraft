@@ -1,10 +1,19 @@
 {
     "name": "vllm",
-
     "model": {
-        "api": "vllm",
-        "model": "Qwen/Qwen2.5-1.5B-Instruct",
-        "url": "http://127.0.0.1:8000/v1"
+        "provider": "vllm",
+        "model": "Qwen/Qwen2.5-1.5B-Instruct"
     },
-    "embedding": "openai"
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

@@ -11,6 +11,54 @@ export function log(bot, message) {
     bot.output += message + '\n';
 }
 
+const MAX_ACTION_ERROR_LENGTH = 300;
+
+function formatActionError(error) {
+    if (!error) return 'unknown error';
+    const parts = [error.name, error.message || String(error)].filter(Boolean);
+    const text = parts.length ? parts.join(': ') : String(error);
+    return text.length > MAX_ACTION_ERROR_LENGTH
+        ? `${text.slice(0, MAX_ACTION_ERROR_LENGTH)}…`
+        : text;
+}
+
+
+function waitForInterruptOrResult(bot, promise, onInterrupt = null) {
+    if (bot.interrupt_code) {
+        if (onInterrupt) onInterrupt();
+        return Promise.resolve(false);
+    }
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        const cleanup = () => bot.off('mindcraft_interrupt', interrupt);
+        const finish = (fn, value) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            fn(value);
+        };
+        const interrupt = () => {
+            try {
+                if (onInterrupt) onInterrupt();
+            } catch (error) {
+                void error;
+            }
+            finish(resolve, false);
+        };
+        bot.once('mindcraft_interrupt', interrupt);
+        promise.then(
+            value => finish(resolve, value ?? true),
+            error => {
+                if (settled || bot.interrupt_code) {
+                    finish(resolve, false);
+                } else {
+                    finish(reject, error);
+                }
+            }
+        );
+    });
+}
+
 async function autoLight(bot) {
     if (world.shouldPlaceTorch(bot)) {
         try {
@@ -35,13 +83,15 @@ async function equipHighestAttack(bot) {
 
 export async function craftRecipe(bot, itemName, num=1) {
     /**
-     * Attempt to craft the given item name from a recipe. May craft many items.
+     * Attempt to craft at least the requested number of output items.
      * @param {MinecraftBot} bot, reference to the minecraft bot.
      * @param {string} itemName, the item name to craft.
+     * @param {number} num, requested output item count, not recipe execution count.
      * @returns {Promise<boolean>} true if the recipe was crafted, false otherwise.
      * @example
-     * await skills.craftRecipe(bot, "stick");
+     * await skills.craftRecipe(bot, "stick", 4);
      **/
+    num = Math.max(1, Math.floor(Number(num) || 1));
     let placedTable = false;
 
     if (mc.getItemCraftingRecipes(itemName).length == 0) {
@@ -95,23 +145,64 @@ export async function craftRecipe(bot, itemName, num=1) {
 
     const recipe = recipes[0];
     console.log('crafting...');
-    //Check that the agent has sufficient items to use the recipe `num` times.
-    const inventory = world.getInventoryCounts(bot); //Items in the agents inventory
-    const requiredIngredients = mc.ingredientsFromPrismarineRecipe(recipe); //Items required to use the recipe once.
+    const inventory = world.getInventoryCounts(bot);
+    const beforeCount = inventory[itemName] || 0;
+    const outputPerCraft = getRecipeOutputCount(recipe);
+    const desiredCrafts = Math.max(1, Math.ceil(num / outputPerCraft));
+    const requiredIngredients = mc.ingredientsFromPrismarineRecipe(recipe);
     const craftLimit = mc.calculateLimitingResource(inventory, requiredIngredients);
-    
-    await bot.craft(recipe, Math.min(craftLimit.num, num), craftingTable);
-    if(craftLimit.num<num) log(bot, `Not enough ${craftLimit.limitingResource} to craft ${num}, crafted ${craftLimit.num}. You now have ${world.getInventoryCounts(bot)[itemName]} ${itemName}.`);
-    else log(bot, `Successfully crafted ${itemName}, you now have ${world.getInventoryCounts(bot)[itemName]} ${itemName}.`);
+    const maxCrafts = Number.isFinite(craftLimit.num) ? craftLimit.num : desiredCrafts;
+    const craftCount = Math.min(maxCrafts, desiredCrafts);
+
+    if (craftCount <= 0) {
+        log(bot, `Not enough ${craftLimit.limitingResource || 'resources'} to craft ${itemName}. You have ${beforeCount} ${itemName}.`);
+        if (placedTable) {
+            await collectBlock(bot, 'crafting_table', 1);
+        }
+        return false;
+    }
+
+    try {
+        await bot.craft(recipe, craftCount, craftingTable);
+    } catch (err) {
+        const afterErrorCount = world.getInventoryCounts(bot)[itemName] || 0;
+        if (afterErrorCount > beforeCount) {
+            log(bot, `Crafted ${afterErrorCount - beforeCount} ${itemName}, but stopped before the requested ${num}: ${err.message || err}. You now have ${afterErrorCount} ${itemName}.`);
+            await cleanupCraftingTableAndArmor(bot, placedTable);
+            return true;
+        }
+        log(bot, `Could not craft ${itemName}: ${err.message || err}.`);
+        if (placedTable) {
+            await collectBlock(bot, 'crafting_table', 1);
+        }
+        return false;
+    }
+
+    const afterCount = world.getInventoryCounts(bot)[itemName] || 0;
+    if (afterCount - beforeCount < num) {
+        log(bot, `Not enough ${craftLimit.limitingResource || 'resources'} to craft ${num} ${itemName}, crafted ${Math.max(0, afterCount - beforeCount)}. You now have ${afterCount} ${itemName}.`);
+    }
+    else {
+        log(bot, `Successfully crafted ${afterCount - beforeCount} ${itemName}, you now have ${afterCount} ${itemName}.`);
+    }
+
+    await cleanupCraftingTableAndArmor(bot, placedTable);
+    return true;
+}
+
+function getRecipeOutputCount(recipe) {
+    const count = recipe?.result?.count ?? recipe?.count ?? 1;
+    return Number.isFinite(count) && count > 0 ? count : 1;
+}
+
+async function cleanupCraftingTableAndArmor(bot, placedTable) {
     if (placedTable) {
         await collectBlock(bot, 'crafting_table', 1);
     }
 
-    //Equip any armor the bot may have crafted.
-    //There is probablly a more efficient method than checking the entire inventory but this is all mineflayer-armor-manager provides. :P
-    bot.armorManager.equipAll(); 
-
-    return true;
+    // Equip any armor the bot may have crafted.
+    // There is probably a more efficient method than checking the entire inventory but this is all mineflayer-armor-manager provides.
+    bot.armorManager.equipAll();
 }
 
 export async function wait(bot, milliseconds) {
@@ -503,8 +594,10 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
                 success = true;
             }
             else {
-                await bot.collectBlock.collect(block);
-                success = true;
+                success = await waitForInterruptOrResult(bot, bot.collectBlock.collect(block), () => {
+                    bot.pathfinder.stop();
+                    bot.stopDigging();
+                });
             }
             if (success)
                 collected++;
@@ -783,7 +876,7 @@ export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dont
             return true;
         }
     } catch (err) {
-        log(bot, `Failed to place ${blockType} at ${target_dest}.`);
+        log(bot, `Failed to place ${blockType} at ${target_dest}: ${formatActionError(err)}.`);
         return false;
     }
 }

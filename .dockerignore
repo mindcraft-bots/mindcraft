@@ -3,3 +3,6 @@ node_modules
 bots/*/
 !bots/*
 keys.json
+settings_llm_providers.json
+results
+tests/results

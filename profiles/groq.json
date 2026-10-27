@@ -1,0 +1,19 @@
+{
+    "name": "groq",
+    "model": {
+        "provider": "groq",
+        "model": "qwen/qwen3-32b"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

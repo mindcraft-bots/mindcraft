@@ -1,0 +1,19 @@
+{
+    "name": "siliconflow",
+    "model": {
+        "provider": "siliconflow",
+        "model": "deepseek-ai/DeepSeek-V4-Flash"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

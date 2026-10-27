@@ -223,8 +223,8 @@ def read_settings(file_path):
     return agent_names 
 
 def update_keys_json():
-    """Update the keys.json file with the specified key-value pair."""
-    with open("keys.example.json", 'r', encoding='utf-8') as file:
+    """Update the settings_llm_providers.json file with the specified key-value pair."""
+    with open("settings_llm_providers.example.json", 'r', encoding='utf-8') as file:
         content = file.read()
     data = json.loads(content)
 
@@ -234,7 +234,7 @@ def update_keys_json():
         if env_value:  # If the variable exists, update it
             data[key] = env_value
 
-    with open("keys.json", 'w', encoding='utf-8') as file:
+    with open("settings_llm_providers.json", 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4)
 
 def set_environment_variable_tmux_session(session_name, key, value):
@@ -738,7 +738,7 @@ def main():
     parser.add_argument('--exp_name', default="exp", help='Name of the experiment')
     parser.add_argument('--s3', action='store_true', help='Whether to upload to s3')
     parser.add_argument('--bucket_name', default="mindcraft-experiments", help='Name of the s3 bucket')
-    parser.add_argument('--add_keys', action='store_true', help='Create the keys.json to match the environment variables')
+    parser.add_argument('--add_keys', action='store_true', help='Create the settings_llm_providers.json to match the environment variables')
     parser.add_argument('--template_profile', default="profiles/tasks/crafting_profile.json", help='Model to use for the agents')
     parser.add_argument('--model', default="gpt-4o-mini", help='Model to use for the agents')
     parser.add_argument('--api', default="openai", help='API to use for the agents')

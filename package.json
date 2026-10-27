@@ -14,10 +14,9 @@
         "eslint-plugin-no-floating-promise": "^2.0.0",
         "express": "^4.18.2",
         "globals": "^15.11.0",
-        "google-translate-api-x": "^10.7.1",
         "groq-sdk": "^0.15.0",
-        "minecraft-data": "^3.97.0",
         "minecraft-assets": "^1.16.0",
+        "minecraft-data": "^3.97.0",
         "mineflayer": "^4.33.0",
         "mineflayer-armor-manager": "^2.0.1",
         "mineflayer-auto-eat": "^3.3.6",
@@ -35,15 +34,19 @@
         "socket.io-client": "^4.7.2",
         "three": "^0.128.0",
         "vec3": "^0.1.10",
+        "ws": "^8.20.0",
         "yargs": "^17.7.2"
     },
     "overrides": {
-      "canvas": "^3.1.0",
-      "gl": "^8.1.6"
+        "canvas": "^3.1.0",
+        "gl": "^8.1.6"
     },
     "scripts": {
         "postinstall": "patch-package",
         "start": "node main.js",
+        "test": "node --test tests/*.test.js",
+        "dev:tool-loop": "node scripts/smoke/dev_native_tool_loop.js",
+        "test:live:function-calls": "node scripts/smoke/live_function_call_smoke.js",
         "reinstall": "npm run clean:modules && npm install",
         "clean:modules": "node -e \"const fs=require('fs');const p=require('path');['node_modules','package-lock.json'].forEach(f=>{if(fs.existsSync(f)){if(fs.lstatSync(f).isDirectory()){fs.rmSync(f,{recursive:true,force:true});}else{fs.unlinkSync(f);}}});\""
     },

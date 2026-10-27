@@ -4,7 +4,7 @@ import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as mindcraft from './mindcraft.js';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Mindserver is:
@@ -17,7 +17,233 @@ let server;
 const agent_connections = {};
 const agent_listeners = [];
 
-const settings_spec = JSON.parse(readFileSync(path.join(__dirname, 'public/settings_spec.json'), 'utf8'));
+const base_settings_spec = JSON.parse(readFileSync(path.join(__dirname, 'public/settings_spec.json'), 'utf8'));
+let active_settings_spec = base_settings_spec;
+const runtime_default_settings = new Set(['llm_providers']);
+
+export function buildRuntimeSettingsSpec(runtimeSettings = {}) {
+    const spec = JSON.parse(JSON.stringify(base_settings_spec));
+    for (const [key, value] of Object.entries(runtimeSettings || {})) {
+        if (!runtime_default_settings.has(key) || !(key in spec) || value === undefined) continue;
+        spec[key].default = value;
+    }
+    return spec;
+}
+
+
+function isSafeAgentName(agentName) {
+    return /^[A-Za-z0-9_-]+$/.test(String(agentName || ''));
+}
+
+function resolveProjectPath(cwd, maybePath) {
+    if (!maybePath || typeof maybePath !== 'string') return null;
+    return path.isAbsolute(maybePath) ? maybePath : path.resolve(cwd, maybePath);
+}
+
+function readJsonLines(filePath) {
+    const raw = readFileSync(filePath, 'utf8').trim();
+    if (!raw) return [];
+    return raw
+        .split(/\r?\n/)
+        .map(line => {
+            try {
+                return JSON.parse(line);
+            } catch {
+                return null;
+            }
+        })
+        .filter(Boolean);
+}
+
+function newestJsonlFile(dirPath) {
+    if (!existsSync(dirPath)) return null;
+    const files = readdirSync(dirPath)
+        .filter(name => name.endsWith('.jsonl'))
+        .map(name => path.join(dirPath, name))
+        .filter(file => {
+            try { return statSync(file).isFile(); }
+            catch { return false; }
+        })
+        .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+    return files[0] || null;
+}
+
+export function readSavedChatHistory(agentName, options = {}) {
+    const { loadMemory = true, cwd = process.cwd() } = options;
+    if (loadMemory !== true) {
+        return { loaded: false, reason: 'load_memory_disabled', events: [] };
+    }
+    if (!isSafeAgentName(agentName)) {
+        return { loaded: false, reason: 'invalid_agent_name', events: [] };
+    }
+
+    const botDir = path.join(cwd, 'bots', agentName);
+    const memoryPath = path.join(botDir, 'memory.json');
+    const candidates = [];
+    let memoryData = null;
+
+    if (existsSync(memoryPath)) {
+        try {
+            memoryData = JSON.parse(readFileSync(memoryPath, 'utf8'));
+            candidates.push(resolveProjectPath(cwd, memoryData.chat_history_trace));
+            candidates.push(resolveProjectPath(cwd, memoryData.chat_history_latest));
+        } catch (error) {
+            console.warn(`Failed to read ${agentName}'s memory file for chat history: ${error.message}`);
+        }
+    }
+
+    candidates.push(...allJsonlFiles(path.join(botDir, 'chat-history')));
+    candidates.push(path.join(botDir, 'chat_history.jsonl'));
+    candidates.push(newestJsonlFile(path.join(botDir, 'chat-history')));
+
+    const historyFiles = uniqueExistingFiles(candidates).sort(compareTraceFiles);
+    if (historyFiles.length > 0) {
+        try {
+            const events = dedupeChatEvents(historyFiles.flatMap(file => readJsonLines(file)));
+            return {
+                loaded: true,
+                source: historyFiles[0],
+                sources: historyFiles,
+                events: expandArchivedCompactHistory(events, cwd, agentName)
+            };
+        } catch (error) {
+            return { loaded: false, reason: 'read_error', error: error.message, events: [] };
+        }
+    }
+
+    if (Array.isArray(memoryData?.turns) && memoryData.turns.length > 0) {
+        return {
+            loaded: true,
+            source: memoryPath,
+            restored_from_memory: true,
+            events: expandArchivedCompactHistory(memoryData.turns.map((turn, index) => ({
+                timestamp: memoryData.updated_at || null,
+                agent: agentName,
+                type: 'history_turn_added',
+                turn,
+                active_turn_count: index + 1,
+                restored_from_memory: true
+            })), cwd, agentName)
+        };
+    }
+
+    return { loaded: false, reason: 'not_found', events: [] };
+}
+
+function allJsonlFiles(dirPath) {
+    if (!existsSync(dirPath)) return [];
+    return readdirSync(dirPath)
+        .filter(name => name.endsWith('.jsonl'))
+        .map(name => path.join(dirPath, name))
+        .filter(file => {
+            try { return statSync(file).isFile(); }
+            catch { return false; }
+        });
+}
+
+function uniqueExistingFiles(files) {
+    const seen = new Set();
+    const out = [];
+    for (const file of files) {
+        if (!file || !existsSync(file)) continue;
+        const resolved = path.resolve(file);
+        if (seen.has(resolved)) continue;
+        seen.add(resolved);
+        out.push(resolved);
+    }
+    return out;
+}
+
+function compareTraceFiles(a, b) {
+    const nameCompare = path.basename(a).localeCompare(path.basename(b));
+    if (nameCompare !== 0) return nameCompare;
+    try {
+        return statSync(a).mtimeMs - statSync(b).mtimeMs;
+    } catch {
+        return 0;
+    }
+}
+
+function dedupeChatEvents(events) {
+    const seen = new Set();
+    const out = [];
+    for (const event of events) {
+        const key = chatEventKey(event);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(event);
+    }
+    return out;
+}
+
+function chatEventKey(event) {
+    if (!event || typeof event !== 'object') return JSON.stringify(event);
+    const toolId = event.tool_call?.id || event.tool_call?.tool_call_id || event.tool_call?.function?.id || '';
+    const toolName = event.tool_call?.name || event.tool_call?.function?.name || '';
+    const model = event.model?.model || event.model?.api || '';
+    const turnKey = event.turn ? historyTurnKey(event.turn) : '';
+    return [event.timestamp || '', event.agent || '', event.type || '', event.tag || '', toolId || toolName, model, turnKey].join('|');
+}
+
+function expandArchivedCompactHistory(events, cwd, agentName) {
+    const output = [];
+    const seenTurns = new Set();
+    for (const event of events) {
+        const archiveFile = getArchiveFileFromEvent(event);
+        if (archiveFile) {
+            const archivedTurns = readArchivedTurns(cwd, archiveFile);
+            archivedTurns.forEach((turn, index) => {
+                const key = historyTurnKey(turn);
+                if (!key || seenTurns.has(key)) return;
+                const archiveEvent = {
+                    timestamp: event.timestamp || null,
+                    agent: event.agent || agentName,
+                    type: 'history_turn_added',
+                    turn,
+                    active_turn_count: index + 1,
+                    restored_from_archive: true,
+                    archive_file: archiveFile
+                };
+                output.push(archiveEvent);
+                seenTurns.add(key);
+            });
+        }
+        output.push(event);
+        if (event?.type === 'history_turn_added' && event.turn) {
+            const key = historyTurnKey(event.turn);
+            if (key) seenTurns.add(key);
+        }
+    }
+    return output;
+}
+
+function getArchiveFileFromEvent(event) {
+    return event?.full_history_file ||
+        event?.turn?.archive_file ||
+        event?.turn?.compact_metadata?.archive_file ||
+        event?.compact_metadata?.archive_file ||
+        null;
+}
+
+function readArchivedTurns(cwd, archiveFile) {
+    const archivePath = resolveProjectPath(cwd, archiveFile);
+    if (!archivePath || !existsSync(archivePath)) return [];
+    try {
+        const parsed = JSON.parse(readFileSync(archivePath, 'utf8'));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn(`Failed to read compact archive ${archiveFile}: ${error.message}`);
+        return [];
+    }
+}
+
+function historyTurnKey(turn) {
+    if (!turn || typeof turn !== 'object') return '';
+    const calls = Array.isArray(turn.native_tool_calls)
+        ? turn.native_tool_calls.map(call => call.id || call.name || call.function?.name || '').join(',')
+        : '';
+    return [turn.role || '', turn.content || '', turn.tool_call_id || '', calls].join('|');
+}
 
 class AgentConnection {
     constructor(settings, viewer_port) {
@@ -45,10 +271,31 @@ export function logoutAgent(agentName) {
 }
 
 // Initialize the server
-export function createMindServer(host_public = false, port = 8080) {
+export function createMindServer(host_public = false, port = 8080, runtimeSettings = {}) {
+    active_settings_spec = buildRuntimeSettingsSpec(runtimeSettings);
     const app = express();
     server = http.createServer(app);
     io = new Server(server);
+
+    // Serve runtime-aware settings spec before static files so the New Agent form
+    // inherits the actual settings.js defaults, including the LLM provider registry path.
+    app.get('/settings_spec.json', (_req, res) => {
+        res.json(active_settings_spec);
+    });
+
+
+    app.get('/chat-history/:agent', (req, res) => {
+        const agentName = req.params.agent;
+        const conn = agent_connections[agentName];
+        if (!conn) {
+            res.status(404).json({ loaded: false, reason: 'agent_not_found', events: [] });
+            return;
+        }
+        const history = readSavedChatHistory(agentName, {
+            loadMemory: conn.settings?.load_memory === true
+        });
+        res.json(history);
+    });
 
     // Serve static files
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -122,19 +369,19 @@ export function createMindServer(host_public = false, port = 8080) {
 
         socket.on('create-agent', async (settings, callback) => {
             console.log('API create agent...');
-            for (let key in settings_spec) {
+            for (let key in active_settings_spec) {
                 if (!(key in settings)) {
-                    if (settings_spec[key].required) {
+                    if (active_settings_spec[key].required) {
                         callback({ success: false, error: `Setting ${key} is required` });
                         return;
                     }
                     else {
-                        settings[key] = settings_spec[key].default;
+                        settings[key] = active_settings_spec[key].default;
                     }
                 }
             }
             for (let key in settings) {
-                if (!(key in settings_spec)) {
+                if (!(key in active_settings_spec)) {
                     delete settings[key];
                 }
             }
@@ -220,6 +467,11 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('stop-agent', (agentName) => {
+            const agent = agent_connections[agentName];
+            if (agent?.socket) {
+                agent.socket.emit('stop-agent');
+                return;
+            }
             mindcraft.stopAgent(agentName);
         });
 
@@ -269,6 +521,10 @@ export function createMindServer(host_public = false, port = 8080) {
 
         socket.on('bot-output', (agentName, message) => {
             io.emit('bot-output', agentName, message);
+        });
+
+        socket.on('agent-trace', (agentName, event) => {
+            io.emit('agent-trace', agentName, event);
         });
 
         socket.on('listen-to-agents', () => {

@@ -21,6 +21,11 @@ export class SelfPrompter {
         }
         this.state = ACTIVE;
         this.prompt = prompt;
+        if (this.agent.isHandlingMessage?.()) {
+            console.log('Self-prompt loop deferred until current message completes.');
+            this.idle_time = 0;
+            return;
+        }
         this.startLoop();
     }
 
@@ -63,9 +68,9 @@ export class SelfPrompter {
         let no_command_count = 0;
         const MAX_NO_COMMAND = 3;
         while (!this.interrupt) {
-            const msg = `You are self-prompting with the goal: '${this.prompt}'. Your next response MUST contain a command with this syntax: !commandName. Respond:`;
+            const msg = `Continue working on your current goal: "${this.prompt}". Decide the next useful step and proceed. If the goal is complete, finish the goal.`;
             
-            let used_command = await this.agent.handleMessage('system', msg, -1);
+            let used_command = await this.agent.handleSelfPrompt(msg, -1);
             if (!used_command) {
                 no_command_count++;
                 if (no_command_count >= MAX_NO_COMMAND) {
@@ -89,7 +94,8 @@ export class SelfPrompter {
     update(delta) {
         // automatically restarts loop
         if (this.state === ACTIVE && !this.loop_active && !this.interrupt) {
-            if (this.agent.isIdle())
+            const canRestart = this.agent.isIdle() && !(this.agent.isHandlingMessage?.());
+            if (canRestart)
                 this.idle_time += delta;
             else
                 this.idle_time = 0;

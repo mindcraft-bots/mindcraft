@@ -1,0 +1,12 @@
+export const DEFAULT_CODEX_BASE_URL = 'https://chatgpt.com/backend-api/codex';
+export const DEFAULT_KEYS_PATH = 'settings_llm_providers.json';
+export const CODEX_REFRESH_TOKEN_URL = 'https://auth.openai.com/oauth/token';
+export const CODEX_ISSUER = 'https://auth.openai.com';
+export const CODEX_OAUTH_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';
+export const CODEX_AUTH_KEY = 'CODEX_CHATGPT_AUTH';
+export const DEFAULT_ORIGINATOR = 'codex_cli_rs';
+export const LOGIN_TIMEOUT_MS = 15 * 60 * 1000;
+export const DEFAULT_LOGIN_PORT = 1455;
+export const RESPONSES_WEBSOCKET_BETA_HEADER_VALUE = 'responses_websockets=2026-02-06';
+export const DEFAULT_WEBSOCKET_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+export const CONTINUITY_BASELINE_INPUT = Symbol('codexContinuityBaselineInput');

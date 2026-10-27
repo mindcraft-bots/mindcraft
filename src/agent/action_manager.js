@@ -1,3 +1,10 @@
+import assert from 'node:assert';
+
+function isExpectedInterruptError(error) {
+    const text = `${error?.name || ''} ${error?.message || ''} ${error?.toString?.() || ''}`;
+    return text.includes('PathStopped') || text.includes('Path was stopped before it could be completed');
+}
+
 export class ActionManager {
     constructor(agent) {
         this.agent = agent;
@@ -23,17 +30,18 @@ export class ActionManager {
         }
     }
 
-    async stop() {
-        if (!this.executing) return;
+    async stop({ timeoutMs = 10000 } = {}) {
+        if (!this.executing) return true;
         const timeout = setTimeout(() => {
-            this.agent.cleanKill('Code execution refused stop after 10 seconds. Killing process.');
-        }, 10000);
+            this.agent.cleanKill(`Code execution refused stop after ${timeoutMs}ms. Killing process.`);
+        }, timeoutMs);
         while (this.executing) {
             this.agent.requestInterrupt();
             console.log('waiting for code to finish executing...');
             await new Promise(resolve => setTimeout(resolve, 300));
         }
         clearTimeout(timeout);
+        return true;
     } 
 
     cancelResume() {
@@ -124,23 +132,31 @@ export class ActionManager {
             // return action status report
             return { success: true, message: output, interrupted, timedout };
         } catch (err) {
+            const interrupted = this.agent.bot.interrupt_code;
             this.executing = false;
             this.currentActionLabel = '';
             this.currentActionFn = null;
             clearTimeout(TIMEOUT);
             this.cancelResume();
-            console.error("Code execution triggered catch:", err);
-            // Log the full stack trace
-            console.error(err.stack);
+            if (interrupted && isExpectedInterruptError(err)) {
+                console.log(`Code execution interrupted during ${actionLabel}: ${err.message || err}`);
+            } else {
+                console.error("Code execution triggered catch:", err);
+                // Log the full stack trace
+                console.error(err.stack);
+            }
             await this.stop();
-            err = err.toString();
+            const errorText = err.toString();
 
-            let message = this.getBotOutputSummary() +
-                '!!Code threw exception!!\n' +
-                'Error: ' + err + '\n' +
-                'Stack trace:\n' + err.stack+'\n';
-
-            let interrupted = this.agent.bot.interrupt_code;
+            let message;
+            if (interrupted && isExpectedInterruptError(err)) {
+                message = this.getBotOutputSummary() || 'Action interrupted before completion.';
+            } else {
+                message = this.getBotOutputSummary() +
+                    '!!Code threw exception!!\n' +
+                    'Error: ' + errorText + '\n' +
+                    'Stack trace:\n' + err.stack+'\n';
+            }
             this.agent.clearBotLogs();
             if (!interrupted) {
                 this.agent.bot.emit('idle');
@@ -159,7 +175,7 @@ export class ActionManager {
           First outputs:\n${output.substring(0, MAX_OUT / 2)}\n...skipping many lines.\nFinal outputs:\n ${output.substring(output.length - MAX_OUT / 2)}`;
         }
         else {
-            output = 'Action output:\n' + output.toString();
+            output = output.length > 0 ? 'Action output:\n' + output.toString() : 'Action completed with no additional output.';
         }
         bot.output = '';
         return output;

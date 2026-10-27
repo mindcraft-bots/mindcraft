@@ -1,0 +1,25 @@
+{
+    "name": "codex",
+    "model": {
+        "provider": "codex",
+        "model": "gpt-5.5",
+        "params": {
+            "reasoning": {
+                "effort": "high",
+                "summary": "auto"
+            }
+        }
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

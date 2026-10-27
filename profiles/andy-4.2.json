@@ -1,0 +1,19 @@
+{
+    "name": "andy_4_2",
+    "model": {
+        "provider": "lmstudio",
+        "model": "andy-4.2"
+    },
+    "embedding": {
+        "provider": "lmstudio",
+        "model": "text-embedding-nomic-embed-text-v1.5"
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

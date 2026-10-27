@@ -1,0 +1,19 @@
+{
+    "name": "minimax",
+    "model": {
+        "provider": "minimax_intl",
+        "model": "MiniMax-M2.7"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

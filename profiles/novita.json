@@ -1,0 +1,19 @@
+{
+    "name": "novita",
+    "model": {
+        "provider": "novita",
+        "model": "deepseek/deepseek-v4-flash"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

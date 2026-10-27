@@ -1,6 +1,7 @@
 import { readFileSync, mkdirSync, writeFileSync} from 'fs';
-import { Examples } from '../utils/examples.js';
 import { getCommandDocs } from '../agent/commands/index.js';
+import { getCommandToolDefinitions, getNativeToolDocs } from '../agent/commands/tool_adapter.js';
+import { isNativeToolResponse, normalizeThinkingText } from './native_tools.js';
 import { SkillLibrary } from "../agent/library/skill_library.js";
 import { stringifyTurns } from '../utils/text.js';
 import { getCommand } from '../agent/commands/index.js';
@@ -8,10 +9,32 @@ import settings from '../agent/settings.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { selectAPI, createModel } from './_model_map.js';
+import { selectAPI, selectEmbeddingAPI, createModel } from './_model_map.js';
+import { createHash } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PROMPT_FILE_KEYS = [
+    'conversing',
+    'coding',
+    'saving_memory',
+    'bot_responder',
+    'image_analysis',
+    'goal_setting'
+];
+
+
+export function stripVolatileConversationPlaceholders(prompt) {
+    return String(prompt || '')
+        .replaceAll('$SELF_PROMPT', '')
+        .replace(/^.*\$MEMORY.*(?:\r?\n)?/gm, '')
+        .replace(/^\s*\$STATS\s*(?:\r?\n)?/gm, '')
+        .replace(/^\s*\$INVENTORY\s*(?:\r?\n)?/gm, '')
+        .replace(/^.*\$COMMAND_DOCS.*(?:\r?\n)?/gm, '')
+        .replace(/^.*\$EXAMPLES.*(?:\r?\n)?/gm, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trimEnd();
+}
 
 export class Prompter {
     constructor(agent, profile) {
@@ -42,14 +65,13 @@ export class Prompter {
                 this.profile[key] = base_profile[key];
         }
         // base overrides default, individual overrides base
+        resolvePromptFileRefs(this.profile, defaults_dir);
 
-        this.convo_examples = null;
-        this.coding_examples = null;
-        
         let name = this.profile.name;
         this.cooldown = this.profile.cooldown ? this.profile.cooldown : 0;
         this.last_prompt_time = 0;
         this.awaiting_coding = false;
+        this.last_conversation_response_metadata = {};
 
         // for backwards compatibility, move max_tokens to params
         let max_tokens = null;
@@ -57,19 +79,19 @@ export class Prompter {
             max_tokens = this.profile.max_tokens;
 
         let chat_model_profile = selectAPI(this.profile.model);
-        this.chat_model = createModel(chat_model_profile);
+        this.chat_model = createModel(cloneModelProfile(chat_model_profile));
+        this.applyModelSessionIdentity(this.chat_model, chat_model_profile, 'conversation');
 
-        if (this.profile.code_model) {
-            let code_model_profile = selectAPI(this.profile.code_model);
-            this.code_model = createModel(code_model_profile);
-        }
-        else {
-            this.code_model = this.chat_model;
-        }
+        const code_model_profile = hasModelSelection(this.profile.code_model)
+            ? selectAPI(this.profile.code_model)
+            : cloneModelProfile(chat_model_profile);
+        this.code_model = createModel(cloneModelProfile(code_model_profile));
+        this.applyModelSessionIdentity(this.code_model, code_model_profile, 'coding');
 
-        if (this.profile.vision_model) {
+        if (hasModelSelection(this.profile.vision_model)) {
             let vision_model_profile = selectAPI(this.profile.vision_model);
             this.vision_model = createModel(vision_model_profile);
+            this.applyModelSessionIdentity(this.vision_model, vision_model_profile, 'vision');
         }
         else {
             this.vision_model = this.chat_model;
@@ -77,9 +99,9 @@ export class Prompter {
 
         
         let embedding_model_profile = null;
-        if (this.profile.embedding) {
+        if (hasModelSelection(this.profile.embedding)) {
             try {
-                embedding_model_profile = selectAPI(this.profile.embedding);
+                embedding_model_profile = selectEmbeddingAPI(this.profile.embedding);
             } catch (e) {
                 embedding_model_profile = null;
             }
@@ -88,7 +110,7 @@ export class Prompter {
             this.embedding_model = createModel(embedding_model_profile);
         }
         else {
-            this.embedding_model = createModel({api: chat_model_profile.api});
+            this.embedding_model = null;
         }
 
         this.skill_libary = new SkillLibrary(agent, this.embedding_model);
@@ -105,36 +127,38 @@ export class Prompter {
         return this.profile.name;
     }
 
+    applyModelSessionIdentity(model, modelProfile, purpose) {
+        if (typeof model?.setSessionIdentity !== 'function') return;
+        model.setSessionIdentity(stableModelSessionIdentity({
+            cwd: process.cwd(),
+            agent: this.profile.name,
+            purpose,
+            provider: modelProfile?.provider || model?.provider || null,
+            api: modelProfile?.api || model?.constructor?.prefix || null,
+            model: modelProfile?.model || model?.model_name || null
+        }));
+    }
+
     getInitModes() {
         return this.profile.modes;
     }
 
-    async initExamples() {
-        try {
-            this.convo_examples = new Examples(this.embedding_model, settings.num_examples);
-            this.coding_examples = new Examples(this.embedding_model, settings.num_examples);
-            
-            // Wait for both examples to load before proceeding
-            await Promise.all([
-                this.convo_examples.load(this.profile.conversation_examples),
-                this.coding_examples.load(this.profile.coding_examples),
-                this.skill_libary.initSkillLibrary()
-            ]).catch(error => {
-                // Preserve error details
-                console.error('Failed to initialize examples. Error details:', error);
-                console.error('Stack trace:', error.stack);
-                throw error;
-            });
+    isNativeToolMode() {
+        return this.profile.use_native_tools !== false && Boolean(this.chat_model?.supportsNativeToolCalls);
+    }
 
-            console.log('Examples initialized.');
+    async initPromptResources() {
+        try {
+            await this.skill_libary.initSkillLibrary();
+            console.log('Prompt resources initialized.');
         } catch (error) {
-            console.error('Failed to initialize examples:', error);
+            console.error('Failed to initialize prompt resources:', error);
             console.error('Stack trace:', error.stack);
-            throw error; // Re-throw with preserved details
+            throw error;
         }
     }
 
-    async replaceStrings(prompt, messages, examples=null, to_summarize=[], last_goals=null) {
+    async replaceStrings(prompt, messages, to_summarize=[], last_goals=null) {
         prompt = prompt.replaceAll('$NAME', this.agent.name);
 
         if (prompt.includes('$STATS')) {
@@ -150,20 +174,18 @@ export class Prompter {
         if (prompt.includes('$ACTION')) {
             prompt = prompt.replaceAll('$ACTION', this.agent.actions.currentActionLabel);
         }
-        if (prompt.includes('$COMMAND_DOCS'))
-            prompt = prompt.replaceAll('$COMMAND_DOCS', getCommandDocs(this.agent));
+        if (prompt.includes('$COMMAND_DOCS')) {
+            const docs = this.isNativeToolMode() ? getNativeToolDocs(this.agent) : this.getTextCommandFallbackDocs();
+            prompt = prompt.replaceAll('$COMMAND_DOCS', docs);
+        }
         if (prompt.includes('$CODE_DOCS')) {
-            const code_task_content = messages.slice().reverse().find(msg =>
-                msg.role !== 'system' && msg.content.includes('!newAction(')
-            )?.content?.match(/!newAction\((.*?)\)/)?.[1] || '';
+            const code_task_content = extractCodeTaskContent(messages);
 
             prompt = prompt.replaceAll(
                 '$CODE_DOCS',
                 await this.skill_libary.getRelevantSkillDocs(code_task_content, settings.relevant_docs_count)
             );
         }
-        if (prompt.includes('$EXAMPLES') && examples !== null)
-            prompt = prompt.replaceAll('$EXAMPLES', await examples.createExampleMessage(messages));
         if (prompt.includes('$MEMORY'))
             prompt = prompt.replaceAll('$MEMORY', this.agent.history.memory);
         if (prompt.includes('$TO_SUMMARIZE'))
@@ -179,9 +201,9 @@ export class Prompter {
             let goal_text = '';
             for (let goal in last_goals) {
                 if (last_goals[goal])
-                    goal_text += `You recently successfully completed the goal ${goal}.\n`
+                    goal_text += `You recently successfully completed the goal ${goal}.\n`;
                 else
-                    goal_text += `You recently failed to complete the goal ${goal}.\n`
+                    goal_text += `You recently failed to complete the goal ${goal}.\n`;
             }
             prompt = prompt.replaceAll('$LAST_GOALS', goal_text.trim());
         }
@@ -211,9 +233,10 @@ export class Prompter {
         this.last_prompt_time = Date.now();
     }
 
-    async promptConvo(messages) {
+    async promptConvo(messages, options = {}) {
         this.most_recent_msg_time = Date.now();
         let current_msg_time = this.most_recent_msg_time;
+        this.last_conversation_response_metadata = {};
 
         for (let i = 0; i < 3; i++) { // try 3 times to avoid hallucinations
             await this.checkCooldown();
@@ -221,20 +244,43 @@ export class Prompter {
                 return '';
             }
 
-            let prompt = this.profile.conversing;
-            prompt = await this.replaceStrings(prompt, messages, this.convo_examples);
+            const prompt = await this.buildConversationSystemPrompt(messages);
+            const requestMessages = await this.buildConversationMessages(messages);
             let generation;
 
             try {
-                generation = await this.chat_model.sendRequest(messages, prompt);
+                const tools = this.isNativeToolMode() ? getCommandToolDefinitions(this.agent) : null;
+                const requestOptions = {
+                    cacheScope: 'conversation',
+                    turnStateKey: options.turnStateKey,
+                    signal: options.signal
+                };
+                const requestTraceMetadata = this.chat_model.getCacheTraceMetadata?.(requestOptions) || {
+                    cache_scope: requestOptions.cacheScope,
+                    turn_state_key: requestOptions.turnStateKey
+                };
+                this.agent.history.traceLLMRequest('conversation', this.chat_model, prompt, requestMessages, tools, requestTraceMetadata);
+                generation = await this.chat_model.sendRequest(requestMessages, prompt, '***', tools, requestOptions);
+                this.captureConversationResponseMetadata(this.chat_model, generation);
+                const responseTraceMetadata = consumeModelRequestTraceMetadata(this.chat_model, requestOptions, requestTraceMetadata);
+                this.agent.history.traceLLMResponse('conversation', this.chat_model, generation, responseTraceMetadata);
+                if (isNativeToolResponse(generation)) {
+                    await this._saveLog(prompt, requestMessages, JSON.stringify(generation), 'conversation');
+                    return generation;
+                }
                 if (typeof generation !== 'string') {
                     console.error('Error: Generated response is not a string', generation);
                     throw new Error('Generated response is not a string');
                 }
                 console.log("Generated response:", generation);
-                await this._saveLog(prompt, messages, generation, 'conversation');
+                await this._saveLog(prompt, requestMessages, generation, 'conversation');
 
             } catch (error) {
+                this.agent.history.traceLLMError('conversation', this.chat_model, error);
+                if (isAbortError(error)) {
+                    console.warn('Conversation LLM request aborted before completion.');
+                    return '';
+                }
                 console.error('Error during message generation or file writing:', error);
                 continue;
             }
@@ -251,8 +297,8 @@ export class Prompter {
             }
 
             if (generation?.includes('</think>')) {
-                const [_, afterThink] = generation.split('</think>')
-                generation = afterThink
+                const [_, afterThink] = generation.split('</think>');
+                generation = afterThink;
             }
 
             return generation;
@@ -261,50 +307,146 @@ export class Prompter {
         return '';
     }
 
-    async promptCoding(messages) {
+    captureConversationResponseMetadata(model, response) {
+        const thinking = normalizeThinkingText(
+            response?.thinking ??
+            response?.reasoning_content ??
+            response?.reasoning ??
+            model?.lastThinking ??
+            ''
+        );
+        const metadata = {};
+        if (thinking) metadata.thinking = thinking;
+        const thinkingBlocks = response?.thinking_blocks || response?.thinkingBlocks || model?.lastThinkingBlocks;
+        if (Array.isArray(thinkingBlocks) && thinkingBlocks.length > 0) {
+            metadata.thinking_blocks = thinkingBlocks;
+        }
+        const thinkingKey = response?.thinking_key || response?.reasoning_key || model?.reasoning_key;
+        if (thinkingKey) metadata.thinking_key = thinkingKey;
+        this.last_conversation_response_metadata = metadata;
+        return metadata;
+    }
+
+    consumeLastConversationResponseMetadata() {
+        const metadata = this.last_conversation_response_metadata || {};
+        this.last_conversation_response_metadata = {};
+        return metadata;
+    }
+
+    async buildConversationSystemPrompt(messages) {
+        const stableTemplate = stripVolatileConversationPlaceholders(this.profile.conversing);
+        return await this.replaceStrings(stableTemplate, messages);
+    }
+
+    async buildConversationMessages(messages) {
+        return messages;
+    }
+
+    getTextCommandFallbackDocs() {
+        const docs = getCommandDocs(this.agent);
+        if (this.profile.use_native_tools === false) {
+            return docs;
+        }
+        return '\n*NATIVE TOOL FALLBACK WARNING\nThis model adapter does not advertise native tool calling support, so Mindcraft is temporarily falling back to text !command syntax for AI actions. Prefer a native-tool-capable provider when available. Human users may still type !commands.*\n' + docs;
+    }
+
+    async promptCoding(messages, options = {}) {
         if (this.awaiting_coding) {
             console.warn('Already awaiting coding response, returning no response.');
             return '```//no response```';
         }
         this.awaiting_coding = true;
-        await this.checkCooldown();
-        let prompt = this.profile.coding;
-        prompt = await this.replaceStrings(prompt, messages, this.coding_examples);
+        try {
+            await this.checkCooldown();
+            let prompt = this.profile.coding;
+            prompt = await this.replaceStrings(prompt, messages);
 
-        let resp = await this.code_model.sendRequest(messages, prompt);
-        this.awaiting_coding = false;
-        await this._saveLog(prompt, messages, resp, 'coding');
-        return resp;
+            const requestOptions = { cacheScope: 'coding', transportCacheScope: 'coding', signal: options.signal };
+            const requestTraceMetadata = this.code_model.getCacheTraceMetadata?.(requestOptions) || {
+                cache_scope: requestOptions.cacheScope,
+                transport_cache_scope: requestOptions.transportCacheScope
+            };
+            this.agent.history.traceLLMRequest('coding', this.code_model, prompt, messages, null, requestTraceMetadata);
+            let resp = await this.code_model.sendRequest(messages, prompt, '***', null, requestOptions);
+            this.agent.history.traceLLMResponse('coding', this.code_model, resp, consumeModelRequestTraceMetadata(this.code_model, requestOptions, requestTraceMetadata));
+            await this._saveLog(prompt, messages, resp, 'coding');
+            return resp;
+        } finally {
+            this.awaiting_coding = false;
+        }
     }
 
-    async promptMemSaving(to_summarize) {
+    async promptCompactSummary(to_summarize) {
         await this.checkCooldown();
         let prompt = this.profile.saving_memory;
-        prompt = await this.replaceStrings(prompt, null, null, to_summarize);
-        let resp = await this.chat_model.sendRequest([], prompt);
-        await this._saveLog(prompt, to_summarize, resp, 'memSaving');
+        prompt = await this.replaceStrings(prompt, null, to_summarize);
+        const requestOptions = { cacheScope: 'compactSummary', transportCacheScope: 'compactSummary' };
+        const requestTraceMetadata = this.chat_model.getCacheTraceMetadata?.(requestOptions) || {
+            cache_scope: requestOptions.cacheScope,
+            transport_cache_scope: requestOptions.transportCacheScope
+        };
+        this.agent.history.traceLLMRequest('compactSummary', this.chat_model, prompt, to_summarize, null, requestTraceMetadata);
+        let resp = await this.chat_model.sendRequest([], prompt, '***', null, requestOptions);
+        this.agent.history.traceLLMResponse('compactSummary', this.chat_model, resp, consumeModelRequestTraceMetadata(this.chat_model, requestOptions, requestTraceMetadata));
+        await this._saveLog(prompt, to_summarize, resp, 'compactSummary');
         if (resp?.includes('</think>')) {
-            const [_, afterThink] = resp.split('</think>')
+            const [_, afterThink] = resp.split('</think>');
             resp = afterThink;
         }
         return resp;
     }
 
-    async promptShouldRespondToBot(new_message) {
+    async promptMemSaving(to_summarize) {
+        return this.promptCompactSummary(to_summarize);
+    }
+
+    async promptShouldRespondToBot(new_message, options = {}) {
         await this.checkCooldown();
-        let prompt = this.profile.bot_responder;
-        let messages = this.agent.history.getHistory();
-        messages.push({role: 'user', content: new_message});
-        prompt = await this.replaceStrings(prompt, null, null, messages);
-        let res = await this.chat_model.sendRequest([], prompt);
-        return res.trim().toLowerCase() === 'respond';
+        const historyMessages = this.agent.history.getHistory();
+        const requestMessages = [
+            ...(await this.buildConversationMessages(historyMessages)),
+            { role: 'user', content: await this.buildBotResponderUserPrompt(new_message) }
+        ];
+        const prompt = await this.buildConversationSystemPrompt(historyMessages);
+        const requestOptions = { cacheScope: options.cacheScope || 'botResponder', signal: options.signal };
+        const tools = this.isNativeToolMode() ? getCommandToolDefinitions(this.agent) : null;
+        const traceMetadata = {
+            ephemeral: true,
+            branch: true,
+            incoming_message: new_message,
+            ...(this.chat_model.getCacheTraceMetadata?.(requestOptions) || { cache_scope: options.cacheScope || 'botResponder' })
+        };
+        this.agent.history.traceLLMRequest('botResponder', this.chat_model, prompt, requestMessages, tools, traceMetadata);
+        let res = await this.chat_model.sendRequest(requestMessages, prompt, '***', tools, requestOptions);
+        const responseTraceMetadata = consumeModelRequestTraceMetadata(this.chat_model, requestOptions, traceMetadata);
+        this.agent.history.traceLLMResponse('botResponder', this.chat_model, res, responseTraceMetadata);
+        const decision = normalizeBotResponderDecision(res);
+        if (decision !== 'respond' && decision !== 'ignore') {
+            console.warn(`Invalid botResponder decision for ${this.agent.name}: ${decision}`);
+        }
+        return decision === 'respond';
+    }
+
+    async buildBotResponderUserPrompt(newMessage) {
+        const incomingMessage = String(newMessage ?? '');
+        const prompt = String(this.profile.bot_responder || '')
+            .replaceAll('$INCOMING_MESSAGE', incomingMessage);
+        return await this.replaceStrings(prompt, [], []);
     }
 
     async promptVision(messages, imageBuffer) {
         await this.checkCooldown();
         let prompt = this.profile.image_analysis;
-        prompt = await this.replaceStrings(prompt, messages, null, null, null);
-        return await this.vision_model.sendVisionRequest(messages, prompt, imageBuffer);
+        prompt = await this.replaceStrings(prompt, messages);
+        const requestOptions = { cacheScope: 'vision', transportCacheScope: 'vision' };
+        const requestTraceMetadata = this.vision_model.getCacheTraceMetadata?.(requestOptions) || {
+            cache_scope: requestOptions.cacheScope,
+            transport_cache_scope: requestOptions.transportCacheScope
+        };
+        this.agent.history.traceLLMRequest('vision', this.vision_model, prompt, messages, null, requestTraceMetadata);
+        const res = await this.vision_model.sendVisionRequest(messages, prompt, imageBuffer, requestOptions);
+        this.agent.history.traceLLMResponse('vision', this.vision_model, res, consumeModelRequestTraceMetadata(this.vision_model, requestOptions, requestTraceMetadata));
+        return res;
     }
 
     async promptGoalSetting(messages, last_goals) {
@@ -313,11 +455,18 @@ export class Prompter {
         system_message = await this.replaceStrings(system_message, messages);
 
         let user_message = 'Use the below info to determine what goal to target next\n\n';
-        user_message += '$LAST_GOALS\n$STATS\n$INVENTORY\n$CONVO'
-        user_message = await this.replaceStrings(user_message, messages, null, null, last_goals);
+        user_message += '$LAST_GOALS\n$STATS\n$INVENTORY\n$CONVO';
+        user_message = await this.replaceStrings(user_message, messages, null, last_goals);
         let user_messages = [{role: 'user', content: user_message}];
 
-        let res = await this.chat_model.sendRequest(user_messages, system_message);
+        const requestOptions = { cacheScope: 'goalSetting', transportCacheScope: 'goalSetting' };
+        const requestTraceMetadata = this.chat_model.getCacheTraceMetadata?.(requestOptions) || {
+            cache_scope: requestOptions.cacheScope,
+            transport_cache_scope: requestOptions.transportCacheScope
+        };
+        this.agent.history.traceLLMRequest('goalSetting', this.chat_model, system_message, user_messages, null, requestTraceMetadata);
+        let res = await this.chat_model.sendRequest(user_messages, system_message, '***', null, requestOptions);
+        this.agent.history.traceLLMResponse('goalSetting', this.chat_model, res, consumeModelRequestTraceMetadata(this.chat_model, requestOptions, requestTraceMetadata));
 
         let goal = null;
         try {
@@ -363,4 +512,86 @@ export class Prompter {
         logFile = path.join(logDir, logFile);
         await fs.appendFile(logFile, String(logEntry), 'utf-8');
     }
+}
+
+function resolvePromptFileRefs(profile, defaultBaseDir) {
+    for (const key of PROMPT_FILE_KEYS) {
+        const value = profile[key];
+        const promptPath = getPromptPath(value);
+        if (!promptPath) continue;
+        profile[key] = readFileSync(resolvePromptPath(promptPath, defaultBaseDir), 'utf8');
+    }
+}
+
+function getPromptPath(value) {
+    if (!value || typeof value !== 'object') return null;
+    return value.prompt_file || value.file || value.path || null;
+}
+
+function resolvePromptPath(promptPath, defaultBaseDir) {
+    if (path.isAbsolute(promptPath)) return promptPath;
+    const defaultRelativePath = path.join(defaultBaseDir, promptPath);
+    try {
+        readFileSync(defaultRelativePath, 'utf8');
+        return defaultRelativePath;
+    } catch {
+        return path.resolve(promptPath);
+    }
+}
+
+function hasModelSelection(profile) {
+    if (typeof profile === 'string' || profile instanceof String) {
+        return profile.trim().length > 0;
+    }
+    if (!profile || typeof profile !== 'object') {
+        return false;
+    }
+    return ['provider', 'api', 'model'].some(key =>
+        typeof profile[key] === 'string' && profile[key].trim().length > 0
+    );
+}
+
+function extractCodeTaskContent(messages) {
+    const content = messages?.slice?.().reverse?.().find(msg =>
+        msg?.role !== 'system'
+        && typeof msg?.content === 'string'
+        && (msg.content.includes('!newAction(') || msg.content.startsWith('Code generation task:'))
+    )?.content || '';
+
+    const legacyMatch = content.match(/!newAction\((.*?)\)/);
+    if (legacyMatch) return legacyMatch[1];
+
+    return content
+        .replace(/^Code generation task:\s*/i, '')
+        .replace(/\n\nWrite the implementation as a JavaScript code block\.\s*$/i, '')
+        .trim();
+}
+
+function stableModelSessionIdentity(parts) {
+    const text = JSON.stringify(parts || {});
+    return `mindcraft-${createHash('sha256').update(text).digest('hex').slice(0, 24)}`;
+}
+
+function cloneModelProfile(profile) {
+    return JSON.parse(JSON.stringify(profile || {}));
+}
+
+function consumeModelRequestTraceMetadata(model, requestOptions, fallbackMetadata = {}) {
+    const requestMetadata = model?.consumeLastRequestTraceMetadata?.(requestOptions);
+    const metadata = { ...(fallbackMetadata || {}) };
+    if (requestMetadata?.transport_cache) metadata.transport_cache = requestMetadata.transport_cache;
+    if (requestMetadata?.token_usage) metadata.token_usage = requestMetadata.token_usage;
+    return metadata;
+}
+
+export function normalizeBotResponderDecision(response) {
+    if (isNativeToolResponse(response)) return 'invalid_tool_call';
+    const normalized = String(response ?? '').trim().toLowerCase();
+    if (normalized.startsWith('respond')) return 'respond';
+    if (normalized.startsWith('ignore')) return 'ignore';
+    return normalized ? 'invalid' : 'invalid_empty';
+}
+
+function isAbortError(error) {
+    return error?.name === 'AbortError' || String(error?.message || error || '').includes('aborted');
 }

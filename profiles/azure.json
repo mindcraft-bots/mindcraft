@@ -1,19 +1,20 @@
 {
     "name": "azure",
+    "comment": "Configure the Azure chat and embedding baseUrl/defaultModel values in settings_llm_providers.example.json, then copy them into settings_llm_providers.json for local use.",
     "model": {
-        "api": "azure",
-        "url": "https://<your-resource>.openai.azure.com",
-        "model": "<chat-deployment-name>",
-        "params": { 
-            "apiVersion": "2024-08-01-preview" 
-        }
+        "provider": "azure",
+        "model": "gpt-5-nano"
     },
     "embedding": {
-        "api": "azure",
-        "url": "https://<your-resource>.openai.azure.com",
-        "model": "<embedding-deployment-name>",
-        "params": { 
-            "apiVersion": "2024-08-01-preview" 
-        }
+        "provider": "azure",
+        "model": "<embedding-deployment-name>"
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
     }
-  }
+}

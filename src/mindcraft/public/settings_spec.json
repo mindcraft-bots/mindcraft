@@ -4,6 +4,22 @@
         "required": true,
         "description": "The profile object to use, including name, prompts, and examples"
     },
+    "llm_providers": {
+        "type": "string",
+        "description": "Project-level LLM keys/model/embedding registry file",
+        "default": "settings_llm_providers.json",
+        "hidden": true
+    },
+    "show_chat_history": {
+        "type": "boolean",
+        "description": "Whether to stream lightweight chat and tool events to the web UI chat panel",
+        "default": true
+    },
+    "log_chat_trace": {
+        "type": "boolean",
+        "description": "Whether to write full prompt, request, response, and trace JSONL files",
+        "default": false
+    },
     "minecraft_version": {
         "type": "string",
         "description": "The version of Minecraft to use. Set to 'auto' to automatically detect the version.",
@@ -23,13 +39,21 @@
         "type": "string",
         "description": "The authentication method to use",
         "default": "offline",
-        "options": ["offline", "microsoft"]
+        "options": [
+            "offline",
+            "microsoft"
+        ]
     },
     "base_profile": {
         "type": "string",
         "description": "Allowed values: survival, assistant, creative, god_mode. Each has fine tuned settings for different game modes.",
         "default": "survival",
-        "options": ["survival", "assistant", "creative", "god_mode"]
+        "options": [
+            "survival",
+            "assistant",
+            "creative",
+            "god_mode"
+        ]
     },
     "load_memory": {
         "type": "boolean",
@@ -51,11 +75,6 @@
         "description": "Whether to enable text-to-speech reading on the host machine",
         "default": false
     },
-    "language": {
-        "type": "string",
-        "description": "The language to automatically translate to and from using google translate",
-        "default": "en"
-    },
     "allow_vision": {
         "type": "boolean",
         "description": "Whether to allow vision capabilities",
@@ -73,13 +92,13 @@
     },
     "max_messages": {
         "type": "number",
-        "description": "Maximum number of recent messages to keep in context for LLM",
-        "default": 15
+        "description": "Message-count context window; compaction considers messages after the latest compact boundary",
+        "default": 120
     },
-    "num_examples": {
+    "compact_message_threshold_percent": {
         "type": "number",
-        "description": "Number of examples to select to help prompt better LLM responses",
-        "default": 2
+        "description": "Compact the whole active context when it reaches this percent of max_messages",
+        "default": 80
     },
     "max_commands": {
         "type": "number",

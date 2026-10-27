@@ -1,9 +1,20 @@
 {
     "name": "gemini",
-
-    "model": "gemini-flash-latest",
-
-    "speak_model": "google/gemini-2.5-flash-preview-tts/Kore",
-
-    "cooldown": 2000
+    "model": {
+        "provider": "google",
+        "model": "gemini-2.5-flash"
+    },
+    "cooldown": 2000,
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

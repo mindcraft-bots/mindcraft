@@ -18,9 +18,9 @@ function runAsAction (actionFn, resume = false, timeout = -1) {
         };
         const code_return = await agent.actions.runAction(`action:${actionLabel}`, actionFnWithAgent, { timeout, resume });
         if (code_return.interrupted && !code_return.timedout)
-            return;
-        return code_return.message;
-    }
+            return code_return.message || 'Action interrupted before completion.';
+        return code_return.message || 'Action completed.';
+    };
 
     return wrappedAction;
 }
@@ -33,7 +33,6 @@ export const actionsList = [
             'prompt': { type: 'string', description: 'A natural language prompt to guide code generation. Make a detailed step-by-step plan.' }
         },
         perform: async function(agent, prompt) {
-            // just ignore prompt - it is now in context in chat history
             if (!settings.allow_insecure_coding) { 
                 agent.openChat('newAction is disabled. Enable with allow_insecure_coding=true in settings.js');
                 return "newAction not allowed! Code writing is disabled in settings. Notify the user.";
@@ -41,19 +40,20 @@ export const actionsList = [
             let result = "";
             const actionFn = async () => {
                 try {
-                    result = await agent.coder.generateCode(agent.history);
+                    result = await agent.coder.generateCode(prompt);
                 } catch (e) {
                     result = 'Error generating code: ' + e.toString();
                 }
             };
-            await agent.actions.runAction('action:newAction', actionFn, {timeout: settings.code_timeout_mins});
-            return result;
+            const code_return = await agent.actions.runAction('action:newAction', actionFn, {timeout: settings.code_timeout_mins});
+            return result || code_return.message || 'newAction did not produce code or a tool result.';
         }
     },
     {
         name: '!stop',
         description: 'Force stop all actions and commands that are currently executing.',
         perform: async function (agent) {
+            await agent.finishInterruptedNativeToolCalls?.('Tool interrupted by user !stop command.');
             await agent.actions.stop();
             agent.clearBotLogs();
             agent.actions.cancelResume();
@@ -70,7 +70,7 @@ export const actionsList = [
         perform: async function (agent) {
             agent.openChat('Shutting up.');
             agent.shutUp();
-            return;
+            return 'Chatting and self-prompting stopped; current action continues.';
         }
     },
     {
@@ -265,10 +265,10 @@ export const actionsList = [
     },
     {
         name: '!craftRecipe',
-        description: 'Craft the given recipe a given number of times.',
+        description: 'Craft the requested number of output items from a recipe.',
         params: {
             'recipe_name': { type: 'ItemName', description: 'The name of the output item to craft.' },
-            'num': { type: 'int', description: 'The number of times to craft the recipe. This is NOT the number of output items, as it may craft many more items depending on the recipe.', domain: [1, Number.MAX_SAFE_INTEGER] }
+            'num': { type: 'int', description: 'The desired number of output items to craft. For recipes that output multiple items, the agent will run the recipe only as many times as needed.', domain: [1, Number.MAX_SAFE_INTEGER] }
         },
         perform: runAsAction(async (agent, recipe_name, num) => {
             await skills.craftRecipe(agent.bot, recipe_name, num);
@@ -369,9 +369,11 @@ export const actionsList = [
         perform: async function (agent, prompt) {
             if (convoManager.inConversation()) {
                 agent.self_prompter.setPromptPaused(prompt);
+                return 'Goal queued and paused until the current conversation ends.';
             }
             else {
                 agent.self_prompter.start(prompt);
+                return 'Goal started.';
             }
         }
     },
@@ -416,8 +418,9 @@ export const actionsList = [
             if (convoManager.inConversation() && !convoManager.inConversation(player_name)) 
                 convoManager.forceEndCurrentConversation();
             else if (convoManager.inConversation(player_name))
-                agent.history.add('system', 'You are already in conversation with ' + player_name + '. Don\'t use this command to talk to them.');
+                return 'You are already in conversation with ' + player_name + '. Do not use this command to talk to them.';
             convoManager.startConversation(player_name, message);
+            return `Conversation with ${player_name} started.`;
         }
     },
     {

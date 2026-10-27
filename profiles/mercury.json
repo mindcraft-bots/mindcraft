@@ -1,9 +1,20 @@
 {
     "name": "Mercury",
-
     "cooldown": 5000,
-
-    "model": "mercury/mercury-coder-small",
-
-     "embedding": "openai"
+    "model": {
+        "provider": "mercury",
+        "model": "mercury-coder-small"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }

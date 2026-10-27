@@ -1,0 +1,19 @@
+{
+    "name": "ollama",
+    "model": {
+        "provider": "ollama",
+        "model": "gpt-oss:120b-cloud"
+    },
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
+}

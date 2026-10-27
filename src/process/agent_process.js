@@ -46,7 +46,7 @@ export class AgentProcess {
                     return;
                 }
                 console.log('Restarting agent...');
-                this.start(true, 'Agent process restarted.', count_id, this.port);
+                this.start(true, null, count_id, this.port);
                 last_restart = Date.now();
             }
         });
@@ -74,11 +74,11 @@ export class AgentProcess {
             this.process.once('exit', () => {
                  clearTimeout(restartTimeout);
                  console.log(`Stopped hanging agent ${this.name}. Now restarting.`);
-                 this.start(true, 'Agent process restarted.', this.count_id);
+                 this.start(true, null, this.count_id);
             });
             this.stop(); // sends SIGINT
         } else {
-             this.start(true, 'Agent process restarted.', this.count_id);
+             this.start(true, null, this.count_id);
         }
     }
 }

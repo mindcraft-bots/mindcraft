@@ -4,7 +4,7 @@ import { queryList } from './queries.js';
 
 let suppressNoDomainWarning = true;
 
-const commandList = queryList.concat(actionsList);
+export const commandList = queryList.concat(actionsList);
 const commandMap = {};
 for (let command of commandList) {
     commandMap[command.name] = command;
@@ -135,13 +135,14 @@ export function parseCommandMessage(message) {
             case 'ItemName':
                 if (arg.endsWith('plank') || arg.endsWith('seed'))
                     arg += 's'; // add 's' to for common mistakes like "oak_plank" or "wheat_seed"
+                // falls through
             case 'string':
                 break;
             default:
                 throw new Error(`Command '${commandName}' parameter '${paramNames[i]}' has an unknown type: ${param.type}`);
         }
         if(arg === null || Number.isNaN(arg))
-            return `Error: Param '${paramNames[i]}' must be of type ${param.type}.`
+            return `Error: Param '${paramNames[i]}' must be of type ${param.type}.`;
 
         if(typeof arg === 'number') { //Check the domain of numbers
             const domain = param.domain;

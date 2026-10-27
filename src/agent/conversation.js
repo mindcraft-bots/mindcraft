@@ -14,23 +14,32 @@ class Conversation {
         this.blocked = false;
         this.in_queue = [];
         this.inMessageTimer = null;
+        this.inMessageGeneration = 0;
+    }
+
+    _clearInMessageTimer() {
+        if (this.inMessageTimer)
+            clearTimeout(this.inMessageTimer);
+        this.inMessageTimer = null;
+        this.inMessageGeneration++;
     }
 
     reset() {
         this.active = false;
         this.ignore_until_start = false;
+        this._clearInMessageTimer();
         this.in_queue = [];
-        this.inMessageTimer = null;
     }
 
     end() {
         this.active = false;
         this.ignore_until_start = true;
-        this.inMessageTimer = null;
-        const full_message = _compileInMessages(this);
-        if (full_message.message.trim().length > 0)
-            agent.history.add(this.name, full_message.message);
-        // add the full queued messages to history, but don't respond
+        this._clearInMessageTimer();
+        // Drop queued-but-unprocessed inbound bot messages when the conversation is
+        // explicitly ended. If we append them here, they surface later as a stale
+        // "new" user turn and can break prompt-cache prefix continuity. Messages
+        // that are actually processed go through _processInMessageQueue instead.
+        this.in_queue = [];
 
         if (agent.last_sender === this.name)
             agent.last_sender = null;
@@ -185,13 +194,14 @@ class ConversationManager {
 
         this._clearMonitorTimeouts();
         convo.queue(received);
+        convo.inMessageGeneration++;
         
         // responding to conversation takes priority over self prompting
         if (agent.self_prompter.isActive()){
             await agent.self_prompter.pause();
         }
     
-        _scheduleProcessInMessage(sender, received, convo);
+        void _scheduleProcessInMessage(sender, received, convo);
     }
 
     responseScheduledFor(sender) {
@@ -227,11 +237,11 @@ class ConversationManager {
     endConversation(sender) {
         if (this.convos[sender]) {
             this.convos[sender].end();
-            if (this.activeConversation.name === sender) {
+            if (this.activeConversation?.name === sender) {
                 this._stopMonitor();
                 this.activeConversation = null;
                 if (agent.self_prompter.isPaused() && !this.inConversation()) {
-                    _resumeSelfPrompter();
+                    void _resumeSelfPrompter();
                 }
             }
         }
@@ -242,7 +252,7 @@ class ConversationManager {
             this.endConversation(sender);
         }
         if (agent.self_prompter.isPaused()) {
-            _resumeSelfPrompter();
+            void _resumeSelfPrompter();
         }
     }
 
@@ -271,55 +281,96 @@ const talkOverActions = ['stay', 'followPlayer', 'mode:']; // all mode actions
 const fastDelay = 200;
 const longDelay = 5000;
 async function _scheduleProcessInMessage(sender, received, convo) {
-    if (convo.inMessageTimer)
+    if (convo.inMessageTimer) {
         clearTimeout(convo.inMessageTimer);
-    let otherAgentBusy = containsCommand(received.message);
-
-    const scheduleResponse = (delay) => convo.inMessageTimer = setTimeout(() => _processInMessageQueue(sender), delay);
-
-    if (!agent.isIdle() && otherAgentBusy) {
-        // both are busy
-        let canTalkOver = talkOverActions.some(a => agent.actions.currentActionLabel.includes(a));
-        if (canTalkOver)
-            scheduleResponse(fastDelay)
-        // otherwise don't respond
+        convo.inMessageGeneration++;
     }
-    else if (otherAgentBusy)
-        // other bot is busy but I'm not
+    const pending = compileQueuedBotMessages(convo.in_queue);
+    const decisionMessage = pending?.message || received.message || '';
+    const otherAgentBusy = isOtherBotActionNotice(decisionMessage);
+
+    const scheduleResponse = (delay) => {
+        const generation = convo.inMessageGeneration;
+        const timer = setTimeout(() => _processInMessageQueue(sender, convo, generation, timer), delay);
+        convo.inMessageTimer = timer;
+    };
+
+    const currentAction = agent.actions?.currentActionLabel || '';
+    const canTalkOver = talkOverActions.some(a => currentAction.includes(a));
+    const agentBusy = Boolean(currentAction) || !agent.isIdle() || (agent.active_message_handlers || 0) > 0;
+
+    if (agentBusy && otherAgentBusy && !canTalkOver) {
+        convo.in_queue = [];
+        convo.inMessageTimer = null;
+    }
+    else if (otherAgentBusy) {
+        // The other bot is reporting an action; give it a moment so consecutive
+        // action notices can be consumed together with stable boundaries.
         scheduleResponse(longDelay);
-    else if (!agent.isIdle()) {
-        // I'm busy but other bot isn't
-        let canTalkOver = talkOverActions.some(a => agent.actions.currentActionLabel.includes(a));
-        if (canTalkOver) {
+    }
+    else if (agentBusy && !canTalkOver) {
+        const decisionGeneration = convo.inMessageGeneration;
+        const shouldRespond = await agent.prompter.promptShouldRespondToBot(
+            `${sender}: ${_tagMessage(decisionMessage)}`,
+            { cacheScope: 'botResponder' }
+        );
+        if (decisionGeneration !== convo.inMessageGeneration)
+            return;
+        console.log(`${agent.name} decided to ${shouldRespond?'respond':'ignore'} ${sender}`);
+        if (shouldRespond) {
             scheduleResponse(fastDelay);
         }
         else {
-            let shouldRespond = await agent.prompter.promptShouldRespondToBot(received.message);
-            console.log(`${agent.name} decided to ${shouldRespond?'respond':'not respond'} to ${sender}`);
-            if (shouldRespond)
-                scheduleResponse(fastDelay);
+            convo.in_queue = [];
+            convo.inMessageTimer = null;
         }
     }
     else {
-        // neither are busy
         scheduleResponse(fastDelay);
     }
 }
 
-function _processInMessageQueue(name) {
+function isOtherBotActionNotice(message) {
+    const text = String(message || '').trim();
+    return Boolean(containsCommand(text) || /^\*used\s+\w+\*/.test(text) || /^State update:/i.test(text));
+}
+
+function _processInMessageQueue(name, expectedConvo=null, expectedGeneration=null, expectedTimer=null) {
     const convo = convoManager._getConvo(name);
-    _handleFullInMessage(name, _compileInMessages(convo));
+    if (expectedConvo && convo !== expectedConvo)
+        return false;
+    if (expectedGeneration !== null && convo.inMessageGeneration !== expectedGeneration)
+        return false;
+    if (expectedTimer && convo.inMessageTimer !== expectedTimer)
+        return false;
+
+    const received = _compileInMessages(convo);
+    if (!received?.message?.trim()) {
+        convo.inMessageTimer = null;
+        return false;
+    }
+
+    _handleFullInMessage(name, received);
+    return true;
+}
+
+export function compileQueuedBotMessages(queue) {
+    if (!queue.length)
+        return null;
+
+    const messages = queue.map(pack => pack.message ?? '');
+    return {
+        ...queue[queue.length - 1],
+        start: queue.some(pack => pack.start),
+        end: queue.some(pack => pack.end),
+        message: messages.join('\n'),
+    };
 }
 
 function _compileInMessages(convo) {
-    let pack = {};
-    let full_message = '';
-    while (convo.in_queue.length > 0) {
-        pack = convo.in_queue.shift();
-        full_message += pack.message;
-    }
-    pack.message = full_message;
-    return pack;
+    const compiled = compileQueuedBotMessages(convo.in_queue);
+    convo.in_queue = [];
+    return compiled;
 }
 
 function _handleFullInMessage(sender, received) {
@@ -342,7 +393,7 @@ function _handleFullInMessage(sender, received) {
 
 
 function _tagMessage(message) {
-    return "(FROM OTHER BOT)" + message;
+    return "(FROM OTHER BOT)\n" + message;
 }
 
 async function _resumeSelfPrompter() {

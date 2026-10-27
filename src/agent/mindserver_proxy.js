@@ -60,6 +60,11 @@ class MindServerProxy {
             console.log(`Restarting agent: ${agentName}`);
             this.agent.cleanKill();
         });
+
+        this.socket.on('stop-agent', () => {
+            console.log(`Stopping agent ${this.name} by MindServer request`);
+            this.agent.cleanKill('Stopped by MindServer.', 0);
+        });
 		
         this.socket.on('send-message', (data) => {
             try {
@@ -133,4 +138,12 @@ export function sendBotChatToServer(agentName, json) {
 // for sending general output to server for display
 export function sendOutputToServer(agentName, message) {
     serverProxy.getSocket().emit('bot-output', agentName, message);
+}
+
+// for sending structured observability events to the UI
+export function sendTraceEventToServer(agentName, event) {
+    const socket = serverProxy.getSocket();
+    if (socket?.connected) {
+        socket.emit('agent-trace', agentName, event);
+    }
 }

@@ -1,7 +1,7 @@
 {
     "name": "claude_thinker",
-
     "model": {
+        "provider": "anthropic",
         "model": "claude-sonnet-4-6",
         "params": {
             "thinking": {
@@ -10,6 +10,16 @@
             }
         }
     },
-    
-    "embedding": "openai"
+    "embedding": {
+        "provider": "",
+        "model": ""
+    },
+    "code_model": {
+        "provider": "",
+        "model": ""
+    },
+    "vision_model": {
+        "provider": "",
+        "model": ""
+    }
 }
