@@ -1,0 +1,27 @@
+diff --git a/node_modules/mineflayer/lib/plugins/digging.js b/node_modules/mineflayer/lib/plugins/digging.js
+index 5ae5552..af28eef 100644
+--- a/node_modules/mineflayer/lib/plugins/digging.js
++++ b/node_modules/mineflayer/lib/plugins/digging.js
+@@ -244,6 +244,9 @@ function inject (bot) {
+       enchantments = enchantments.concat(helmetEnchantments)
+     }
+ 
++    if (block.material === 'incorrect_for_wooden_tool')
++      block.material = 'mineable/pickaxe'
++
+     const creative = bot.game.gameMode === 'creative'
+     return block.digTime(
+       type,
+diff --git a/node_modules/mineflayer/lib/plugins/place_block.js b/node_modules/mineflayer/lib/plugins/place_block.js
+index dc86e1e..4582967 100644
+--- a/node_modules/mineflayer/lib/plugins/place_block.js
++++ b/node_modules/mineflayer/lib/plugins/place_block.js
+@@ -26,7 +26,7 @@ function inject (bot) {
+     const onAck = () => { acked = true }
+     bot.on(`blockUpdate:${referenceBlock.position}`, onAck)
+     const [, newBlock] = await onceWithCleanup(bot, `blockUpdate:${dest}`, {
+-      timeout: 5000,
++      timeout: 500,
+       // oldBlock and newBlock are both null when the world unloads
+       checkCondition: (oldBlock, newBlock) => !oldBlock || !newBlock || oldBlock.type !== newBlock.type || (acked && inFlight.get(key) === 1)
+     }).catch((err) => {
