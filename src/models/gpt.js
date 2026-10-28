@@ -22,11 +22,6 @@ export class GPT {
     }
 
     async sendRequest(turns, systemMessage, stop_seq='***') {
-        let messages = strictFormat(turns);
-        messages = messages.map(message => {
-            message.content += stop_seq;
-            return message;
-        });
         let model = this.model_name || "gpt-5.4-mini";
 
         let res = null;
@@ -36,7 +31,9 @@ export class GPT {
             // if a custom URL is set, use chat.completions
             // because custom "OpenAI-compatible" endpoints likely do not have responses endpoint
             if (this.url) {
-                let messages = [{'role': 'system', 'content': systemMessage}].concat(turns);
+                let messages = [{'role': 'system', 'content': systemMessage}]
+                    .concat(turns)
+                    .map(message => ({...message}));
                 messages = strictFormat(messages);
                 const pack = {
                     model: model,
@@ -55,7 +52,7 @@ export class GPT {
             } 
             // otherwise, use responses
             else {
-                let messages = strictFormat(turns);
+                let messages = strictFormat(turns.map(message => ({...message})));
                 messages = messages.map(message => {
                     message.content += stop_seq;
                     return message;
