@@ -45,9 +45,11 @@ export class AgentProcess {
                     console.error(`Agent process exited too quickly and will not be restarted.`);
                     return;
                 }
-                console.log('Restarting agent...');
-                this.start(true, 'Agent process restarted.', count_id, this.port);
-                last_restart = Date.now();
+                // wait before reconnecting: an immediate relogin is rejected by Paper/Spigot's
+                // connection-throttle (4 s by default), the new process then exits within 10 s
+                // and the agent is never restarted again
+                console.log('Restarting agent in 5 seconds...');
+                setTimeout(() => this.start(true, 'Agent process restarted.', count_id, this.port), 5000);
             }
         });
     

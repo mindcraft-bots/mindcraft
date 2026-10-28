@@ -53,6 +53,8 @@ export const WOOL_COLORS = [
 
 
 export function initBot(username) {
+    // settings are filled in by the MindServer after this module is imported, so read the version here
+    mc_version = mc_version || settings.minecraft_version;
     const options = {
         username: username,
         host: settings.host,
