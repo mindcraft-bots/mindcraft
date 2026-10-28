@@ -114,7 +114,7 @@ export class Gemini {
             contents: text,
         })
 
-        return result.embeddings;
+        return result.embeddings[0].values;
     }
 }
 
