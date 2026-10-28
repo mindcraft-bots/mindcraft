@@ -211,6 +211,16 @@ export class Prompter {
         this.last_prompt_time = Date.now();
     }
 
+    _cleanReasoningOutput(generation) {
+        if (typeof generation !== 'string')
+            return generation;
+
+        if (generation.includes('</think>'))
+            generation = generation.split('</think>').pop();
+
+        return generation.replace(/\*{3,}\s*$/g, '').trim();
+    }
+
     async promptConvo(messages) {
         this.most_recent_msg_time = Date.now();
         let current_msg_time = this.most_recent_msg_time;
@@ -250,11 +260,7 @@ export class Prompter {
                 return '';
             }
 
-            if (generation?.includes('</think>')) {
-                const [_, afterThink] = generation.split('</think>')
-                generation = afterThink
-            }
-
+            generation = this._cleanReasoningOutput(generation);
             return generation;
         }
 
@@ -283,11 +289,7 @@ export class Prompter {
         prompt = await this.replaceStrings(prompt, null, null, to_summarize);
         let resp = await this.chat_model.sendRequest([], prompt);
         await this._saveLog(prompt, to_summarize, resp, 'memSaving');
-        if (resp?.includes('</think>')) {
-            const [_, afterThink] = resp.split('</think>')
-            resp = afterThink;
-        }
-        return resp;
+        return this._cleanReasoningOutput(resp);
     }
 
     async promptShouldRespondToBot(new_message) {
