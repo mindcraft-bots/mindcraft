@@ -143,6 +143,60 @@ export function isHostile(mob) {
     return  (mob.type === 'mob' || mob.type === 'hostile') && mob.name !== 'iron_golem' && mob.name !== 'snow_golem';
 }
 
+// hostile-classified mobs that leave you alone unless provoked. attacking them first
+// usually makes things worse (a whole pack of zombified piglins, an enderman teleporting around)
+const NEUTRAL_MOBS = ['enderman', 'zombified_piglin', 'piglin'];
+// mobs that self defense should never try to melee: they are either bosses with their own
+// strategy or can't be reached from the ground
+const NO_AUTO_FIGHT = ['ender_dragon', 'wither', 'ghast', 'phantom', 'shulker'];
+
+export function isNeutral(mob) {
+    if (!mob || !mob.name) return false;
+    return NEUTRAL_MOBS.includes(mob.name);
+}
+
+export function isThreat(bot, mob) {
+    // a hostile mob that should be dealt with now. neutral mobs only count if they are close
+    // and we were just hurt, which is the best signal we have that they were provoked.
+    if (!isHostile(mob) || NO_AUTO_FIGHT.includes(mob.name)) return false;
+    if (!isNeutral(mob)) return true;
+    const recently_hurt = Date.now() - (bot.lastDamageTime || 0) < 5000;
+    return recently_hurt && bot.entity.position.distanceTo(mob.position) < 5;
+}
+
+// approximate melee damage, used to pick the best weapon. prismarine items don't carry attack damage.
+const MATERIAL_TIERS = ['wooden', 'golden', 'stone', 'iron', 'diamond', 'netherite'];
+export function getMeleeDamage(itemName) {
+    if (!itemName) return 1;
+    const tier = MATERIAL_TIERS.findIndex(m => itemName.startsWith(m + '_'));
+    if (itemName.endsWith('_sword')) {
+        return [4, 4, 5, 6, 7, 8][tier] ?? 1;
+    }
+    if (itemName.endsWith('_axe') && !itemName.endsWith('pickaxe')) {
+        // axes hit harder but swing much slower, so rank them below the same tier of sword
+        return ([7, 7, 9, 9, 9, 10][tier] ?? 1) * 0.6;
+    }
+    if (itemName === 'trident') return 9;
+    if (itemName === 'mace') return 6;
+    if (itemName.endsWith('_pickaxe')) return ([2, 2, 3, 4, 5, 6][tier] ?? 1);
+    if (itemName.endsWith('_shovel')) return ([2.5, 2.5, 3.5, 4.5, 5.5, 6.5][tier] ?? 1) * 0.9;
+    return 1;
+}
+
+// seconds between full-strength hits for a weapon (1.9+ attack cooldown)
+export function getAttackCooldown(itemName) {
+    if (!itemName) return 0.25;
+    if (itemName.endsWith('_sword')) return 0.625;
+    if (itemName.endsWith('_axe') && !itemName.endsWith('pickaxe')) {
+        return itemName.startsWith('wooden') || itemName.startsWith('stone') ? 1.25 : 1.0;
+    }
+    if (itemName === 'trident') return 0.91;
+    if (itemName.endsWith('_pickaxe')) return 0.83;
+    if (itemName.endsWith('_shovel')) return 1.0;
+    if (itemName.endsWith('_hoe')) return 0.5;
+    return 0.25;
+}
+
 // blocks that don't work with collectBlock, need to be manually collected
 export function mustCollectManually(blockName) {
     // all crops (that aren't normal blocks), torches, buttons, levers, redstone,

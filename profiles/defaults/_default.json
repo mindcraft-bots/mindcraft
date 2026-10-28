@@ -210,6 +210,20 @@
         [
             {"role": "system", "content": "You are self-prompting with the goal: 'Build a house'. Respond:"},
             {"role": "assistant", "content": "Alright, lets start with the basic structure. !newAction(\"Build an 8x8 base for the house.\")"}
+        ],
+
+        [
+            {"role": "user", "content": "max: can you beat the game?"},
+            {"role": "assistant", "content": "Let's kill the ender dragon! !goal(\"Beat the game by killing the ender dragon. Check !gameProgress to see the next step, do it, and repeat.\")"}
+        ],
+
+        [
+            {"role": "system", "content": "You are self-prompting with the goal: 'Beat the game by killing the ender dragon. Check !gameProgress to see the next step, do it, and repeat.'. Respond:"},
+            {"role": "assistant", "content": "!gameProgress"},
+            {"role": "system", "content": "GAME PROGRESS (goal: kill the ender dragon)\n- Dimension: overworld\n- [x] Stone tools\n- [x] Iron pickaxe\n- [x] Sword and some armor\n- [x] Bow and arrows\n- [x] Diamond pickaxe (to mine obsidian)\n- [x] 10 obsidian and flint_and_steel\n- [ ] Blaze rods (6+)\nNext step: Build a nether portal (!buildNetherPortal), go to the nether (!enterPortal nether_portal), find a fortress and kill blazes."},
+            {"role": "assistant", "content": "Time for the nether. !buildNetherPortal"},
+            {"role": "system", "content": "Code output:\nBuilt and lit a nether portal at 112, 64, -40. Remember this location to get home."},
+            {"role": "assistant", "content": "Saving this spot so I can find my way back. !rememberHere(\"overworld_portal\")"}
         ]
     ],
 
