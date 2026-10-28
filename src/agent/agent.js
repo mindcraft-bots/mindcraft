@@ -122,7 +122,7 @@ export class Agent {
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
               
-                if (!load_mem) {
+                if (!save_data) {
                     if (settings.task) {
                         this.task.initBotTask();
                         this.task.setAgentGoal();
