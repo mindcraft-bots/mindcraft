@@ -8,7 +8,7 @@ import { plugin as collectblock } from 'mineflayer-collectblock';
 import { plugin as autoEat } from 'mineflayer-auto-eat';
 import plugin from 'mineflayer-armor-manager';
 const armorManager = plugin;
-let mc_version = settings.minecraft_version;
+let mc_version = null;
 let mcdata = null;
 let Item = null;
 
@@ -53,12 +53,15 @@ export const WOOL_COLORS = [
 
 
 export function initBot(username) {
+    // Agent settings arrive from MindServer after this module is imported.
+    mc_version = settings.minecraft_version;
     const options = {
         username: username,
         host: settings.host,
         port: settings.port,
         auth: settings.auth,
         version: mc_version,
+        fakeHost: settings.fake_host,
         checkTimeoutInterval: 60000,  // 60s keep-alive check (default 30s) — reduces disconnects on slow servers
     }
     if (!mc_version || mc_version === "auto") {

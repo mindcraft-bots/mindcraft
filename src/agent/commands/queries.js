@@ -338,6 +338,13 @@ export const queryList = [
         }
     },
     {
+        name: '!taskStatus',
+        description: 'Show the active autonomous goal, current step, failure count, and plan.',
+        perform: function (agent) {
+            return pad(agent.self_prompter.statusText());
+        }
+    },
+    {
         name: '!help',
         description: 'Lists all available commands and their descriptions.',
         perform: async function (agent) {

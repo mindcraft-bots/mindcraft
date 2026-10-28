@@ -370,21 +370,24 @@
         }
         .footer-left { color: #cccccc; font-style: italic; }
     </style>
+    <link rel="stylesheet" href="/control.css">
 </head>
 <body>
-    <div class="title-row">
+    <header class="title-row app-header">
         <div class="title-left">
-            <h1 style="margin: 0;">Mindcraft</h1>
-            <span id="msStatus" class="status-badge offline">mindserver offline</span>
+            <div class="brand-mark" aria-hidden="true">M</div>
+            <div>
+                <h1 style="margin: 0;">Mindcraft Control</h1>
+                <div class="header-meta"><span id="msStatus" class="status-badge offline">MindServer offline</span><span id="agentSummary">0 agents</span></div>
+            </div>
         </div>
         <div class="title-spacer"></div>
-    </div>
-    <div id="agents"></div>
+        <button id="openCreateAgentBtn" class="start-btn primary-command">New Agent</button>
+    </header>
+    <main id="agents" aria-live="polite"></main>
 
     <div class="page-footer">
-        <div>
-            <button id="openCreateAgentBtn" class="start-btn">New Agent</button>
-        </div>
+        <div class="footer-left">Mindcraft runs locally. Closing this page does not stop agents.</div>
         <div style="display:flex; gap:12px;">
             <button class="stop-btn" onclick="disconnectAllAgents()">Disconnect All Agents</button>
             <button class="stop-btn" onclick="confirmShutdown()">Full Shutdown</button>
@@ -446,8 +449,35 @@
         let profileData = null;
         const agentSettings = {};
         const agentLastMessage = {};
+        const agentMessages = {};
         const inventoryOpen = {};
         let currentAgents = [];
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function addChatMessage(agentName, speaker, message, kind = 'from-agent') {
+            if (!agentMessages[agentName]) agentMessages[agentName] = [];
+            agentMessages[agentName].push({ speaker, message: String(message), kind });
+            if (agentMessages[agentName].length > 80) agentMessages[agentName].shift();
+            renderChatLog(agentName);
+        }
+
+        function renderChatLog(agentName) {
+            const log = document.getElementById(`chatLog-${agentName}`);
+            if (!log) return;
+            const entries = agentMessages[agentName] || [];
+            log.innerHTML = entries.length
+                ? entries.map(entry => `<div class="chat-entry ${entry.kind}"><span class="speaker">${escapeHtml(entry.speaker)}</span> ${escapeHtml(entry.message)}</div>`).join('')
+                : '<div class="chat-empty">No messages in this browser session.</div>';
+            log.scrollTop = log.scrollHeight;
+        }
 
         // Item texture helpers (use PrismarineJS minecraft-assets CDN with graceful fallbacks)
         const BASE_ICON_VERSION_CANDIDATES = ['1.21.8'];
@@ -654,11 +684,34 @@
 
         socket.on('bot-output', (agentName, message) => {
             agentLastMessage[agentName] = message;
-            const messageDiv = document.getElementById(`lastMessage-${agentName}`);
-            if (messageDiv) {
-                messageDiv.textContent = message;
-            }
+            addChatMessage(agentName, agentName, message, 'from-agent');
         });
+
+        function updateTaskPanel(name, task = {}) {
+            const badge = document.getElementById(`taskBadge-${name}`);
+            const goal = document.getElementById(`taskGoal-${name}`);
+            const step = document.getElementById(`taskStep-${name}`);
+            const plan = document.getElementById(`taskPlan-${name}`);
+            const steps = document.getElementById(`taskSteps-${name}`);
+            const failures = document.getElementById(`taskFailures-${name}`);
+            const result = document.getElementById(`taskResult-${name}`);
+            const status = task.status || 'stopped';
+            if (badge) {
+                badge.textContent = status[0].toUpperCase() + status.slice(1);
+                badge.className = `task-badge ${status}`;
+            }
+            if (goal) goal.textContent = task.goal || 'No autonomous goal is active.';
+            if (step) step.textContent = task.currentStep || (status === 'active' ? 'Planning next action' : 'Waiting for a goal');
+            if (plan) {
+                const items = Array.isArray(task.plan) ? task.plan : [];
+                plan.innerHTML = items.length
+                    ? items.map(item => `<li class="${item === task.currentStep ? 'current' : ''}">${escapeHtml(item)}</li>`).join('')
+                    : '<li>No plan yet</li>';
+            }
+            if (steps) steps.textContent = `${task.stepsTaken || 0} actions`;
+            if (failures) failures.textContent = `${task.consecutiveFailures || 0} failures`;
+            if (result) result.textContent = task.lastResult || task.lastCommand || 'No result yet.';
+        }
 
         // Subscribe to aggregated state updates (re-sent on each connect)
         socket.on('state-update', (states) => {
@@ -670,7 +723,10 @@
                     const gp = st.gameplay || {};
                     if (healthEl && typeof gp.health === 'number') {
                         const hMax = typeof gp.healthMax === 'number' ? gp.healthMax : 20;
-                        healthEl.textContent = `health: ${gp.health}/${hMax}`;
+                        const value = document.getElementById(`healthValue-${name}`);
+                        const meter = document.getElementById(`healthMeter-${name}`);
+                        if (value) value.textContent = `${gp.health}/${hMax}`;
+                        if (meter) meter.style.width = `${Math.max(0, Math.min(100, gp.health / hMax * 100))}%`;
                     }
                     const posEl = document.getElementById(`pos-${name}`);
                     const hunEl = document.getElementById(`hunger-${name}`);
@@ -686,18 +742,21 @@
                     }
                     if (hunEl && typeof gp.hunger === 'number') {
                         const fMax = typeof gp.hungerMax === 'number' ? gp.hungerMax : 20;
-                        hunEl.textContent = `hunger: ${gp.hunger}/${fMax}`;
+                        const value = document.getElementById(`hungerValue-${name}`);
+                        const meter = document.getElementById(`hungerMeter-${name}`);
+                        if (value) value.textContent = `${gp.hunger}/${fMax}`;
+                        if (meter) meter.style.width = `${Math.max(0, Math.min(100, gp.hunger / fMax * 100))}%`;
                     }
-                    if (bioEl && gp.biome) bioEl.textContent = `biome: ${gp.biome}`;
-                    if (modeEl && gp.gamemode) modeEl.textContent = `gamemode: ${gp.gamemode}`;
+                    if (bioEl && gp.biome) bioEl.textContent = gp.biome;
+                    if (modeEl && gp.gamemode) modeEl.textContent = gp.gamemode;
                     if (itemsEl && st.inventory) {
                         const used = st.inventory.stacksUsed ?? 0;
                         const total = st.inventory.totalSlots ?? 0;
-                        itemsEl.textContent = `inventory slots: ${used}/${total}`;
+                        itemsEl.textContent = `${used}/${total} slots`;
                     }
                     if (equippedEl && st.inventory?.equipment) {
                         const e = st.inventory.equipment;
-                        equippedEl.textContent = `equipped: ${e.mainHand || 'none'}`;
+                        equippedEl.textContent = prettyItemName(e.mainHand || 'none');
                     }
                     const armorEl = document.getElementById(`armor-${name}`);
                     if (armorEl && st.inventory?.equipment) {
@@ -713,9 +772,10 @@
                     }
                     if (actionEl && st.action) {
                         actionEl.textContent = `${st.action.current || 'Idle'}`;
-                        const _statusColors = { acting: '#4CAF50', chatting: '#42a5f5', thinking: '#9e9e9e', stopped: '#f44336', idle: '#888' };
+                        const _statusColors = { acting: '#54c889', chatting: '#64b5c7', thinking: '#e0a84f', stopped: '#9eabb2', idle: '#9eabb2' };
                         actionEl.style.color = _statusColors[st.action.kind] || '';
                     }
+                    updateTaskPanel(name, st.autonomousTask);
                     if (invGrid && st.inventory?.counts) {
                         const counts = st.inventory.counts;
                         const entries = Object.entries(counts);
@@ -943,15 +1003,85 @@
                     </div>`;
         }
 
+        function renderControlAgent(agent) {
+            const cfg = agentSettings[agent.name] || {};
+            const showViewer = agent.in_game && cfg.render_bot_view === true;
+            const viewerHTML = showViewer ? `<div class="agent-view-container"><iframe class="agent-viewer" id="viewer-${agent.name}" src="http://localhost:${agent.viewerPort}"></iframe></div>` : '';
+            const invOpen = inventoryOpen[agent.name] === true;
+            const invStyle = invOpen ? '' : 'display:none;';
+            const connectionState = agent.in_game ? 'online' : (agent.socket_connected ? 'joining' : 'offline');
+            const connectionCopy = agent.in_game ? 'In game' : (agent.socket_connected ? 'Joining server' : 'Disconnected');
+            return `
+                <section class="agent" id="agent-${agent.name}">
+                    <div class="agent-header">
+                        <div class="agent-identity">
+                            <span class="status-dot ${connectionState}" aria-hidden="true"></span>
+                            <div><div class="agent-name">${escapeHtml(agent.name)}</div><div class="connection-copy">${connectionCopy}</div></div>
+                        </div>
+                        <div class="agent-toolbar">
+                            <button title="Edit agent settings" onclick="openAgentSettings('${agent.name}')">Settings</button>
+                            <button title="Show or hide inventory" onclick="toggleDetails('${agent.name}')">Inventory</button>
+                            <button onclick="sendMessage('${agent.name}', '!stop')" ${!agent.in_game ? 'disabled' : ''}>Stop action</button>
+                            <button onclick="restartAgent('${agent.name}')" ${!agent.in_game ? 'disabled' : ''}>Restart</button>
+                            <button ${agent.in_game ? `onclick=\"disconnectAgent('${agent.name}')\"` : (agent.socket_connected ? 'disabled' : `onclick=\"startAgent('${agent.name}')\"`)}>${agent.in_game ? 'Disconnect' : (agent.socket_connected ? 'Connecting' : 'Connect')}</button>
+                            <button class="danger-command" onclick="destroyAgent('${agent.name}')">Remove</button>
+                        </div>
+                    </div>
+                    <div class="agent-workspace">
+                        <div class="agent-main">
+                            <p class="section-label">Live state</p>
+                            <dl class="status-grid">
+                                <div class="status-item"><dt>Activity</dt><dd id="action-${agent.name}">Waiting for state</dd></div>
+                                <div class="status-item"><dt>Gamemode</dt><dd id="mode-${agent.name}">-</dd></div>
+                                <div class="status-item" id="health-${agent.name}"><dt>Health</dt><dd><span id="healthValue-${agent.name}">-</span><div class="meter"><span id="healthMeter-${agent.name}"></span></div></dd></div>
+                                <div class="status-item" id="hunger-${agent.name}"><dt>Hunger</dt><dd><span id="hungerValue-${agent.name}">-</span><div class="meter hunger"><span id="hungerMeter-${agent.name}"></span></div></dd></div>
+                                <div class="status-item"><dt>Position</dt><dd id="pos-${agent.name}">-</dd></div>
+                                <div class="status-item"><dt>Biome</dt><dd id="biome-${agent.name}">-</dd></div>
+                                <div class="status-item"><dt>Inventory</dt><dd id="items-${agent.name}">-</dd></div>
+                                <div class="status-item"><dt>Main hand</dt><dd id="equipped-${agent.name}">-</dd></div>
+                            </dl>
+                            <p class="section-label" style="margin-top:14px;">Conversation</p>
+                            <div class="chat-log" id="chatLog-${agent.name}"><div class="chat-empty">No messages in this browser session.</div></div>
+                        </div>
+                        <aside class="task-panel">
+                            <div class="task-heading"><p class="section-label" style="margin:0;">Autonomous task</p><span class="task-badge" id="taskBadge-${agent.name}">Stopped</span></div>
+                            <p class="task-goal" id="taskGoal-${agent.name}">No autonomous goal is active.</p>
+                            <div class="task-step" id="taskStep-${agent.name}">Waiting for a goal</div>
+                            <ol class="task-plan" id="taskPlan-${agent.name}"><li>No plan yet</li></ol>
+                            <div class="task-metrics"><span id="taskSteps-${agent.name}">0 actions</span><span id="taskFailures-${agent.name}">0 failures</span></div>
+                            <div class="task-result" id="taskResult-${agent.name}">No result yet.</div>
+                            <div class="task-compose">
+                                <input class="goal-input" id="goalInput-${agent.name}" placeholder="Describe a measurable goal" ${!agent.in_game ? 'disabled' : ''} onkeydown="if(event.key === 'Enter') startGoal('${agent.name}')">
+                                <button class="primary-command" onclick="startGoal('${agent.name}')" ${!agent.in_game ? 'disabled' : ''}>Start goal</button>
+                            </div>
+                            <div class="task-actions">
+                                <button onclick="sendMessage('${agent.name}', '!taskStatus')" ${!agent.in_game ? 'disabled' : ''}>Report status</button>
+                                <button class="danger-command" onclick="sendMessage('${agent.name}', '!endGoal')" ${!agent.in_game ? 'disabled' : ''}>Stop goal</button>
+                            </div>
+                        </aside>
+                    </div>
+                    ${viewerHTML}
+                    <div class="controls-row">
+                        <input class="msg-input" type="text" id="messageInput-${agent.name}" placeholder="Send a message or one-step command" oninput="onMsgInputChange('${agent.name}')" onkeydown="if(event.key === 'Enter') document.getElementById('sendBtn-${agent.name}').click()" ${!agent.in_game ? 'disabled' : ''}>
+                        <button class="start-btn" id="sendBtn-${agent.name}" disabled onclick="sendMessage('${agent.name}', document.getElementById('messageInput-${agent.name}').value)">Send</button>
+                    </div>
+                    <div class="agent-inventory" id="inventorySection-${agent.name}" style="${invStyle}">
+                        <p class="section-label">Inventory and equipment</p>
+                        <div id="armor-${agent.name}" style="margin-bottom: 10px;"></div>
+                        <div class="inventory-grid" id="inventory-${agent.name}"></div>
+                    </div>
+                </section>`;
+        }
+
         async function renderAgents(agents) {
             if (!agents.length) {
-                agentsDiv.innerHTML = '<div class="agent">No agents connected</div>';
+                agentsDiv.innerHTML = '<div class="empty-state">No agents configured.</div>';
                 return;
             }
 
             // If agentsDiv is empty, do a full render
             if (!agentsDiv.children.length) {
-                agentsDiv.innerHTML = agents.map(agent => renderAgentCard(agent)).join('');
+                agentsDiv.innerHTML = agents.map(agent => renderControlAgent(agent)).join('');
                 // Update all viewers after initial render
                 setTimeout(() => {
                     agents.forEach(a => {
@@ -973,11 +1103,11 @@
                 const el = document.getElementById(`agent-${agent.name}`);
                 if (el) {
                     // Update existing card
-                    el.outerHTML = renderAgentCard(agent);
+                    el.outerHTML = renderControlAgent(agent);
                     if (agent.in_game) updateAgentViewer(agent.name);
                 } else {
                     // Add new card
-                    agentsDiv.insertAdjacentHTML('beforeend', renderAgentCard(agent));
+                    agentsDiv.insertAdjacentHTML('beforeend', renderControlAgent(agent));
                     if (agent.in_game) updateAgentViewer(agent.name);
                 }
             });
@@ -993,6 +1123,16 @@
         }
 
         socket.on('agents-status', async (agents) => {
+            const summary = document.getElementById('agentSummary');
+            if (summary) {
+                const online = agents.filter(agent => agent.in_game).length;
+                summary.textContent = `${online} online / ${agents.length} configured`;
+            }
+            if (!agents.length) {
+                currentAgents = [];
+                agentsDiv.innerHTML = '<div class="empty-state">No agents configured.</div>';
+                return;
+            }
             // Fetch settings for all agents that don't have current settings
             const needSettings = agents.filter(a => !agentSettings[a.name]);
             if (needSettings.length > 0) {
@@ -1016,11 +1156,12 @@
 
             // If agentsDiv is empty, do a full render
             if (!agentsDiv.children.length) {
-                agentsDiv.innerHTML = agents.map(agent => renderAgentCard(agent)).join('');
+                agentsDiv.innerHTML = agents.map(agent => renderControlAgent(agent)).join('');
                 // Update all viewers after initial render
                 setTimeout(() => {
                     agents.forEach(a => {
                         if (a.in_game) updateAgentViewer(a.name);
+                        renderChatLog(a.name);
                     });
                 }, 0);
                 return;
@@ -1031,11 +1172,11 @@
                 const el = document.getElementById(`agent-${agent.name}`);
                 if (el) {
                     // Update existing card
-                    el.outerHTML = renderAgentCard(agent);
+                    el.outerHTML = renderControlAgent(agent);
                     if (agent.in_game) updateAgentViewer(agent.name);
                 } else {
                     // Add new card
-                    agentsDiv.insertAdjacentHTML('beforeend', renderAgentCard(agent));
+                    agentsDiv.insertAdjacentHTML('beforeend', renderControlAgent(agent));
                     if (agent.in_game) updateAgentViewer(agent.name);
                 }
             });
@@ -1048,6 +1189,7 @@
                     delete inventoryOpen[name];
                 }
             });
+            setTimeout(() => agents.forEach(agent => renderChatLog(agent.name)), 0);
         });
 
         function restartAgent(n) { socket.emit('restart-agent', n); }
@@ -1071,7 +1213,9 @@
             socket.emit('start-agent', n);
         }
         function stopAgent(n) { socket.emit('stop-agent', n); }
-        function destroyAgent(n) { socket.emit('destroy-agent', n); }
+        function destroyAgent(n) {
+            if (confirm(`Remove ${n} from this Mindcraft session?`)) socket.emit('destroy-agent', n);
+        }
         function disconnectAllAgents() { 
             socket.emit('stop-all-agents'); 
         }
@@ -1083,11 +1227,21 @@
         function sendMessage(n, m) {
             if (!m || !m.trim()) return;
             socket.emit('send-message', n, { from: 'ADMIN', message: m });
+            addChatMessage(n, 'Admin', m, 'from-admin');
             const input = document.getElementById(`messageInput-${n}`);
             const btn = document.getElementById(`sendBtn-${n}`);
             if (input) input.value = '';
             if (btn) btn.disabled = true;
         }
+
+        function startGoal(name) {
+            const input = document.getElementById(`goalInput-${name}`);
+            const goal = input?.value?.trim();
+            if (!goal) return;
+            sendMessage(name, `!goal(${JSON.stringify(goal)})`);
+            input.value = '';
+        }
+        window.startGoal = startGoal;
         function onMsgInputChange(name) {
             const input = document.getElementById(`messageInput-${name}`);
             const btn = document.getElementById(`sendBtn-${name}`);
