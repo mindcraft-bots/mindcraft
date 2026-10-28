@@ -6,6 +6,40 @@ import settings from "../../../settings.js";
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
 const useDelay = blockPlaceDelay > 0;
+const armorDestinations = ['head', 'torso', 'legs', 'feet'];
+
+function findInventoryOrEquipmentItem(bot, itemName) {
+    const inventoryItem = bot.inventory.findInventoryItem(itemName);
+    if (inventoryItem) {
+        return { item: inventoryItem, equipmentDestination: null };
+    }
+
+    const equipmentDestinations = [...armorDestinations];
+    if (!bot.supportFeature('doesntHaveOffHandSlot')) {
+        equipmentDestinations.push('off-hand');
+    }
+    for (const equipmentDestination of equipmentDestinations) {
+        const slot = bot.getEquipmentDestSlot(equipmentDestination);
+        const item = bot.inventory.slots[slot];
+        if (item && item.name === itemName) {
+            return { item, equipmentDestination };
+        }
+    }
+    return { item: null, equipmentDestination: null };
+}
+
+function canMoveToInventory(bot, item) {
+    const inventory = bot.inventory;
+    const matchingStack = inventory.findItemRange(
+        inventory.inventoryStart,
+        inventory.inventoryEnd,
+        item.type,
+        item.metadata,
+        true,
+        item.nbt
+    );
+    return matchingStack !== null || inventory.firstEmptyInventorySlot() !== null;
+}
 
 export function log(bot, message) {
     bot.output += message + '\n';
@@ -847,12 +881,21 @@ export async function discard(bot, itemName, num=-1) {
      **/
     let discarded = 0;
     while (true) {
-        let item = bot.inventory.findInventoryItem(itemName);
+        const { item } = findInventoryOrEquipmentItem(bot, itemName);
         if (!item) {
             break;
         }
         let to_discard = num === -1 ? item.count : Math.min(num - discarded, item.count);
-        await bot.toss(item.type, null, to_discard);
+        await bot.transfer({
+            window: bot.inventory,
+            itemType: item.type,
+            metadata: item.metadata,
+            nbt: item.nbt,
+            count: to_discard,
+            sourceStart: item.slot,
+            sourceEnd: item.slot + 1,
+            destStart: -999
+        });
         discarded += to_discard;
         if (num !== -1 && discarded >= num) {
             break;
@@ -881,10 +924,22 @@ export async function putInChest(bot, itemName, num=-1) {
         log(bot, `Could not find a chest nearby.`);
         return false;
     }
-    let item = bot.inventory.findInventoryItem(itemName);
+    let { item, equipmentDestination } = findInventoryOrEquipmentItem(bot, itemName);
     if (!item) {
         log(bot, `You do not have any ${itemName} to put in the chest.`);
         return false;
+    }
+    if (equipmentDestination) {
+        if (!canMoveToInventory(bot, item)) {
+            log(bot, `No inventory space is available to unequip ${itemName}.`);
+            return false;
+        }
+        await bot.unequip(equipmentDestination);
+        item = bot.inventory.findInventoryItem(itemName);
+        if (!item) {
+            log(bot, `Failed to move ${itemName} into the inventory.`);
+            return false;
+        }
     }
     let to_put = num === -1 ? item.count : Math.min(num, item.count);
     await goToPosition(bot, chest.position.x, chest.position.y, chest.position.z, 2);
