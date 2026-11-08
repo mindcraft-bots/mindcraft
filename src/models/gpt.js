@@ -8,6 +8,8 @@ export class GPT {
         this.model_name = model_name;
         this.params = params;
         this.url = url; // store so that we know whether a custom URL has been set
+        // running token totals for this model instance, logged after each request
+        this.usage_totals = { requests: 0, input: 0, cached: 0, output: 0, reasoning: 0 };
 
         let config = {};
         if (url)
@@ -49,8 +51,9 @@ export class GPT {
                 }
                 let completion = await this.openai.chat.completions.create(pack);
                 if (completion.choices[0].finish_reason == 'length')
-                    throw new Error('Context length exceeded'); 
+                    throw new Error('Context length exceeded');
                 console.log('Received.');
+                this._logUsage(completion.usage);
                 res = completion.choices[0].message.content;
             } 
             // otherwise, use responses
@@ -67,6 +70,7 @@ export class GPT {
                     ...(this.params || {})
                 });
                 console.log('Received.');
+                this._logUsage(response.usage);
                 res = response.output_text;
                 let stop_seq_index = res.indexOf(stop_seq);
                 res = stop_seq_index !== -1 ? res.slice(0, stop_seq_index) : res;
@@ -85,6 +89,31 @@ export class GPT {
             }
         }
         return res;
+    }
+
+    // Log token usage for one request plus running totals. Handles both the
+    // Responses API shape (input_tokens / output_tokens) and the Chat
+    // Completions shape (prompt_tokens / completion_tokens). Cached tokens show
+    // how much of the prompt hit OpenAI's automatic prompt cache.
+    _logUsage(usage) {
+        if (!usage) return; // some OpenAI-compatible servers omit usage
+        const input = usage.input_tokens ?? usage.prompt_tokens ?? 0;
+        const cached = (usage.input_tokens_details ?? usage.prompt_tokens_details)?.cached_tokens ?? 0;
+        const output = usage.output_tokens ?? usage.completion_tokens ?? 0;
+        const reasoning = (usage.output_tokens_details ?? usage.completion_tokens_details)?.reasoning_tokens ?? 0;
+
+        const t = this.usage_totals;
+        t.requests++;
+        t.input += input;
+        t.cached += cached;
+        t.output += output;
+        t.reasoning += reasoning;
+
+        const pct = (part, whole) => whole > 0 ? Math.round(100 * part / whole) : 0;
+        console.log(
+            `Tokens: in ${input} (cached ${cached}, ${pct(cached, input)}%), out ${output} (reasoning ${reasoning})` +
+            ` | total over ${t.requests} requests: in ${t.input} (cached ${pct(t.cached, t.input)}%), out ${t.output} (reasoning ${t.reasoning})`
+        );
     }
 
     async sendVisionRequest(messages, systemMessage, imageBuffer) {
