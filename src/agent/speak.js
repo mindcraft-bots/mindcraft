@@ -1,4 +1,4 @@
-import { exec, spawn } from 'child_process';
+import { exec, execFile, spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
@@ -84,19 +84,25 @@ async function processQueue() {
 
     if (model === 'system') {
         // system TTS
-        const cmd = isWin
-            ? `powershell -NoProfile -Command "Add-Type -AssemblyName System.Speech; \
-            $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate=2; \
-            $s.Speak('${txt.replace(/'/g,"''")}'); $s.Dispose()"`
-            : isMac
-            ? `say "${txt.replace(/"/g,'\\"')}"`
-            : `espeak "${txt.replace(/"/g,'\\"')}"`;
-
-        exec(cmd, err => {
+        const onDone = err => {
             if (err) console.error('TTS error', err);
             isSpeaking = false;
             processQueue();
-        });
+        };
+
+        if (isWin) {
+            const script = 'Add-Type -AssemblyName System.Speech; '
+                + '$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; '
+                + 'try { $s.Rate = 2; $s.Speak($env:MINDCRAFT_TTS_TEXT) } finally { $s.Dispose() }';
+            execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+                env: { ...process.env, MINDCRAFT_TTS_TEXT: txt }
+            }, onDone);
+        } else {
+            const cmd = isMac
+                ? `say "${txt.replace(/"/g,'\\"')}"`
+                : `espeak "${txt.replace(/"/g,'\\"')}"`;
+            exec(cmd, onDone);
+        }
 
     } 
     else {
