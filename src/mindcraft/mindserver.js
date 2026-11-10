@@ -186,10 +186,11 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('disconnect', () => {
-            if (agent_connections[curAgentName]) {
+            const agent = agent_connections[curAgentName];
+            if (agent?.socket === socket) {
                 console.log(`Agent ${curAgentName} disconnected`);
-                agent_connections[curAgentName].in_game = false;
-                agent_connections[curAgentName].socket = null;
+                agent.in_game = false;
+                agent.socket = null;
                 agentsStatusUpdate();
             }
             if (agent_listeners.includes(socket)) {
@@ -198,25 +199,28 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('chat-message', (agentName, json) => {
-            if (!agent_connections[agentName]) {
-                console.warn(`Agent ${agentName} tried to send a message but is not logged in`);
+            const recipient = agent_connections[agentName]?.socket;
+            if (!recipient) {
+                console.warn(`Cannot relay chat to ${agentName}: no agent process is connected`);
                 return;
             }
             console.log(`${curAgentName} sending message to ${agentName}: ${json.message}`);
-            agent_connections[agentName].socket.emit('chat-message', curAgentName, json);
+            recipient.emit('chat-message', curAgentName, json);
         });
 
         socket.on('set-agent-settings', (agentName, settings) => {
             const agent = agent_connections[agentName];
             if (agent) {
                 agent.setSettings(settings);
-                agent.socket.emit('restart-agent');
+                agent.socket?.emit('restart-agent');
             }
         });
 
         socket.on('restart-agent', (agentName) => {
+            const target = agent_connections[agentName]?.socket;
+            if (!target) return;
             console.log(`Restarting agent: ${agentName}`);
-            agent_connections[agentName].socket.emit('restart-agent');
+            target.emit('restart-agent');
         });
 
         socket.on('stop-agent', (agentName) => {
