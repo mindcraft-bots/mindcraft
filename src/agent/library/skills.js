@@ -454,7 +454,8 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
             if (!blocktypes.includes(block.name)) {
                 return false;
             }
-            if (exclude) {
+            // Mineflayer's chunk palette entries do not have world positions.
+            if (exclude && block.position) {
                 for (let position of exclude) {
                     if (block.position.x === position.x && block.position.y === position.y && block.position.z === position.z) {
                         return false;
