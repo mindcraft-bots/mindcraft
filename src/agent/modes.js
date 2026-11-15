@@ -358,6 +358,10 @@ class ModeController {
         return modes_map[mode_name].on;
     }
 
+    isPaused(mode_name) {
+        return modes_map[mode_name]?.paused ?? false;
+    }
+
     pause(mode_name) {
         modes_map[mode_name].paused = true;
     }

@@ -31,6 +31,8 @@
   - Possible reason 3: Not setting the code path correctly in setting.js, use andy.js by default. 
 
 # Common Questions
+- Building from a picture or schematic? Put a supported Sponge v2 [`.schem`](src/utils/schematic/reader.js:91) or legacy [`.schematic`](src/utils/schematic/reader.js:128) file in the repository-root [`schematics/` folder](schematics/README.md). The [schematic guide](schematics/README.md) covers `/msg <bot_name> [`!buildSchematic(...)`](src/agent/commands/actions.js:492),` file conversion, and a copy-ready image-to-schematic prompt. For game-mode access, use the guide's provider-specific, least-privilege LuckPerms examples; `/op` is a broad fallback, not required or preferred on permission-managed servers.
+
 - Mod Support? Mindcraft only supports client-side mods like optifine and sodium, though they can be tricky to set up. Mods that change minecraft game mechanics are not supported.
   
 - Texture Packs? Apparently these cause issues and refuse to connect. Not sure why

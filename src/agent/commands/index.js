@@ -1,6 +1,7 @@
 import { getBlockId, getItemId } from "../../utils/mcdata.js";
 import { actionsList } from './actions.js';
 import { queryList } from './queries.js';
+import { parseOptionalCoordinate } from '../../utils/schematic/paths.js';
 
 let suppressNoDomainWarning = true;
 
@@ -26,11 +27,24 @@ export function blacklistCommands(commands) {
     }
 }
 
-const commandRegex = /!(\w+)(?:\(((?:-?\d+(?:\.\d+)?|true|false|"[^"]*")(?:\s*,\s*(?:-?\d+(?:\.\d+)?|true|false|"[^"]*"))*)\))?/
-const argRegex = /-?\d+(?:\.\d+)?|true|false|"[^"]*"/g;
+const numericArgument = '[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?![eE][+-]?\\d)';
+const coordinateArgument = '[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+-]?\\d+)?';
+const argumentPattern = `(?:${numericArgument}|true|false|null|"[^"]*")`;
+const coordinatePattern = `(?:${coordinateArgument}|true|false|null|"[^"]*")`;
+const commandRegex = new RegExp(`!(\\w+)(?:\\((${argumentPattern}(?:\\s*,\\s*${argumentPattern})*)\\))?`);
+const buildSchematicRegex = new RegExp(`!(buildSchematic)(?:\\((${coordinatePattern}(?:\\s*,\\s*${coordinatePattern})*)\\))?`);
+const argRegex = new RegExp(`${numericArgument}|true|false|null|"[^"]*"`, 'g');
+const coordinateArgRegex = new RegExp(`${coordinateArgument}|true|false|null|"[^"]*"`, 'g');
+
+function findCommandMatch(message) {
+    const match = message.match(commandRegex);
+    if (match?.[1] === 'buildSchematic')
+        return message.match(buildSchematicRegex) ?? match;
+    return match;
+}
 
 export function containsCommand(message) {
-    const commandMatch = message.match(commandRegex);
+    const commandMatch = findCommandMatch(message);
     if (commandMatch)
         return "!" + commandMatch[1];
     return null;
@@ -95,13 +109,13 @@ function checkInInterval(number, lowerBound, upperBound, endpointType) {
  * @returns {string | Object}
  */
 export function parseCommandMessage(message) {
-    const commandMatch = message.match(commandRegex);
+    const commandMatch = findCommandMatch(message);
     if (!commandMatch) return `Command is incorrectly formatted`;
 
     const commandName = "!"+commandMatch[1];
 
     let args;
-    if (commandMatch[2]) args = commandMatch[2].match(argRegex);
+    if (commandMatch[2]) args = commandMatch[2].match(commandName === '!buildSchematic' ? coordinateArgRegex : argRegex);
     else args = [];
 
     const command = getCommand(commandName);
@@ -110,15 +124,35 @@ export function parseCommandMessage(message) {
     const params = commandParams(command);
     const paramNames = commandParamNames(command);
     
-    if (args.length !== params.length)
-        return `Command ${command.name} was given ${args.length} args, but requires ${params.length} args.`;
+    const firstOptionalParam = params.findIndex(param => param.optional === true);
+    const requiredParams = firstOptionalParam === -1 ? params.length : firstOptionalParam;
+    if (params.some((param, index) => param.optional && params.slice(index + 1).some(later => !later.optional)))
+        return `Command ${command.name} has invalid optional parameter metadata.`;
+    if (args.length < requiredParams || args.length > params.length)
+        return `Command ${command.name} was given ${args.length} args, but requires ${requiredParams}${requiredParams === params.length ? '' : ` to ${params.length}`} args.`;
+
+    const suppliedOptionalGroups = new Map();
+    for (let i = requiredParams; i < args.length; i++) {
+        const group = params[i].optionalGroup;
+        if (group) suppliedOptionalGroups.set(group, (suppliedOptionalGroups.get(group) ?? 0) + 1);
+    }
+    for (const [group, supplied] of suppliedOptionalGroups) {
+        const groupSize = params.filter(param => param.optionalGroup === group).length;
+        if (supplied !== groupSize)
+            return `Error: Optional parameters '${group}' must be provided together.`;
+    }
+
+    while (args.length < params.length) {
+        const nextParam = params[args.length];
+        args.push(Object.hasOwn(nextParam, 'default') ? nextParam.default : null);
+    }
 
     
     for (let i = 0; i < args.length; i++) {
         const param = params[i];
         //Remove any extra characters
-        let arg = args[i].trim();
-        if ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'"))) {
+        let arg = typeof args[i] === 'string' ? args[i].trim() : args[i];
+        if (typeof arg === 'string' && ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'")))) {
             arg = arg.substring(1, arg.length-1);
         }
         
@@ -130,6 +164,13 @@ export function parseCommandMessage(message) {
                 arg = Number.parseFloat(arg); break;
             case 'boolean':
                 arg = parseBoolean(arg); break;
+            case 'coordinate':
+                try {
+                    arg = parseOptionalCoordinate(arg);
+                } catch (error) {
+                    return `Error: Param '${paramNames[i]}' must be a finite number or null.`;
+                }
+                break;
             case 'BlockName':
             case 'BlockOrItemName':
             case 'ItemName':
@@ -140,7 +181,7 @@ export function parseCommandMessage(message) {
             default:
                 throw new Error(`Command '${commandName}' parameter '${paramNames[i]}' has an unknown type: ${param.type}`);
         }
-        if(arg === null || Number.isNaN(arg))
+        if((arg === null && param.type !== 'coordinate') || Number.isNaN(arg))
             return `Error: Param '${paramNames[i]}' must be of type ${param.type}.`
 
         if(typeof arg === 'number') { //Check the domain of numbers
@@ -174,7 +215,7 @@ export function parseCommandMessage(message) {
 }
 
 export function truncCommandMessage(message) {
-    const commandMatch = message.match(commandRegex);
+    const commandMatch = findCommandMatch(message);
     if (commandMatch) {
         return message.substring(0, commandMatch.index + commandMatch[0].length);
     }
@@ -235,6 +276,7 @@ export function getCommandDocs(agent) {
         //If the language model is giving invalid inputs changing this might help.
         'float':             'number',
         'int':               'number',
+        'coordinate':       'number or null',
         'BlockName':         'string',
         'ItemName':          'string',
         'BlockOrItemName':   'string',
@@ -251,7 +293,8 @@ export function getCommandDocs(agent) {
         if (command.params) {
             docs += 'Params:\n';
             for (let param in command.params) {
-                docs += `${param}: (${typeTranslations[command.params[param].type]??command.params[param].type}) ${command.params[param].description}\n`;
+                const optional = command.params[param].optional ? ' (optional)' : '';
+                docs += `${param}: (${typeTranslations[command.params[param].type]??command.params[param].type})${optional} ${command.params[param].description}\n`;
             }
         }
     }

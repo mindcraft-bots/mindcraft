@@ -4,6 +4,7 @@ import { getCommandDocs } from './index.js';
 import convoManager from '../conversation.js';
 import { checkLevelBlueprint, checkBlueprint } from '../tasks/construction_tasks.js';
 import { load } from 'cheerio';
+import { listSchematics } from '../../utils/schematic/paths.js';
 
 const pad = (str) => {
     return '\n' + str + '\n';
@@ -226,6 +227,22 @@ export const queryList = [
             return "Saved place names: " + agent.memory_bank.getKeys();
         }
     }, 
+    {
+        name: '!listSchematics',
+        description: 'List supported schematic files in the schematics folder.',
+        perform: function () {
+            return listSchematics().then(filenames => {
+                filenames.sort((left, right) => left.localeCompare(right));
+                if (filenames.length === 0) {
+                    return pad('SCHEMATICS\nNo schematic files found. Add a .schem, .schematic, or .litematic file to the schematics folder, then run !listSchematics again.');
+                }
+                return pad(`SCHEMATICS\n${filenames.map(filename => `- ${filename}`).join('\n')}`);
+            }).catch(error => {
+                const message = error instanceof Error ? error.message : String(error);
+                return pad(`Unable to list schematics because of a filesystem error: ${message}`);
+            });
+        }
+    },
     {
         name: '!checkBlueprintLevel',
         description: 'Check if the level is complete and what blocks still need to be placed for the blueprint',

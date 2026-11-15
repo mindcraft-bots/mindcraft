@@ -1,6 +1,9 @@
 {
-    "name": "andy",
-
-    "model": "gpt-5.4-mini"
-
+  "name": "Andy",
+  "model": {
+    "api": "ollama",
+    "model": "sweaterdog/andy-4:micro-q8_0",
+    "url": "http://127.0.0.1:11434"
+  },
+  "embedding": "none"
 }

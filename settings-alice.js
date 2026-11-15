@@ -1,16 +1,24 @@
 const settings = {
     "minecraft_version": "auto", // or specific version like "1.21.6"
     "host": "127.0.0.1", // or "localhost", "your.ip.address.here"
-    "port": 55916, // set to -1 to automatically scan for open ports
+    // "host": "host.docker.internal",
+    // "port": 55916, // set to -1 to automatically scan for open ports
+    "port": 25565,
     "auth": "offline", // or "microsoft"
 
+    "server_host": "127.0.0.1",
+    "server_port": 8082,
+    // "server_host": "host.docker.internal",
+    // "server_port": 28080,
     // the mindserver manages all agents and hosts the UI
-    "mindserver_port": 8080,
-    "auto_open_ui": true, // opens UI in browser on startup
-    
+    "mindserver_host": "127.0.0.1", 
+    "mindserver_port": 8082,
+    "auto_open_ui": false, // opens UI in browser on startup
+
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
+    // "base_profile": "_default", // survival, assistant, creative, or god_mode
     "profiles": [
-        "./andy.json",
+        "./alice.json",
         // "./profiles/gpt.json",
         // "./profiles/claude.json",
         // "./profiles/gemini.json",
@@ -30,7 +38,8 @@ const settings = {
     "init_message": "Respond with hello world and your name", // sends to all on spawn
     "only_chat_with": [], // users that the bots listen to and send general messages to. if empty it will chat publicly
 
-    "speak": false,
+    // "speak": false,
+    "speak": "system",
     // allows all bots to speak through text-to-speech. 
     // specify speech model inside each profile with format: {provider}/{model}/{voice}.
     // if set to "system" it will use basic system text-to-speech. 
@@ -40,7 +49,8 @@ const settings = {
     "language": "en", // translate to/from this language. Supports these language names: https://cloud.google.com/translate/docs/languages
     "render_bot_view": false, // show bot's view in browser at localhost:3000, 3001...
 
-    "allow_insecure_coding": false, // allows newAction command and model can write/run code on your computer. enable at own risk
+    // "allow_insecure_coding": false, // allows newAction command and model can write/run code on your computer. enable at own risk
+    "allow_insecure_coding": true, // allows newAction command and model can write/run code on your computer. enable at own risk
     "allow_vision": false, // allows vision model to interpret screenshots as inputs
     "blocked_actions" : ["!checkBlueprint", "!checkBlueprintLevel", "!getBlueprint", "!getBlueprintLevel"] , // commands to disable and remove from docs. Ex: ["!setMode"]
     "code_timeout_mins": -1, // minutes code is allowed to run. -1 for no timeout

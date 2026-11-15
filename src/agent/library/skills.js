@@ -3,12 +3,30 @@ import * as world from "./world.js";
 import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
+import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
 const useDelay = blockPlaceDelay > 0;
 
 export function log(bot, message) {
     bot.output += message + '\n';
+}
+
+export async function buildSchematic(bot, filename, x = null, y = null, z = null) {
+    /**
+     * Build and verify a .schem or .schematic file from the schematics directory.
+     * @param {MinecraftBot} bot - the bot that will build the schematic.
+     * @param {string} filename - a safe filename relative to the schematics directory.
+     * @param {?number} x - optional integer/fractional world x coordinate.
+     * @param {?number} y - optional integer/fractional world y coordinate.
+     * @param {?number} z - optional integer/fractional world z coordinate.
+     * @returns {Promise<boolean>} true only when the build and world verification succeed.
+     * @example
+     * await skills.buildSchematic(bot, "small_house.schem");
+     **/
+    return await buildSchematicImplementation(bot, filename, x, y, z, {
+        writeLog: (message) => log(bot, message),
+    });
 }
 
 async function autoLight(bot) {

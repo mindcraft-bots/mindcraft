@@ -1,17 +1,39 @@
 services:
-  mindcraft:
+  bot-andy:
+    network_mode: "host" # Змушує Docker використовувати мережу вашої системи
     build: .
-    environment:
-      SETTINGS_JSON: |
-        {"auto_open_ui": false}
+#    environment:
+#      SETTINGS_JSON: |
+#        {"auto_open_ui": false}
     volumes:
-      - ./settings.js:/app/settings.js
+      - ./settings-andy.js:/app/settings.js
+      - ./andy.json:/app/andy.json
       - ./keys.json:/app/keys.json
       - ./profiles:/app/profiles
       - ./bots:/app/bots
+      - ./schematics:/app/schematics
     ports:
-      - "3000-3003:3000-3003" # see the view from the camera mounted on your bot head: http://localhost:3000/
-      - 8080 # Mindserver port
+      - "13000-13003:3000-3003" # see the view from the camera mounted on your bot head: http://localhost:3000/
+      - "18080:8080" # Mindserver port
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+  bot-alice:
+    network_mode: "host" # Змушує Docker використовувати мережу вашої системи
+    build: .
+#    environment:
+#      SETTINGS_JSON: |
+#        {"auto_open_ui": false}
+    volumes:
+      - ./settings-alice.js:/app/settings.js
+      - ./alice.json:/app/alice.json
+      - ./keys.json:/app/keys.json
+      - ./profiles:/app/profiles
+      - ./bots:/app/bots
+      - ./schematics:/app/schematics
+    ports:
+      - "23000-23003:3000-3003" # see the view from the camera mounted on your bot head: http://localhost:3000/
+      - "28080:8080" # Mindserver port
     extra_hosts:
     - "host.docker.internal:host-gateway"
 

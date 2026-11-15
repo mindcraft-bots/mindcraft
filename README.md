@@ -45,6 +45,12 @@ Do not connect this bot to public servers with coding enabled. This project allo
 
 If you encounter issues, check the [FAQ](https://github.com/mindcraft-bots/mindcraft/blob/main/FAQ.md) or find support on [discord](https://discord.gg/mp73p35dzC). We are currently not very responsive to github issues. To run tasks please refer to [Minecollab Instructions](minecollab.md#installation)
 
+## Build from a schematic
+
+Mindcraft can build supported schematic files in the repository's [`schematics/` directory](schematics/). The bot needs permission to switch into Creative mode; on permission-managed servers, grant the applicable least-privilege game-mode nodes rather than `/op`. See the [schematic permissions guide](schematics/README.md#game-mode-permissions) for provider-specific LuckPerms console examples and caveats. Then use in-game chat to check the available files with [`!listSchematics`](src/agent/commands/queries.js:231) and build one with [`!buildSchematic("house.schem")`](src/agent/commands/actions.js:492). To address a specific bot, send the command as a private message, for example `/msg Andy !buildSchematic("house.schem")` (replace `Andy` with the bot's exact Minecraft profile name). If `only_chat_with` is configured as a non-empty list in settings, include your player name there or the bot will ignore your message. This is direct command syntax; natural-language requests such as “Andy, build the house” are interpreted by the bot's model and are not an equivalent guaranteed command.
+
+For a quick placement at explicit coordinates, supply all three coordinates: /msg Andy [`!buildSchematic("house.schem", 100, 64, -20)`](src/agent/commands/actions.js:492). Omit all coordinates to let the bot choose a placement near itself. Use [`!stop`](src/agent/commands/actions.js:54) to cancel an active build. See the [schematic building guide](schematics/README.md) for supported formats, placement details, limitations, and a copy-ready prompt for making a schematic from a picture.
+
 
 # Configuration
 ## Model Customization

@@ -489,6 +489,19 @@ export const actionsList = [
         })
     },
     {
+        name: '!buildSchematic',
+        description: 'Build a schematic file from the schematics folder. Provide all three numeric coordinates to place it explicitly; otherwise it builds near the bot. The bot temporarily switches to Creative mode and restores its previous game mode afterward.',
+        params: {
+            'filename': { type: 'string', description: 'The schematic filename in the schematics folder.' },
+            'x': { type: 'coordinate', description: 'Optional x coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'y': { type: 'coordinate', description: 'Optional y coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'z': { type: 'coordinate', description: 'Optional z coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' }
+        },
+        perform: runAsAction(async (agent, filename, x, y, z) => {
+            await skills.buildSchematic(agent.bot, filename, x, y, z);
+        })
+    },
+    {
         name: '!useOn',
         description: 'Use (right click) the given tool on the nearest target of the given type.',
         params: {
