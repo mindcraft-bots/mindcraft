@@ -1,8 +1,19 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/06_wild_west_jail.json schematics/schems/pack1/06_wild_west_jail.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/06_wild_west_jail.json schematics/schems/pack1/06_wild_west_jail.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/06_wild_west_jail.json schematics/schems/pack1/06_wild_west_jail.schem 1.21.4
+> ```
+
 # Folder 06 — Wild West Jail validation
 
 ## Scope and source
 
-Recompiled only the permanent blueprint [`06_wild_west_jail.json`](./06_wild_west_jail.json) to [`06_wild_west_jail.schem`](../06_wild_west_jail.schem), using the documented tooling in [`BLUEPRINT_TOOLING.md`](../BLUEPRINT_TOOLING.md). Before this revalidation, the parent canonicalized the property ordering in 11 fence/bar state strings and corresponding `expected_counts` keys alphabetically. This was a semantic-only string canonicalization: no geometry, layer character, property value, or count changed. No other source, tool, dependency, geometry, or batch report was changed. The temporary determinism output was removed after comparison.
+Recompiled only the permanent blueprint [`06_wild_west_jail.json`](./06_wild_west_jail.json) to [`06_wild_west_jail.schem`](../../schems/pack1/06_wild_west_jail.schem), using the documented tooling in [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md). Before this revalidation, the parent canonicalized the property ordering in 11 fence/bar state strings and corresponding `expected_counts` keys alphabetically. This was a semantic-only string canonicalization: no geometry, layer character, property value, or count changed. No other source, tool, dependency, geometry, or batch report was changed. The temporary determinism output was removed after comparison.
 
 ## Commands executed
 
@@ -39,7 +50,7 @@ node schematics/validate_blueprint.mjs \
 
 ## Production reader and registry result
 
-Used production [`readSchematic()`](../../src/utils/schematic/reader.js) (`prismarine-schematic`) and the installed `minecraft-data` 1.21.4 registry. All **42** legend entries were validated against the registry. Dimensions were **13 × 9 × 9**; all **1,053/1,053** voxels, including air, were compared. Parser-derived counts match all expected counts; all **24/24** spot checks passed.
+Used production [`readSchematic()`](../../../src/utils/schematic/reader.js) (`prismarine-schematic`) and the installed `minecraft-data` 1.21.4 registry. All **42** legend entries were validated against the registry. Dimensions were **13 × 9 × 9**; all **1,053/1,053** voxels, including air, were compared. Parser-derived counts match all expected counts; all **24/24** spot checks passed.
 
 **Current full voxel and state comparison: PASS.** `parserMismatches: 0`; `countDiffs: []` (**0 current count mismatches**); `firstMismatches: []`; `spotCheckFailures: []`; `parserDerivedCountsMatch: true`. Parser-derived air is **607**. The production-reader command exited **0**.
 

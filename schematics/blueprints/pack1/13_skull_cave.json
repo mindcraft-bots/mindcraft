@@ -6,8 +6,8 @@
   "minecraft_version": "1.21.4",
   "data_version": 4189,
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/13/IMG_20261115_160341-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/13/IMG_20261115_160352-1536x1152.jpg"
+    "schematics/screenshots/pack1/13/IMG_20261115_160341-1536x1152.jpg",
+    "schematics/screenshots/pack1/13/IMG_20261115_160352-1536x1152.jpg"
   ],
   "distinct_builds_audit": "One Skull Cave, progressively assembled in steps1-9 across book pages58-61. The U-shaped jaw, cheek/nose/eye/forehead diagrams and platform/stair inset are details of this same build, not distinct buildings. Boat and player are contextual entities, not builds.",
   "width_x": 20,

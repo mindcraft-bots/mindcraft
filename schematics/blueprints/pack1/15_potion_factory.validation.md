@@ -1,14 +1,25 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/15_potion_factory.json schematics/schems/pack1/15_potion_factory.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/15_potion_factory.json schematics/schems/pack1/15_potion_factory.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/15_potion_factory.json schematics/schems/pack1/15_potion_factory.schem 1.21.4
+> ```
+
 # Folder 15 — Potion Factory binary validation
 
 ## Current production-reader result — 2026-11-15 repair
 
-**PASS:** all 3,705 voxels, exact block states/counts and all 38 spot checks now match. The original 8 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../batch_report.md) and [fresh production-reader log](../validation/build_logs/15_potion_factory.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
+**PASS:** all 3,705 voxels, exact block states/counts and all 38 spot checks now match. The original 8 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../../tooling/validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../../schems/pack1/batch_report.md) and [fresh production-reader log](../../tooling/validation/build_logs/pack1/15_potion_factory.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
 
 ## Original reconstruction validation — before reader repair
 
 ## Scope and source
 
-This record covers only folder 15. The unchanged explicit blueprint is [`15_potion_factory.json`](15_potion_factory.json), and the compiled artifact is [`15_potion_factory.schem`](../15_potion_factory.schem). The reusable procedure is documented in [`BLUEPRINT_TOOLING.md`](../BLUEPRINT_TOOLING.md); compilation used [`compile_blueprint.py`](../compile_blueprint.py), and registry/production-reader verification used [`validate_blueprint.mjs`](../validate_blueprint.mjs). No source, compiler, validator, dependency, or other-folder files were changed. `schematics/batch_report.md` was intentionally not updated.
+This record covers only folder 15. The unchanged explicit blueprint is [`15_potion_factory.json`](15_potion_factory.json), and the compiled artifact is [`15_potion_factory.schem`](../../schems/pack1/15_potion_factory.schem). The reusable procedure is documented in [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md); compilation used [`compile_blueprint.py`](../../tooling/compile_blueprint.py), and registry/production-reader verification used [`validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs). No source, compiler, validator, dependency, or other-folder files were changed. `schematics/batch_report.md` was intentionally not updated.
 
 ## Geometry and artifact summary
 

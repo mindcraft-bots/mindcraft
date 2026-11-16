@@ -1,20 +1,31 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/17_strider_bath.json schematics/schems/pack1/17_strider_bath.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/17_strider_bath.json schematics/schems/pack1/17_strider_bath.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/17_strider_bath.json schematics/schems/pack1/17_strider_bath.schem 1.21.4
+> ```
+
 # Folder 17 strider bath validation
 
 ## Artifacts and scope
 
 - Permanent source: [`17_strider_bath.json`](17_strider_bath.json) — 9,555 bytes; SHA-256 `347c50d6765551e113783e98261e86cd3214f805fbf2cce0f2a3420234ea31a5`.
-- Compiled output: [`17_strider_bath.schem`](../17_strider_bath.schem) — 441 bytes; SHA-256 `88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da`.
+- Compiled output: [`17_strider_bath.schem`](../../schems/pack1/17_strider_bath.schem) — 441 bytes; SHA-256 `88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da`.
 - Source geometry was not inferred or modified in this task. The permanent JSON was retained. Scope was limited to this folder-17 schematic and this report.
 
 ## Compile and binary validation
 
-From the repository root, ran `python3` with the [`compile_blueprint.py`](../compile_blueprint.py) `compile` subcommand, [`17_strider_bath.json`](17_strider_bath.json) as input, and [`17_strider_bath.schem`](../17_strider_bath.schem) as output. **Exit 0.** It emitted a gzip-compressed Sponge v2 schematic with `Version=2`, `DataVersion=4189`, dimensions **9 × 8 × 11**, zero offset, and empty `Entities` and `BlockEntities` lists. Binary validation confirmed the complete typed NBT schema: `Version`/`DataVersion`/`PaletteMax` are Int, dimensions are Short, `Offset` is IntArray, `Palette` is Compound of Int tags, `BlockData` is ByteArray, and both entity fields are List[Compound].
+From the repository root, ran `python3` with the [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `compile` subcommand, [`17_strider_bath.json`](17_strider_bath.json) as input, and [`17_strider_bath.schem`](../../schems/pack1/17_strider_bath.schem) as output. **Exit 0.** It emitted a gzip-compressed Sponge v2 schematic with `Version=2`, `DataVersion=4189`, dimensions **9 × 8 × 11**, zero offset, and empty `Entities` and `BlockEntities` lists. Binary validation confirmed the complete typed NBT schema: `Version`/`DataVersion`/`PaletteMax` are Int, dimensions are Short, `Offset` is IntArray, `Palette` is Compound of Int tags, `BlockData` is ByteArray, and both entity fields are List[Compound].
 
-Compiler's automatic post-compile reload/validation passed. Separately ran `python3` with [`compile_blueprint.py`](../compile_blueprint.py) `validate` on the same source and output: **exit 0**. The independent NBT check confirmed the complete canonical palette and full x-fastest / z-next / y-next VarInt stream, with all **792** voxel states in order; **232 non-air**, **560 air**, **10 palette states**, and all **17** spot checks passed. Ran `python3` with [`compile_blueprint.py`](../compile_blueprint.py) `test-varints`: **exit 0**, exercising one- through five-byte values and rejecting overlong encoding.
+Compiler's automatic post-compile reload/validation passed. Separately ran `python3` with [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `validate` on the same source and output: **exit 0**. The independent NBT check confirmed the complete canonical palette and full x-fastest / z-next / y-next VarInt stream, with all **792** voxel states in order; **232 non-air**, **560 air**, **10 palette states**, and all **17** spot checks passed. Ran `python3` with [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `test-varints`: **exit 0**, exercising one- through five-byte values and rejecting overlong encoding.
 
 ## Vanilla registry and production-reader validation
 
-Ran [`validate_blueprint.mjs`](../validate_blueprint.mjs) with this JSON and schematic: **exit 0**. The installed `minecraft-data` Minecraft 1.21.4 registry accepted all **10** legend states, including complete canonical property sets. The project's production `readSchematic` reader compared all **792 / 792** voxels, including air, and full block states. Dimensions matched; parser-derived counts matched expected counts; all **17** spot checks passed; count differences **0**; full-state mismatches **0**; full voxel/state comparison **PASS**.
+Ran [`validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs) with this JSON and schematic: **exit 0**. The installed `minecraft-data` Minecraft 1.21.4 registry accepted all **10** legend states, including complete canonical property sets. The project's production `readSchematic` reader compared all **792 / 792** voxels, including air, and full block states. Dimensions matched; parser-derived counts matched expected counts; all **17** spot checks passed; count differences **0**; full-state mismatches **0**; full voxel/state comparison **PASS**.
 
 No integer-property parser mismatch occurred for this blueprint. The documented parser limitation for integer-valued properties with nonzero minimum remains an upstream parser limitation in general; no workaround, dependency/source change, or geometry alteration was applied.
 

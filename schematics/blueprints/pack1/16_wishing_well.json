@@ -16,7 +16,7 @@
     "description": "Minimum envelope corner. +x east across printed 3-block excavation width; +z south along its 6-block length; +y up. Front/north is z0. Ground surface blocks y7 (top elevation8); excavation x1..3,z1..6,y1..6 is exactly3x6x6 below ground, excluding the included stone support floor y0. This export includes a minimal host-terrain border. Place schematic origin eight blocks below the desired walkable grass-top elevation."
   },
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/16/IMG_20261115_160507-1536x1152.jpg"
+    "schematics/screenshots/pack1/16/IMG_20261115_160507-1536x1152.jpg"
   ],
   "distinct_build_audit": "One wishing well (Ukrainian title ЧАРІВНИЙ КОЛОДЯЗЬ), pages72-73. Steps1-3 and both redstone close-ups depict subassemblies of the same well, integrated here rather than exported as duplicate builds. Player, thrown gold/potion items and potion particles are not builds.",
   "printed_dimension_audit": [

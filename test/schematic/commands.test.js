@@ -17,6 +17,9 @@ function runCommandChecks() {
     results.stayNegativeExponent = parseCommandMessage('!stay(1e-2)');
     results.stayDecimal = parseCommandMessage('!stay(1.5)');
     results.buildNear = parseCommandMessage('!buildSchematic("house.schem")');
+    results.buildGroupOffset = parseCommandMessage('!buildSchematic("pack1:02:01")');
+    results.buildGroupOffsetUnpadded = parseCommandMessage('!buildSchematic("pack1:2:1")');
+    results.buildPackFilename = parseCommandMessage('!buildSchematic("pack1:01_wardrobe_nether_portal")');
     results.buildNulls = parseCommandMessage('!buildSchematic("house.schem", null, null, null)');
     results.buildCoordinates = parseCommandMessage('!buildSchematic("house.schem", -1.25, 64, "2e1")');
     results.buildExponents = parseCommandMessage('!buildSchematic("house.schem", 1e2, -2.5e-1, 3E+1)');
@@ -31,15 +34,22 @@ function runCommandChecks() {
     results.listSchematicsIsAction = isAction('!listSchematics');
     globalThis.__schematicListSchematics = async () => ['zeta.schem', 'alpha.schematic', 'house.litematic'];
     results.listPopulated = await listCommand.perform({});
+    globalThis.__schematicListSchematicEntries = async () => [{ pack: 'pack1', id: '01-01', group: '01', fileId: '01', filename: '01_wardrobe_nether_portal.schem' }];
+    results.listPackEntry = await listCommand.perform({});
     globalThis.__schematicListSchematics = async () => [];
+    globalThis.__schematicListSchematicEntries = undefined;
     results.listEmpty = await listCommand.perform({});
     globalThis.__schematicListSchematics = async () => { throw new Error('EACCES: permission denied'); };
     results.listError = await listCommand.perform({});
     const calls = [];
     const agent = { bot: {}, actions: { runAction: async (name, fn, options) => { calls.push({ name, options }); await fn(); return { message: 'wrapped' }; } } };
     results.executionResult = await executeCommand(agent, '!buildSchematic("house.schem", null, null, null)');
-    results.invalidExecutionResult = await executeCommand(agent, '!buildSchematic("house.schem", "12junk", 64, 2)');
     results.executionArgs = globalThis.__buildSchematicArgs;
+    results.executionPackResult = await executeCommand(agent, '!buildSchematic("pack1:01_wardrobe_nether_portal", null, null, null)');
+    results.executionPackArgs = globalThis.__buildSchematicArgs;
+    results.executionGroupOffsetResult = await executeCommand(agent, '!buildSchematic("pack1:02:01", null, null, null)');
+    results.executionGroupOffsetArgs = globalThis.__buildSchematicArgs;
+    results.invalidExecutionResult = await executeCommand(agent, '!buildSchematic("house.schem", "12junk", 64, 2)');
     results.actionCalls = calls;
     console.log(JSON.stringify(results));
   `;
@@ -63,6 +73,9 @@ test("command parser preserves fixed arity and supports build schematic coordina
   assert.deepEqual(results.stayDecimal.args, [1]);
 
   assert.deepEqual(results.buildNear.args, ["house.schem", null, null, null]);
+  assert.deepEqual(results.buildGroupOffset.args, ["pack1:02:01", null, null, null]);
+  assert.deepEqual(results.buildGroupOffsetUnpadded.args, ["pack1:2:1", null, null, null]);
+  assert.deepEqual(results.buildPackFilename.args, ["pack1:01_wardrobe_nether_portal", null, null, null]);
   assert.deepEqual(results.buildNulls.args, ["house.schem", null, null, null]);
   assert.deepEqual(results.buildCoordinates.args, ["house.schem", -1.25, 64, 20]);
   assert.deepEqual(results.buildExponents.args, ["house.schem", 100, -0.25, 30]);
@@ -71,18 +84,32 @@ test("command parser preserves fixed arity and supports build schematic coordina
   assert.match(results.buildBadCoordinate, /finite number or null/);
   assert.match(results.buildNonFinite, /finite number or null/);
 
-  assert.match(results.docs, /!buildSchematic: Build a schematic file from the schematics folder/);
-  assert.match(results.docs, /!listSchematics: List supported schematic files in the schematics folder/);
+  assert.match(results.docs, /!buildSchematic: Build a schematic from a filename or pack/);
+  assert.match(results.docs, /!listSchematics: List supported schematic files/);
   assert.equal(results.listSchematicsRegistered, true);
   assert.equal(results.listSchematicsIsAction, false);
-  assert.ok(results.listPopulated.indexOf('- alpha.schematic') < results.listPopulated.indexOf('- house.litematic'));
-  assert.ok(results.listPopulated.indexOf('- house.litematic') < results.listPopulated.indexOf('- zeta.schem'));
+  assert.ok(results.listPopulated.indexOf('- legacy | group — | file ID — | alpha.schematic') < results.listPopulated.indexOf('- legacy | group — | file ID — | house.litematic'));
+  assert.ok(results.listPopulated.indexOf('- legacy | group — | file ID — | house.litematic') < results.listPopulated.indexOf('- legacy | group — | file ID — | zeta.schem'));
+  assert.match(results.listPackEntry, /- pack1 \| group 01 \| file ID 01 \| 01_wardrobe_nether_portal\.schem/);
+  assert.match(results.docs, /packN:<group>:<file-ID>/);
+  assert.match(results.docs, /never swap group and file ID/i);
+  assert.match(results.docs, /dash selectors.*unsupported as IDs/i);
+  assert.doesNotMatch(results.docs, /Legacy packN:GG-OO IDs/);
+  assert.match(results.docs, /build id 01 from group 02 of pack1.*pack1:02:01/i);
   assert.match(results.listEmpty, /No schematic files found/);
   assert.match(results.listEmpty, /Add a \.schem, \.schematic, or \.litematic file/);
   assert.match(results.listError, /Unable to list schematics because of a filesystem error: EACCES: permission denied/);
   assert.match(results.docs, /x: \(number or null\) \(optional\)/);
   assert.equal(results.executionResult, "wrapped");
+  assert.equal(results.executionPackResult, "wrapped");
+  assert.equal(results.executionGroupOffsetResult, "wrapped");
   assert.match(results.invalidExecutionResult, /finite number or null/);
   assert.deepEqual(results.executionArgs, [{}, "house.schem", null, null, null]);
-  assert.deepEqual(results.actionCalls, [{ name: "action:buildSchematic", options: { timeout: -1, resume: false } }]);
+  assert.deepEqual(results.executionPackArgs, [{}, "pack1:01_wardrobe_nether_portal", null, null, null]);
+  assert.deepEqual(results.executionGroupOffsetArgs, [{}, "pack1:02:01", null, null, null]);
+  assert.deepEqual(results.actionCalls, [
+    { name: "action:buildSchematic", options: { timeout: -1, resume: false } },
+    { name: "action:buildSchematic", options: { timeout: -1, resume: false } },
+    { name: "action:buildSchematic", options: { timeout: -1, resume: false } },
+  ]);
 });

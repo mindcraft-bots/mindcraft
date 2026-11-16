@@ -76,6 +76,18 @@ test("maps wall torches, wall signs, and redstone wire to actual inventory items
   assert.deepEqual(build.actions.map((action) => build.getItemForState(action.state).name), ["torch", "oak_sign", "redstone"]);
 });
 
+test("maps wall banners and cocoa to inventory items without changing requested states", async () => {
+  const schematic = await parsedSchematic([
+    { name: "white_wall_banner", properties: { facing: "east" } },
+    { name: "red_wall_banner", properties: { facing: "west" } },
+    { name: "cocoa", properties: { age: 2, facing: "north" } },
+  ]);
+  const build = createModernBuild(schematic, bot(), new Vec3(0, 0, 0));
+  assert.deepEqual(build.actions.map(action => build.getItemForState(action.state).name), ["white_banner", "red_banner", "cocoa_beans"]);
+  assert.deepEqual(build.plan.map(entry => entry.name), ["white_wall_banner", "red_wall_banner", "cocoa"]);
+  assert.deepEqual(build.plan[2].properties, schematic.getBlock(new Vec3(2, 0, 0)).getProperties());
+});
+
 test("retains dependent door and bed blocks in the verification plan but only places their base halves", async () => {
   const schematic = await parsedSchematic([
     { name: "oak_door", properties: { facing: "west", half: "lower", hinge: "left", open: false, powered: false } },

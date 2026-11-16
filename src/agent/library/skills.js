@@ -16,13 +16,13 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
     /**
      * Build and verify a .schem or .schematic file from the schematics directory.
      * @param {MinecraftBot} bot - the bot that will build the schematic.
-     * @param {string} filename - a safe filename relative to the schematics directory.
+     * @param {string} filename - a safe legacy filename or pack selector such as "pack1:01:01" (pack:group:file-ID) or the literal filename/stem "pack1:01_wardrobe_nether_portal". Numeric dash-form selectors are unsupported as IDs.
      * @param {?number} x - optional integer/fractional world x coordinate.
      * @param {?number} y - optional integer/fractional world y coordinate.
      * @param {?number} z - optional integer/fractional world z coordinate.
      * @returns {Promise<boolean>} true only when the build and world verification succeed.
      * @example
-     * await skills.buildSchematic(bot, "small_house.schem");
+     * await skills.buildSchematic(bot, "pack1:01:01");
      **/
     return await buildSchematicImplementation(bot, filename, x, y, z, {
         writeLog: (message) => log(bot, message),

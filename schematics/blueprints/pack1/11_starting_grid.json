@@ -6,9 +6,9 @@
   "minecraft_version": "1.21.4",
   "data_version": 4189,
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160237-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160250-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160304-1536x1152.jpg"
+    "schematics/screenshots/pack1/11/IMG_20261115_160237-1536x1152.jpg",
+    "schematics/screenshots/pack1/11/IMG_20261115_160250-1536x1152.jpg",
+    "schematics/screenshots/pack1/11/IMG_20261115_160304-1536x1152.jpg"
   ],
   "distinct_build_audit": {
     "count": 6,

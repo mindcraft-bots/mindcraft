@@ -17,8 +17,8 @@
     "layer_order": "layers[y][z][x]; rows advance south, characters east"
   },
   "sources": [
-    "data/screenshots/BuildingsCompressed-2/19/IMG_20261115_160635-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/19/IMG_20261115_160646-1536x1152.jpg"
+    "schematics/screenshots/pack1/19/IMG_20261115_160635-1536x1152.jpg",
+    "schematics/screenshots/pack1/19/IMG_20261115_160646-1536x1152.jpg"
   ],
   "title": "Hot-spring chalet / open birch pavilion",
   "distinct_build_audit": "Part2 chalet is a distinct standalone reusable build. Steps1-4 are the same pavilion, not four separate builds. Thermal landscape and its benches are in19_thermal_springs. No book-background environment included.",

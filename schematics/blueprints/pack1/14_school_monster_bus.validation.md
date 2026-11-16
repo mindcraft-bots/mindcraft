@@ -1,8 +1,19 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/14_school_monster_bus.json schematics/schems/pack1/14_school_monster_bus.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/14_school_monster_bus.json schematics/schems/pack1/14_school_monster_bus.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/14_school_monster_bus.json schematics/schems/pack1/14_school_monster_bus.schem 1.21.4
+> ```
+
 # Folder 14 — School Monster-Bus validation
 
 ## Artifacts and scope
 
-The permanent architecture remains the source of truth in [`14_school_monster_bus.json`](14_school_monster_bus.json). The compiled artifact is [`14_school_monster_bus.schem`](../14_school_monster_bus.schem). No blueprint geometry, source images, dependencies, compiler/validator tools, or other folders were modified for this build.
+The permanent architecture remains the source of truth in [`14_school_monster_bus.json`](14_school_monster_bus.json). The compiled artifact is [`14_school_monster_bus.schem`](../../schems/pack1/14_school_monster_bus.schem). No blueprint geometry, source images, dependencies, compiler/validator tools, or other folders were modified for this build.
 
 The recorded source set is the two folder-14 images from the blueprint audit. They show one school monster-bus assembled in steps 1–8 and a reverse/cutaway view of that same vehicle, not additional builds. The city, street, buildings, player, and clouds are excluded.
 
@@ -22,7 +33,7 @@ The final 13×4 platform construction step has 44 black-concrete floor cells: it
 
 ## Compilation and binary checks
 
-Used the existing [`compile_blueprint.py`](../compile_blueprint.py) `compile`, `validate`, and `test-varints` commands as documented in [`BLUEPRINT_TOOLING.md`](../BLUEPRINT_TOOLING.md):
+Used the existing [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `compile`, `validate`, and `test-varints` commands as documented in [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md):
 
 ```sh
 python3 schematics/compile_blueprint.py compile \
@@ -36,7 +47,7 @@ Compilation and the standalone reload validation both passed. The output is gzip
 
 ## Registry and production-reader checks
 
-Ran [`validate_blueprint.mjs`](../validate_blueprint.mjs), which validates each full canonical legend state against the installed vanilla Minecraft 1.21.4 registry and compares the schematic through production `readSchematic` for every voxel, including air:
+Ran [`validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs), which validates each full canonical legend state against the installed vanilla Minecraft 1.21.4 registry and compares the schematic through production `readSchematic` for every voxel, including air:
 
 - Registry: all 35 legend states validated.
 - Production reader: 1,200/1,200 voxels compared; full canonical block names and properties matched.
@@ -53,7 +64,7 @@ Compiled a second time to a temporary path and compared SHA-256 hashes. The perm
 | Artifact | Size | SHA-256 |
 | --- | ---: | --- |
 | [`14_school_monster_bus.json`](14_school_monster_bus.json) | 23,965 bytes | `a87d1591bbeb937f1ce20ec3e9ed6fc407c9ad74dd6aa67cf20b369a1ef36018` |
-| [`14_school_monster_bus.schem`](../14_school_monster_bus.schem) | 920 bytes | `dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9` |
+| [`14_school_monster_bus.schem`](../../schems/pack1/14_school_monster_bus.schem) | 920 bytes | `dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9` |
 | Second compile (`/tmp/14_school_monster_bus.determinism.schem`, temporary) | 920 bytes | `dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9` |
 
 The JSON and permanent schematic are both nonempty. The temporary comparison output is not a project artifact.

@@ -1,20 +1,31 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/18_giant_grandfather_clock.json schematics/schems/pack1/18_giant_grandfather_clock.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/18_giant_grandfather_clock.json schematics/schems/pack1/18_giant_grandfather_clock.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/18_giant_grandfather_clock.json schematics/schems/pack1/18_giant_grandfather_clock.schem 1.21.4
+> ```
+
 # Folder 18 validation: Giant grandfather clock
 
 ## Inputs and output
 
 - Preserved source blueprint: [18_giant_grandfather_clock.json](18_giant_grandfather_clock.json). Its geometry and state values were not edited; no alphabetic property-order normalization was needed.
-- Compiled output: [18_giant_grandfather_clock.schem](../18_giant_grandfather_clock.schem).
-- Tooling instructions: [BLUEPRINT_TOOLING.md](../BLUEPRINT_TOOLING.md). No compiler, validator, dependency, or unrelated source was changed.
+- Compiled output: [18_giant_grandfather_clock.schem](../../schems/pack1/18_giant_grandfather_clock.schem).
+- Tooling instructions: [BLUEPRINT_TOOLING.md](../../tooling/BLUEPRINT_TOOLING.md). No compiler, validator, dependency, or unrelated source was changed.
 - Format: gzip-compressed Sponge v2 NBT, DataVersion 4189, dimensions 13 × 33 × 11, zero offset, 4,719 total voxels, 1,309 non-air and 3,410 air, 52 palette entries, 4,719 block-data bytes.
 - Final file size: 1,438 bytes. SHA-256: `87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6`.
 
 ## Validation results
 
-- Compile: [`python3 schematics/compile_blueprint.py compile schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../compile_blueprint.py) — PASS. This also reloads and verifies the NBT with nbtlib.
-- Independent binary validation: [`python3 schematics/compile_blueprint.py validate schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../compile_blueprint.py) — PASS. Confirmed tag types, DataVersion, dimensions, zero offset, complete 52-state palette, canonical signed-byte VarInt stream and ordering, full voxel decode, volume and all expected state counts.
-- VarInt boundary test: [`python3 schematics/compile_blueprint.py test-varints`](../compile_blueprint.py) — PASS; 1-, 2-, 3-, 4-, and 5-byte boundaries accepted and overlong encoding rejected.
-- Application validation: [`node schematics/validate_blueprint.mjs schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../validate_blueprint.mjs) — PASS against the installed Minecraft 1.21.4 full-state registry and production schematic reader. All 4,719/4,719 voxels (air included) compared; 0 mismatches. All 52 legend entries registry-validated; all 19 spot checks passed; derived counts matched (3,410 air, 1,309 non-air).
-- Determinism: ran the compile command above a second time with its output directed inside a fresh `mktemp -d` directory; the two [`sha256sum`](../18_giant_grandfather_clock.schem) values matched the output hash above, and [`cmp`](../18_giant_grandfather_clock.schem) reported byte-identical output. The temporary directory was removed.
+- Compile: [`python3 schematics/compile_blueprint.py compile schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../../tooling/compile_blueprint.py) — PASS. This also reloads and verifies the NBT with nbtlib.
+- Independent binary validation: [`python3 schematics/compile_blueprint.py validate schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../../tooling/compile_blueprint.py) — PASS. Confirmed tag types, DataVersion, dimensions, zero offset, complete 52-state palette, canonical signed-byte VarInt stream and ordering, full voxel decode, volume and all expected state counts.
+- VarInt boundary test: [`python3 schematics/compile_blueprint.py test-varints`](../../tooling/compile_blueprint.py) — PASS; 1-, 2-, 3-, 4-, and 5-byte boundaries accepted and overlong encoding rejected.
+- Application validation: [`node schematics/validate_blueprint.mjs schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem`](../../tooling/validate_blueprint.mjs) — PASS against the installed Minecraft 1.21.4 full-state registry and production schematic reader. All 4,719/4,719 voxels (air included) compared; 0 mismatches. All 52 legend entries registry-validated; all 19 spot checks passed; derived counts matched (3,410 air, 1,309 non-air).
+- Determinism: ran the compile command above a second time with its output directed inside a fresh `mktemp -d` directory; the two [`sha256sum`](../../schems/pack1/18_giant_grandfather_clock.schem) values matched the output hash above, and [`cmp`](../../schems/pack1/18_giant_grandfather_clock.schem) reported byte-identical output. The temporary directory was removed.
 
 ## Exact voxel/state counts
 

@@ -1,12 +1,23 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/11_grandstand.json schematics/schems/pack1/11_grandstand.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/11_grandstand.json schematics/schems/pack1/11_grandstand.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/11_grandstand.json schematics/schems/pack1/11_grandstand.schem 1.21.4
+> ```
+
 # Folder 11 grandstand compilation and validation
 
 ## Source and scope
 
-This is a folder-11-only compilation record. The permanent source is [`11_grandstand.json`](11_grandstand.json:1); the binary is [`11_grandstand.schem`](../11_grandstand.schem). Dimensions are 13 × 8 × 9, volume 936. The JSON remains the sole geometry/state source and was preserved unchanged. Compilation used the existing [`BLUEPRINT_TOOLING.md`](../BLUEPRINT_TOOLING.md:1), [`compile_blueprint.py`](../compile_blueprint.py:122), and [`validate_blueprint.mjs`](../validate_blueprint.mjs:65); no tooling, source, dependencies, unrelated folder, or [`batch_report.md`](../batch_report.md) was changed. No live/server test was run.
+This is a folder-11-only compilation record. The permanent source is [`11_grandstand.json`](11_grandstand.json:1); the binary is [`11_grandstand.schem`](../../schems/pack1/11_grandstand.schem). Dimensions are 13 × 8 × 9, volume 936. The JSON remains the sole geometry/state source and was preserved unchanged. Compilation used the existing [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md:1), [`compile_blueprint.py`](../../tooling/compile_blueprint.py:122), and [`validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs:65); no tooling, source, dependencies, unrelated folder, or [`batch_report.md`](../../schems/pack1/batch_report.md) was changed. No live/server test was run.
 
 ## Binary compilation and validation
 
-The compile command [`python3`](../compile_blueprint.py:204) [`schematics/compile_blueprint.py`](../compile_blueprint.py:204) [`compile`](../compile_blueprint.py:207) [`schematics/blueprints/11_grandstand.json`](11_grandstand.json:1) [`schematics/11_grandstand.schem`](../11_grandstand.schem) exited 0; its built-in nbtlib reload and independent full validation passed. A separate [`validate`](../compile_blueprint.py:210) invocation on the same source/output also exited 0. [`test-varints`](../compile_blueprint.py:213) exited 0, passing canonical 1–5 byte boundary encodings and rejecting an overlong encoding.
+The compile command [`python3`](../../tooling/compile_blueprint.py:204) [`schematics/compile_blueprint.py`](../../tooling/compile_blueprint.py:204) [`compile`](../../tooling/compile_blueprint.py:207) [`schematics/blueprints/11_grandstand.json`](11_grandstand.json:1) [`schematics/11_grandstand.schem`](../../schems/pack1/11_grandstand.schem) exited 0; its built-in nbtlib reload and independent full validation passed. A separate [`validate`](../../tooling/compile_blueprint.py:210) invocation on the same source/output also exited 0. [`test-varints`](../../tooling/compile_blueprint.py:213) exited 0, passing canonical 1–5 byte boundary encodings and rejecting an overlong encoding.
 
 The gzip Sponge v2 NBT has root `Schematic`, `Version` Int 2, `DataVersion` Int 4189, typed dimensions/palette/block data, zero offset, and empty typed `BlockEntities`/`Entities` lists. Binary validation checked palette identity/IDs, complete canonical signed-byte-backed VarInt stream in x-fastest, z-next, y-next order, all voxels including air, volume, per-state counts, and 14 spot checks. Dimensions `[13,8,9]`; volume 936; non-air/air 369/567; palette entries 9; BlockData 936 bytes; compressed artifact 430 bytes; SHA-256 `bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801`.
 
@@ -26,11 +37,11 @@ The gzip Sponge v2 NBT has root `Schematic`, `Version` Int 2, `DataVersion` Int 
 
 ## Registry and production-reader result
 
-[`node`](../validate_blueprint.mjs:1) [`schematics/validate_blueprint.mjs`](../validate_blueprint.mjs:65) on the JSON and schematic exited 0. All 9/9 legend states passed the Minecraft 1.21.4 registry check; the production [`readSchematic()`](../../src/utils/schematic/reader.js:173) path compared 936/936 voxels and full properties. Reader-derived counts matched, spot checks passed 14/14, count diffs 0, spot failures 0, parser mismatches 0, `fullVoxelAndStateComparison=PASS`.
+[`node`](../../tooling/validate_blueprint.mjs:1) [`schematics/validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs:65) on the JSON and schematic exited 0. All 9/9 legend states passed the Minecraft 1.21.4 registry check; the production [`readSchematic()`](../../../src/utils/schematic/reader.js:173) path compared 936/936 voxels and full properties. Reader-derived counts matched, spot checks passed 14/14, count diffs 0, spot failures 0, parser mismatches 0, `fullVoxelAndStateComparison=PASS`.
 
 ## Determinism and artifact checks
 
-Recompiled from the unchanged JSON to a temporary path with [`compile`](../compile_blueprint.py:207); the temporary output hash matched the permanent SHA-256 above. The owned temporary directory was removed after comparison. Both source JSON and output schematic passed nonempty checks. The chest is the single default-empty chest; no inventory or block-entity NBT was added.
+Recompiled from the unchanged JSON to a temporary path with [`compile`](../../tooling/compile_blueprint.py:207); the temporary output hash matched the permanent SHA-256 above. The owned temporary directory was removed after comparison. Both source JSON and output schematic passed nonempty checks. The chest is the single default-empty chest; no inventory or block-entity NBT was added.
 
 ## Reconstruction limitations
 

@@ -1,35 +1,49 @@
-# Blueprint compilation and validation tools
+# Blueprint compilation, validation and pack audits
 
-These reusable tools consume the generic blueprint fields `width_x`, `height_y`, `length_z`, `legend`, `layers` (`layers[y][z][x]`), `expected_counts`, and `spot_checks`. They do not select a folder or change blueprint geometry.
+The source of truth for a build is its JSON blueprint in `schematics/blueprints/<packN>/`; its matching compiled schematic belongs in `schematics/schems/<packN>/`. The tools are in this `schematics/tooling/` directory. Repository-relative CLI arguments are resolved from the repository root, regardless of the shell's current working directory. The compiler restricts blueprint inputs to the repository; compilation outputs may use an absolute temporary path for deterministic checks.
+
+## Blueprint metadata
+
+Each blueprint must declare a positive integer `data_version` matching its target Minecraft `minecraft_version`. Do not rely on a hard-coded default: the compiler writes the declared DataVersion and verifies it again on reload. The Node validator reads the blueprint version by default, checks the installed `minecraft-data` registry's Minecraft version and DataVersion, and optionally accepts an explicit version argument that must match the blueprint.
 
 ## Compile and binary-validate
 
-From the project root:
+Run these commands from the repository root. From another working directory, invoke the tool itself by its absolute path; its input arguments still resolve relative to the repository root:
 
 ```sh
-python3 schematics/compile_blueprint.py compile \
-  schematics/blueprints/<name>.json schematics/<name>.schem
+python3 schematics/tooling/compile_blueprint.py compile \
+  schematics/blueprints/<packN>/<name>.json \
+  schematics/schems/<packN>/<name>.schem
+python3 schematics/tooling/compile_blueprint.py validate \
+  schematics/blueprints/<packN>/<name>.json \
+  schematics/schems/<packN>/<name>.schem
+python3 schematics/tooling/compile_blueprint.py test-varints
 ```
 
-Compilation creates gzip-compressed Sponge v2 NBT (DataVersion 4189), with typed tags, zero offset, complete state palette, empty entity lists, deterministic gzip metadata, and signed-byte VarInt data in x-fastest / z-next / y-next order. The compile command reloads and independently checks the output using `nbtlib` before returning success. Run just the binary validation again with:
+Compilation creates deterministic gzip-compressed Sponge v2 NBT using the blueprint's DataVersion, typed tags, zero offset, complete state palette, empty entity lists, and canonical signed-byte VarInt data in X-fastest / Z-next / Y-next order. Compile reloads and independently verifies the output with `nbtlib`. Validation checks NBT tag types, dimensions, DataVersion, palette, full voxel order and states, expected counts, spot checks and volume. The VarInt suite tests 1–5 byte values and rejects overlong encodings.
+
+Determinism means repeated compilation with the same toolchain produces identical bytes; it does not mean every historical asset used this serialization. The original wardrobe asset is preserved and deliberately fails byte regeneration for the [documented palette, tag-order, and gzip-header reasons](validation/pack1/integration_review.md). Do not overwrite it to make the audit green. Compression-library changes can also affect byte hashes across environments.
+
+## Production reader and registry validation
 
 ```sh
-python3 schematics/compile_blueprint.py validate \
-  schematics/blueprints/<name>.json schematics/<name>.schem
-python3 schematics/compile_blueprint.py test-varints
+node schematics/tooling/validate_blueprint.mjs \
+  schematics/blueprints/<packN>/<name>.json \
+  schematics/schems/<packN>/<name>.schem <MC_VERSION>
 ```
 
-The validator rejects malformed/non-canonical VarInts, checks the complete byte stream, every voxel, counts, spot checks, NBT tag types, dimensions, palette, and volume. VarInt boundary coverage includes 1–5 byte values and rejects overlong encodings.
+The final version argument is optional when `minecraft_version` is present in the JSON. Both source paths are resolved from the repository root and must resolve within it (including after symlink resolution). The validator imports `readSchematic` from the production `src/utils/schematic/reader.js`, parses through `prismarine-schematic`, checks all legend states against the installed `minecraft-data` registry, and compares every voxel—including air—plus properties, dimensions, counts and spot checks. It does not connect to a server. A nonzero exit or reader mismatch is a real recorded failure; do not change blueprint geometry or hide a parser discrepancy to force a pass.
 
-## Real application reader and registry validation
+Pack discovery is not restricted to pack1, but pack names must be a positive decimal number after “pack”. Version selection is metadata-driven, not a promise of arbitrary Minecraft-version support: the exact Java version and DataVersion must be available in the installed registry, and its states must be supported by the reader. The [tooling regression tests](../../test/schematic/tooling_paths.test.js) exercise Minecraft 1.20.4 / DataVersion 3700 as well as pack1's Minecraft 1.21.4 / DataVersion 4189, plus mismatched and unavailable versions. Binary compilation alone is not a registry compatibility check.
+
+To verify deterministic output without overwriting the canonical schematic, compile to a new temporary file and compare it, for example with `cmp -s` or `sha256sum`. Keep the blueprint JSON as the source of truth.
+
+## Audit a pack
 
 ```sh
-node schematics/validate_blueprint.mjs \
-  schematics/blueprints/<name>.json schematics/<name>.schem
+python3 schematics/tooling/audit_batch.py --pack pack1
+python3 schematics/tooling/audit_batch.py --pack pack1 \
+  --minecraft-version <MC_VERSION> --data-version <DATA_VERSION>
 ```
 
-This imports the production `readSchematic` function from `src/utils/schematic/reader.js`, parses through `prismarine-schematic`, validates every blueprint legend state against the installed `minecraft-data` Minecraft 1.21.4 registry, and compares all voxels—including air—and their full canonical property sets, dimensions, counts, and spot checks. It does not connect to a server.
-
-The installed `prismarine-schematic` 1.3.0 parser has a known state-ID conversion issue for integer-valued block properties with a nonzero minimum: `pink_candle[candles=1,...]` is returned as `candles=2`. The validator intentionally reports this as a failure instead of hiding it or changing blueprint geometry. The raw NBT compiler/binary validator remains independent and verifies that the schematic palette contains the canonical, registry-valid `candles=1` state. The parser discrepancy requires an upstream parser correction before the real-reader state comparison can pass for these folder02 schematics.
-
-For reproducibility, compile the same JSON to a second output path and compare SHA-256 hashes (for example, `sha256sum schematics/<name>.schem /tmp/<name>.schem`). Preserve the blueprint JSON as the source of truth; never infer replacement geometry in these tools.
+The runner discovers all JSON blueprints in `schematics/blueprints/<packN>/`, checks same-stem schematics in `schematics/schems/<packN>/`, follows explicit IDs in that pack's `index.json`, recompiles only to temporary outputs, and runs the VarInt and schematic test suites. It writes current machine-readable results and logs to `schematics/tooling/validation/<packN>/` and updates only the marked generated-audit section of `schematics/schems/<packN>/batch_report.md`; text outside that generated section is preserved. It does not assume a set of folder numbers: an unknown/missing pack fails rather than receiving fabricated success, and actual missing artifacts or validation failures are retained in the report and return status.

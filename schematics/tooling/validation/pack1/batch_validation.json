@@ -1,0 +1,4115 @@
+{
+  "schema_version": 2,
+  "checked_at_utc": "2026-11-16T01:51:40.904514+00:00",
+  "project": "github.com/mindcraft-bots/mindcraft",
+  "pack": "pack1",
+  "requested_constraints": {
+    "minecraft_version": null,
+    "data_version": null
+  },
+  "scope": "All blueprint JSONs in schematics/blueprints/pack1 and same-stem canonical schematics in schematics/schems/pack1; deterministic regeneration uses temporary output only.",
+  "versions": {
+    "node": "v22.22.1",
+    "npm": "9.2.0",
+    "python": "3.14.4",
+    "nbtlib": "2.0.4",
+    "minecraft-data": "3.119.0",
+    "prismarine-schematic": "1.3.0"
+  },
+  "commands": {
+    "binary": "python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem",
+    "production_reader": "node schematics/tooling/validate_blueprint.mjs schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem [<MC_VERSION>]",
+    "deterministic": "python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> <temporary.schem>",
+    "varint": "python3 schematics/tooling/compile_blueprint.py test-varints",
+    "npm_test": "npm run test:schematic"
+  },
+  "coverage": {
+    "blueprint_count": 30,
+    "schematic_count": 30,
+    "notes_nonempty_count": 30,
+    "artifact_issues": []
+  },
+  "tests": {
+    "varint": {
+      "command": [
+        "python3",
+        "schematics/tooling/compile_blueprint.py",
+        "test-varints"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "schematics/tooling/validation/pack1/varint_test.log",
+      "output": "canonical VarInt boundaries passed (including 1-, 2-, 3-, 4-, and 5-byte values; overlong encoding rejected)\n"
+    },
+    "npm_test": {
+      "command": [
+        "npm",
+        "run",
+        "test:schematic"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "schematics/tooling/validation/pack1/npm_test.log",
+      "output": "\n> test:schematic\n> node --test --test-concurrency=1 test/schematic/*.test.js\n\nTAP version 13\n# Subtest: rejects missing and escaping paths before reading or changing game mode\nok 1 - rejects missing and escaping paths before reading or changing game mode\n  ---\n  duration_ms: 3.327812\n  type: 'test'\n  ...\n# Subtest: reports parse failures and explicitly rejects listed but unsupported litematic files\nok 2 - reports parse failures and explicitly rejects listed but unsupported litematic files\n  ---\n  duration_ms: 1.91964\n  type: 'test'\n  ...\n# Subtest: rejects unknown source palette blocks before parser, Creative mode, or supply changes\nok 3 - rejects unknown source palette blocks before parser, Creative mode, or supply changes\n  ---\n  duration_ms: 52.845113\n  type: 'test'\n  ...\n# Subtest: floors three finite coordinates and otherwise uses bot position offset and floor\nok 4 - floors three finite coordinates and otherwise uses bot position offset and floor\n  ---\n  duration_ms: 2.176327\n  type: 'test'\n  ...\n# Subtest: Creative permission denial aborts the build and still restores mode and unstuck state\nok 5 - Creative permission denial aborts the build and still restores mode and unstuck state\n  ---\n  duration_ms: 0.434604\n  type: 'test'\n  ...\n# Subtest: build success is verified and cleans supply, restores game mode and prior unstuck state\nok 6 - build success is verified and cleans supply, restores game mode and prior unstuck state\n  ---\n  duration_ms: 0.683166\n  type: 'test'\n  ...\n# Subtest: reports rejected and interrupted builds as failures while cancelling and restoring\nok 7 - reports rejected and interrupted builds as failures while cancelling and restoring\n  ---\n  duration_ms: 0.908343\n  type: 'test'\n  ...\n# Subtest: verification mismatch, cleanup rejection, and hanging cleanup never claim success\nok 8 - verification mismatch, cleanup rejection, and hanging cleanup never claim success\n  ---\n  duration_ms: 7.314282\n  type: 'test'\n  ...\n# Subtest: does not restore unchanged Creative mode and restores after a timed-out switch\nok 9 - does not restore unchanged Creative mode and restores after a timed-out switch\n  ---\n  duration_ms: 1.02313\n  type: 'test'\n  ...\n# Subtest: loads mineflayer-schem without retaining its global pathfinder movements\nok 10 - loads mineflayer-schem without retaining its global pathfinder movements\n  ---\n  duration_ms: 7.718398\n  type: 'test'\n  ...\n# Subtest: real pathfinder keeps unrestricted searchRadius and routes around a distant wall\nok 11 - real pathfinder keeps unrestricted searchRadius and routes around a distant wall\n  ---\n  duration_ms: 76.756161\n  type: 'test'\n  ...\n# Subtest: queues schematic compatibility after pathfinder with Mineflayer plugin loader\nok 12 - queues schematic compatibility after pathfinder with Mineflayer plugin loader\n  ---\n  duration_ms: 5.717904\n  type: 'test'\n  ...\n# Subtest: builder.stop cancels the builder and clears the current pathfinder goal\nok 13 - builder.stop cancels the builder and clears the current pathfinder goal\n  ---\n  duration_ms: 3.033664\n  type: 'test'\n  ...\n# Subtest: Creative supply reuses reserved slot 36 for sequential palette types and restores it\nok 14 - Creative supply reuses reserved slot 36 for sequential palette types and restores it\n  ---\n  duration_ms: 3.173599\n  type: 'test'\n  ...\n# Subtest: rejects cancelled and non-Creative supply without writing inventory\nok 15 - rejects cancelled and non-Creative supply without writing inventory\n  ---\n  duration_ms: 4.648686\n  type: 'test'\n  ...\n# Subtest: closing a session prevents queued equips from writing after cancellation\nok 16 - closing a session prevents queued equips from writing after cancellation\n  ---\n  duration_ms: 2.20907\n  type: 'test'\n  ...\n# Subtest: aborting a timed-out close prevents late equipment and slot restoration writes\nok 17 - aborting a timed-out close prevents late equipment and slot restoration writes\n  ---\n  duration_ms: 2.174845\n  type: 'test'\n  ...\n# Subtest: uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\nok 18 - uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\n  ---\n  duration_ms: 2.227204\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\nok 19 - stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\n  ---\n  duration_ms: 82.625252\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\nok 20 - interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\n  ---\n  duration_ms: 6235.821613\n  type: 'test'\n  ...\n# Subtest: already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\nok 21 - already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\n  ---\n  duration_ms: 1107.804783\n  type: 'test'\n  ...\n# Subtest: command parser preserves fixed arity and supports build schematic coordinates\nok 22 - command parser preserves fixed arity and supports build schematic coordinates\n  ---\n  duration_ms: 149.296658\n  type: 'test'\n  ...\n# Subtest: normalizeGameMode accepts supported modes and defaults invalid values to survival\nok 23 - normalizeGameMode accepts supported modes and defaults invalid values to survival\n  ---\n  duration_ms: 1.580067\n  type: 'test'\n  ...\n# Subtest: setGameMode returns immediately when the bot already has the target mode\nok 24 - setGameMode returns immediately when the bot already has the target mode\n  ---\n  duration_ms: 0.309097\n  type: 'test'\n  ...\n# Subtest: forced setGameMode sends restoration even when the client already reports the target mode\nok 25 - forced setGameMode sends restoration even when the client already reports the target mode\n  ---\n  duration_ms: 51.11396\n  type: 'test'\n  ...\n# Subtest: setGameMode registers before chat and resolves when the target mode is observed\nok 26 - setGameMode registers before chat and resolves when the target mode is observed\n  ---\n  duration_ms: 0.339344\n  type: 'test'\n  ...\n# Subtest: setGameMode continues waiting after unrelated game events\nok 27 - setGameMode continues waiting after unrelated game events\n  ---\n  duration_ms: 3.197795\n  type: 'test'\n  ...\n# Subtest: setGameMode resolves false on timeout when the mode never changes\nok 28 - setGameMode resolves false on timeout when the mode never changes\n  ---\n  duration_ms: 5.658982\n  type: 'test'\n  ...\n# Subtest: invalid requested modes safely target survival\nok 29 - invalid requested modes safely target survival\n  ---\n  duration_ms: 0.392043\n  type: 'test'\n  ...\n# Subtest: setGameMode handles synchronous chat errors and rejected chat promises\nok 30 - setGameMode handles synchronous chat errors and rejected chat promises\n  ---\n  duration_ms: 0.578116\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, -4)\n# 📐 Area: from (10, 20, -4) to (13, 21, -3)\n# 🎮 Server version: 1.20.4\n# Subtest: creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\nok 31 - creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\n  ---\n  duration_ms: 20.378589\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall torches, wall signs, and redstone wire to actual inventory items\nok 32 - maps wall torches, wall signs, and redstone wire to actual inventory items\n  ---\n  duration_ms: 3.910897\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall banners and cocoa to inventory items without changing requested states\nok 33 - maps wall banners and cocoa to inventory items without changing requested states\n  ---\n  duration_ms: 3.773356\n  type: 'test'\n  ...\n# 📦 Build initialized at (4, 5, 6)\n# 📐 Area: from (4, 5, 6) to (9, 6, 7)\n# 🎮 Server version: 1.20.4\n# Subtest: retains dependent door and bed blocks in the verification plan but only places their base halves\nok 34 - retains dependent door and bed blocks in the verification plan but only places their base halves\n  ---\n  duration_ms: 3.224596\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (1, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: reports unsupported states explicitly and attaches the inspectable adapter\nok 35 - reports unsupported states explicitly and attaches the inspectable adapter\n  ---\n  duration_ms: 3.571624\n  type: 'test'\n  ...\n# Subtest: rejects invalid and oversized dimensions before decoding block data\nok 36 - rejects invalid and oversized dimensions before decoding block data\n  ---\n  duration_ms: 1.775427\n  type: 'test'\n  ...\n# Subtest: pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions\nok 37 - pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions\n  ---\n  duration_ms: 34.913815\n  type: 'test'\n  ...\n# Subtest: IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs\nok 38 - IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs\n  ---\n  duration_ms: 22.140941\n  type: 'test'\n  ...\n# Subtest: pack IDs and filename lookup work independently across arbitrary packs\nok 39 - pack IDs and filename lookup work independently across arbitrary packs\n  ---\n  duration_ms: 5.445658\n  type: 'test'\n  ...\n# Subtest: extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts\nok 40 - extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts\n  ---\n  duration_ms: 3.123844\n  type: 'test'\n  ...\n# Subtest: manifest targets cannot disagree with directly indexed filenames\nok 41 - manifest targets cannot disagree with directly indexed filenames\n  ---\n  duration_ms: 2.80505\n  type: 'test'\n  ...\n# Subtest: pack entries reject supported-looking directories instead of treating them as schematic files\nok 42 - pack entries reject supported-looking directories instead of treating them as schematic files\n  ---\n  duration_ms: 1.822236\n  type: 'test'\n  ...\n# Subtest: pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files\nok 43 - pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files\n  ---\n  duration_ms: 3.364982\n  type: 'test'\n  ...\n# Subtest: pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors\nok 44 - pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors\n  ---\n  duration_ms: 1.595797\n  type: 'test'\n  ...\n# Subtest: pack directories, manifest targets, and schematic files cannot escape via symlinks\nok 45 - pack directories, manifest targets, and schematic files cannot escape via symlinks\n  ---\n  duration_ms: 2.82623\n  type: 'test'\n  ...\n# Subtest: legacy root-relative paths continue to resolve as before\nok 46 - legacy root-relative paths continue to resolve as before\n  ---\n  duration_ms: 1.086882\n  type: 'test'\n  ...\n# Subtest: postinstall verifier accepts the patched installed package\nok 47 - postinstall verifier accepts the patched installed package\n  ---\n  duration_ms: 186.148059\n  type: 'test'\n  ...\n# Subtest: runtime loader accepts the patched plugin capability\nok 48 - runtime loader accepts the patched plugin capability\n  ---\n  duration_ms: 187.29851\n  type: 'test'\n  ...\n# Subtest: an unpatched package fails install verification and runtime loading before plugin registration\nok 49 - an unpatched package fails install verification and runtime loading before plugin registration\n  ---\n  duration_ms: 277.754514\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath accepts confined files and confined missing candidates\nok 50 - resolveSchematicPath accepts confined files and confined missing candidates\n  ---\n  duration_ms: 9.051407\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\nok 51 - resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\n  ---\n  duration_ms: 1.342336\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects symlinks and missing descendants that escape\nok 52 - resolveSchematicPath rejects symlinks and missing descendants that escape\n  ---\n  duration_ms: 2.595843\n  type: 'test'\n  ...\n# Subtest: listSchematics returns sorted supported regular files and ignores escaping symlinks\nok 53 - listSchematics returns sorted supported regular files and ignores escaping symlinks\n  ---\n  duration_ms: 10.321655\n  type: 'test'\n  ...\n# Subtest: listSchematics treats a missing directory as empty\nok 54 - listSchematics treats a missing directory as empty\n  ---\n  duration_ms: 0.953408\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate handles omitted values and finite numeric values/strings\nok 55 - parseOptionalCoordinate handles omitted values and finite numeric values/strings\n  ---\n  duration_ms: 0.324806\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate rejects invalid and non-finite values\nok 56 - parseOptionalCoordinate rejects invalid and non-finite values\n  ---\n  duration_ms: 0.275723\n  type: 'test'\n  ...\n# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic\nok 57 - reads a real serialized Sponge v2 buffer through prismarine-schematic\n  ---\n  duration_ms: 67.421728\n  type: 'test'\n  ...\n# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes\nok 58 - rejects unknown names and invalid properties or states from real Sponge palettes\n  ---\n  duration_ms: 3.962334\n  type: 'test'\n  ...\n# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs\nok 59 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs\n  ---\n  duration_ms: 4.388723\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.21.4\n# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning\nok 60 - preserves every candle count, foliage distance and snow layer through production reading and placement planning\n  ---\n  duration_ms: 45.624308\n  type: 'test'\n  ...\n# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\nok 61 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\n  ---\n  duration_ms: 0.445354\n  type: 'test'\n  ...\n# Subtest: zero-based integer states and omitted properties retain their existing interpretation\nok 62 - zero-based integer states and omitted properties retain their existing interpretation\n  ---\n  duration_ms: 5.615621\n  type: 'test'\n  ...\n# Subtest: legacy snow mapping also preserves its one-based layer value\nok 63 - legacy snow mapping also preserves its one-based layer value\n  ---\n  duration_ms: 2.116003\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (6, 71, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 81, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (18, 81, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 87, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 103, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 78, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 73, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 88, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 80, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 80, 22)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (14, 80, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 72, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (24, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 69, 3)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (11, 75, 7)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 67, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (12, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 91, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (20, 80, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 74, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (19, 77, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 81, 17)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 72, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 73, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 97, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 70, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (23, 72, 22)\n# 🎮 Server version: 1.21.4\n# PACK1_BUILD_PREFLIGHT {\"passed\":28,\"unsupported\":[{\"id\":\"04-01\",\"filename\":\"04_pagoda.schem\",\"error\":\"Schematic contains unsupported blocks: potted_oak_sapling at 10,68,6: no placeable item mapping for potted_oak_sapling; potted_oak_sapling at 7,73,4: no placeable item mapping for potted_oak_sapling\"},{\"id\":\"18-02\",\"filename\":\"18_giant_grandfather_clock.schem\",\"error\":\"Schematic contains unsupported blocks: potted_fern at 5,67,3: no placeable item mapping for potted_fern\"}]}\n# Subtest: every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename\nok 64 - every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename\n  ---\n  duration_ms: 645.518515\n  type: 'test'\n  ...\n# Subtest: real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\nok 65 - real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\n  ---\n  duration_ms: 359.696672\n  type: 'test'\n  ...\n# Subtest: returns finished only after all build actions are consumed\nok 66 - returns finished only after all build actions are consumed\n  ---\n  duration_ms: 6.704836\n  type: 'test'\n  ...\n# Subtest: captures builder_error events even when the plugin resolves successfully\nok 67 - captures builder_error events even when the plugin resolves successfully\n  ---\n  duration_ms: 2.062382\n  type: 'test'\n  ...\n# Subtest: captures rejected builder promises\nok 68 - captures rejected builder promises\n  ---\n  duration_ms: 1.843967\n  type: 'test'\n  ...\n# Subtest: an already interrupted bot does not start the build and runs cancellation hooks\nok 69 - an already interrupted bot does not start the build and runs cancellation hooks\n  ---\n  duration_ms: 0.48477\n  type: 'test'\n  ...\n# Subtest: bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\nok 70 - bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\n  ---\n  duration_ms: 22.538545\n  type: 'test'\n  ...\n# Subtest: reports a stalled build when remaining actions stop decreasing\nok 71 - reports a stalled build when remaining actions stop decreasing\n  ---\n  duration_ms: 24.849759\n  type: 'test'\n  ...\n# Subtest: does not report finished if a resolved builder leaves actions behind\nok 72 - does not report finished if a resolved builder leaves actions behind\n  ---\n  duration_ms: 2.322886\n  type: 'test'\n  ...\n# Subtest: clears runner polling and grace timers and removes its event listener\nok 73 - clears runner polling and grace timers and removes its event listener\n  ---\n  duration_ms: 3.162948\n  type: 'test'\n  ...\n# Subtest: compiler and production validator resolve pack paths from a different cwd\nok 74 - compiler and production validator resolve pack paths from a different cwd\n  ---\n  duration_ms: 373.385594\n  type: 'test'\n  ...\n# Subtest: tooling rejects inputs that resolve outside the repository\nok 75 - tooling rejects inputs that resolve outside the repository\n  ---\n  duration_ms: 268.69377\n  type: 'test'\n  ...\n# Subtest: audit refuses an unknown pack instead of generating an empty successful report\nok 76 - audit refuses an unknown pack instead of generating an empty successful report\n  ---\n  duration_ms: 45.109713\n  type: 'test'\n  ...\n# Subtest: compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\nok 77 - compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\n  ---\n  duration_ms: 1032.786517\n  type: 'test'\n  ...\n# WARDROBE_REBUILD_DIAGNOSIS {\"zlib\":\"1.3.1\",\"canonical_sha256\":\"8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383\",\"rebuilt_sha256\":\"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\",\"canonical_bytes\":535,\"rebuilt_bytes\":505,\"canonical_header\":\"1f8b0808c1eef96a02ff\",\"rebuilt_header\":\"1f8b08000000000002ff\",\"canonical_trailer\":\"9c0881f6d4050000\",\"rebuilt_trailer\":\"16db9e95d4050000\",\"canonical_raw_sha256\":\"bb3ffe6c546bb32b5c535254db7980406f21d845ec67a75dac85e2c204dc8ade\",\"rebuilt_raw_sha256\":\"1c623daf9879dc4a0dc78fff9c2a470f1fa1b5e482d8ccfbde5d969f3cf2c309\",\"canonical_gzip_filename\":\"wardrobe_nether_portal.schem\",\"canonical_gzip_mtime\":1794764481,\"canonical_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"Palette\",\"PaletteMax\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"rebuilt_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"PaletteMax\",\"Palette\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"canonical_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_planks\":1,\"minecraft:obsidian\":2,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":3,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":4,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":5,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":6,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":7,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":8,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":9,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"rebuilt_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":1,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":2,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":3,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":4,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":5,\"minecraft:dark_oak_planks\":6,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":7,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":8,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":9,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:obsidian\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"byte_match\":false,\"repeated_rebuild_match\":true,\"decoded_voxels_match\":true,\"compared_voxels\":168,\"legacy_raw_reconstructed_exactly\":true,\"legacy_gzip_reconstructed_exactly\":true,\"canonical_unchanged\":true}\n# Subtest: wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\nok 78 - wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\n  ---\n  duration_ms: 77.084153\n  type: 'test'\n  ...\n1..78\n# tests 78\n# suites 0\n# pass 78\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 17851.905189\n"
+    }
+  },
+  "builds": [
+    {
+      "folder": "01",
+      "title": "Портал у шафі (Portal in a Wardrobe)",
+      "stable_id": "01-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
+        "bytes": 8632,
+        "sha256": "8af8f528ecc8d1b784c6dc82cdc0eb60c601d4e7fa0707bfed696a1ecb0d23b0",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/01_wardrobe_nether_portal.schem",
+        "exists": true,
+        "bytes": 535,
+        "sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/01_wardrobe_nether_portal.validation.md",
+        "exists": true,
+        "bytes": 6668,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        6,
+        7,
+        4
+      ],
+      "non_air_count": 90,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
+            "schematics/schems/pack1/01_wardrobe_nether_portal.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.binary.log",
+          "output": {
+            "air": 78,
+            "block_data_bytes": 168,
+            "bytes": 535,
+            "dimensions": [
+              6,
+              7,
+              4
+            ],
+            "non_air": 90,
+            "palette_entries": 16,
+            "sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
+            "spot_checks": 21,
+            "volume": 168
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
+            "schematics/schems/pack1/01_wardrobe_nether_portal.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.reader.log",
+          "compared_voxels": 168,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 21,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
+            "schematic": "schematics/schems/pack1/01_wardrobe_nether_portal.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              6,
+              7,
+              4
+            ],
+            "volume": 168,
+            "comparedVoxels": 168,
+            "parserDerivedAir": 78,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 16,
+            "spotChecks": 21,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
+            "/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-51r0cjww/01_wardrobe_nether_portal.schem"
+          ],
+          "exit_code": 0,
+          "result": "FAIL",
+          "temporary_output_only": true,
+          "canonical_sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
+          "regenerated_sha256": "a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886",
+          "log": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.determinism.log",
+          "output": "{\"air\": 78, \"block_data_bytes\": 168, \"blueprint\": \"schematics/blueprints/pack1/01_wardrobe_nether_portal.json\", \"bytes\": 505, \"compiled\": \"/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-51r0cjww/01_wardrobe_nether_portal.schem\", \"dimensions\": [6, 7, 4], \"non_air\": 90, \"palette_entries\": 16, \"sha256\": \"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\", \"spot_checks\": 21, \"volume\": 168}\n"
+        }
+      },
+      "air_count": 78,
+      "volume": 168,
+      "binary_details": {
+        "air": 78,
+        "block_data_bytes": 168,
+        "bytes": 535,
+        "dimensions": [
+          6,
+          7,
+          4
+        ],
+        "non_air": 90,
+        "palette_entries": 16,
+        "sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
+        "spot_checks": 21,
+        "volume": 168
+      }
+    },
+    {
+      "folder": "02",
+      "title": "Свиноповітряна куля / Pig hot-air balloon - illustrated bee variant",
+      "stable_id": "02-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+        "bytes": 12906,
+        "sha256": "8a1f66fed416f28889ebfcf180653735d8721718ee6500c0b716602bb49fd0df",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/02_bee_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 761,
+        "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/02_bee_hot_air_balloon.validation.md",
+        "exists": true,
+        "bytes": 5477,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        10,
+        17,
+        9
+      ],
+      "non_air_count": 440,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+            "schematics/schems/pack1/02_bee_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.binary.log",
+          "output": {
+            "air": 1090,
+            "block_data_bytes": 1530,
+            "bytes": 761,
+            "dimensions": [
+              10,
+              17,
+              9
+            ],
+            "non_air": 440,
+            "palette_entries": 25,
+            "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+            "spot_checks": 18,
+            "volume": 1530
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+            "schematics/schems/pack1/02_bee_hot_air_balloon.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.reader.log",
+          "compared_voxels": 1530,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 18,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+            "schematic": "schematics/schems/pack1/02_bee_hot_air_balloon.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              10,
+              17,
+              9
+            ],
+            "volume": 1530,
+            "comparedVoxels": 1530,
+            "expectedNonAir": 440,
+            "parserDerivedAir": 1090,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 25,
+            "spotChecks": 18,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+            "/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-rokcc1bw/02_bee_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+          "regenerated_sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.determinism.log",
+          "output": "{\"air\": 1090, \"block_data_bytes\": 1530, \"blueprint\": \"schematics/blueprints/pack1/02_bee_hot_air_balloon.json\", \"bytes\": 761, \"compiled\": \"/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-rokcc1bw/02_bee_hot_air_balloon.schem\", \"dimensions\": [10, 17, 9], \"non_air\": 440, \"palette_entries\": 25, \"sha256\": \"1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119\", \"spot_checks\": 18, \"volume\": 1530}\n"
+        }
+      },
+      "air_count": 1090,
+      "volume": 1530,
+      "binary_details": {
+        "air": 1090,
+        "block_data_bytes": 1530,
+        "bytes": 761,
+        "dimensions": [
+          10,
+          17,
+          9
+        ],
+        "non_air": 440,
+        "palette_entries": 25,
+        "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+        "spot_checks": 18,
+        "volume": 1530
+      }
+    },
+    {
+      "folder": "02",
+      "title": "Свиноповітряна куля / Pig hot-air balloon - illustrated enderman variant",
+      "stable_id": "02-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+        "bytes": 11485,
+        "sha256": "2b59f5eb4b4b68fec5b6da7fc9dd36a1fbdf726cef5c6f0d90d277c925014943",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/02_enderman_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 680,
+        "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.validation.md",
+        "exists": true,
+        "bytes": 5523,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        8,
+        15,
+        8
+      ],
+      "non_air_count": 416,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+            "schematics/schems/pack1/02_enderman_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.binary.log",
+          "output": {
+            "air": 544,
+            "block_data_bytes": 960,
+            "bytes": 680,
+            "dimensions": [
+              8,
+              15,
+              8
+            ],
+            "non_air": 416,
+            "palette_entries": 23,
+            "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+            "spot_checks": 16,
+            "volume": 960
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+            "schematics/schems/pack1/02_enderman_hot_air_balloon.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.reader.log",
+          "compared_voxels": 960,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 16,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+            "schematic": "schematics/schems/pack1/02_enderman_hot_air_balloon.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              8,
+              15,
+              8
+            ],
+            "volume": 960,
+            "comparedVoxels": 960,
+            "expectedNonAir": 416,
+            "parserDerivedAir": 544,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 23,
+            "spotChecks": 16,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+            "/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-fes01y_g/02_enderman_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+          "regenerated_sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.determinism.log",
+          "output": "{\"air\": 544, \"block_data_bytes\": 960, \"blueprint\": \"schematics/blueprints/pack1/02_enderman_hot_air_balloon.json\", \"bytes\": 680, \"compiled\": \"/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-fes01y_g/02_enderman_hot_air_balloon.schem\", \"dimensions\": [8, 15, 8], \"non_air\": 416, \"palette_entries\": 23, \"sha256\": \"73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75\", \"spot_checks\": 16, \"volume\": 960}\n"
+        }
+      },
+      "air_count": 544,
+      "volume": 960,
+      "binary_details": {
+        "air": 544,
+        "block_data_bytes": 960,
+        "bytes": 680,
+        "dimensions": [
+          8,
+          15,
+          8
+        ],
+        "non_air": 416,
+        "palette_entries": 23,
+        "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+        "spot_checks": 16,
+        "volume": 960
+      }
+    },
+    {
+      "folder": "02",
+      "title": "Свиноповітряна куля / Pig hot-air balloon",
+      "stable_id": "02-03",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
+        "bytes": 11893,
+        "sha256": "3f1f9eaa70e9589e0484e9d573c2b42b86297486e013b6ff65ac1670c9e09d34",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/02_pig_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 713,
+        "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/02_pig_hot_air_balloon.validation.md",
+        "exists": true,
+        "bytes": 5508,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        8,
+        15,
+        9
+      ],
+      "non_air_count": 428,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
+            "schematics/schems/pack1/02_pig_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.binary.log",
+          "output": {
+            "air": 652,
+            "block_data_bytes": 1080,
+            "bytes": 713,
+            "dimensions": [
+              8,
+              15,
+              9
+            ],
+            "non_air": 428,
+            "palette_entries": 24,
+            "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+            "spot_checks": 17,
+            "volume": 1080
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
+            "schematics/schems/pack1/02_pig_hot_air_balloon.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.reader.log",
+          "compared_voxels": 1080,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 17,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
+            "schematic": "schematics/schems/pack1/02_pig_hot_air_balloon.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              8,
+              15,
+              9
+            ],
+            "volume": 1080,
+            "comparedVoxels": 1080,
+            "expectedNonAir": 428,
+            "parserDerivedAir": 652,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 24,
+            "spotChecks": 17,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
+            "/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-mt39t8t3/02_pig_hot_air_balloon.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+          "regenerated_sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+          "log": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.determinism.log",
+          "output": "{\"air\": 652, \"block_data_bytes\": 1080, \"blueprint\": \"schematics/blueprints/pack1/02_pig_hot_air_balloon.json\", \"bytes\": 713, \"compiled\": \"/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-mt39t8t3/02_pig_hot_air_balloon.schem\", \"dimensions\": [8, 15, 9], \"non_air\": 428, \"palette_entries\": 24, \"sha256\": \"0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4\", \"spot_checks\": 17, \"volume\": 1080}\n"
+        }
+      },
+      "air_count": 652,
+      "volume": 1080,
+      "binary_details": {
+        "air": 652,
+        "block_data_bytes": 1080,
+        "bytes": 713,
+        "dimensions": [
+          8,
+          15,
+          9
+        ],
+        "non_air": 428,
+        "palette_entries": 24,
+        "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+        "spot_checks": 17,
+        "volume": 1080
+      }
+    },
+    {
+      "folder": "03",
+      "title": "Великий червоний хлів / Big red barn",
+      "stable_id": "03-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/03_big_red_barn.json",
+        "bytes": 22404,
+        "sha256": "8c7d2a2a14c3beb2e542c9c7df42fa182211ec2f3b1e3b0899b15c8babbce8e5",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/03_big_red_barn.schem",
+        "exists": true,
+        "bytes": 946,
+        "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/03_big_red_barn.validation.md",
+        "exists": true,
+        "bytes": 5843,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        18,
+        17,
+        19
+      ],
+      "non_air_count": 1102,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/03_big_red_barn.json",
+            "schematics/schems/pack1/03_big_red_barn.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.binary.log",
+          "output": {
+            "air": 4712,
+            "block_data_bytes": 5814,
+            "bytes": 946,
+            "dimensions": [
+              18,
+              17,
+              19
+            ],
+            "non_air": 1102,
+            "palette_entries": 26,
+            "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+            "spot_checks": 16,
+            "volume": 5814
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/03_big_red_barn.json",
+            "schematics/schems/pack1/03_big_red_barn.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.reader.log",
+          "compared_voxels": 5814,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 16,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/03_big_red_barn.json",
+            "schematic": "schematics/schems/pack1/03_big_red_barn.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              18,
+              17,
+              19
+            ],
+            "volume": 5814,
+            "comparedVoxels": 5814,
+            "expectedNonAir": 1102,
+            "parserDerivedAir": 4712,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 26,
+            "spotChecks": 16,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/03_big_red_barn.json",
+            "/tmp/schematic-audit-pack1-03_big_red_barn-5igaetqe/03_big_red_barn.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+          "regenerated_sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.determinism.log",
+          "output": "{\"air\": 4712, \"block_data_bytes\": 5814, \"blueprint\": \"schematics/blueprints/pack1/03_big_red_barn.json\", \"bytes\": 946, \"compiled\": \"/tmp/schematic-audit-pack1-03_big_red_barn-5igaetqe/03_big_red_barn.schem\", \"dimensions\": [18, 17, 19], \"non_air\": 1102, \"palette_entries\": 26, \"sha256\": \"68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813\", \"spot_checks\": 16, \"volume\": 5814}\n"
+        }
+      },
+      "air_count": 4712,
+      "volume": 5814,
+      "binary_details": {
+        "air": 4712,
+        "block_data_bytes": 5814,
+        "bytes": 946,
+        "dimensions": [
+          18,
+          17,
+          19
+        ],
+        "non_air": 1102,
+        "palette_entries": 26,
+        "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+        "spot_checks": 16,
+        "volume": 5814
+      }
+    },
+    {
+      "folder": "03",
+      "title": "Силосна вежа / Storage silo",
+      "stable_id": "03-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/03_storage_silo.json",
+        "bytes": 12301,
+        "sha256": "a883a7e56dfe30087a79fff8fda5c5b21e936a63b6c87868bca4869d04da9410",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/03_storage_silo.schem",
+        "exists": true,
+        "bytes": 497,
+        "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/03_storage_silo.validation.md",
+        "exists": true,
+        "bytes": 5711,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        9,
+        23,
+        9
+      ],
+      "non_air_count": 616,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/03_storage_silo.json",
+            "schematics/schems/pack1/03_storage_silo.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.binary.log",
+          "output": {
+            "air": 1247,
+            "block_data_bytes": 1863,
+            "bytes": 497,
+            "dimensions": [
+              9,
+              23,
+              9
+            ],
+            "non_air": 616,
+            "palette_entries": 14,
+            "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+            "spot_checks": 14,
+            "volume": 1863
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/03_storage_silo.json",
+            "schematics/schems/pack1/03_storage_silo.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.reader.log",
+          "compared_voxels": 1863,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 14,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/03_storage_silo.json",
+            "schematic": "schematics/schems/pack1/03_storage_silo.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              9,
+              23,
+              9
+            ],
+            "volume": 1863,
+            "comparedVoxels": 1863,
+            "expectedNonAir": 616,
+            "parserDerivedAir": 1247,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 14,
+            "spotChecks": 14,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/03_storage_silo.json",
+            "/tmp/schematic-audit-pack1-03_storage_silo-58wt7g9s/03_storage_silo.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+          "regenerated_sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+          "log": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.determinism.log",
+          "output": "{\"air\": 1247, \"block_data_bytes\": 1863, \"blueprint\": \"schematics/blueprints/pack1/03_storage_silo.json\", \"bytes\": 497, \"compiled\": \"/tmp/schematic-audit-pack1-03_storage_silo-58wt7g9s/03_storage_silo.schem\", \"dimensions\": [9, 23, 9], \"non_air\": 616, \"palette_entries\": 14, \"sha256\": \"cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0\", \"spot_checks\": 14, \"volume\": 1863}\n"
+        }
+      },
+      "air_count": 1247,
+      "volume": 1863,
+      "binary_details": {
+        "air": 1247,
+        "block_data_bytes": 1863,
+        "bytes": 497,
+        "dimensions": [
+          9,
+          23,
+          9
+        ],
+        "non_air": 616,
+        "palette_entries": 14,
+        "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+        "spot_checks": 14,
+        "volume": 1863
+      }
+    },
+    {
+      "folder": "04",
+      "title": "Пагода / Pagoda",
+      "stable_id": "04-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/04_pagoda.json",
+        "bytes": 31539,
+        "sha256": "0206079863090d618b05e75a23606c8cacc1ffbe89a699e348a5f66c2ba074b4",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/04_pagoda.schem",
+        "exists": true,
+        "bytes": 1413,
+        "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/04_pagoda.validation.md",
+        "exists": true,
+        "bytes": 11740,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        15,
+        39,
+        16
+      ],
+      "non_air_count": 2468,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/04_pagoda.json",
+            "schematics/schems/pack1/04_pagoda.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/04_pagoda.binary.log",
+          "output": {
+            "air": 6892,
+            "block_data_bytes": 9360,
+            "bytes": 1413,
+            "dimensions": [
+              15,
+              39,
+              16
+            ],
+            "non_air": 2468,
+            "palette_entries": 41,
+            "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+            "spot_checks": 19,
+            "volume": 9360
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/04_pagoda.json",
+            "schematics/schems/pack1/04_pagoda.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/04_pagoda.reader.log",
+          "compared_voxels": 9360,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 19,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/04_pagoda.json",
+            "schematic": "schematics/schems/pack1/04_pagoda.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              15,
+              39,
+              16
+            ],
+            "volume": 9360,
+            "comparedVoxels": 9360,
+            "expectedNonAir": 2468,
+            "parserDerivedAir": 6892,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 41,
+            "spotChecks": 19,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/04_pagoda.json",
+            "/tmp/schematic-audit-pack1-04_pagoda-wa8t1n95/04_pagoda.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+          "regenerated_sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+          "log": "schematics/tooling/validation/pack1/build_logs/04_pagoda.determinism.log",
+          "output": "{\"air\": 6892, \"block_data_bytes\": 9360, \"blueprint\": \"schematics/blueprints/pack1/04_pagoda.json\", \"bytes\": 1413, \"compiled\": \"/tmp/schematic-audit-pack1-04_pagoda-wa8t1n95/04_pagoda.schem\", \"dimensions\": [15, 39, 16], \"non_air\": 2468, \"palette_entries\": 41, \"sha256\": \"42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44\", \"spot_checks\": 19, \"volume\": 9360}\n"
+        }
+      },
+      "air_count": 6892,
+      "volume": 9360,
+      "binary_details": {
+        "air": 6892,
+        "block_data_bytes": 9360,
+        "bytes": 1413,
+        "dimensions": [
+          15,
+          39,
+          16
+        ],
+        "non_air": 2468,
+        "palette_entries": 41,
+        "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+        "spot_checks": 19,
+        "volume": 9360
+      }
+    },
+    {
+      "folder": "05",
+      "title": "Статуя збирача / Allay statue",
+      "stable_id": "05-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/05_allay_statue.json",
+        "bytes": 13504,
+        "sha256": "1d8f883f54ef5d6616af987fb217d016e6c37150333df7594072ee2be54e7414",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/05_allay_statue.schem",
+        "exists": true,
+        "bytes": 509,
+        "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/05_allay_statue.validation.md",
+        "exists": true,
+        "bytes": 7131,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        17,
+        14,
+        6
+      ],
+      "non_air_count": 284,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/05_allay_statue.json",
+            "schematics/schems/pack1/05_allay_statue.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.binary.log",
+          "output": {
+            "air": 1144,
+            "block_data_bytes": 1428,
+            "bytes": 509,
+            "dimensions": [
+              17,
+              14,
+              6
+            ],
+            "non_air": 284,
+            "palette_entries": 13,
+            "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+            "spot_checks": 23,
+            "volume": 1428
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/05_allay_statue.json",
+            "schematics/schems/pack1/05_allay_statue.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.reader.log",
+          "compared_voxels": 1428,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 23,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/05_allay_statue.json",
+            "schematic": "schematics/schems/pack1/05_allay_statue.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              17,
+              14,
+              6
+            ],
+            "volume": 1428,
+            "comparedVoxels": 1428,
+            "expectedNonAir": 284,
+            "parserDerivedAir": 1144,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 13,
+            "spotChecks": 23,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/05_allay_statue.json",
+            "/tmp/schematic-audit-pack1-05_allay_statue-0ha3kovk/05_allay_statue.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+          "regenerated_sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+          "log": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.determinism.log",
+          "output": "{\"air\": 1144, \"block_data_bytes\": 1428, \"blueprint\": \"schematics/blueprints/pack1/05_allay_statue.json\", \"bytes\": 509, \"compiled\": \"/tmp/schematic-audit-pack1-05_allay_statue-0ha3kovk/05_allay_statue.schem\", \"dimensions\": [17, 14, 6], \"non_air\": 284, \"palette_entries\": 13, \"sha256\": \"b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb\", \"spot_checks\": 23, \"volume\": 1428}\n"
+        }
+      },
+      "air_count": 1144,
+      "volume": 1428,
+      "binary_details": {
+        "air": 1144,
+        "block_data_bytes": 1428,
+        "bytes": 509,
+        "dimensions": [
+          17,
+          14,
+          6
+        ],
+        "non_air": 284,
+        "palette_entries": 13,
+        "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+        "spot_checks": 23,
+        "volume": 1428
+      }
+    },
+    {
+      "folder": "06",
+      "title": "06_wild_west_jail",
+      "stable_id": "06-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/06_wild_west_jail.json",
+        "bytes": 19959,
+        "sha256": "1dff6d6538c6fb4ab9b0534628a8a901822137b2ae4c8cfea2959bcd1a18aae8",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/06_wild_west_jail.schem",
+        "exists": true,
+        "bytes": 1019,
+        "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/06_wild_west_jail.validation.md",
+        "exists": true,
+        "bytes": 8215,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        9,
+        9
+      ],
+      "non_air_count": 446,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/06_wild_west_jail.json",
+            "schematics/schems/pack1/06_wild_west_jail.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.binary.log",
+          "output": {
+            "air": 607,
+            "block_data_bytes": 1053,
+            "bytes": 1019,
+            "dimensions": [
+              13,
+              9,
+              9
+            ],
+            "non_air": 446,
+            "palette_entries": 42,
+            "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+            "spot_checks": 24,
+            "volume": 1053
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/06_wild_west_jail.json",
+            "schematics/schems/pack1/06_wild_west_jail.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.reader.log",
+          "compared_voxels": 1053,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 24,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/06_wild_west_jail.json",
+            "schematic": "schematics/schems/pack1/06_wild_west_jail.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              9,
+              9
+            ],
+            "volume": 1053,
+            "comparedVoxels": 1053,
+            "expectedNonAir": 446,
+            "parserDerivedAir": 607,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 42,
+            "spotChecks": 24,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/06_wild_west_jail.json",
+            "/tmp/schematic-audit-pack1-06_wild_west_jail-kiivmb6z/06_wild_west_jail.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+          "regenerated_sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+          "log": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.determinism.log",
+          "output": "{\"air\": 607, \"block_data_bytes\": 1053, \"blueprint\": \"schematics/blueprints/pack1/06_wild_west_jail.json\", \"bytes\": 1019, \"compiled\": \"/tmp/schematic-audit-pack1-06_wild_west_jail-kiivmb6z/06_wild_west_jail.schem\", \"dimensions\": [13, 9, 9], \"non_air\": 446, \"palette_entries\": 42, \"sha256\": \"fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965\", \"spot_checks\": 24, \"volume\": 1053}\n"
+        }
+      },
+      "air_count": 607,
+      "volume": 1053,
+      "binary_details": {
+        "air": 607,
+        "block_data_bytes": 1053,
+        "bytes": 1019,
+        "dimensions": [
+          13,
+          9,
+          9
+        ],
+        "non_air": 446,
+        "palette_entries": 42,
+        "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+        "spot_checks": 24,
+        "volume": 1053
+      }
+    },
+    {
+      "folder": "07",
+      "title": "07_secret_island_base",
+      "stable_id": "07-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/07_secret_island_base.json",
+        "bytes": 21360,
+        "sha256": "89f0d6a68e2e207748d7b2d3a4b5a91d2a5935f4df873f4a818996273dabd400",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/07_secret_island_base.schem",
+        "exists": true,
+        "bytes": 965,
+        "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/07_secret_island_base.validation.md",
+        "exists": true,
+        "bytes": 8507,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        24,
+        13
+      ],
+      "non_air_count": 1222,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/07_secret_island_base.json",
+            "schematics/schems/pack1/07_secret_island_base.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.binary.log",
+          "output": {
+            "air": 2834,
+            "block_data_bytes": 4056,
+            "bytes": 965,
+            "dimensions": [
+              13,
+              24,
+              13
+            ],
+            "non_air": 1222,
+            "palette_entries": 32,
+            "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+            "spot_checks": 29,
+            "volume": 4056
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/07_secret_island_base.json",
+            "schematics/schems/pack1/07_secret_island_base.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.reader.log",
+          "compared_voxels": 4056,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 29,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/07_secret_island_base.json",
+            "schematic": "schematics/schems/pack1/07_secret_island_base.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              24,
+              13
+            ],
+            "volume": 4056,
+            "comparedVoxels": 4056,
+            "expectedNonAir": 1222,
+            "parserDerivedAir": 2834,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 32,
+            "spotChecks": 29,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/07_secret_island_base.json",
+            "/tmp/schematic-audit-pack1-07_secret_island_base-htd4tfhd/07_secret_island_base.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+          "regenerated_sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+          "log": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.determinism.log",
+          "output": "{\"air\": 2834, \"block_data_bytes\": 4056, \"blueprint\": \"schematics/blueprints/pack1/07_secret_island_base.json\", \"bytes\": 965, \"compiled\": \"/tmp/schematic-audit-pack1-07_secret_island_base-htd4tfhd/07_secret_island_base.schem\", \"dimensions\": [13, 24, 13], \"non_air\": 1222, \"palette_entries\": 32, \"sha256\": \"38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015\", \"spot_checks\": 29, \"volume\": 4056}\n"
+        }
+      },
+      "air_count": 2834,
+      "volume": 4056,
+      "binary_details": {
+        "air": 2834,
+        "block_data_bytes": 4056,
+        "bytes": 965,
+        "dimensions": [
+          13,
+          24,
+          13
+        ],
+        "non_air": 1222,
+        "palette_entries": 32,
+        "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+        "spot_checks": 29,
+        "volume": 4056
+      }
+    },
+    {
+      "folder": "08",
+      "title": "08_greenhouse",
+      "stable_id": "08-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/08_greenhouse.json",
+        "bytes": 22689,
+        "sha256": "717a3ae4e9b2fc181d363f9139891d6d6069a20f67db3137cf97a5746a6e4cc0",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/08_greenhouse.schem",
+        "exists": true,
+        "bytes": 1263,
+        "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/08_greenhouse.validation.md",
+        "exists": true,
+        "bytes": 9611,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        15,
+        16,
+        19
+      ],
+      "non_air_count": 1119,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/08_greenhouse.json",
+            "schematics/schems/pack1/08_greenhouse.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.binary.log",
+          "output": {
+            "air": 3441,
+            "block_data_bytes": 4560,
+            "bytes": 1263,
+            "dimensions": [
+              15,
+              16,
+              19
+            ],
+            "non_air": 1119,
+            "palette_entries": 38,
+            "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+            "spot_checks": 25,
+            "volume": 4560
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/08_greenhouse.json",
+            "schematics/schems/pack1/08_greenhouse.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.reader.log",
+          "compared_voxels": 4560,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 25,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/08_greenhouse.json",
+            "schematic": "schematics/schems/pack1/08_greenhouse.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              15,
+              16,
+              19
+            ],
+            "volume": 4560,
+            "comparedVoxels": 4560,
+            "expectedNonAir": 1119,
+            "parserDerivedAir": 3441,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 38,
+            "spotChecks": 25,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/08_greenhouse.json",
+            "/tmp/schematic-audit-pack1-08_greenhouse-umx1n8y3/08_greenhouse.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+          "regenerated_sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+          "log": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.determinism.log",
+          "output": "{\"air\": 3441, \"block_data_bytes\": 4560, \"blueprint\": \"schematics/blueprints/pack1/08_greenhouse.json\", \"bytes\": 1263, \"compiled\": \"/tmp/schematic-audit-pack1-08_greenhouse-umx1n8y3/08_greenhouse.schem\", \"dimensions\": [15, 16, 19], \"non_air\": 1119, \"palette_entries\": 38, \"sha256\": \"6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1\", \"spot_checks\": 25, \"volume\": 4560}\n"
+        }
+      },
+      "air_count": 3441,
+      "volume": 4560,
+      "binary_details": {
+        "air": 3441,
+        "block_data_bytes": 4560,
+        "bytes": 1263,
+        "dimensions": [
+          15,
+          16,
+          19
+        ],
+        "non_air": 1119,
+        "palette_entries": 38,
+        "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+        "spot_checks": 25,
+        "volume": 4560
+      }
+    },
+    {
+      "folder": "09",
+      "title": "09_river_steamboat",
+      "stable_id": "09-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/09_river_steamboat.json",
+        "bytes": 23994,
+        "sha256": "20f794826b3ac81d35f7348fcc87836a114349baa483068369a047465fc6c99d",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/09_river_steamboat.schem",
+        "exists": true,
+        "bytes": 1210,
+        "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/09_river_steamboat.validation.md",
+        "exists": true,
+        "bytes": 7846,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        16,
+        22
+      ],
+      "non_air_count": 1193,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/09_river_steamboat.json",
+            "schematics/schems/pack1/09_river_steamboat.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.binary.log",
+          "output": {
+            "air": 3383,
+            "block_data_bytes": 4576,
+            "bytes": 1210,
+            "dimensions": [
+              13,
+              16,
+              22
+            ],
+            "non_air": 1193,
+            "palette_entries": 34,
+            "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+            "spot_checks": 29,
+            "volume": 4576
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/09_river_steamboat.json",
+            "schematics/schems/pack1/09_river_steamboat.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.reader.log",
+          "compared_voxels": 4576,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 29,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/09_river_steamboat.json",
+            "schematic": "schematics/schems/pack1/09_river_steamboat.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              16,
+              22
+            ],
+            "volume": 4576,
+            "comparedVoxels": 4576,
+            "parserDerivedAir": 3383,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 34,
+            "spotChecks": 29,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/09_river_steamboat.json",
+            "/tmp/schematic-audit-pack1-09_river_steamboat-kgcdk170/09_river_steamboat.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+          "regenerated_sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+          "log": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.determinism.log",
+          "output": "{\"air\": 3383, \"block_data_bytes\": 4576, \"blueprint\": \"schematics/blueprints/pack1/09_river_steamboat.json\", \"bytes\": 1210, \"compiled\": \"/tmp/schematic-audit-pack1-09_river_steamboat-kgcdk170/09_river_steamboat.schem\", \"dimensions\": [13, 16, 22], \"non_air\": 1193, \"palette_entries\": 34, \"sha256\": \"dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7\", \"spot_checks\": 29, \"volume\": 4576}\n"
+        }
+      },
+      "air_count": 3383,
+      "volume": 4576,
+      "binary_details": {
+        "air": 3383,
+        "block_data_bytes": 4576,
+        "bytes": 1210,
+        "dimensions": [
+          13,
+          16,
+          22
+        ],
+        "non_air": 1193,
+        "palette_entries": 34,
+        "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+        "spot_checks": 29,
+        "volume": 4576
+      }
+    },
+    {
+      "folder": "10",
+      "title": "10_pachinko_parkour",
+      "stable_id": "10-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/10_pachinko_parkour.json",
+        "bytes": 16345,
+        "sha256": "6f5537410c1713376ed8af5c150d98e786cdb509f81d66d4c7f411d1dd1eb507",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/10_pachinko_parkour.schem",
+        "exists": true,
+        "bytes": 751,
+        "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/10_pachinko_parkour.validation.md",
+        "exists": true,
+        "bytes": 10160,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        14,
+        16,
+        6
+      ],
+      "non_air_count": 656,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/10_pachinko_parkour.json",
+            "schematics/schems/pack1/10_pachinko_parkour.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.binary.log",
+          "output": {
+            "air": 688,
+            "block_data_bytes": 1344,
+            "bytes": 751,
+            "dimensions": [
+              14,
+              16,
+              6
+            ],
+            "non_air": 656,
+            "palette_entries": 20,
+            "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+            "spot_checks": 30,
+            "volume": 1344
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/10_pachinko_parkour.json",
+            "schematics/schems/pack1/10_pachinko_parkour.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.reader.log",
+          "compared_voxels": 1344,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 30,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/10_pachinko_parkour.json",
+            "schematic": "schematics/schems/pack1/10_pachinko_parkour.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              14,
+              16,
+              6
+            ],
+            "volume": 1344,
+            "comparedVoxels": 1344,
+            "expectedNonAir": 656,
+            "parserDerivedAir": 688,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 20,
+            "spotChecks": 30,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/10_pachinko_parkour.json",
+            "/tmp/schematic-audit-pack1-10_pachinko_parkour-lld7xpsq/10_pachinko_parkour.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+          "regenerated_sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+          "log": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.determinism.log",
+          "output": "{\"air\": 688, \"block_data_bytes\": 1344, \"blueprint\": \"schematics/blueprints/pack1/10_pachinko_parkour.json\", \"bytes\": 751, \"compiled\": \"/tmp/schematic-audit-pack1-10_pachinko_parkour-lld7xpsq/10_pachinko_parkour.schem\", \"dimensions\": [14, 16, 6], \"non_air\": 656, \"palette_entries\": 20, \"sha256\": \"c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903\", \"spot_checks\": 30, \"volume\": 1344}\n"
+        }
+      },
+      "air_count": 688,
+      "volume": 1344,
+      "binary_details": {
+        "air": 688,
+        "block_data_bytes": 1344,
+        "bytes": 751,
+        "dimensions": [
+          14,
+          16,
+          6
+        ],
+        "non_air": 656,
+        "palette_entries": 20,
+        "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+        "spot_checks": 30,
+        "volume": 1344
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_grandstand",
+      "stable_id": "11-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_grandstand.json",
+        "bytes": 9986,
+        "sha256": "3b0befe69e02e795fca8a851fd7e05328eae22ceefd7167754e9261545df9472",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_grandstand.schem",
+        "exists": true,
+        "bytes": 430,
+        "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_grandstand.validation.md",
+        "exists": true,
+        "bytes": 6206,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        8,
+        9
+      ],
+      "non_air_count": 369,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_grandstand.json",
+            "schematics/schems/pack1/11_grandstand.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_grandstand.binary.log",
+          "output": {
+            "air": 567,
+            "block_data_bytes": 936,
+            "bytes": 430,
+            "dimensions": [
+              13,
+              8,
+              9
+            ],
+            "non_air": 369,
+            "palette_entries": 9,
+            "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+            "spot_checks": 14,
+            "volume": 936
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_grandstand.json",
+            "schematics/schems/pack1/11_grandstand.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_grandstand.reader.log",
+          "compared_voxels": 936,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 14,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_grandstand.json",
+            "schematic": "schematics/schems/pack1/11_grandstand.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              8,
+              9
+            ],
+            "volume": 936,
+            "comparedVoxels": 936,
+            "expectedNonAir": 369,
+            "parserDerivedAir": 567,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 9,
+            "spotChecks": 14,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_grandstand.json",
+            "/tmp/schematic-audit-pack1-11_grandstand-_ruk2awq/11_grandstand.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+          "regenerated_sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_grandstand.determinism.log",
+          "output": "{\"air\": 567, \"block_data_bytes\": 936, \"blueprint\": \"schematics/blueprints/pack1/11_grandstand.json\", \"bytes\": 430, \"compiled\": \"/tmp/schematic-audit-pack1-11_grandstand-_ruk2awq/11_grandstand.schem\", \"dimensions\": [13, 8, 9], \"non_air\": 369, \"palette_entries\": 9, \"sha256\": \"bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801\", \"spot_checks\": 14, \"volume\": 936}\n"
+        }
+      },
+      "air_count": 567,
+      "volume": 936,
+      "binary_details": {
+        "air": 567,
+        "block_data_bytes": 936,
+        "bytes": 430,
+        "dimensions": [
+          13,
+          8,
+          9
+        ],
+        "non_air": 369,
+        "palette_entries": 9,
+        "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+        "spot_checks": 14,
+        "volume": 936
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_hairpin",
+      "stable_id": "11-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_hairpin.json",
+        "bytes": 5327,
+        "sha256": "cd77c940cb3d5c301a5acaa53192ba64940e555f86c84a132bf18aba9ab5e314",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_hairpin.schem",
+        "exists": true,
+        "bytes": 303,
+        "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_hairpin.validation.md",
+        "exists": true,
+        "bytes": 5648,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        24,
+        2,
+        12
+      ],
+      "non_air_count": 576,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_hairpin.json",
+            "schematics/schems/pack1/11_hairpin.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_hairpin.binary.log",
+          "output": {
+            "air": 0,
+            "block_data_bytes": 576,
+            "bytes": 303,
+            "dimensions": [
+              24,
+              2,
+              12
+            ],
+            "non_air": 576,
+            "palette_entries": 6,
+            "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+            "spot_checks": 7,
+            "volume": 576
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_hairpin.json",
+            "schematics/schems/pack1/11_hairpin.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_hairpin.reader.log",
+          "compared_voxels": 576,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 7,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_hairpin.json",
+            "schematic": "schematics/schems/pack1/11_hairpin.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              24,
+              2,
+              12
+            ],
+            "volume": 576,
+            "comparedVoxels": 576,
+            "expectedNonAir": 576,
+            "parserDerivedAir": 0,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 6,
+            "spotChecks": 7,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_hairpin.json",
+            "/tmp/schematic-audit-pack1-11_hairpin-8p_7v383/11_hairpin.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+          "regenerated_sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_hairpin.determinism.log",
+          "output": "{\"air\": 0, \"block_data_bytes\": 576, \"blueprint\": \"schematics/blueprints/pack1/11_hairpin.json\", \"bytes\": 303, \"compiled\": \"/tmp/schematic-audit-pack1-11_hairpin-8p_7v383/11_hairpin.schem\", \"dimensions\": [24, 2, 12], \"non_air\": 576, \"palette_entries\": 6, \"sha256\": \"9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2\", \"spot_checks\": 7, \"volume\": 576}\n"
+        }
+      },
+      "air_count": 0,
+      "volume": 576,
+      "binary_details": {
+        "air": 0,
+        "block_data_bytes": 576,
+        "bytes": 303,
+        "dimensions": [
+          24,
+          2,
+          12
+        ],
+        "non_air": 576,
+        "palette_entries": 6,
+        "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+        "spot_checks": 7,
+        "volume": 576
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_safety_fence",
+      "stable_id": "11-03",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_safety_fence.json",
+        "bytes": 5678,
+        "sha256": "c925532c90976b05b3d104dad6457f33cf9bab2f77faa8a5236d09a17d2c1c2f",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_safety_fence.schem",
+        "exists": true,
+        "bytes": 299,
+        "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_safety_fence.validation.md",
+        "exists": true,
+        "bytes": 5973,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        9,
+        5,
+        3
+      ],
+      "non_air_count": 75,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_safety_fence.json",
+            "schematics/schems/pack1/11_safety_fence.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.binary.log",
+          "output": {
+            "air": 60,
+            "block_data_bytes": 135,
+            "bytes": 299,
+            "dimensions": [
+              9,
+              5,
+              3
+            ],
+            "non_air": 75,
+            "palette_entries": 7,
+            "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+            "spot_checks": 7,
+            "volume": 135
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_safety_fence.json",
+            "schematics/schems/pack1/11_safety_fence.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.reader.log",
+          "compared_voxels": 135,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 7,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_safety_fence.json",
+            "schematic": "schematics/schems/pack1/11_safety_fence.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              9,
+              5,
+              3
+            ],
+            "volume": 135,
+            "comparedVoxels": 135,
+            "expectedNonAir": 75,
+            "parserDerivedAir": 60,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 7,
+            "spotChecks": 7,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_safety_fence.json",
+            "/tmp/schematic-audit-pack1-11_safety_fence-bd6c7tv6/11_safety_fence.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+          "regenerated_sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.determinism.log",
+          "output": "{\"air\": 60, \"block_data_bytes\": 135, \"blueprint\": \"schematics/blueprints/pack1/11_safety_fence.json\", \"bytes\": 299, \"compiled\": \"/tmp/schematic-audit-pack1-11_safety_fence-bd6c7tv6/11_safety_fence.schem\", \"dimensions\": [9, 5, 3], \"non_air\": 75, \"palette_entries\": 7, \"sha256\": \"4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6\", \"spot_checks\": 7, \"volume\": 135}\n"
+        }
+      },
+      "air_count": 60,
+      "volume": 135,
+      "binary_details": {
+        "air": 60,
+        "block_data_bytes": 135,
+        "bytes": 299,
+        "dimensions": [
+          9,
+          5,
+          3
+        ],
+        "non_air": 75,
+        "palette_entries": 7,
+        "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+        "spot_checks": 7,
+        "volume": 135
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_starting_gate",
+      "stable_id": "11-04",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_starting_gate.json",
+        "bytes": 11364,
+        "sha256": "c4d2c0883edb918ec03f845742450b35eb91b6dd467495613ee0cc89d8c5f305",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_starting_gate.schem",
+        "exists": true,
+        "bytes": 587,
+        "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_starting_gate.validation.md",
+        "exists": true,
+        "bytes": 6490,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        11,
+        11,
+        7
+      ],
+      "non_air_count": 184,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_starting_gate.json",
+            "schematics/schems/pack1/11_starting_gate.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.binary.log",
+          "output": {
+            "air": 663,
+            "block_data_bytes": 847,
+            "bytes": 587,
+            "dimensions": [
+              11,
+              11,
+              7
+            ],
+            "non_air": 184,
+            "palette_entries": 18,
+            "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+            "spot_checks": 13,
+            "volume": 847
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_starting_gate.json",
+            "schematics/schems/pack1/11_starting_gate.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.reader.log",
+          "compared_voxels": 847,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 13,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_starting_gate.json",
+            "schematic": "schematics/schems/pack1/11_starting_gate.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              11,
+              11,
+              7
+            ],
+            "volume": 847,
+            "comparedVoxels": 847,
+            "expectedNonAir": 184,
+            "parserDerivedAir": 663,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 18,
+            "spotChecks": 13,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_starting_gate.json",
+            "/tmp/schematic-audit-pack1-11_starting_gate-bjszpzde/11_starting_gate.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+          "regenerated_sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.determinism.log",
+          "output": "{\"air\": 663, \"block_data_bytes\": 847, \"blueprint\": \"schematics/blueprints/pack1/11_starting_gate.json\", \"bytes\": 587, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_gate-bjszpzde/11_starting_gate.schem\", \"dimensions\": [11, 11, 7], \"non_air\": 184, \"palette_entries\": 18, \"sha256\": \"87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d\", \"spot_checks\": 13, \"volume\": 847}\n"
+        }
+      },
+      "air_count": 663,
+      "volume": 847,
+      "binary_details": {
+        "air": 663,
+        "block_data_bytes": 847,
+        "bytes": 587,
+        "dimensions": [
+          11,
+          11,
+          7
+        ],
+        "non_air": 184,
+        "palette_entries": 18,
+        "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+        "spot_checks": 13,
+        "volume": 847
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_starting_grid",
+      "stable_id": "11-05",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_starting_grid.json",
+        "bytes": 6093,
+        "sha256": "c02cf6f824f78a4d87c3e26f7578969704389f60d0b253b8fdacb5fcfb3fe04b",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_starting_grid.schem",
+        "exists": true,
+        "bytes": 312,
+        "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_starting_grid.validation.md",
+        "exists": true,
+        "bytes": 5815,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        9,
+        3,
+        19
+      ],
+      "non_air_count": 348,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_starting_grid.json",
+            "schematics/schems/pack1/11_starting_grid.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.binary.log",
+          "output": {
+            "air": 165,
+            "block_data_bytes": 513,
+            "bytes": 312,
+            "dimensions": [
+              9,
+              3,
+              19
+            ],
+            "non_air": 348,
+            "palette_entries": 6,
+            "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+            "spot_checks": 8,
+            "volume": 513
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_starting_grid.json",
+            "schematics/schems/pack1/11_starting_grid.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.reader.log",
+          "compared_voxels": 513,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 8,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_starting_grid.json",
+            "schematic": "schematics/schems/pack1/11_starting_grid.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              9,
+              3,
+              19
+            ],
+            "volume": 513,
+            "comparedVoxels": 513,
+            "expectedNonAir": 348,
+            "parserDerivedAir": 165,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 6,
+            "spotChecks": 8,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_starting_grid.json",
+            "/tmp/schematic-audit-pack1-11_starting_grid-w41uy5gd/11_starting_grid.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+          "regenerated_sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.determinism.log",
+          "output": "{\"air\": 165, \"block_data_bytes\": 513, \"blueprint\": \"schematics/blueprints/pack1/11_starting_grid.json\", \"bytes\": 312, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_grid-w41uy5gd/11_starting_grid.schem\", \"dimensions\": [9, 3, 19], \"non_air\": 348, \"palette_entries\": 6, \"sha256\": \"37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f\", \"spot_checks\": 8, \"volume\": 513}\n"
+        }
+      },
+      "air_count": 165,
+      "volume": 513,
+      "binary_details": {
+        "air": 165,
+        "block_data_bytes": 513,
+        "bytes": 312,
+        "dimensions": [
+          9,
+          3,
+          19
+        ],
+        "non_air": 348,
+        "palette_entries": 6,
+        "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+        "spot_checks": 8,
+        "volume": 513
+      }
+    },
+    {
+      "folder": "11",
+      "title": "11_turn",
+      "stable_id": "11-06",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/11_turn.json",
+        "bytes": 4809,
+        "sha256": "c8440d22deac63f928490e6d212c66e6ca3ac9510bd65866e7fd28de80461983",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/11_turn.schem",
+        "exists": true,
+        "bytes": 275,
+        "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/11_turn.validation.md",
+        "exists": true,
+        "bytes": 5619,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        12,
+        2,
+        12
+      ],
+      "non_air_count": 288,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/11_turn.json",
+            "schematics/schems/pack1/11_turn.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_turn.binary.log",
+          "output": {
+            "air": 0,
+            "block_data_bytes": 288,
+            "bytes": 275,
+            "dimensions": [
+              12,
+              2,
+              12
+            ],
+            "non_air": 288,
+            "palette_entries": 6,
+            "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+            "spot_checks": 6,
+            "volume": 288
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/11_turn.json",
+            "schematics/schems/pack1/11_turn.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_turn.reader.log",
+          "compared_voxels": 288,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 6,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/11_turn.json",
+            "schematic": "schematics/schems/pack1/11_turn.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              12,
+              2,
+              12
+            ],
+            "volume": 288,
+            "comparedVoxels": 288,
+            "expectedNonAir": 288,
+            "parserDerivedAir": 0,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 6,
+            "spotChecks": 6,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/11_turn.json",
+            "/tmp/schematic-audit-pack1-11_turn-i1kd_w2a/11_turn.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+          "regenerated_sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+          "log": "schematics/tooling/validation/pack1/build_logs/11_turn.determinism.log",
+          "output": "{\"air\": 0, \"block_data_bytes\": 288, \"blueprint\": \"schematics/blueprints/pack1/11_turn.json\", \"bytes\": 275, \"compiled\": \"/tmp/schematic-audit-pack1-11_turn-i1kd_w2a/11_turn.schem\", \"dimensions\": [12, 2, 12], \"non_air\": 288, \"palette_entries\": 6, \"sha256\": \"1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11\", \"spot_checks\": 6, \"volume\": 288}\n"
+        }
+      },
+      "air_count": 0,
+      "volume": 288,
+      "binary_details": {
+        "air": 0,
+        "block_data_bytes": 288,
+        "bytes": 275,
+        "dimensions": [
+          12,
+          2,
+          12
+        ],
+        "non_air": 288,
+        "palette_entries": 6,
+        "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+        "spot_checks": 6,
+        "volume": 288
+      }
+    },
+    {
+      "folder": "12",
+      "title": "12_scouting_tower",
+      "stable_id": "12-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/12_scouting_tower.json",
+        "bytes": 27560,
+        "sha256": "75ed9108f3ae39f55b023a8b2bf2a0be2748fb0355dce432bbfc9152c098f76b",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/12_scouting_tower.schem",
+        "exists": true,
+        "bytes": 1106,
+        "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/12_scouting_tower.validation.md",
+        "exists": true,
+        "bytes": 10087,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        27,
+        13
+      ],
+      "non_air_count": 872,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/12_scouting_tower.json",
+            "schematics/schems/pack1/12_scouting_tower.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.binary.log",
+          "output": {
+            "air": 3691,
+            "block_data_bytes": 4563,
+            "bytes": 1106,
+            "dimensions": [
+              13,
+              27,
+              13
+            ],
+            "non_air": 872,
+            "palette_entries": 36,
+            "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+            "spot_checks": 25,
+            "volume": 4563
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/12_scouting_tower.json",
+            "schematics/schems/pack1/12_scouting_tower.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.reader.log",
+          "compared_voxels": 4563,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 25,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/12_scouting_tower.json",
+            "schematic": "schematics/schems/pack1/12_scouting_tower.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              27,
+              13
+            ],
+            "volume": 4563,
+            "comparedVoxels": 4563,
+            "expectedNonAir": 872,
+            "parserDerivedAir": 3691,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 36,
+            "spotChecks": 25,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/12_scouting_tower.json",
+            "/tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+          "regenerated_sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+          "log": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.determinism.log",
+          "output": "{\"air\": 3691, \"block_data_bytes\": 4563, \"blueprint\": \"schematics/blueprints/pack1/12_scouting_tower.json\", \"bytes\": 1106, \"compiled\": \"/tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem\", \"dimensions\": [13, 27, 13], \"non_air\": 872, \"palette_entries\": 36, \"sha256\": \"774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961\", \"spot_checks\": 25, \"volume\": 4563}\n"
+        }
+      },
+      "air_count": 3691,
+      "volume": 4563,
+      "binary_details": {
+        "air": 3691,
+        "block_data_bytes": 4563,
+        "bytes": 1106,
+        "dimensions": [
+          13,
+          27,
+          13
+        ],
+        "non_air": 872,
+        "palette_entries": 36,
+        "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+        "spot_checks": 25,
+        "volume": 4563
+      }
+    },
+    {
+      "folder": "13",
+      "title": "13_skull_cave",
+      "stable_id": "13-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/13_skull_cave.json",
+        "bytes": 24703,
+        "sha256": "adea4cdc66f0d16e3578407000a828d4e6cdef0a74d50c92f5ad44952272b151",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/13_skull_cave.schem",
+        "exists": true,
+        "bytes": 915,
+        "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/13_skull_cave.validation.md",
+        "exists": true,
+        "bytes": 12771,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        20,
+        16,
+        16
+      ],
+      "non_air_count": 2639,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/13_skull_cave.json",
+            "schematics/schems/pack1/13_skull_cave.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.binary.log",
+          "output": {
+            "air": 2481,
+            "block_data_bytes": 5120,
+            "bytes": 915,
+            "dimensions": [
+              20,
+              16,
+              16
+            ],
+            "non_air": 2639,
+            "palette_entries": 23,
+            "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+            "spot_checks": 32,
+            "volume": 5120
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/13_skull_cave.json",
+            "schematics/schems/pack1/13_skull_cave.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.reader.log",
+          "compared_voxels": 5120,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 32,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/13_skull_cave.json",
+            "schematic": "schematics/schems/pack1/13_skull_cave.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              20,
+              16,
+              16
+            ],
+            "volume": 5120,
+            "comparedVoxels": 5120,
+            "expectedNonAir": 2639,
+            "parserDerivedAir": 2481,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 23,
+            "spotChecks": 32,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/13_skull_cave.json",
+            "/tmp/schematic-audit-pack1-13_skull_cave-hgvn5vfw/13_skull_cave.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+          "regenerated_sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+          "log": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.determinism.log",
+          "output": "{\"air\": 2481, \"block_data_bytes\": 5120, \"blueprint\": \"schematics/blueprints/pack1/13_skull_cave.json\", \"bytes\": 915, \"compiled\": \"/tmp/schematic-audit-pack1-13_skull_cave-hgvn5vfw/13_skull_cave.schem\", \"dimensions\": [20, 16, 16], \"non_air\": 2639, \"palette_entries\": 23, \"sha256\": \"2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1\", \"spot_checks\": 32, \"volume\": 5120}\n"
+        }
+      },
+      "air_count": 2481,
+      "volume": 5120,
+      "binary_details": {
+        "air": 2481,
+        "block_data_bytes": 5120,
+        "bytes": 915,
+        "dimensions": [
+          20,
+          16,
+          16
+        ],
+        "non_air": 2639,
+        "palette_entries": 23,
+        "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+        "spot_checks": 32,
+        "volume": 5120
+      }
+    },
+    {
+      "folder": "14",
+      "title": "14_school_monster_bus",
+      "stable_id": "14-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/14_school_monster_bus.json",
+        "bytes": 23945,
+        "sha256": "0db115389d89a8ee3b4f69e7c6ff50c362484bc1341508fb641126c987815956",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/14_school_monster_bus.schem",
+        "exists": true,
+        "bytes": 920,
+        "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/14_school_monster_bus.validation.md",
+        "exists": true,
+        "bytes": 7282,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        8,
+        10,
+        15
+      ],
+      "non_air_count": 463,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/14_school_monster_bus.json",
+            "schematics/schems/pack1/14_school_monster_bus.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.binary.log",
+          "output": {
+            "air": 737,
+            "block_data_bytes": 1200,
+            "bytes": 920,
+            "dimensions": [
+              8,
+              10,
+              15
+            ],
+            "non_air": 463,
+            "palette_entries": 35,
+            "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+            "spot_checks": 37,
+            "volume": 1200
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/14_school_monster_bus.json",
+            "schematics/schems/pack1/14_school_monster_bus.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.reader.log",
+          "compared_voxels": 1200,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 37,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/14_school_monster_bus.json",
+            "schematic": "schematics/schems/pack1/14_school_monster_bus.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              8,
+              10,
+              15
+            ],
+            "volume": 1200,
+            "comparedVoxels": 1200,
+            "expectedNonAir": 463,
+            "parserDerivedAir": 737,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 35,
+            "spotChecks": 37,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/14_school_monster_bus.json",
+            "/tmp/schematic-audit-pack1-14_school_monster_bus-6sqz_r_y/14_school_monster_bus.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+          "regenerated_sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+          "log": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.determinism.log",
+          "output": "{\"air\": 737, \"block_data_bytes\": 1200, \"blueprint\": \"schematics/blueprints/pack1/14_school_monster_bus.json\", \"bytes\": 920, \"compiled\": \"/tmp/schematic-audit-pack1-14_school_monster_bus-6sqz_r_y/14_school_monster_bus.schem\", \"dimensions\": [8, 10, 15], \"non_air\": 463, \"palette_entries\": 35, \"sha256\": \"dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9\", \"spot_checks\": 37, \"volume\": 1200}\n"
+        }
+      },
+      "air_count": 737,
+      "volume": 1200,
+      "binary_details": {
+        "air": 737,
+        "block_data_bytes": 1200,
+        "bytes": 920,
+        "dimensions": [
+          8,
+          10,
+          15
+        ],
+        "non_air": 463,
+        "palette_entries": 35,
+        "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+        "spot_checks": 37,
+        "volume": 1200
+      }
+    },
+    {
+      "folder": "15",
+      "title": "15_potion_factory",
+      "stable_id": "15-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/15_potion_factory.json",
+        "bytes": 25422,
+        "sha256": "c4e6f36725e7cde86abb09ea9aa339971272d24f33d29faf904fab6693dd32fb",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/15_potion_factory.schem",
+        "exists": true,
+        "bytes": 1255,
+        "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/15_potion_factory.validation.md",
+        "exists": true,
+        "bytes": 8555,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        19,
+        13,
+        15
+      ],
+      "non_air_count": 944,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/15_potion_factory.json",
+            "schematics/schems/pack1/15_potion_factory.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.binary.log",
+          "output": {
+            "air": 2761,
+            "block_data_bytes": 3705,
+            "bytes": 1255,
+            "dimensions": [
+              19,
+              13,
+              15
+            ],
+            "non_air": 944,
+            "palette_entries": 44,
+            "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+            "spot_checks": 38,
+            "volume": 3705
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/15_potion_factory.json",
+            "schematics/schems/pack1/15_potion_factory.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.reader.log",
+          "compared_voxels": 3705,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 38,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/15_potion_factory.json",
+            "schematic": "schematics/schems/pack1/15_potion_factory.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              19,
+              13,
+              15
+            ],
+            "volume": 3705,
+            "comparedVoxels": 3705,
+            "expectedNonAir": 944,
+            "parserDerivedAir": 2761,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 44,
+            "spotChecks": 38,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/15_potion_factory.json",
+            "/tmp/schematic-audit-pack1-15_potion_factory-l9jj8fpa/15_potion_factory.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+          "regenerated_sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+          "log": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.determinism.log",
+          "output": "{\"air\": 2761, \"block_data_bytes\": 3705, \"blueprint\": \"schematics/blueprints/pack1/15_potion_factory.json\", \"bytes\": 1255, \"compiled\": \"/tmp/schematic-audit-pack1-15_potion_factory-l9jj8fpa/15_potion_factory.schem\", \"dimensions\": [19, 13, 15], \"non_air\": 944, \"palette_entries\": 44, \"sha256\": \"6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb\", \"spot_checks\": 38, \"volume\": 3705}\n"
+        }
+      },
+      "air_count": 2761,
+      "volume": 3705,
+      "binary_details": {
+        "air": 2761,
+        "block_data_bytes": 3705,
+        "bytes": 1255,
+        "dimensions": [
+          19,
+          13,
+          15
+        ],
+        "non_air": 944,
+        "palette_entries": 44,
+        "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+        "spot_checks": 38,
+        "volume": 3705
+      }
+    },
+    {
+      "folder": "16",
+      "title": "16_wishing_well",
+      "stable_id": "16-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/16_wishing_well.json",
+        "bytes": 14837,
+        "sha256": "d17499dd2fbf314ff8d9d59567a25e0ee774b73746578d96ce9dd275da23a39f",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/16_wishing_well.schem",
+        "exists": true,
+        "bytes": 728,
+        "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/16_wishing_well.validation.md",
+        "exists": true,
+        "bytes": 8763,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        5,
+        15,
+        8
+      ],
+      "non_air_count": 355,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/16_wishing_well.json",
+            "schematics/schems/pack1/16_wishing_well.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.binary.log",
+          "output": {
+            "air": 245,
+            "block_data_bytes": 600,
+            "bytes": 728,
+            "dimensions": [
+              5,
+              15,
+              8
+            ],
+            "non_air": 355,
+            "palette_entries": 21,
+            "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+            "spot_checks": 30,
+            "volume": 600
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/16_wishing_well.json",
+            "schematics/schems/pack1/16_wishing_well.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.reader.log",
+          "compared_voxels": 600,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 30,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/16_wishing_well.json",
+            "schematic": "schematics/schems/pack1/16_wishing_well.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              5,
+              15,
+              8
+            ],
+            "volume": 600,
+            "comparedVoxels": 600,
+            "parserDerivedAir": 245,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 21,
+            "spotChecks": 30,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/16_wishing_well.json",
+            "/tmp/schematic-audit-pack1-16_wishing_well-q1ioenxv/16_wishing_well.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+          "regenerated_sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+          "log": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.determinism.log",
+          "output": "{\"air\": 245, \"block_data_bytes\": 600, \"blueprint\": \"schematics/blueprints/pack1/16_wishing_well.json\", \"bytes\": 728, \"compiled\": \"/tmp/schematic-audit-pack1-16_wishing_well-q1ioenxv/16_wishing_well.schem\", \"dimensions\": [5, 15, 8], \"non_air\": 355, \"palette_entries\": 21, \"sha256\": \"0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8\", \"spot_checks\": 30, \"volume\": 600}\n"
+        }
+      },
+      "air_count": 245,
+      "volume": 600,
+      "binary_details": {
+        "air": 245,
+        "block_data_bytes": 600,
+        "bytes": 728,
+        "dimensions": [
+          5,
+          15,
+          8
+        ],
+        "non_air": 355,
+        "palette_entries": 21,
+        "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+        "spot_checks": 30,
+        "volume": 600
+      }
+    },
+    {
+      "folder": "17",
+      "title": "17_carousel",
+      "stable_id": "17-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/17_carousel.json",
+        "bytes": 29331,
+        "sha256": "e5af9578179ed051cb63ced0db51e4156225821396b71f62a05174e05120acc1",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/17_carousel.schem",
+        "exists": true,
+        "bytes": 1250,
+        "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/17_carousel.validation.md",
+        "exists": true,
+        "bytes": 5058,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        17,
+        17,
+        17
+      ],
+      "non_air_count": 1283,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/17_carousel.json",
+            "schematics/schems/pack1/17_carousel.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_carousel.binary.log",
+          "output": {
+            "air": 3630,
+            "block_data_bytes": 4913,
+            "bytes": 1250,
+            "dimensions": [
+              17,
+              17,
+              17
+            ],
+            "non_air": 1283,
+            "palette_entries": 41,
+            "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+            "spot_checks": 28,
+            "volume": 4913
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/17_carousel.json",
+            "schematics/schems/pack1/17_carousel.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_carousel.reader.log",
+          "compared_voxels": 4913,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 28,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/17_carousel.json",
+            "schematic": "schematics/schems/pack1/17_carousel.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              17,
+              17,
+              17
+            ],
+            "volume": 4913,
+            "comparedVoxels": 4913,
+            "expectedNonAir": 1283,
+            "parserDerivedAir": 3630,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 41,
+            "spotChecks": 28,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/17_carousel.json",
+            "/tmp/schematic-audit-pack1-17_carousel-f6zxbbha/17_carousel.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+          "regenerated_sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_carousel.determinism.log",
+          "output": "{\"air\": 3630, \"block_data_bytes\": 4913, \"blueprint\": \"schematics/blueprints/pack1/17_carousel.json\", \"bytes\": 1250, \"compiled\": \"/tmp/schematic-audit-pack1-17_carousel-f6zxbbha/17_carousel.schem\", \"dimensions\": [17, 17, 17], \"non_air\": 1283, \"palette_entries\": 41, \"sha256\": \"028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2\", \"spot_checks\": 28, \"volume\": 4913}\n"
+        }
+      },
+      "air_count": 3630,
+      "volume": 4913,
+      "binary_details": {
+        "air": 3630,
+        "block_data_bytes": 4913,
+        "bytes": 1250,
+        "dimensions": [
+          17,
+          17,
+          17
+        ],
+        "non_air": 1283,
+        "palette_entries": 41,
+        "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+        "spot_checks": 28,
+        "volume": 4913
+      }
+    },
+    {
+      "folder": "17",
+      "title": "17_strider_bath",
+      "stable_id": "17-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/17_strider_bath.json",
+        "bytes": 9535,
+        "sha256": "13f48d36edf4857e32e2418db2e03a9a035df8eb42f94c2324f016d14d66378f",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/17_strider_bath.schem",
+        "exists": true,
+        "bytes": 441,
+        "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/17_strider_bath.validation.md",
+        "exists": true,
+        "bytes": 5035,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        9,
+        8,
+        11
+      ],
+      "non_air_count": 232,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/17_strider_bath.json",
+            "schematics/schems/pack1/17_strider_bath.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.binary.log",
+          "output": {
+            "air": 560,
+            "block_data_bytes": 792,
+            "bytes": 441,
+            "dimensions": [
+              9,
+              8,
+              11
+            ],
+            "non_air": 232,
+            "palette_entries": 10,
+            "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+            "spot_checks": 17,
+            "volume": 792
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/17_strider_bath.json",
+            "schematics/schems/pack1/17_strider_bath.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.reader.log",
+          "compared_voxels": 792,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 17,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/17_strider_bath.json",
+            "schematic": "schematics/schems/pack1/17_strider_bath.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              9,
+              8,
+              11
+            ],
+            "volume": 792,
+            "comparedVoxels": 792,
+            "expectedNonAir": 232,
+            "parserDerivedAir": 560,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 10,
+            "spotChecks": 17,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/17_strider_bath.json",
+            "/tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+          "regenerated_sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+          "log": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.determinism.log",
+          "output": "{\"air\": 560, \"block_data_bytes\": 792, \"blueprint\": \"schematics/blueprints/pack1/17_strider_bath.json\", \"bytes\": 441, \"compiled\": \"/tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem\", \"dimensions\": [9, 8, 11], \"non_air\": 232, \"palette_entries\": 10, \"sha256\": \"88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da\", \"spot_checks\": 17, \"volume\": 792}\n"
+        }
+      },
+      "air_count": 560,
+      "volume": 792,
+      "binary_details": {
+        "air": 560,
+        "block_data_bytes": 792,
+        "bytes": 441,
+        "dimensions": [
+          9,
+          8,
+          11
+        ],
+        "non_air": 232,
+        "palette_entries": 10,
+        "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+        "spot_checks": 17,
+        "volume": 792
+      }
+    },
+    {
+      "folder": "18",
+      "title": "Island of giant heads / Easter Island stone head",
+      "stable_id": "18-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/18_easter_island_head.json",
+        "bytes": 5289,
+        "sha256": "29a2299acb63126c76d4b41e3e85f36b79b92b380a3f925c1a47f95f82680a2a",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/18_easter_island_head.schem",
+        "exists": true,
+        "bytes": 324,
+        "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/18_easter_island_head.validation.md",
+        "exists": true,
+        "bytes": 5997,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        5,
+        9,
+        4
+      ],
+      "non_air_count": 86,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/18_easter_island_head.json",
+            "schematics/schems/pack1/18_easter_island_head.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.binary.log",
+          "output": {
+            "air": 94,
+            "block_data_bytes": 180,
+            "bytes": 324,
+            "dimensions": [
+              5,
+              9,
+              4
+            ],
+            "non_air": 86,
+            "palette_entries": 6,
+            "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+            "spot_checks": 7,
+            "volume": 180
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/18_easter_island_head.json",
+            "schematics/schems/pack1/18_easter_island_head.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.reader.log",
+          "compared_voxels": 180,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 7,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/18_easter_island_head.json",
+            "schematic": "schematics/schems/pack1/18_easter_island_head.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              5,
+              9,
+              4
+            ],
+            "volume": 180,
+            "comparedVoxels": 180,
+            "expectedNonAir": 86,
+            "parserDerivedAir": 94,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 6,
+            "spotChecks": 7,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/18_easter_island_head.json",
+            "/tmp/schematic-audit-pack1-18_easter_island_head-ibd6pby1/18_easter_island_head.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+          "regenerated_sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.determinism.log",
+          "output": "{\"air\": 94, \"block_data_bytes\": 180, \"blueprint\": \"schematics/blueprints/pack1/18_easter_island_head.json\", \"bytes\": 324, \"compiled\": \"/tmp/schematic-audit-pack1-18_easter_island_head-ibd6pby1/18_easter_island_head.schem\", \"dimensions\": [5, 9, 4], \"non_air\": 86, \"palette_entries\": 6, \"sha256\": \"dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d\", \"spot_checks\": 7, \"volume\": 180}\n"
+        }
+      },
+      "air_count": 94,
+      "volume": 180,
+      "binary_details": {
+        "air": 94,
+        "block_data_bytes": 180,
+        "bytes": 324,
+        "dimensions": [
+          5,
+          9,
+          4
+        ],
+        "non_air": 86,
+        "palette_entries": 6,
+        "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+        "spot_checks": 7,
+        "volume": 180
+      }
+    },
+    {
+      "folder": "18",
+      "title": "Giant grandfather clock / cuckoo clock tower",
+      "stable_id": "18-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
+        "bytes": 26429,
+        "sha256": "62894696a4e04a210ae201ecd83ef9ac231e5b43f4f068bb9e2f54e142fae592",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/18_giant_grandfather_clock.schem",
+        "exists": true,
+        "bytes": 1438,
+        "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/18_giant_grandfather_clock.validation.md",
+        "exists": true,
+        "bytes": 9759,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        13,
+        33,
+        11
+      ],
+      "non_air_count": 1309,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
+            "schematics/schems/pack1/18_giant_grandfather_clock.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.binary.log",
+          "output": {
+            "air": 3410,
+            "block_data_bytes": 4719,
+            "bytes": 1438,
+            "dimensions": [
+              13,
+              33,
+              11
+            ],
+            "non_air": 1309,
+            "palette_entries": 52,
+            "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+            "spot_checks": 19,
+            "volume": 4719
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
+            "schematics/schems/pack1/18_giant_grandfather_clock.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.reader.log",
+          "compared_voxels": 4719,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 19,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
+            "schematic": "schematics/schems/pack1/18_giant_grandfather_clock.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              13,
+              33,
+              11
+            ],
+            "volume": 4719,
+            "comparedVoxels": 4719,
+            "expectedNonAir": 1309,
+            "parserDerivedAir": 3410,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 52,
+            "spotChecks": 19,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
+            "/tmp/schematic-audit-pack1-18_giant_grandfather_clock-173s3vl2/18_giant_grandfather_clock.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+          "regenerated_sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+          "log": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.determinism.log",
+          "output": "{\"air\": 3410, \"block_data_bytes\": 4719, \"blueprint\": \"schematics/blueprints/pack1/18_giant_grandfather_clock.json\", \"bytes\": 1438, \"compiled\": \"/tmp/schematic-audit-pack1-18_giant_grandfather_clock-173s3vl2/18_giant_grandfather_clock.schem\", \"dimensions\": [13, 33, 11], \"non_air\": 1309, \"palette_entries\": 52, \"sha256\": \"87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6\", \"spot_checks\": 19, \"volume\": 4719}\n"
+        }
+      },
+      "air_count": 3410,
+      "volume": 4719,
+      "binary_details": {
+        "air": 3410,
+        "block_data_bytes": 4719,
+        "bytes": 1438,
+        "dimensions": [
+          13,
+          33,
+          11
+        ],
+        "non_air": 1309,
+        "palette_entries": 52,
+        "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+        "spot_checks": 19,
+        "volume": 4719
+      }
+    },
+    {
+      "folder": "19",
+      "title": "Hot-spring chalet / open birch pavilion",
+      "stable_id": "19-01",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/19_hot_spring_chalet.json",
+        "bytes": 9731,
+        "sha256": "200211c3e6ada9249da298635df34e4f14c55cf93a4c0140b90d137359fca2a8",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/19_hot_spring_chalet.schem",
+        "exists": true,
+        "bytes": 473,
+        "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/19_hot_spring_chalet.validation.md",
+        "exists": true,
+        "bytes": 5780,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        10,
+        6,
+        13
+      ],
+      "non_air_count": 239,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/19_hot_spring_chalet.json",
+            "schematics/schems/pack1/19_hot_spring_chalet.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.binary.log",
+          "output": {
+            "air": 541,
+            "block_data_bytes": 780,
+            "bytes": 473,
+            "dimensions": [
+              10,
+              6,
+              13
+            ],
+            "non_air": 239,
+            "palette_entries": 13,
+            "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+            "spot_checks": 14,
+            "volume": 780
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/19_hot_spring_chalet.json",
+            "schematics/schems/pack1/19_hot_spring_chalet.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.reader.log",
+          "compared_voxels": 780,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 14,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/19_hot_spring_chalet.json",
+            "schematic": "schematics/schems/pack1/19_hot_spring_chalet.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              10,
+              6,
+              13
+            ],
+            "volume": 780,
+            "comparedVoxels": 780,
+            "expectedNonAir": 239,
+            "parserDerivedAir": 541,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 13,
+            "spotChecks": 14,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/19_hot_spring_chalet.json",
+            "/tmp/schematic-audit-pack1-19_hot_spring_chalet-3nlr_x66/19_hot_spring_chalet.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+          "regenerated_sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.determinism.log",
+          "output": "{\"air\": 541, \"block_data_bytes\": 780, \"blueprint\": \"schematics/blueprints/pack1/19_hot_spring_chalet.json\", \"bytes\": 473, \"compiled\": \"/tmp/schematic-audit-pack1-19_hot_spring_chalet-3nlr_x66/19_hot_spring_chalet.schem\", \"dimensions\": [10, 6, 13], \"non_air\": 239, \"palette_entries\": 13, \"sha256\": \"5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c\", \"spot_checks\": 14, \"volume\": 780}\n"
+        }
+      },
+      "air_count": 541,
+      "volume": 780,
+      "binary_details": {
+        "air": 541,
+        "block_data_bytes": 780,
+        "bytes": 473,
+        "dimensions": [
+          10,
+          6,
+          13
+        ],
+        "non_air": 239,
+        "palette_entries": 13,
+        "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+        "spot_checks": 14,
+        "volume": 780
+      }
+    },
+    {
+      "folder": "19",
+      "title": "Thermal springs / terraced hot-spring landscape (dry block-only reconstruction)",
+      "stable_id": "19-02",
+      "blueprint": {
+        "path": "schematics/blueprints/pack1/19_thermal_springs.json",
+        "bytes": 18411,
+        "sha256": "fad503c11c512a057e152a86d04040875840336227f52aab40a50c11b6b173bd",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/schems/pack1/19_thermal_springs.schem",
+        "exists": true,
+        "bytes": 1025,
+        "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+        "nonempty": true
+      },
+      "validation_notes": {
+        "path": "schematics/blueprints/pack1/19_thermal_springs.validation.md",
+        "exists": true,
+        "bytes": 7995,
+        "nonempty": true
+      },
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
+      "dimensions": [
+        23,
+        8,
+        22
+      ],
+      "non_air_count": 1170,
+      "checks": {
+        "binary": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "validate",
+            "schematics/blueprints/pack1/19_thermal_springs.json",
+            "schematics/schems/pack1/19_thermal_springs.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.binary.log",
+          "output": {
+            "air": 2878,
+            "block_data_bytes": 4048,
+            "bytes": 1025,
+            "dimensions": [
+              23,
+              8,
+              22
+            ],
+            "non_air": 1170,
+            "palette_entries": 23,
+            "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+            "spot_checks": 20,
+            "volume": 4048
+          }
+        },
+        "production_reader": {
+          "command": [
+            "node",
+            "schematics/tooling/validate_blueprint.mjs",
+            "schematics/blueprints/pack1/19_thermal_springs.json",
+            "schematics/schems/pack1/19_thermal_springs.schem",
+            "1.21.4"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.reader.log",
+          "compared_voxels": 4048,
+          "mismatch_count": 0,
+          "count_match": true,
+          "spot_check_count": 20,
+          "spot_check_failures": [],
+          "first_mismatches": [],
+          "output": {
+            "blueprint": "schematics/blueprints/pack1/19_thermal_springs.json",
+            "schematic": "schematics/schems/pack1/19_thermal_springs.schem",
+            "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+            "registry": "minecraft-data 1.21.4",
+            "dimensions": [
+              23,
+              8,
+              22
+            ],
+            "volume": 4048,
+            "comparedVoxels": 4048,
+            "expectedNonAir": 1170,
+            "parserDerivedAir": 2878,
+            "parserDerivedCountsMatch": true,
+            "countDiffs": [],
+            "legendEntriesValidated": 23,
+            "spotChecks": 20,
+            "spotCheckFailures": [],
+            "parserMismatches": 0,
+            "firstMismatches": [],
+            "fullVoxelAndStateComparison": "PASS"
+          }
+        },
+        "deterministic_regeneration": {
+          "command": [
+            "python3",
+            "schematics/tooling/compile_blueprint.py",
+            "compile",
+            "schematics/blueprints/pack1/19_thermal_springs.json",
+            "/tmp/schematic-audit-pack1-19_thermal_springs-0795p6ye/19_thermal_springs.schem"
+          ],
+          "exit_code": 0,
+          "result": "PASS",
+          "temporary_output_only": true,
+          "canonical_sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+          "regenerated_sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+          "log": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.determinism.log",
+          "output": "{\"air\": 2878, \"block_data_bytes\": 4048, \"blueprint\": \"schematics/blueprints/pack1/19_thermal_springs.json\", \"bytes\": 1025, \"compiled\": \"/tmp/schematic-audit-pack1-19_thermal_springs-0795p6ye/19_thermal_springs.schem\", \"dimensions\": [23, 8, 22], \"non_air\": 1170, \"palette_entries\": 23, \"sha256\": \"985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e\", \"spot_checks\": 20, \"volume\": 4048}\n"
+        }
+      },
+      "air_count": 2878,
+      "volume": 4048,
+      "binary_details": {
+        "air": 2878,
+        "block_data_bytes": 4048,
+        "bytes": 1025,
+        "dimensions": [
+          23,
+          8,
+          22
+        ],
+        "non_air": 1170,
+        "palette_entries": 23,
+        "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+        "spot_checks": 20,
+        "volume": 4048
+      }
+    }
+  ],
+  "summary": {
+    "build_count": 30,
+    "binary_pass": 30,
+    "binary_fail": 0,
+    "deterministic_pass": 29,
+    "deterministic_fail": 1,
+    "reader_pass": 30,
+    "reader_mismatch": 0,
+    "reader_error": 0
+  }
+}

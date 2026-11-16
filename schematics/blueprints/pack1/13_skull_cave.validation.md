@@ -1,14 +1,25 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/13_skull_cave.json schematics/schems/pack1/13_skull_cave.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/13_skull_cave.json schematics/schems/pack1/13_skull_cave.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/13_skull_cave.json schematics/schems/pack1/13_skull_cave.schem 1.21.4
+> ```
+
 # Folder 13 — Skull Cave artifact validation
 
 ## Current production-reader result — 2026-11-15 repair
 
-**PASS:** all 5,120 voxels, exact block states/counts and all 32 spot checks now match. The original 123 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../batch_report.md) and [fresh production-reader log](../validation/build_logs/13_skull_cave.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
+**PASS:** all 5,120 voxels, exact block states/counts and all 32 spot checks now match. The original 123 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../../tooling/validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../../schems/pack1/batch_report.md) and [fresh production-reader log](../../tooling/validation/build_logs/pack1/13_skull_cave.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
 
 ## Original reconstruction validation — before reader repair
 
 ## Scope and result
 
-Compiled the existing source of truth, [13_skull_cave.json](13_skull_cave.json), without editing its layers, legend, counts, spot checks, or intended states. The permanent output is [13_skull_cave.schem](../13_skull_cave.schem). The JSON was retained. No other folder, source, dependency, tooling, or batch report was changed; no live-server test was run.
+Compiled the existing source of truth, [13_skull_cave.json](13_skull_cave.json), without editing its layers, legend, counts, spot checks, or intended states. The permanent output is [13_skull_cave.schem](../../schems/pack1/13_skull_cave.schem). The JSON was retained. No other folder, source, dependency, tooling, or batch report was changed; no live-server test was run.
 
 The schematic is structurally and byte-for-byte correct against the blueprint according to the independent Python NBT validator. The production-reader check did **not** pass its full state comparison: it read all 5,120 voxels, including air, and reported 123 leaf-state mismatches caused by the installed parser. These are recorded below; no workaround or state substitution was applied. Compilation correctness is distinct from visual fidelity: the blueprint explicitly documents inferred geometry and intentionally omitted water/entities.
 
@@ -18,7 +29,7 @@ The schematic is structurally and byte-for-byte correct against the blueprint ac
 |---|---|
 | Blueprint | [schematics/blueprints/13_skull_cave.json](13_skull_cave.json), 24,723 bytes |
 | Blueprint SHA-256 | `a29881f90e96309bf2372e9f68ee99abb4e7633841b05b1d1497a96f5de02cea` |
-| Schematic | [schematics/13_skull_cave.schem](../13_skull_cave.schem), 915 bytes, nonempty |
+| Schematic | [schematics/13_skull_cave.schem](../../schems/pack1/13_skull_cave.schem), 915 bytes, nonempty |
 | Schematic SHA-256 | `2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1` |
 | Format | Gzip-compressed Sponge schematic v2 NBT; root Schematic; DataVersion 4189 |
 | Dimensions / volume | 20 × 16 × 16 / 5,120 voxels |
@@ -29,11 +40,11 @@ The schematic is structurally and byte-for-byte correct against the blueprint ac
 
 ## Commands and binary validation
 
-Commands were run from the project root. The compiler is the existing [compile_blueprint.py](../compile_blueprint.py:1); the procedural requirements are documented in [BLUEPRINT_TOOLING.md](../BLUEPRINT_TOOLING.md:1).
+Commands were run from the project root. The compiler is the existing [compile_blueprint.py](../../tooling/compile_blueprint.py:1); the procedural requirements are documented in [BLUEPRINT_TOOLING.md](../../tooling/BLUEPRINT_TOOLING.md:1).
 
-- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../compile_blueprint.py:204) — exit 0; compilation also reloaded and independently validated its output through nbtlib.
-- [`python3 schematics/compile_blueprint.py validate schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../compile_blueprint.py:204) — exit 0. Verified gzip/NBT parsing, tag types, v2/DataVersion, exact dimensions, zero offset, empty typed entity lists, exact canonical palette and IDs, complete canonical VarInt stream, every voxel in x-fastest/z-next/y-next order, counts, volume, and all 32 spot checks.
-- [`python3 schematics/compile_blueprint.py test-varints`](../compile_blueprint.py:204) — exit 0; 1–5 byte boundaries and known encodings passed; overlong/noncanonical encoding rejected.
+- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../../tooling/compile_blueprint.py:204) — exit 0; compilation also reloaded and independently validated its output through nbtlib.
+- [`python3 schematics/compile_blueprint.py validate schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../../tooling/compile_blueprint.py:204) — exit 0. Verified gzip/NBT parsing, tag types, v2/DataVersion, exact dimensions, zero offset, empty typed entity lists, exact canonical palette and IDs, complete canonical VarInt stream, every voxel in x-fastest/z-next/y-next order, counts, volume, and all 32 spot checks.
+- [`python3 schematics/compile_blueprint.py test-varints`](../../tooling/compile_blueprint.py:204) — exit 0; 1–5 byte boundaries and known encodings passed; overlong/noncanonical encoding rejected.
 
 Binary validation returned: dimensions `[20,16,16]`; volume 5,120; non-air 2,639; air 2,481; palette entries 23; BlockData 5,120 bytes; spot checks 32; schematic 915 bytes; SHA-256 `2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1`.
 
@@ -69,7 +80,7 @@ All 23 expected counts matched in binary validation:
 
 ## Minecraft registry and real production reader
 
-Ran [`node schematics/validate_blueprint.mjs schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../validate_blueprint.mjs:1), using the installed minecraft-data 1.21.4 registry and the production schematic reader. Exit status was 2, **because the complete state comparison failed**, not because the program failed to run.
+Ran [`node schematics/validate_blueprint.mjs schematics/blueprints/13_skull_cave.json schematics/13_skull_cave.schem`](../../tooling/validate_blueprint.mjs:1), using the installed minecraft-data 1.21.4 registry and the production schematic reader. Exit status was 2, **because the complete state comparison failed**, not because the program failed to run.
 
 Checker outcomes:
 

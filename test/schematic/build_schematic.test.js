@@ -120,6 +120,11 @@ test("reports parse failures and explicitly rejects listed but unsupported litem
   assert.equal(await buildSchematic(litematic.bot, "listed.litematic", null, null, null, litematic.dependencies), false);
   assert.match(litematic.calls.logs[0], /not supported.*Convert this file/);
   assert.deepEqual(litematic.calls.modes, []);
+
+  const resolvedExtension = fixture({ resolvePath: () => "/schematics/packs/actual-file.litematic" });
+  assert.equal(await buildSchematic(resolvedExtension.bot, "pack1:actual-file.litematic", null, null, null, resolvedExtension.dependencies), false);
+  assert.match(resolvedExtension.calls.logs[0], /not supported.*Convert this file/);
+  assert.deepEqual(resolvedExtension.calls.modes, []);
 });
 
 test("rejects unknown source palette blocks before parser, Creative mode, or supply changes", async () => {

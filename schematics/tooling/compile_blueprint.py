@@ -18,6 +18,27 @@ from nbtlib import tag
 
 
 STATE_RE = re.compile(r"^([a-z0-9_.-]+):([a-z0-9_./-]+)(?:\[(.*)\])?$")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def repo_input(path: Path) -> Path:
+    """Resolve repository-relative inputs consistently, regardless of cwd."""
+    candidate = path if path.is_absolute() else PROJECT_ROOT / path
+    resolved = candidate.resolve(strict=True)
+    require(resolved.is_relative_to(PROJECT_ROOT), f"input path escapes project root: {path}")
+    require(resolved.is_file(), f"input is not a regular file: {path}")
+    return resolved
+
+
+def cli_output(path: Path) -> Path:
+    """Resolve relative output names from the project root; absolute temp paths are supported."""
+    return path if path.is_absolute() else PROJECT_ROOT / path
+
+
+def blueprint_data_version(blueprint: dict) -> int:
+    value = blueprint.get("data_version")
+    require(type(value) is int and value > 0, "blueprint must declare a positive integer data_version")
+    return value
 
 
 def require(condition: bool, message: str) -> None:
@@ -121,13 +142,14 @@ def gzip_nbt(root: nbtlib.File) -> bytes:
 
 def compile_blueprint(blueprint_path: Path, output_path: Path) -> tuple[dict, bytes]:
     blueprint, voxels = read_blueprint(blueprint_path)
+    data_version = blueprint_data_version(blueprint)
     palette, _ = state_palette(blueprint)
     block_data = b"".join(encode_varint(palette[state]) for state in voxels)
     width, height, length = (blueprint[k] for k in ("width_x", "height_y", "length_z"))
     palette_tag = tag.Compound({state: tag.Int(index) for state, index in palette.items()})
     root = nbtlib.File({
         "Version": tag.Int(2),
-        "DataVersion": tag.Int(int(blueprint.get("data_version", 4189))),
+        "DataVersion": tag.Int(data_version),
         "Width": tag.Short(width),
         "Height": tag.Short(height),
         "Length": tag.Short(length),
@@ -162,7 +184,9 @@ def validate_schematic(blueprint_path: Path, schematic_path: Path) -> dict:
         require(type(root[key]) is tag.List[tag.Compound], f"{key} must be a List[Compound] tag")
     require(root.root_name == "Schematic", f"unexpected NBT root name {root.root_name!r}")
     require(int(root["Version"]) == 2, "Sponge schematic Version must be 2")
-    require(int(root["DataVersion"]) == int(blueprint.get("data_version", 4189)) == 4189, "DataVersion must be 4189 and match blueprint")
+    expected_data_version = blueprint_data_version(blueprint)
+    require(int(root["DataVersion"]) == expected_data_version,
+            f"DataVersion {int(root['DataVersion'])} does not match blueprint data_version {expected_data_version}")
     dims = [int(root[k]) for k in ("Width", "Height", "Length")]
     expected_dims = [blueprint[k] for k in ("width_x", "height_y", "length_z")]
     require(dims == expected_dims, f"dimensions {dims} do not match blueprint {expected_dims}")
@@ -174,8 +198,9 @@ def validate_schematic(blueprint_path: Path, schematic_path: Path) -> dict:
         require(type(value) is tag.Int, f"Palette[{key!r}] must be an Int tag")
     ids = [int(value) for value in palette.values()]
     require(len(ids) == len(set(ids)) and sorted(ids) == list(range(len(ids))), "palette IDs must be unique, contiguous, and zero-based")
-    expected_palette, _ = state_palette(blueprint)
-    require(dict((key, int(value)) for key, value in palette.items()) == expected_palette, "serialized palette does not exactly match canonical blueprint state palette")
+    expected_palette = set(blueprint["legend"].values())
+    require(set(palette) == expected_palette,
+            "serialized palette states do not exactly match the blueprint's state set")
     require(int(root["PaletteMax"]) == len(palette), "PaletteMax does not match palette size")
     byte_data = bytes(int(value) & 0xFF for value in root["BlockData"])
     volume = dims[0] * dims[1] * dims[2]
@@ -215,11 +240,15 @@ def main() -> int:
     try:
         test_varint_boundaries()
         if args.command == "compile":
-            blueprint, packed = compile_blueprint(args.blueprint, args.output)
-            result = validate_schematic(args.blueprint, args.output)
+            blueprint_path = repo_input(args.blueprint)
+            output_path = cli_output(args.output)
+            blueprint, packed = compile_blueprint(blueprint_path, output_path)
+            result = validate_schematic(blueprint_path, output_path)
             print(json.dumps({"compiled": str(args.output), "blueprint": str(args.blueprint), **result}, sort_keys=True))
         elif args.command == "validate":
-            print(json.dumps(validate_schematic(args.blueprint, args.schematic), sort_keys=True))
+            blueprint_path = repo_input(args.blueprint)
+            schematic_path = repo_input(args.schematic)
+            print(json.dumps(validate_schematic(blueprint_path, schematic_path), sort_keys=True))
         else:
             print("canonical VarInt boundaries passed (including 1-, 2-, 3-, 4-, and 5-byte values; overlong encoding rejected)")
         return 0

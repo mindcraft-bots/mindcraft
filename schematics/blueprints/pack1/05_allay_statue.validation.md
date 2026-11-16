@@ -1,8 +1,19 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/05_allay_statue.json schematics/schems/pack1/05_allay_statue.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/05_allay_statue.json schematics/schems/pack1/05_allay_statue.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/05_allay_statue.json schematics/schems/pack1/05_allay_statue.schem 1.21.4
+> ```
+
 # Folder 05 — Allay statue validation
 
 ## Result
 
-**Overall: PASS.** The permanent source blueprint ([`05_allay_statue.json`](05_allay_statue.json)) was compiled unchanged to [`05_allay_statue.schem`](../05_allay_statue.schem). The compiled Sponge v2 NBT uses DataVersion 4189 and gzip compression.
+**Overall: PASS.** The permanent source blueprint ([`05_allay_statue.json`](05_allay_statue.json)) was compiled unchanged to [`05_allay_statue.schem`](../../schems/pack1/05_allay_statue.schem). The compiled Sponge v2 NBT uses DataVersion 4189 and gzip compression.
 
 | Check | Result |
 | --- | --- |
@@ -23,27 +34,27 @@ Run from the repository root. The commands below were run against only this fold
 
 1. Compile using Python `nbtlib`; compilation also reloads and independently validates the gzip Sponge v2 NBT:
 
-   `python3` [`compile_blueprint.py`](../compile_blueprint.py) `compile` [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../05_allay_statue.schem)
+   `python3` [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `compile` [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../../schems/pack1/05_allay_statue.schem)
 
    Result: DataVersion 4189; 17 × 14 × 6; volume 1,428; block-data stream 1,428 bytes; 284 non-air; 1,144 air; 13 palette entries; 23 spot checks; 509-byte output.
 
 2. Independently validate the compiled binary and exercise canonical VarInt boundary cases:
 
-   `python3` [`compile_blueprint.py`](../compile_blueprint.py) `validate` [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../05_allay_statue.schem)
+   `python3` [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `validate` [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../../schems/pack1/05_allay_statue.schem)
 
-   `python3` [`compile_blueprint.py`](../compile_blueprint.py) `test-varints`
+   `python3` [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `test-varints`
 
    Result: binary validation passed with the expected dimensions, volume, counts, palette and all 23 spot checks. VarInt tests passed for 1-, 2-, 3-, 4- and 5-byte values and rejected overlong encoding.
 
 3. Validate registry states, then compare every voxel and full canonical state through the production reader:
 
-   `node` [`validate_blueprint.mjs`](../validate_blueprint.mjs) [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../05_allay_statue.schem)
+   `node` [`validate_blueprint.mjs`](../../tooling/validate_blueprint.mjs) [`05_allay_statue.json`](05_allay_statue.json) [`05_allay_statue.schem`](../../schems/pack1/05_allay_statue.schem)
 
    Result: registry `minecraft-data` 1.21.4; 13/13 legend entries valid; dimensions and counts match; 1,428/1,428 voxel and state comparisons passed, including all air cells; parser-derived counts matched; 23/23 spot checks passed; zero parser mismatches.
 
 4. Determinism and nonempty-artifact checks:
 
-   Re-ran `python3` [`compile_blueprint.py`](../compile_blueprint.py) `compile` [`05_allay_statue.json`](05_allay_statue.json) to a fresh temporary output, then compared it byte-for-byte with [`05_allay_statue.schem`](../05_allay_statue.schem) using `cmp -s` and compared SHA-256 using `sha256sum`. Both outputs had SHA-256 `b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb`; comparison passed.
+   Re-ran `python3` [`compile_blueprint.py`](../../tooling/compile_blueprint.py) `compile` [`05_allay_statue.json`](05_allay_statue.json) to a fresh temporary output, then compared it byte-for-byte with [`05_allay_statue.schem`](../../schems/pack1/05_allay_statue.schem) using `cmp -s` and compared SHA-256 using `sha256sum`. Both outputs had SHA-256 `b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb`; comparison passed.
 
    `test -s` passed for both source and output. Sizes: JSON 13,514 bytes; schematic 509 bytes.
 

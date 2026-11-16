@@ -1,12 +1,23 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/19_thermal_springs.json schematics/schems/pack1/19_thermal_springs.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/19_thermal_springs.json schematics/schems/pack1/19_thermal_springs.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/19_thermal_springs.json schematics/schems/pack1/19_thermal_springs.schem 1.21.4
+> ```
+
 # Folder 19 — thermal springs verification
 
 ## Current production-reader result — 2026-11-15 repair
 
-**PASS:** all 4,048 voxels, exact block states/counts and all 20 spot checks now match. The original 23 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../batch_report.md) and [fresh production-reader log](../validation/build_logs/19_thermal_springs.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
+**PASS:** all 4,048 voxels, exact block states/counts and all 20 spot checks now match. The original 23 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../../tooling/validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../../schems/pack1/batch_report.md) and [fresh production-reader log](../../tooling/validation/build_logs/pack1/19_thermal_springs.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
 
 ## Original reconstruction validation — before reader repair
 
-Source of truth: [19_thermal_springs.json](19_thermal_springs.json). Compiled artifact: [19_thermal_springs.schem](../19_thermal_springs.schem). Procedure follows [BLUEPRINT_TOOLING.md](../BLUEPRINT_TOOLING.md); no source geometry, state value, tool, dependency, or other folder artifact was changed.
+Source of truth: [19_thermal_springs.json](19_thermal_springs.json). Compiled artifact: [19_thermal_springs.schem](../../schems/pack1/19_thermal_springs.schem). Procedure follows [BLUEPRINT_TOOLING.md](../../tooling/BLUEPRINT_TOOLING.md); no source geometry, state value, tool, dependency, or other folder artifact was changed.
 
 ## Blueprint and artifact facts
 
@@ -26,16 +37,16 @@ NBT was decompressed and independently parsed with `nbtlib`: root `Schematic`; S
 
 Commands were run from the project root. Each listed command exited `0`.
 
-- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../compile_blueprint.py:1) — wrote the artifact and the compile command's own independent NBT/full-voxel validation passed; 1,025 bytes, SHA-256 above.
-- [`python3 schematics/compile_blueprint.py validate schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../compile_blueprint.py:1) — independent reload validation passed: 23 × 8 × 22, 1,170 non-air, 2,878 air, 23 palette entries, 20/20 spots.
-- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/19_thermal_springs.json /tmp/tmp.Zje2HWIChr/19_thermal_springs.schem`](../compile_blueprint.py:1) — deterministic second compile to a temporary directory; exit `0`. `cmp -s` against the permanent artifact exited `0` (byte-identical); both SHA-256 values were `985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e`. The temporary directory was removed automatically by the command's exit trap.
-- [`python3 schematics/compile_blueprint.py test-varints`](../compile_blueprint.py:1) — exit `0`; canonical VarInt round trips across 1–5 byte boundaries passed and overlong encoding was rejected.
+- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../../tooling/compile_blueprint.py:1) — wrote the artifact and the compile command's own independent NBT/full-voxel validation passed; 1,025 bytes, SHA-256 above.
+- [`python3 schematics/compile_blueprint.py validate schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../../tooling/compile_blueprint.py:1) — independent reload validation passed: 23 × 8 × 22, 1,170 non-air, 2,878 air, 23 palette entries, 20/20 spots.
+- [`python3 schematics/compile_blueprint.py compile schematics/blueprints/19_thermal_springs.json /tmp/tmp.Zje2HWIChr/19_thermal_springs.schem`](../../tooling/compile_blueprint.py:1) — deterministic second compile to a temporary directory; exit `0`. `cmp -s` against the permanent artifact exited `0` (byte-identical); both SHA-256 values were `985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e`. The temporary directory was removed automatically by the command's exit trap.
+- [`python3 schematics/compile_blueprint.py test-varints`](../../tooling/compile_blueprint.py:1) — exit `0`; canonical VarInt round trips across 1–5 byte boundaries passed and overlong encoding was rejected.
 
 The binary validator confirmed every voxel, including air, canonical state palette, counts and all spot checks in x-fastest, z-next, y-next order. Geometry and explicit values are preserved.
 
 ## Registry and production-reader validation
 
-[`node schematics/validate_blueprint.mjs schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../validate_blueprint.mjs:1) exited **2**: expected fidelity failure from the installed production `readSchematic` → `prismarine-schematic` reader, not a compile/registry/NBT failure. All 23 legend entries passed complete-property-set and value validation against `minecraft-data` Minecraft 1.21.4. The production reader returned the correct dimensions and compared all 4,048/4,048 voxels including air. Air remained 2,878 and expected non-air remained 1,170. However, the complete canonical block-state comparison had **23 mismatched voxels**, parser-derived counts did not match, and **18/20** reader spot checks passed (**2 failed**):
+[`node schematics/validate_blueprint.mjs schematics/blueprints/19_thermal_springs.json schematics/19_thermal_springs.schem`](../../tooling/validate_blueprint.mjs:1) exited **2**: expected fidelity failure from the installed production `readSchematic` → `prismarine-schematic` reader, not a compile/registry/NBT failure. All 23 legend entries passed complete-property-set and value validation against `minecraft-data` Minecraft 1.21.4. The production reader returned the correct dimensions and compared all 4,048/4,048 voxels including air. Air remained 2,878 and expected non-air remained 1,170. However, the complete canonical block-state comparison had **23 mismatched voxels**, parser-derived counts did not match, and **18/20** reader spot checks passed (**2 failed**):
 
 | Intended state and locations `(x,y,z)` | Reader result | Count |
 |---|---|---:|

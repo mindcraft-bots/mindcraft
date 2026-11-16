@@ -16,8 +16,8 @@
     "description": "Minimum northwest corner of inferred9x11 rectangular bath plinth. +x east across bath, +z south along length. Open/front end north z0; covered rear z6..10. Base y0, sandstone rim y1, rear supports y2..4, gabled prismarine roof y3..7. Pool cavity is deliberately dry air y1; no substituted lava material."
   },
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160520-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160530-1536x1152.jpg"
+    "schematics/screenshots/pack1/17/IMG_20261115_160520-1536x1152.jpg",
+    "schematics/screenshots/pack1/17/IMG_20261115_160530-1536x1152.jpg"
   ],
   "legend": {
     ".": "minecraft:air",

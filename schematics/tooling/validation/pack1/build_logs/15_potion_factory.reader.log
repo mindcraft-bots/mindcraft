@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/15_potion_factory.json schematics/schems/pack1/15_potion_factory.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/15_potion_factory.json",
+  "schematic": "schematics/schems/pack1/15_potion_factory.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    19,
+    13,
+    15
+  ],
+  "volume": 3705,
+  "comparedVoxels": 3705,
+  "expectedNonAir": 944,
+  "parserDerivedAir": 2761,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 44,
+  "spotChecks": 38,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

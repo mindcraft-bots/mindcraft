@@ -1,0 +1,3 @@
+$ python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/17_strider_bath.json /tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem
+[exit code: 0]
+{"air": 560, "block_data_bytes": 792, "blueprint": "schematics/blueprints/pack1/17_strider_bath.json", "bytes": 441, "compiled": "/tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem", "dimensions": [9, 8, 11], "non_air": 232, "palette_entries": 10, "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da", "spot_checks": 17, "volume": 792}

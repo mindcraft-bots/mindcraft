@@ -1,0 +1,615 @@
+$ npm run test:schematic
+[exit code: 0]
+
+> test:schematic
+> node --test --test-concurrency=1 test/schematic/*.test.js
+
+TAP version 13
+# Subtest: rejects missing and escaping paths before reading or changing game mode
+ok 1 - rejects missing and escaping paths before reading or changing game mode
+  ---
+  duration_ms: 3.327812
+  type: 'test'
+  ...
+# Subtest: reports parse failures and explicitly rejects listed but unsupported litematic files
+ok 2 - reports parse failures and explicitly rejects listed but unsupported litematic files
+  ---
+  duration_ms: 1.91964
+  type: 'test'
+  ...
+# Subtest: rejects unknown source palette blocks before parser, Creative mode, or supply changes
+ok 3 - rejects unknown source palette blocks before parser, Creative mode, or supply changes
+  ---
+  duration_ms: 52.845113
+  type: 'test'
+  ...
+# Subtest: floors three finite coordinates and otherwise uses bot position offset and floor
+ok 4 - floors three finite coordinates and otherwise uses bot position offset and floor
+  ---
+  duration_ms: 2.176327
+  type: 'test'
+  ...
+# Subtest: Creative permission denial aborts the build and still restores mode and unstuck state
+ok 5 - Creative permission denial aborts the build and still restores mode and unstuck state
+  ---
+  duration_ms: 0.434604
+  type: 'test'
+  ...
+# Subtest: build success is verified and cleans supply, restores game mode and prior unstuck state
+ok 6 - build success is verified and cleans supply, restores game mode and prior unstuck state
+  ---
+  duration_ms: 0.683166
+  type: 'test'
+  ...
+# Subtest: reports rejected and interrupted builds as failures while cancelling and restoring
+ok 7 - reports rejected and interrupted builds as failures while cancelling and restoring
+  ---
+  duration_ms: 0.908343
+  type: 'test'
+  ...
+# Subtest: verification mismatch, cleanup rejection, and hanging cleanup never claim success
+ok 8 - verification mismatch, cleanup rejection, and hanging cleanup never claim success
+  ---
+  duration_ms: 7.314282
+  type: 'test'
+  ...
+# Subtest: does not restore unchanged Creative mode and restores after a timed-out switch
+ok 9 - does not restore unchanged Creative mode and restores after a timed-out switch
+  ---
+  duration_ms: 1.02313
+  type: 'test'
+  ...
+# Subtest: loads mineflayer-schem without retaining its global pathfinder movements
+ok 10 - loads mineflayer-schem without retaining its global pathfinder movements
+  ---
+  duration_ms: 7.718398
+  type: 'test'
+  ...
+# Subtest: real pathfinder keeps unrestricted searchRadius and routes around a distant wall
+ok 11 - real pathfinder keeps unrestricted searchRadius and routes around a distant wall
+  ---
+  duration_ms: 76.756161
+  type: 'test'
+  ...
+# Subtest: queues schematic compatibility after pathfinder with Mineflayer plugin loader
+ok 12 - queues schematic compatibility after pathfinder with Mineflayer plugin loader
+  ---
+  duration_ms: 5.717904
+  type: 'test'
+  ...
+# Subtest: builder.stop cancels the builder and clears the current pathfinder goal
+ok 13 - builder.stop cancels the builder and clears the current pathfinder goal
+  ---
+  duration_ms: 3.033664
+  type: 'test'
+  ...
+# Subtest: Creative supply reuses reserved slot 36 for sequential palette types and restores it
+ok 14 - Creative supply reuses reserved slot 36 for sequential palette types and restores it
+  ---
+  duration_ms: 3.173599
+  type: 'test'
+  ...
+# Subtest: rejects cancelled and non-Creative supply without writing inventory
+ok 15 - rejects cancelled and non-Creative supply without writing inventory
+  ---
+  duration_ms: 4.648686
+  type: 'test'
+  ...
+# Subtest: closing a session prevents queued equips from writing after cancellation
+ok 16 - closing a session prevents queued equips from writing after cancellation
+  ---
+  duration_ms: 2.20907
+  type: 'test'
+  ...
+# Subtest: aborting a timed-out close prevents late equipment and slot restoration writes
+ok 17 - aborting a timed-out close prevents late equipment and slot restoration writes
+  ---
+  duration_ms: 2.174845
+  type: 'test'
+  ...
+# Subtest: uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic
+ok 18 - uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic
+  ---
+  duration_ms: 2.227204
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# Subtest: stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations
+ok 19 - stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations
+  ---
+  duration_ms: 82.625252
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# Subtest: interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement
+ok 20 - interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement
+  ---
+  duration_ms: 6235.821613
+  type: 'test'
+  ...
+# Subtest: already-Creative build succeeds without a redundant mode command and restores slot and unstuck state
+ok 21 - already-Creative build succeeds without a redundant mode command and restores slot and unstuck state
+  ---
+  duration_ms: 1107.804783
+  type: 'test'
+  ...
+# Subtest: command parser preserves fixed arity and supports build schematic coordinates
+ok 22 - command parser preserves fixed arity and supports build schematic coordinates
+  ---
+  duration_ms: 149.296658
+  type: 'test'
+  ...
+# Subtest: normalizeGameMode accepts supported modes and defaults invalid values to survival
+ok 23 - normalizeGameMode accepts supported modes and defaults invalid values to survival
+  ---
+  duration_ms: 1.580067
+  type: 'test'
+  ...
+# Subtest: setGameMode returns immediately when the bot already has the target mode
+ok 24 - setGameMode returns immediately when the bot already has the target mode
+  ---
+  duration_ms: 0.309097
+  type: 'test'
+  ...
+# Subtest: forced setGameMode sends restoration even when the client already reports the target mode
+ok 25 - forced setGameMode sends restoration even when the client already reports the target mode
+  ---
+  duration_ms: 51.11396
+  type: 'test'
+  ...
+# Subtest: setGameMode registers before chat and resolves when the target mode is observed
+ok 26 - setGameMode registers before chat and resolves when the target mode is observed
+  ---
+  duration_ms: 0.339344
+  type: 'test'
+  ...
+# Subtest: setGameMode continues waiting after unrelated game events
+ok 27 - setGameMode continues waiting after unrelated game events
+  ---
+  duration_ms: 3.197795
+  type: 'test'
+  ...
+# Subtest: setGameMode resolves false on timeout when the mode never changes
+ok 28 - setGameMode resolves false on timeout when the mode never changes
+  ---
+  duration_ms: 5.658982
+  type: 'test'
+  ...
+# Subtest: invalid requested modes safely target survival
+ok 29 - invalid requested modes safely target survival
+  ---
+  duration_ms: 0.392043
+  type: 'test'
+  ...
+# Subtest: setGameMode handles synchronous chat errors and rejected chat promises
+ok 30 - setGameMode handles synchronous chat errors and rejected chat promises
+  ---
+  duration_ms: 0.578116
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, -4)
+# 📐 Area: from (10, 20, -4) to (13, 21, -3)
+# 🎮 Server version: 1.20.4
+# Subtest: creates real mineflayer-schem Build actions from modern block states without legacy stone fallback
+ok 31 - creates real mineflayer-schem Build actions from modern block states without legacy stone fallback
+  ---
+  duration_ms: 20.378589
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 0, 0)
+# 📐 Area: from (0, 0, 0) to (3, 1, 1)
+# 🎮 Server version: 1.20.4
+# Subtest: maps wall torches, wall signs, and redstone wire to actual inventory items
+ok 32 - maps wall torches, wall signs, and redstone wire to actual inventory items
+  ---
+  duration_ms: 3.910897
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 0, 0)
+# 📐 Area: from (0, 0, 0) to (3, 1, 1)
+# 🎮 Server version: 1.20.4
+# Subtest: maps wall banners and cocoa to inventory items without changing requested states
+ok 33 - maps wall banners and cocoa to inventory items without changing requested states
+  ---
+  duration_ms: 3.773356
+  type: 'test'
+  ...
+# 📦 Build initialized at (4, 5, 6)
+# 📐 Area: from (4, 5, 6) to (9, 6, 7)
+# 🎮 Server version: 1.20.4
+# Subtest: retains dependent door and bed blocks in the verification plan but only places their base halves
+ok 34 - retains dependent door and bed blocks in the verification plan but only places their base halves
+  ---
+  duration_ms: 3.224596
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 0, 0)
+# 📐 Area: from (0, 0, 0) to (1, 1, 1)
+# 🎮 Server version: 1.20.4
+# Subtest: reports unsupported states explicitly and attaches the inspectable adapter
+ok 35 - reports unsupported states explicitly and attaches the inspectable adapter
+  ---
+  duration_ms: 3.571624
+  type: 'test'
+  ...
+# Subtest: rejects invalid and oversized dimensions before decoding block data
+ok 36 - rejects invalid and oversized dimensions before decoding block data
+  ---
+  duration_ms: 1.775427
+  type: 'test'
+  ...
+# Subtest: pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions
+ok 37 - pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions
+  ---
+  duration_ms: 34.913815
+  type: 'test'
+  ...
+# Subtest: IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs
+ok 38 - IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs
+  ---
+  duration_ms: 22.140941
+  type: 'test'
+  ...
+# Subtest: pack IDs and filename lookup work independently across arbitrary packs
+ok 39 - pack IDs and filename lookup work independently across arbitrary packs
+  ---
+  duration_ms: 5.445658
+  type: 'test'
+  ...
+# Subtest: extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts
+ok 40 - extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts
+  ---
+  duration_ms: 3.123844
+  type: 'test'
+  ...
+# Subtest: manifest targets cannot disagree with directly indexed filenames
+ok 41 - manifest targets cannot disagree with directly indexed filenames
+  ---
+  duration_ms: 2.80505
+  type: 'test'
+  ...
+# Subtest: pack entries reject supported-looking directories instead of treating them as schematic files
+ok 42 - pack entries reject supported-looking directories instead of treating them as schematic files
+  ---
+  duration_ms: 1.822236
+  type: 'test'
+  ...
+# Subtest: pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files
+ok 43 - pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files
+  ---
+  duration_ms: 3.364982
+  type: 'test'
+  ...
+# Subtest: pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors
+ok 44 - pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors
+  ---
+  duration_ms: 1.595797
+  type: 'test'
+  ...
+# Subtest: pack directories, manifest targets, and schematic files cannot escape via symlinks
+ok 45 - pack directories, manifest targets, and schematic files cannot escape via symlinks
+  ---
+  duration_ms: 2.82623
+  type: 'test'
+  ...
+# Subtest: legacy root-relative paths continue to resolve as before
+ok 46 - legacy root-relative paths continue to resolve as before
+  ---
+  duration_ms: 1.086882
+  type: 'test'
+  ...
+# Subtest: postinstall verifier accepts the patched installed package
+ok 47 - postinstall verifier accepts the patched installed package
+  ---
+  duration_ms: 186.148059
+  type: 'test'
+  ...
+# Subtest: runtime loader accepts the patched plugin capability
+ok 48 - runtime loader accepts the patched plugin capability
+  ---
+  duration_ms: 187.29851
+  type: 'test'
+  ...
+# Subtest: an unpatched package fails install verification and runtime loading before plugin registration
+ok 49 - an unpatched package fails install verification and runtime loading before plugin registration
+  ---
+  duration_ms: 277.754514
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath accepts confined files and confined missing candidates
+ok 50 - resolveSchematicPath accepts confined files and confined missing candidates
+  ---
+  duration_ms: 9.051407
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath rejects absolute, empty, NUL, and traversal paths
+ok 51 - resolveSchematicPath rejects absolute, empty, NUL, and traversal paths
+  ---
+  duration_ms: 1.342336
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath rejects symlinks and missing descendants that escape
+ok 52 - resolveSchematicPath rejects symlinks and missing descendants that escape
+  ---
+  duration_ms: 2.595843
+  type: 'test'
+  ...
+# Subtest: listSchematics returns sorted supported regular files and ignores escaping symlinks
+ok 53 - listSchematics returns sorted supported regular files and ignores escaping symlinks
+  ---
+  duration_ms: 10.321655
+  type: 'test'
+  ...
+# Subtest: listSchematics treats a missing directory as empty
+ok 54 - listSchematics treats a missing directory as empty
+  ---
+  duration_ms: 0.953408
+  type: 'test'
+  ...
+# Subtest: parseOptionalCoordinate handles omitted values and finite numeric values/strings
+ok 55 - parseOptionalCoordinate handles omitted values and finite numeric values/strings
+  ---
+  duration_ms: 0.324806
+  type: 'test'
+  ...
+# Subtest: parseOptionalCoordinate rejects invalid and non-finite values
+ok 56 - parseOptionalCoordinate rejects invalid and non-finite values
+  ---
+  duration_ms: 0.275723
+  type: 'test'
+  ...
+# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic
+ok 57 - reads a real serialized Sponge v2 buffer through prismarine-schematic
+  ---
+  duration_ms: 67.421728
+  type: 'test'
+  ...
+# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes
+ok 58 - rejects unknown names and invalid properties or states from real Sponge palettes
+  ---
+  duration_ms: 3.962334
+  type: 'test'
+  ...
+# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+ok 59 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+  ---
+  duration_ms: 4.388723
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.20.4
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.21.4
+# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning
+ok 60 - preserves every candle count, foliage distance and snow layer through production reading and placement planning
+  ---
+  duration_ms: 45.624308
+  type: 'test'
+  ...
+# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+ok 61 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+  ---
+  duration_ms: 0.445354
+  type: 'test'
+  ...
+# Subtest: zero-based integer states and omitted properties retain their existing interpretation
+ok 62 - zero-based integer states and omitted properties retain their existing interpretation
+  ---
+  duration_ms: 5.615621
+  type: 'test'
+  ...
+# Subtest: legacy snow mapping also preserves its one-based layer value
+ok 63 - legacy snow mapping also preserves its one-based layer value
+  ---
+  duration_ms: 2.116003
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (6, 71, 4)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (10, 81, 9)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (8, 79, 8)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (8, 79, 9)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (18, 81, 19)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (9, 87, 9)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (15, 103, 16)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (17, 78, 6)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 73, 9)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 88, 13)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (15, 80, 19)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 80, 22)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (14, 80, 6)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 72, 9)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (24, 66, 12)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (9, 69, 3)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (11, 75, 7)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (9, 67, 19)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (12, 66, 12)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 91, 13)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (20, 80, 16)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (8, 74, 15)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (19, 77, 15)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (5, 79, 8)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (17, 81, 17)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (9, 72, 11)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (5, 73, 4)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (13, 97, 11)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (10, 70, 13)
+# 🎮 Server version: 1.21.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (23, 72, 22)
+# 🎮 Server version: 1.21.4
+# PACK1_BUILD_PREFLIGHT {"passed":28,"unsupported":[{"id":"04-01","filename":"04_pagoda.schem","error":"Schematic contains unsupported blocks: potted_oak_sapling at 10,68,6: no placeable item mapping for potted_oak_sapling; potted_oak_sapling at 7,73,4: no placeable item mapping for potted_oak_sapling"},{"id":"18-02","filename":"18_giant_grandfather_clock.schem","error":"Schematic contains unsupported blocks: potted_fern at 5,67,3: no placeable item mapping for potted_fern"}]}
+# Subtest: every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename
+ok 64 - every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename
+  ---
+  duration_ms: 645.518515
+  type: 'test'
+  ...
+# Subtest: real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)
+ok 65 - real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)
+  ---
+  duration_ms: 359.696672
+  type: 'test'
+  ...
+# Subtest: returns finished only after all build actions are consumed
+ok 66 - returns finished only after all build actions are consumed
+  ---
+  duration_ms: 6.704836
+  type: 'test'
+  ...
+# Subtest: captures builder_error events even when the plugin resolves successfully
+ok 67 - captures builder_error events even when the plugin resolves successfully
+  ---
+  duration_ms: 2.062382
+  type: 'test'
+  ...
+# Subtest: captures rejected builder promises
+ok 68 - captures rejected builder promises
+  ---
+  duration_ms: 1.843967
+  type: 'test'
+  ...
+# Subtest: an already interrupted bot does not start the build and runs cancellation hooks
+ok 69 - an already interrupted bot does not start the build and runs cancellation hooks
+  ---
+  duration_ms: 0.48477
+  type: 'test'
+  ...
+# Subtest: bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement
+ok 70 - bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement
+  ---
+  duration_ms: 22.538545
+  type: 'test'
+  ...
+# Subtest: reports a stalled build when remaining actions stop decreasing
+ok 71 - reports a stalled build when remaining actions stop decreasing
+  ---
+  duration_ms: 24.849759
+  type: 'test'
+  ...
+# Subtest: does not report finished if a resolved builder leaves actions behind
+ok 72 - does not report finished if a resolved builder leaves actions behind
+  ---
+  duration_ms: 2.322886
+  type: 'test'
+  ...
+# Subtest: clears runner polling and grace timers and removes its event listener
+ok 73 - clears runner polling and grace timers and removes its event listener
+  ---
+  duration_ms: 3.162948
+  type: 'test'
+  ...
+# Subtest: compiler and production validator resolve pack paths from a different cwd
+ok 74 - compiler and production validator resolve pack paths from a different cwd
+  ---
+  duration_ms: 373.385594
+  type: 'test'
+  ...
+# Subtest: tooling rejects inputs that resolve outside the repository
+ok 75 - tooling rejects inputs that resolve outside the repository
+  ---
+  duration_ms: 268.69377
+  type: 'test'
+  ...
+# Subtest: audit refuses an unknown pack instead of generating an empty successful report
+ok 76 - audit refuses an unknown pack instead of generating an empty successful report
+  ---
+  duration_ms: 45.109713
+  type: 'test'
+  ...
+# Subtest: compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions
+ok 77 - compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions
+  ---
+  duration_ms: 1032.786517
+  type: 'test'
+  ...
+# WARDROBE_REBUILD_DIAGNOSIS {"zlib":"1.3.1","canonical_sha256":"8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383","rebuilt_sha256":"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886","canonical_bytes":535,"rebuilt_bytes":505,"canonical_header":"1f8b0808c1eef96a02ff","rebuilt_header":"1f8b08000000000002ff","canonical_trailer":"9c0881f6d4050000","rebuilt_trailer":"16db9e95d4050000","canonical_raw_sha256":"bb3ffe6c546bb32b5c535254db7980406f21d845ec67a75dac85e2c204dc8ade","rebuilt_raw_sha256":"1c623daf9879dc4a0dc78fff9c2a470f1fa1b5e482d8ccfbde5d969f3cf2c309","canonical_gzip_filename":"wardrobe_nether_portal.schem","canonical_gzip_mtime":1794764481,"canonical_tag_order":["Version","DataVersion","Width","Height","Length","Offset","Palette","PaletteMax","BlockData","BlockEntities","Entities"],"rebuilt_tag_order":["Version","DataVersion","Width","Height","Length","Offset","PaletteMax","Palette","BlockData","BlockEntities","Entities"],"canonical_palette":{"minecraft:air":0,"minecraft:dark_oak_planks":1,"minecraft:obsidian":2,"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]":3,"minecraft:dark_oak_slab[type=bottom,waterlogged=false]":4,"minecraft:dark_oak_button[face=wall,facing=north,powered=false]":5,"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]":6,"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]":7,"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]":8,"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]":9,"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]":10,"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]":11,"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]":12,"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]":13,"minecraft:white_wall_banner[facing=east]":14,"minecraft:white_wall_banner[facing=west]":15},"rebuilt_palette":{"minecraft:air":0,"minecraft:dark_oak_button[face=wall,facing=north,powered=false]":1,"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]":2,"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]":3,"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]":4,"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]":5,"minecraft:dark_oak_planks":6,"minecraft:dark_oak_slab[type=bottom,waterlogged=false]":7,"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]":8,"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]":9,"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]":10,"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]":11,"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]":12,"minecraft:obsidian":13,"minecraft:white_wall_banner[facing=east]":14,"minecraft:white_wall_banner[facing=west]":15},"byte_match":false,"repeated_rebuild_match":true,"decoded_voxels_match":true,"compared_voxels":168,"legacy_raw_reconstructed_exactly":true,"legacy_gzip_reconstructed_exactly":true,"canonical_unchanged":true}
+# Subtest: wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes
+ok 78 - wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes
+  ---
+  duration_ms: 77.084153
+  type: 'test'
+  ...
+1..78
+# tests 78
+# suites 0
+# pass 78
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17851.905189

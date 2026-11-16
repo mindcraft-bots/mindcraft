@@ -16,8 +16,8 @@
     "description": "Minimum northwest corner of 17x17 base apron. +x east, +z south, +y up; front=south (z16). Zero schematic offset. Foundation y0, structural floor y1, track y2, carpet y3, core x6..10/z6..10/y3..7. Eave fascia y8..10, 13x13 sandstone pyramid x2..14/z2..14 begins y9; peak y15, glowstone y16. Overall height17 is inferred, not printed."
   },
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160520-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160530-1536x1152.jpg"
+    "schematics/screenshots/pack1/17/IMG_20261115_160520-1536x1152.jpg",
+    "schematics/screenshots/pack1/17/IMG_20261115_160530-1536x1152.jpg"
   ],
   "legend": {
     ".": "minecraft:air",

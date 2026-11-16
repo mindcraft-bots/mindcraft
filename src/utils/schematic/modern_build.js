@@ -7,6 +7,7 @@ const MAX_DIMENSION = 256;
 const MAX_BLOCKS = 1_000_000;
 
 const ITEM_NAME_OVERRIDES = Object.freeze({
+  cocoa: "cocoa_beans",
   redstone_wire: "redstone",
   wall_torch: "torch",
 });
@@ -36,6 +37,9 @@ function itemNameForBlock(name, itemsByName) {
   }
   if (name.endsWith("_wall_sign")) {
     candidates.push(name.replace("_wall_sign", "_sign"));
+  }
+  if (name.endsWith("_wall_banner")) {
+    candidates.push(name.replace("_wall_banner", "_banner"));
   }
   if (name.endsWith("_wall_torch")) {
     candidates.push(name.replace("_wall_torch", "_torch"));

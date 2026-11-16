@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/02_enderman_hot_air_balloon.json schematics/schems/pack1/02_enderman_hot_air_balloon.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
+  "schematic": "schematics/schems/pack1/02_enderman_hot_air_balloon.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    8,
+    15,
+    8
+  ],
+  "volume": 960,
+  "comparedVoxels": 960,
+  "expectedNonAir": 416,
+  "parserDerivedAir": 544,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 23,
+  "spotChecks": 16,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

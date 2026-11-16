@@ -18,9 +18,9 @@
   },
   "title": "Giant grandfather clock / cuckoo clock tower",
   "sources": [
-    "data/screenshots/BuildingsCompressed-2/18/IMG_20261115_160554-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/18/IMG_20261115_160606-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/18/IMG_20261115_160623-1536x1152.jpg"
+    "schematics/screenshots/pack1/18/IMG_20261115_160554-1536x1152.jpg",
+    "schematics/screenshots/pack1/18/IMG_20261115_160606-1536x1152.jpg",
+    "schematics/screenshots/pack1/18/IMG_20261115_160623-1536x1152.jpg"
   ],
   "distinct_build_audit": "One complete clock; steps 1-14 and interior cutaways are stages/details of this same build, not separate exports. Background town houses and chicken/player entities excluded.",
   "printed_callout_audit": [

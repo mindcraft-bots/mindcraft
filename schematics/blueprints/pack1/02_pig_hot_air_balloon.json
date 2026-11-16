@@ -2,8 +2,8 @@
   "name": "02_pig_hot_air_balloon",
   "folder": "02",
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/2/IMG_20261115_155818-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/2/IMG_20261115_155828-1536x1152.jpg"
+    "schematics/screenshots/pack1/2/IMG_20261115_155818-1536x1152.jpg",
+    "schematics/screenshots/pack1/2/IMG_20261115_155828-1536x1152.jpg"
   ],
   "source_title": "Свиноповітряна куля / Pig hot-air balloon",
   "minecraft_version": "1.21.4",

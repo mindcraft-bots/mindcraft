@@ -120,7 +120,7 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
     return false;
   }
 
-  if (path.extname(filename).toLowerCase() === ".litematic") {
+  if (path.extname(resolvedPath).toLowerCase() === ".litematic") {
     report(".litematic files can be listed but are not supported by the schematic reader. Convert this file to .schem or .schematic first.");
     return false;
   }

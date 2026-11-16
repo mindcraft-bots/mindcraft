@@ -2,8 +2,8 @@
   "name": "03_big_red_barn",
   "folder": "03",
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/3/IMG_20261115_155842-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/3/IMG_20261115_155852-1536x1152.jpg"
+    "schematics/screenshots/pack1/3/IMG_20261115_155842-1536x1152.jpg",
+    "schematics/screenshots/pack1/3/IMG_20261115_155852-1536x1152.jpg"
   ],
   "minecraft_version": "1.21.4",
   "data_version": 4189,

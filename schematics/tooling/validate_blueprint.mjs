@@ -1,17 +1,16 @@
 #!/usr/bin/env node
-/** Full Sponge-v2 comparison through the project's real reader and 1.21.4 registry. */
-import { readFile } from "node:fs/promises";
+/** Full Sponge-v2 comparison through the real reader and blueprint-selected registry. */
+import { readFile, realpath } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-import { readSchematic } from "../src/utils/schematic/reader.js";
+import { readSchematic } from "../../src/utils/schematic/reader.js";
 
 const require = createRequire(import.meta.url);
 const minecraftData = require("minecraft-data");
 const Vec3 = require("vec3");
-const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const version = "1.21.4";
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -35,7 +34,7 @@ function parseState(raw) {
   return { namespace, name, properties };
 }
 
-function registryCheck(raw, registry) {
+function registryCheck(raw, registry, version) {
   const { name, properties } = parseState(raw);
   const block = registry.blocksByName[name];
   assert(block, `${raw} is not a vanilla Minecraft ${version} block`);
@@ -63,19 +62,38 @@ function normalizedProperties(block) {
 }
 
 async function main() {
-  const [blueprintArg, schematicArg] = process.argv.slice(2);
-  assert(blueprintArg && schematicArg && process.argv.length === 4,
-    "Usage: node schematics/validate_blueprint.mjs <blueprint.json> <output.schem>");
-  const blueprintPath = path.resolve(projectRoot, blueprintArg);
-  const schematicPath = path.resolve(projectRoot, schematicArg);
+  const [blueprintArg, schematicArg, versionArg] = process.argv.slice(2);
+  assert(blueprintArg && schematicArg && process.argv.length <= 5,
+    "Usage: node schematics/tooling/validate_blueprint.mjs <blueprint.json> <output.schem> [<MC_VERSION>]");
+  const resolveInput = async (input) => {
+    const candidate = path.resolve(projectRoot, input);
+    const resolved = await realpath(candidate);
+    const relative = path.relative(projectRoot, resolved);
+    assert(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative),
+      `Input path escapes project root: ${input}`);
+    return resolved;
+  };
+  const blueprintPath = await resolveInput(blueprintArg);
+  const schematicPath = await resolveInput(schematicArg);
   const blueprint = JSON.parse(await readFile(blueprintPath, "utf8"));
+  const version = versionArg ?? blueprint.minecraft_version;
+  assert(typeof version === "string" && version.length > 0,
+    "Blueprint must declare minecraft_version or an explicit MC_VERSION must be supplied");
+  if (versionArg && blueprint.minecraft_version) {
+    assert(versionArg === blueprint.minecraft_version,
+      `Requested Minecraft version ${versionArg} differs from blueprint minecraft_version ${blueprint.minecraft_version}`);
+  }
+  assert(Number.isInteger(blueprint.data_version) && blueprint.data_version > 0,
+    "Blueprint must declare a positive integer data_version");
   const registry = minecraftData(version);
   assert(registry?.blocksByName && registry.version.minecraftVersion === version, `minecraft-data registry ${version} unavailable`);
+  assert(registry.version.dataVersion === blueprint.data_version,
+    `Blueprint data_version ${blueprint.data_version} does not match minecraft-data ${version} DataVersion ${registry.version.dataVersion}`);
 
   const expectedStates = new Map();
   for (const [char, raw] of Object.entries(blueprint.legend)) {
     assert(char.length === 1, `Legend key ${JSON.stringify(char)} is not one character`);
-    expectedStates.set(char, registryCheck(raw, registry));
+    expectedStates.set(char, registryCheck(raw, registry, version));
   }
 
   const buffer = await readFile(schematicPath);

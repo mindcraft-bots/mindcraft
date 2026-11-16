@@ -16,9 +16,9 @@
     "description": "Minimum envelope corner; +x east along 15-block long wall, +z south across 11-block span, +y up. Front long wall faces north at z2. Printed post bases y1; inferred floor y0. Frame x2..16, z2..12 inclusive."
   },
   "source_images": [
-    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160431-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160442-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160454-1536x1152.jpg"
+    "schematics/screenshots/pack1/15/IMG_20261115_160431-1536x1152.jpg",
+    "schematics/screenshots/pack1/15/IMG_20261115_160442-1536x1152.jpg",
+    "schematics/screenshots/pack1/15/IMG_20261115_160454-1536x1152.jpg"
   ],
   "distinct_build_audit": "One potion factory, steps 1..11 plus final interior cutaway. No independent vignette build. Exterior Nether scenery/player excluded.",
   "printed_dimension_audit": [

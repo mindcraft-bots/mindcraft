@@ -1,0 +1,24 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/09_river_steamboat.json schematics/schems/pack1/09_river_steamboat.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/09_river_steamboat.json",
+  "schematic": "schematics/schems/pack1/09_river_steamboat.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    13,
+    16,
+    22
+  ],
+  "volume": 4576,
+  "comparedVoxels": 4576,
+  "parserDerivedAir": 3383,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 34,
+  "spotChecks": 29,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

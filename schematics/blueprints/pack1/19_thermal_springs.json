@@ -17,8 +17,8 @@
     "layer_order": "layers[y][z][x]; rows advance south, characters east"
   },
   "sources": [
-    "data/screenshots/BuildingsCompressed-2/19/IMG_20261115_160635-1536x1152.jpg",
-    "data/screenshots/BuildingsCompressed-2/19/IMG_20261115_160646-1536x1152.jpg"
+    "schematics/screenshots/pack1/19/IMG_20261115_160635-1536x1152.jpg",
+    "schematics/screenshots/pack1/19/IMG_20261115_160646-1536x1152.jpg"
   ],
   "title": "Thermal springs / terraced hot-spring landscape (dry block-only reconstruction)",
   "distinct_build_audit": "Landscape steps 1-8 are stages of one terrain build. Five basins follow initial pool + one + three in the printed instructions. Three birch seats/fire, bamboo, shrubs and rock vignettes are integrated decorations. The separately taught chalet is exported independently; players and pictured ambient background are not builds.",

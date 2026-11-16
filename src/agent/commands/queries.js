@@ -4,7 +4,7 @@ import { getCommandDocs } from './index.js';
 import convoManager from '../conversation.js';
 import { checkLevelBlueprint, checkBlueprint } from '../tasks/construction_tasks.js';
 import { load } from 'cheerio';
-import { listSchematics } from '../../utils/schematic/paths.js';
+import { listSchematicEntries } from '../../utils/schematic/paths.js';
 
 const pad = (str) => {
     return '\n' + str + '\n';
@@ -229,14 +229,19 @@ export const queryList = [
     }, 
     {
         name: '!listSchematics',
-        description: 'List supported schematic files in the schematics folder.',
+        description: 'List supported schematic files. Pack entries show the pack, numeric screenshot-folder group, separate stable file ID/offset, and exact filename. Build an entry with !buildSchematic("packN:<group>:<file-ID>"), for example group 02 and file ID 01 use !buildSchematic("pack1:02:01").',
         perform: function () {
-            return listSchematics().then(filenames => {
-                filenames.sort((left, right) => left.localeCompare(right));
-                if (filenames.length === 0) {
+            return listSchematicEntries().then(entries => {
+                entries.sort((left, right) => {
+                    const packOrder = left.pack.localeCompare(right.pack);
+                    if (packOrder) return packOrder;
+                    const idOrder = left.id === right.id ? 0 : left.id === null ? 1 : right.id === null ? -1 : left.id.localeCompare(right.id);
+                    return idOrder || left.filename.localeCompare(right.filename);
+                });
+                if (entries.length === 0) {
                     return pad('SCHEMATICS\nNo schematic files found. Add a .schem, .schematic, or .litematic file to the schematics folder, then run !listSchematics again.');
                 }
-                return pad(`SCHEMATICS\n${filenames.map(filename => `- ${filename}`).join('\n')}`);
+                return pad(`SCHEMATICS\n${entries.map(({ pack, group, fileId, filename }) => `- ${pack} | group ${group ?? '—'} | file ID ${fileId ?? '—'} | ${filename}`).join('\n')}`);
             }).catch(error => {
                 const message = error instanceof Error ? error.message : String(error);
                 return pad(`Unable to list schematics because of a filesystem error: ${message}`);

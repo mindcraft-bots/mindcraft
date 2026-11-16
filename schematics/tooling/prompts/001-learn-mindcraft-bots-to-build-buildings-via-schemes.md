@@ -1,4 +1,8 @@
-You are an expert Node.js and Mineflayer developer working on the `mindcraft-bots/mindcraft` repository (based on the `develop` branch).
+# Historical introduction to schematic building
+
+This prompt records the initial feature request and is preserved for historical intent; it predates the current implementation and its pack layout. Do not follow its old flat-file destination or treat its proposed internals as current instructions. For current user-facing build syntax, permissions and layout, use [`schematics/README.md`](../../README.md). For actual blueprint compile/validation commands, use [`schematics/tooling/BLUEPRINT_TOOLING.md`](../BLUEPRINT_TOOLING.md).
+
+You are an expert Node.js and Mineflayer developer working on the `mindcraft-bots/mindcraft` repository (based on the `develop` branch). The feature introduced here now stores pack assets in `schematics/blueprints/packN/` and `schematics/schems/packN/`; generated source images are kept in `schematics/screenshots/packN/`.
 
 Your task is to extend the bot's capabilities so it can build structures from pre-made schematic files (`.schem`, `.schematic`, `.litematic`) stored in a local `schematics/` directory using `mineflayer-schem` and `prismarine-schematic`. Additionally, the bot must automatically switch to Creative mode before building, fetch the required blocks from the Creative inventory (`bot.creative`), and restore its previous game mode (e.g., Survival) once the build finishes, fails, or is interrupted.
 
@@ -37,7 +41,7 @@ Please inspect the existing codebase first to match its exact module syntax (ESM
 ### 4. Register LLM Commands (`src/agent/commands/actions.js` & `queries.js`)
 - In `src/agent/commands/actions.js`, register a new action command in `actionsList`:
   - **Name:** `!buildSchematic`
-  - **Description:** Explains to the LLM that this builds a structure from a file in `schematics/` at optional `(x, y, z)` coordinates (or near the bot if omitted/null), temporarily using Creative mode for materials.
+  - **Description:** Explain that stable pack IDs use `packN:<group>:<file-ID>` in that order. For a request like “build id 01 from group 02 of pack1”, emit `!buildSchematic("pack1:02:01")`: group is the numeric screenshot folder (folder `2` means `02`), and file ID is the persistent per-group offset, never selected by sorting. The listing must show these fields separately. Numeric dash-form selectors such as `packN:GG-OO` are not IDs; retain pack-qualified literal filename/stem and root-level filename lookup. Also explain optional `(x, y, z)` coordinates (all or none) and the temporary Creative mode switch.
   - **Params:** `filename` (string), `x` (number), `y` (number), `z` (number).
   - **Perform:** Wrap `skills.buildSchematic(agent.bot, filename, x, y, z)` with `runAsAction` so the agent's status updates properly and `SelfPrompter` does not interrupt the build.
 - In `src/agent/commands/queries.js` (or the equivalent query file), register `!listSchematics` to list all `.schem`, `.schematic`, and `.litematic` files inside `schematics/`.

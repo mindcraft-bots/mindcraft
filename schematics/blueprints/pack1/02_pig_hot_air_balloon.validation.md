@@ -1,15 +1,26 @@
+> **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
+
+
+> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+>
+> ```sh
+> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/02_pig_hot_air_balloon.json schematics/schems/pack1/02_pig_hot_air_balloon.schem
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/02_pig_hot_air_balloon.json schematics/schems/pack1/02_pig_hot_air_balloon.schem
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/02_pig_hot_air_balloon.json schematics/schems/pack1/02_pig_hot_air_balloon.schem 1.21.4
+> ```
+
 # Folder 02 validation — Pig hot-air balloon
 
 ## Current production-reader result — 2026-11-15 repair
 
-**PASS:** all 1,080 voxels, exact block states/counts and all 17 spot checks now match. The original 4 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../batch_report.md) and [fresh production-reader log](../validation/build_logs/02_pig_hot_air_balloon.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
+**PASS:** all 1,080 voxels, exact block states/counts and all 17 spot checks now match. The original 4 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../../tooling/validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../../schems/pack1/batch_report.md) and [fresh production-reader log](../../tooling/validation/build_logs/pack1/02_pig_hot_air_balloon.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
 
 ## Original reconstruction validation — before reader repair
 
 ## Inputs and artifacts
 
 - Blueprint: [`02_pig_hot_air_balloon.json`](02_pig_hot_air_balloon.json)
-- Compiled schematic: [`02_pig_hot_air_balloon.schem`](../02_pig_hot_air_balloon.schem)
+- Compiled schematic: [`02_pig_hot_air_balloon.schem`](../../schems/pack1/02_pig_hot_air_balloon.schem)
 - Dimensions: **8 × 15 × 9**; volume **1,080**; non-air **428**; air **652**.
 - Full palette: 24 distinct canonical states. Binary `BlockData`: 1,080 bytes (all values are one-byte palette indices here).
 - SHA-256: `0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4` (713-byte gzip file).

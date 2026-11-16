@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+  "schematic": "schematics/schems/pack1/02_bee_hot_air_balloon.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    10,
+    17,
+    9
+  ],
+  "volume": 1530,
+  "comparedVoxels": 1530,
+  "expectedNonAir": 440,
+  "parserDerivedAir": 1090,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 25,
+  "spotChecks": 18,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}
