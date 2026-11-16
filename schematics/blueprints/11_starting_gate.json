@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "name": "Horse Racing Starting Gate",
+  "slug": "11_starting_gate",
+  "folder": "11",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160237-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160250-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160304-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 6,
+    "components": [
+      "starting_gate",
+      "hairpin",
+      "turn",
+      "starting_grid",
+      "grandstand",
+      "safety_fence"
+    ],
+    "interpretation": "Six reusable distinct components across pages48-53. Grandstand steps are one assembly. No invented complete landscape circuit; raised/lowered gate is one stateful build."
+  },
+  "width_x": 11,
+  "height_y": 11,
+  "length_z": 7,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest lowest corner of approach/mechanism; road surface layer3; front north. x east/right, y up, z south/back; zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; all cells explicit, including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "mechanism",
+      "printed": "Step1: pit 3 blocks deep, 2 blocks high, 8 blocks long; lower row white concrete, dust, seven pistons. Step3: two-block-high white/light-gray powder wall.",
+      "implemented": "Eight positions x2..9; two mechanism lanes z3..4; road y3, three levels below surface y0..2. Seven pistons x2..8,y1,z3; powder y2..3.",
+      "confidence": "Eight length,seven pistons,two-high wall retained. The pit wording is internally awkward: two-wide lanes inferred from drawing, not asserted as literal height translation."
+    },
+    {
+      "feature": "gate envelope",
+      "printed": null,
+      "implemented": "11x11x7; ground y3; top arch slab at y10 has geometric top10.5",
+      "confidence": "Inferred from slab-stepped side profile and seven-wide road; no printed arch/post/approach dimensions or slab half-height callouts."
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "p49 steps1-3",
+      "labels": "white concrete, redstone dust, seven pistons; step3 calls sticky pistons; white/light-gray concrete powder; lever",
+      "implemented": "white_concrete,redstone_wire,sticky_piston,white_concrete_powder,light_gray_concrete_powder,lever. Step1 generic piston versus step3 sticky wording resolved to explicit step3."
+    },
+    {
+      "source": "p49 step4; p50 steps5-7",
+      "labels": "gray/white concrete, ordinary and chiseled Nether bricks, Nether-brick slabs, white banners and lanterns",
+      "implemented": "Gray road/checkers, chiseled bases, brick arch, fence-width posts, explicit slabs, white_banner, hanging lanterns. Dirt/grass strips from final step7."
+    }
+  ],
+  "state_audit": {
+    "pistons": "Seven upward sticky pistons extended=false; no moving heads or block entities.",
+    "dust": "Straight east-west wire power0; endpoints single connection. Hidden wiring inferred. Lever floor-mounted unpowered on terminal white support.",
+    "gravity": "Two powder blocks over each piston; no water or conversion to concrete.",
+    "arch": "Nether-brick slabs explicit top/bottom, dry; isolated fence shafts no horizontal arms.",
+    "banners": "Five north-facing white_wall_banner blocks at y8,z2 supported from south by full Nether-brick arch beam at y8,z3; banners drape below their attachment layer. Blank default, no patterns or block-entity payload.",
+    "doors": "None; no hinge/door states applicable.",
+    "prohibitions": "No fluids/entities/complex NBT."
+  },
+  "occlusion_uncertainties": [
+    "Oblique photographs do not determine every voxel. Printed callouts are prioritized; unprinted silhouettes, hidden supports and pixel patterns are inferred, not certified exact.",
+    "No fluids, entities or complex block-entity NBT. No live-world, redstone-timing, gravity-update or placement tests.",
+    "The large landscape circuits on pages51 and53 are explicitly customizable examples, not a dimensioned seventh build. Trees, river, horses and riders are not included. Start-line direction/powered vignettes are states/views of one mechanism, not duplicate builds.",
+    "Gate saved retracted/unpowered as upper step7 vignette. Lower vignette shows raised powder barrier but no separate output. Powder flush with road does not reproduce raised wall in the same static artifact.",
+    "Piston initial upward retracted states and dust power0 are canonical; dust routing below road inferred. No functional guarantee. Two-high powder is gravity-sensitive; keep dry.",
+    "Post form appears thin: Nether-brick fence shafts chosen above chiseled bases. Exact arch width/rise and banner count inferred; five banners, two lanterns. Banner patterns and NBT intentionally absent. Wall-banner attachment coordinates and solid concealed arch beam are inferred.",
+    "Pit text lacks an unambiguous orthographic cross-section; two lane interpretation and below-road height explicitly uncertain."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "A": "minecraft:gray_concrete",
+    "W": "minecraft:white_concrete",
+    "N": "minecraft:nether_bricks",
+    "C": "minecraft:chiseled_nether_bricks",
+    "p": "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "S": "minecraft:nether_brick_slab[type=bottom,waterlogged=false]",
+    "L": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "P": "minecraft:sticky_piston[extended=false,facing=up]",
+    "w": "minecraft:white_concrete_powder",
+    "a": "minecraft:light_gray_concrete_powder",
+    "d": "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]",
+    "e": "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=none]",
+    "j": "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]",
+    "v": "minecraft:lever[face=floor,facing=north,powered=false]",
+    "B": "minecraft:white_wall_banner[facing=north]"
+  },
+  "layers": [
+    [
+      "...........",
+      "...........",
+      "...........",
+      "..WWWWWWWW.",
+      "..WWWWWWWW.",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      "..PPPPPPPW.",
+      "..eddddddj.",
+      "...........",
+      "..........."
+    ],
+    [
+      "DD.......DD",
+      "DD.......DD",
+      "DD.......DD",
+      "DDwawawawWD",
+      "DD.......DD",
+      "DD.......DD",
+      "DD.......DD"
+    ],
+    [
+      "GGAAAAAAAGG",
+      "GGAAAAAAAGG",
+      "GGWAWAWAWGG",
+      "GGwawawawvG",
+      "GGAAAAAAAGG",
+      "GGAAAAAAAGG",
+      "GGAAAAAAAGG"
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      ".C.......C.",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      ".p.......p.",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      ".p.......p.",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      "Lp.......pL",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "..B.BBB.B..",
+      "SNNNNNNNNNS",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      ".SNNNNNNNS.",
+      "...........",
+      "...........",
+      "..........."
+    ],
+    [
+      "...........",
+      "...........",
+      "...........",
+      "...SSSSS...",
+      "...........",
+      "...........",
+      "..........."
+    ]
+  ],
+  "spot_checks": [
+    {
+      "description": "first upward sticky piston",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "char": "P",
+      "state": "minecraft:sticky_piston[extended=false,facing=up]"
+    },
+    {
+      "description": "seventh upward sticky piston",
+      "x": 8,
+      "y": 1,
+      "z": 3,
+      "char": "P",
+      "state": "minecraft:sticky_piston[extended=false,facing=up]"
+    },
+    {
+      "description": "lower white powder",
+      "x": 2,
+      "y": 2,
+      "z": 3,
+      "char": "w",
+      "state": "minecraft:white_concrete_powder"
+    },
+    {
+      "description": "upper light-gray powder at road level",
+      "x": 3,
+      "y": 3,
+      "z": 3,
+      "char": "a",
+      "state": "minecraft:light_gray_concrete_powder"
+    },
+    {
+      "description": "terminal lever",
+      "x": 9,
+      "y": 3,
+      "z": 3,
+      "char": "v",
+      "state": "minecraft:lever[face=floor,facing=north,powered=false]"
+    },
+    {
+      "description": "dust first endpoint",
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "char": "e",
+      "state": "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=none]"
+    },
+    {
+      "description": "dust last endpoint",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "char": "j",
+      "state": "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]"
+    },
+    {
+      "description": "chiseled west base",
+      "x": 1,
+      "y": 4,
+      "z": 3,
+      "char": "C",
+      "state": "minecraft:chiseled_nether_bricks"
+    },
+    {
+      "description": "arch top bottom-half slab",
+      "x": 5,
+      "y": 10,
+      "z": 3,
+      "char": "S",
+      "state": "minecraft:nether_brick_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "description": "center blank north-facing wall banner",
+      "x": 5,
+      "y": 8,
+      "z": 2,
+      "char": "B",
+      "state": "minecraft:white_wall_banner[facing=north]"
+    },
+    {
+      "description": "west hanging lantern",
+      "x": 0,
+      "y": 7,
+      "z": 3,
+      "char": "L",
+      "state": "minecraft:lantern[hanging=true,waterlogged=false]"
+    },
+    {
+      "description": "clear passage",
+      "x": 5,
+      "y": 5,
+      "z": 3,
+      "char": ".",
+      "state": "minecraft:air"
+    },
+    {
+      "description": "gray approach",
+      "x": 5,
+      "y": 3,
+      "z": 0,
+      "char": "A",
+      "state": "minecraft:gray_concrete"
+    }
+  ],
+  "expected_counts": {
+    "minecraft:air": 663,
+    "minecraft:chiseled_nether_bricks": 2,
+    "minecraft:dirt": 27,
+    "minecraft:grass_block[snowy=false]": 27,
+    "minecraft:gray_concrete": 38,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 2,
+    "minecraft:lever[face=floor,facing=north,powered=false]": 1,
+    "minecraft:light_gray_concrete_powder": 6,
+    "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 6,
+    "minecraft:nether_brick_slab[type=bottom,waterlogged=false]": 9,
+    "minecraft:nether_bricks": 16,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=side]": 1,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=none]": 1,
+    "minecraft:redstone_wire[east=side,north=none,power=0,south=none,west=side]": 6,
+    "minecraft:sticky_piston[extended=false,facing=up]": 7,
+    "minecraft:white_concrete": 22,
+    "minecraft:white_concrete_powder": 8,
+    "minecraft:white_wall_banner[facing=north]": 5
+  },
+  "non_air_count": 184,
+  "air_count": 663
+}

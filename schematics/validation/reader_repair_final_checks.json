@@ -1,0 +1,18 @@
+{
+  "summary": {
+    "build_count": 29,
+    "binary_pass": 29,
+    "deterministic_pass": 29,
+    "reader_pass": 29,
+    "reader_mismatch": 0,
+    "reader_error": 0
+  },
+  "compared_voxels": 71539,
+  "spot_checks": 582,
+  "unchanged_blueprint_hashes": 29,
+  "unchanged_schematic_hashes": 29,
+  "schematic_tests_passed": 60,
+  "varint_suite": "PASS",
+  "patch_provenance_matches": true,
+  "reports_consistent": true
+}

@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/11_turn.json schematics/11_turn.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/11_turn.json",
+  "schematic": "schematics/11_turn.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    12,
+    2,
+    12
+  ],
+  "volume": 288,
+  "comparedVoxels": 288,
+  "expectedNonAir": 288,
+  "parserDerivedAir": 0,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 6,
+  "spotChecks": 6,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

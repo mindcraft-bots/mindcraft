@@ -1,0 +1,878 @@
+{
+  "schema_version": 1,
+  "name": "Scouting tower / Розвідувальний сховок",
+  "slug": "12_scouting_tower",
+  "folder": "12",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/12/IMG_20261115_160319-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/12/IMG_20261115_160329-1536x1152.jpg"
+  ],
+  "distinct_builds_audit": "One tower shown progressively in steps 1-9. X diagram, exploded frame, front elevation and camouflage inset describe this same build, not separate structures. Final camouflage is integrated.",
+  "width_x": 13,
+  "height_y": 27,
+  "length_z": 13,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "anchor": "Northwest minimum corner of full envelope at lowest post level; lower frame starts (2,0,2).",
+    "axes": "+x east, +y up, +z south; layers[y][z][x]",
+    "placement": "9x9 ground frame x/z 2..10; inset shaft 3..9; cantilever deck 0..12. No terrain. Highest persistent leaf y26; roof apex y24 bottom slab."
+  },
+  "callout_audit": [
+    {
+      "page": 55,
+      "step": 1,
+      "printed": "9 blocks by 9 blocks; spruce-log and barrel frame 7 blocks high",
+      "implementation": "Lower frame x/z2..10 inclusive, y0..6 inclusive. Barrels replace corner logs on top beam.",
+      "status": "retained"
+    },
+    {
+      "page": 55,
+      "step": 2,
+      "printed": "Build an X on every side using spruce stairs; start access with spruce blocks and ladders",
+      "implementation": "Four lower faces have mirrored stair diagonals; center-back spruce-log backing supports north-facing ladder at x6,z8.",
+      "status": "materials/intent retained; hidden ladder position inferred"
+    },
+    {
+      "page": 55,
+      "step": 3,
+      "printed": "Next storey 5 blocks high, same materials as frame",
+      "implementation": "Inset shaft posts x/z3,9; five new levels y7..11 above shared y6 beam.",
+      "status": "height retained; seven-wide inset inferred from diagrams"
+    },
+    {
+      "page": 56,
+      "step": 4,
+      "printed": "X on each side; continue ladder",
+      "implementation": "Four stair X faces on first upper level and ladder through shaft.",
+      "status": "retained"
+    },
+    {
+      "page": 56,
+      "step": 5,
+      "printed": "Repeat stages 3 and 4",
+      "implementation": "Second five-level upper storey y12..16 with four X faces.",
+      "status": "retained"
+    },
+    {
+      "page": 56,
+      "step": 6,
+      "printed": "13x13x4 spruce-log frame",
+      "implementation": "Deck beams x/z0..12 at y17; corner support posts at x/z3,9 continue y18..20. Envelope of frame is 13x13x4, prior to railing and roof.",
+      "status": "retained; exact beam/post offsets inferred"
+    },
+    {
+      "page": 56,
+      "step": 7,
+      "printed": "Fill with spruce slabs, add spruce-stair supports under projecting beams",
+      "implementation": "Bottom slabs in deck y17, log crossbeams, twenty-four upside-down spruce stair brackets under projecting tips.",
+      "status": "materials retained; slab half and bracket profile inferred"
+    },
+    {
+      "page": 57,
+      "step": 8,
+      "printed": "Railing of barrels, spruce slabs and outward-opening trapdoors; spruce trapdoor over ladder hole",
+      "implementation": "Barrel corners, bottom slab parapet, outward-facing open trapdoor panels at y18; closed top-half hatch (6,17,8).",
+      "status": "retained; panel spacing/hinges inferred"
+    },
+    {
+      "page": 57,
+      "step": 9,
+      "printed": "Roof from cut-copper stairs and slabs; optionally wax to retain orange or allow blue oxidation",
+      "implementation": "Waxed orange hipped roof 13x13 with inward-facing stair edges and half-block bands; apex y24 bottom slab. Double cut-copper slabs form the high half-bands and infill.",
+      "status": "orange option selected; roof size/half-levels/corner slabs inferred"
+    },
+    {
+      "page": 57,
+      "step": "camouflage",
+      "printed": "Hang leaves to blend into nearby trees; local materials recommended",
+      "implementation": "Persistent spruce-leaf curtains and small roof sprig; no surrounding trees/terrain.",
+      "status": "optional camouflage integrated, exact placement inferred"
+    }
+  ],
+  "material_audit": [
+    {
+      "book": "spruce logs",
+      "ids": [
+        "minecraft:spruce_log"
+      ],
+      "notes": "Vertical columns and explicit horizontal beam axes."
+    },
+    {
+      "book": "barrels",
+      "ids": [
+        "minecraft:barrel"
+      ],
+      "notes": "Up-facing closed barrels; empty block-entity list, no inventory NBT."
+    },
+    {
+      "book": "spruce stairs / spruce blocks",
+      "ids": [
+        "minecraft:spruce_stairs",
+        "minecraft:spruce_planks"
+      ],
+      "notes": "Mirrored X braces, plank intersections, upside-down cantilever brackets."
+    },
+    {
+      "book": "spruce slabs",
+      "ids": [
+        "minecraft:spruce_slab"
+      ],
+      "notes": "Bottom-half deck and parapet."
+    },
+    {
+      "book": "ladders and spruce trapdoors",
+      "ids": [
+        "minecraft:ladder",
+        "minecraft:spruce_trapdoor"
+      ],
+      "notes": "North-facing ladder with log backing; top-half closed hatch; open outward-facing rails; all unpowered and dry."
+    },
+    {
+      "book": "cut copper stairs/slabs; optional wax",
+      "ids": [
+        "minecraft:waxed_cut_copper_stairs",
+        "minecraft:waxed_cut_copper_slab"
+      ],
+      "notes": "Waxed unoxidized orange state chosen; double slabs form high half-bands and concealed infill. No extra full copper block material."
+    },
+    {
+      "book": "leaves, species not explicit",
+      "ids": [
+        "minecraft:spruce_leaves"
+      ],
+      "notes": "Spruce inferred from surrounding palette; persistent=true prevents decay. Distances computed along leaves to logs, capped7. No parser workaround."
+    },
+    {
+      "book": "lit torches visible in master image",
+      "ids": [
+        "minecraft:wall_torch"
+      ],
+      "notes": "Four wall-mounted torches inside lookout; exact hidden count inferred."
+    }
+  ],
+  "state_audit": {
+    "doors": "No doors illustrated or added.",
+    "stairs": "Explicit facing, half, straight shape and waterlogged=false. Brace diagonal phases and roof hip corners are inferred.",
+    "logs": "axis=y posts/backing; axis=x/z beams.",
+    "slabs": "All spruce slabs bottom; copper corner/apex slabs bottom; higher bands and infill are double copper slabs.",
+    "trapdoors": "Closed hatch half=top, facing=south; parapet half=bottom/open=true/facing outward. Exact historic hinge positions not recoverable.",
+    "leaves": "Persistent with actual local log-chain distance, capped7; known production parser distance-state bug must be reported honestly."
+  },
+  "uncertainty": [
+    "Printed callouts constrain component sizes, not the complete envelope. Total27-block envelope includes optional roof foliage; bare roof occupies25 y cells and reaches24.5 physical blocks.",
+    "Perspective/book pixels do not uniquely specify every voxel. No exact hidden-fidelity claim: upper shaft inset, corner barrel states, X stair halves, log intersections, beam supports, slab halves and rail panel spacing are inferred.",
+    "Roof dimensions, three whole-block stair tiers producing seven half-height bands, diagonal slab corner treatment and concealed double-slab copper infill are inferred. Roof deliberately retains visible orange waxed option.",
+    "Camouflage is not a second build. Leaf species/curtain pattern/sprig height are approximate to the master render and final inset; surrounding landscape is excluded.",
+    "Barrels are empty state-only blocks. No mobs, player, fluids, entities, inventory contents or complex block-entity NBT. No live-server placement or climbability/survival-physics test.",
+    "Lower frame height7 and added upper storeys5 each are counted inclusively as documented; top-frame4 comprises y17 deck and y18..20 posts. Shared-beam interpretation is inferred.",
+    "Production-reader leaf-distance mismatch is possible and must not be hidden by changing intended geometry or block properties."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "L": "minecraft:spruce_log[axis=y]",
+    "X": "minecraft:spruce_log[axis=x]",
+    "Z": "minecraft:spruce_log[axis=z]",
+    "P": "minecraft:spruce_planks",
+    "s": "minecraft:spruce_slab[type=bottom,waterlogged=false]",
+    "B": "minecraft:barrel[facing=up,open=false]",
+    "l": "minecraft:ladder[facing=north,waterlogged=false]",
+    "h": "minecraft:spruce_trapdoor[facing=south,half=top,open=false,powered=false,waterlogged=false]",
+    "C": "minecraft:waxed_cut_copper_slab[type=double,waterlogged=false]",
+    "c": "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]",
+    "a": "minecraft:spruce_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "b": "minecraft:spruce_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "d": "minecraft:spruce_stairs[facing=east,half=top,shape=straight,waterlogged=false]",
+    "e": "minecraft:spruce_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "f": "minecraft:spruce_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "g": "minecraft:spruce_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "i": "minecraft:spruce_stairs[facing=west,half=top,shape=straight,waterlogged=false]",
+    "j": "minecraft:spruce_stairs[facing=north,half=top,shape=straight,waterlogged=false]",
+    "k": "minecraft:spruce_trapdoor[facing=north,half=bottom,open=true,powered=false,waterlogged=false]",
+    "m": "minecraft:spruce_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]",
+    "n": "minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]",
+    "o": "minecraft:spruce_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]",
+    "p": "minecraft:wall_torch[facing=east]",
+    "q": "minecraft:wall_torch[facing=west]",
+    "r": "minecraft:waxed_cut_copper_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "t": "minecraft:waxed_cut_copper_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "u": "minecraft:waxed_cut_copper_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "v": "minecraft:waxed_cut_copper_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "w": "minecraft:spruce_leaves[distance=5,persistent=true,waterlogged=false]",
+    "x": "minecraft:spruce_leaves[distance=4,persistent=true,waterlogged=false]",
+    "y": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]",
+    "z": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+    "A": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+    "D": "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]",
+    "E": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]"
+  },
+  "layers": [
+    [
+      ".............",
+      ".............",
+      "..La.....iL..",
+      "..b.......b..",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "......l......",
+      "..j...L...j..",
+      "..La.....iLA.",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..L.a...i.L..",
+      ".............",
+      "..b.......b..",
+      ".............",
+      ".............",
+      ".............",
+      "..j...l...j..",
+      "......L......",
+      "..L.a...i.LA.",
+      "..........A..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..L..a.i..L..",
+      ".............",
+      ".............",
+      "..b.......b..",
+      ".............",
+      "..j.......j..",
+      "......l......",
+      "......L....z.",
+      "..L..a.i..LA.",
+      "..........A..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..L...P...L..",
+      ".............",
+      ".............",
+      ".............",
+      "..P.......P..",
+      ".............",
+      "......l......",
+      "......L....z.",
+      "..L...P...LA.",
+      "..........A..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..L..d.f..L..",
+      ".............",
+      ".............",
+      "..e.......e..",
+      ".............",
+      "..g.......g..",
+      "......l......",
+      "......L....z.",
+      "..L..d.f..LA.",
+      ".........zA..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..L.d...f.L..",
+      "..A..........",
+      "..e.......e..",
+      ".............",
+      ".............",
+      ".............",
+      "..g...l...g..",
+      "......L....z.",
+      "..L.d...f.LA.",
+      ".........zA..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      "..BXXXXXXXB..",
+      "..ZBXXXXXBZ..",
+      "..ZZ.....ZZ..",
+      "..ZZ.....ZZ..",
+      "..ZZ.....ZZ..",
+      "..ZZ.....ZZ..",
+      "..ZZ..l..ZZ..",
+      "..ZBXXLXXBZA.",
+      "..BXXXXXXXBz.",
+      ".........Az..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "..ALa...iL...",
+      "...b.....b...",
+      ".............",
+      ".............",
+      ".............",
+      "...j..l..j...",
+      "...La.L.iL...",
+      ".............",
+      ".........zy..",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "..AL.a.i.L...",
+      ".............",
+      "...b.....b...",
+      ".............",
+      "...j.....j...",
+      "......l......",
+      "...L.aLi.L...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "...L..P..L...",
+      ".............",
+      ".............",
+      "...P.....P...",
+      ".............",
+      "......l......",
+      "...L..L..L...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "...L.d.f.L...",
+      ".............",
+      "...e.....e...",
+      ".............",
+      "...g.....g...",
+      "......l......",
+      "...L.dLf.L...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "...BXXXXXB...",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z..l..Z...",
+      "...BXXLXXB...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      "..D..........",
+      ".............",
+      "...La...iL...",
+      "...b.....b...",
+      ".............",
+      ".............",
+      ".............",
+      "...j..l..j...",
+      "...La.L.iL...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      "..w..........",
+      ".w...........",
+      "...L.a.i.L...",
+      ".............",
+      "...b.....b...",
+      ".............",
+      "...j.....j...",
+      "......l......",
+      "...L.aLi.L...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      "..xw.........",
+      ".x.e.....e...",
+      "..dL..P..Li..",
+      ".............",
+      ".............",
+      "...P.....P...",
+      ".............",
+      "......l......",
+      "..dL..L..Li..",
+      "...j.....j...",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      "..ye.....e...",
+      ".y...........",
+      ".d.L.d.f.L.i.",
+      ".............",
+      "...e.....e...",
+      ".............",
+      "...g.....g...",
+      "......l......",
+      ".d.L.dLf.L.i.",
+      ".............",
+      "...j.....j...",
+      "............."
+    ],
+    [
+      "...e.....e...",
+      "..zAz........",
+      ".z...........",
+      "dA.BXXXXXB..i",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z.....Z...",
+      "...Z..l..Z...",
+      "d..BXXLXXB..i",
+      ".............",
+      ".............",
+      "...j.....j..."
+    ],
+    [
+      ".ssZsssssZss.",
+      "sssZsssssZsss",
+      "sssZsssssZsss",
+      "XXXZXXXXXXXXX",
+      "sssZsssssZsss",
+      "sssZsssssZsss",
+      "sssZsssssZsss",
+      "sssZsssssZsss",
+      "sssZsshssZsss",
+      "XXXZXXXXXZXXX",
+      "sssZsssssZsss",
+      "sssZsssssZsss",
+      ".ssZsssssZss."
+    ],
+    [
+      "BsskssksskssB",
+      "s.zAz.......s",
+      "sz..........s",
+      "nA.L.....L..o",
+      "s...........s",
+      "s...........s",
+      "n...........o",
+      "s...........s",
+      "s...........s",
+      "n..L.....L..o",
+      "s...........s",
+      "s...........s",
+      "BssmssmssmssB"
+    ],
+    [
+      ".............",
+      "..y..........",
+      ".y...........",
+      "...L.....L...",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "...L.....L...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      "...Lp...qL...",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "...Lp...qL...",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      "crrrrrrrrrrrc",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "tCCCCCCCCCCCu",
+      "cvvvvvvvvvvvc"
+    ],
+    [
+      ".............",
+      ".............",
+      "..crrrrrrrc..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..tCCCCCCCu..",
+      "..cvvvvvvvc..",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "....crrrc....",
+      "....tCCCu....",
+      "....tCCCu....",
+      "....tCCCu....",
+      "....cvvvc....",
+      ".............",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".....E.EE....",
+      ".....EcE.....",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "......EE.....",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "......E......",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "............."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 3691,
+    "minecraft:barrel[facing=up,open=false]": 20,
+    "minecraft:ladder[facing=north,waterlogged=false]": 17,
+    "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]": 20,
+    "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]": 15,
+    "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]": 5,
+    "minecraft:spruce_leaves[distance=4,persistent=true,waterlogged=false]": 2,
+    "minecraft:spruce_leaves[distance=5,persistent=true,waterlogged=false]": 3,
+    "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]": 1,
+    "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]": 8,
+    "minecraft:spruce_log[axis=x]": 64,
+    "minecraft:spruce_log[axis=y]": 85,
+    "minecraft:spruce_log[axis=z]": 69,
+    "minecraft:spruce_planks": 10,
+    "minecraft:spruce_slab[type=bottom,waterlogged=false]": 148,
+    "minecraft:spruce_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 14,
+    "minecraft:spruce_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 14,
+    "minecraft:spruce_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:spruce_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 20,
+    "minecraft:spruce_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 14,
+    "minecraft:spruce_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 14,
+    "minecraft:spruce_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:spruce_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 20,
+    "minecraft:spruce_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]": 3,
+    "minecraft:spruce_trapdoor[facing=north,half=bottom,open=true,powered=false,waterlogged=false]": 3,
+    "minecraft:spruce_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]": 3,
+    "minecraft:spruce_trapdoor[facing=south,half=top,open=false,powered=false,waterlogged=false]": 1,
+    "minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]": 3,
+    "minecraft:wall_torch[facing=east]": 2,
+    "minecraft:wall_torch[facing=west]": 2,
+    "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]": 13,
+    "minecraft:waxed_cut_copper_slab[type=double,waterlogged=false]": 179,
+    "minecraft:waxed_cut_copper_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 21,
+    "minecraft:waxed_cut_copper_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 21,
+    "minecraft:waxed_cut_copper_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 21,
+    "minecraft:waxed_cut_copper_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 21
+  },
+  "non_air_count": 872,
+  "air_count": 3691,
+  "counts_by_block_id": {
+    "minecraft:air": 3691,
+    "minecraft:barrel": 20,
+    "minecraft:ladder": 17,
+    "minecraft:spruce_leaves": 54,
+    "minecraft:spruce_log": 218,
+    "minecraft:spruce_planks": 10,
+    "minecraft:spruce_slab": 148,
+    "minecraft:spruce_stairs": 112,
+    "minecraft:spruce_trapdoor": 13,
+    "minecraft:wall_torch": 4,
+    "minecraft:waxed_cut_copper_slab": 192,
+    "minecraft:waxed_cut_copper_stairs": 84
+  },
+  "spot_checks": [
+    {
+      "x": 2,
+      "y": 0,
+      "z": 2,
+      "char": "L",
+      "state": "minecraft:spruce_log[axis=y]",
+      "purpose": "lower northwest post"
+    },
+    {
+      "x": 10,
+      "y": 6,
+      "z": 10,
+      "char": "B",
+      "state": "minecraft:barrel[facing=up,open=false]",
+      "purpose": "9x9 frame barrel corner"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 2,
+      "char": "P",
+      "state": "minecraft:spruce_planks",
+      "purpose": "lower X center"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "z": 3,
+      "char": "L",
+      "state": "minecraft:spruce_log[axis=y]",
+      "purpose": "first inset upper post"
+    },
+    {
+      "x": 6,
+      "y": 9,
+      "z": 3,
+      "char": "P",
+      "state": "minecraft:spruce_planks",
+      "purpose": "middle X center"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "z": 9,
+      "char": "B",
+      "state": "minecraft:barrel[facing=up,open=false]",
+      "purpose": "middle frame barrel"
+    },
+    {
+      "x": 6,
+      "y": 14,
+      "z": 3,
+      "char": "P",
+      "state": "minecraft:spruce_planks",
+      "purpose": "top X center"
+    },
+    {
+      "x": 9,
+      "y": 16,
+      "z": 9,
+      "char": "B",
+      "state": "minecraft:barrel[facing=up,open=false]",
+      "purpose": "upper shaft barrel"
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "z": 8,
+      "char": "l",
+      "state": "minecraft:ladder[facing=north,waterlogged=false]",
+      "purpose": "ladder entrance"
+    },
+    {
+      "x": 6,
+      "y": 15,
+      "z": 8,
+      "char": "l",
+      "state": "minecraft:ladder[facing=north,waterlogged=false]",
+      "purpose": "continuous ladder"
+    },
+    {
+      "x": 6,
+      "y": 17,
+      "z": 8,
+      "char": "h",
+      "state": "minecraft:spruce_trapdoor[facing=south,half=top,open=false,powered=false,waterlogged=false]",
+      "purpose": "closed ladder hatch"
+    },
+    {
+      "x": 0,
+      "y": 17,
+      "z": 3,
+      "char": "X",
+      "state": "minecraft:spruce_log[axis=x]",
+      "purpose": "13-wide projecting beam"
+    },
+    {
+      "x": 0,
+      "y": 18,
+      "z": 0,
+      "char": "B",
+      "state": "minecraft:barrel[facing=up,open=false]",
+      "purpose": "lookout barrel"
+    },
+    {
+      "x": 6,
+      "y": 18,
+      "z": 0,
+      "char": "k",
+      "state": "minecraft:spruce_trapdoor[facing=north,half=bottom,open=true,powered=false,waterlogged=false]",
+      "purpose": "outward trapdoor rail"
+    },
+    {
+      "x": 5,
+      "y": 18,
+      "z": 0,
+      "char": "s",
+      "state": "minecraft:spruce_slab[type=bottom,waterlogged=false]",
+      "purpose": "bottom slab rail"
+    },
+    {
+      "x": 3,
+      "y": 20,
+      "z": 3,
+      "char": "L",
+      "state": "minecraft:spruce_log[axis=y]",
+      "purpose": "4-high frame post top"
+    },
+    {
+      "x": 4,
+      "y": 20,
+      "z": 3,
+      "char": "p",
+      "state": "minecraft:wall_torch[facing=east]",
+      "purpose": "inner wall torch"
+    },
+    {
+      "x": 0,
+      "y": 21,
+      "z": 6,
+      "char": "t",
+      "state": "minecraft:waxed_cut_copper_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+      "purpose": "copper west eave"
+    },
+    {
+      "x": 6,
+      "y": 21,
+      "z": 0,
+      "char": "r",
+      "state": "minecraft:waxed_cut_copper_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "purpose": "copper north eave"
+    },
+    {
+      "x": 2,
+      "y": 22,
+      "z": 6,
+      "char": "t",
+      "state": "minecraft:waxed_cut_copper_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+      "purpose": "second copper stair tier"
+    },
+    {
+      "x": 6,
+      "y": 24,
+      "z": 6,
+      "char": "c",
+      "state": "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]",
+      "purpose": "half-height roof apex"
+    },
+    {
+      "x": 6,
+      "y": 26,
+      "z": 5,
+      "char": "E",
+      "state": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]",
+      "purpose": "camouflage highest leaf"
+    },
+    {
+      "x": 2,
+      "y": 12,
+      "z": 1,
+      "char": "D",
+      "state": "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]",
+      "purpose": "hanging foliage"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "z": 6,
+      "char": ".",
+      "state": "minecraft:air",
+      "purpose": "open interior air"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": ".",
+      "state": "minecraft:air",
+      "purpose": "no terrain or foundation"
+    }
+  ],
+  "validation_policy": "Compile with existing compile_blueprint.py/nbtlib; full NBT/VarInt/voxel/count checks; vanilla1.21.4 registry; deterministic recompile; production-reader full-state comparison including air. Preserve mismatches and no live-test claim."
+}

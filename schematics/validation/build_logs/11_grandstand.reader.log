@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/11_grandstand.json schematics/11_grandstand.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/11_grandstand.json",
+  "schematic": "schematics/11_grandstand.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    13,
+    8,
+    9
+  ],
+  "volume": 936,
+  "comparedVoxels": 936,
+  "expectedNonAir": 369,
+  "parserDerivedAir": 567,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 9,
+  "spotChecks": 14,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

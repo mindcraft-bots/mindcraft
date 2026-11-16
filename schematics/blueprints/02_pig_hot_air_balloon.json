@@ -1,0 +1,422 @@
+{
+  "name": "02_pig_hot_air_balloon",
+  "folder": "02",
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/2/IMG_20261115_155818-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/2/IMG_20261115_155828-1536x1152.jpg"
+  ],
+  "source_title": "Свиноповітряна куля / Pig hot-air balloon",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 8,
+  "height_y": 15,
+  "length_z": 9,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Minimum attachment-inclusive corner; +X right, +Y up, +Z back. Face is north. Body lower front-left at [0, 7, 1]. Place origin three blocks above intended terrain; ground clearance is not empty schematic layers.",
+    "reference_to_local_offset": [
+      0,
+      0,
+      1
+    ]
+  },
+  "layer_format": "layers[y][z][x], explicit single-character rows including air",
+  "dimension_audit": {
+    "printed_basket_width_x": 6,
+    "printed_basket_length_z": 6,
+    "basket_corner_notches": "four 1x1 floor notches",
+    "printed_wall_height_above_outer_floor": 1.5,
+    "wall_log_y": 1,
+    "wall_cap_y": 2,
+    "wall_cap_type": "bottom",
+    "printed_lower_chain_height": 5,
+    "lower_chain_y_range": [
+      1,
+      5
+    ],
+    "additional_upper_chain_y": 6,
+    "printed_body_width_x": 8,
+    "printed_body_length_z": 8,
+    "body_height_y": 8,
+    "body_height_basis": "Step 6 says a hollow 8x8 cube; shared by inferred variants",
+    "body_y_range": [
+      7,
+      14
+    ],
+    "bottom_central_hole": [
+      2,
+      2
+    ],
+    "printed_ground_elevation": 3,
+    "ground_elevation_encoding": "placement instruction only",
+    "attachment_inclusive_dimensions": [
+      8,
+      15,
+      9
+    ],
+    "vertical_offsets_confidence": "inferred; five lower chain cells and eight-block body retained"
+  },
+  "material_audit": [
+    "Steps 1-4 explicitly name jungle stairs/slabs, stripped jungle logs, jungle fences/gates, cocoa, pink candles, chains and campfires. Step 5 explicitly names pink concrete. Step 7 names white wool, black wool and pink terracotta."
+  ],
+  "assumptions": [
+    "Printed dimensions take priority. Oblique photographs do not establish every hidden voxel; this reconstruction does not claim exact unseen geometry.",
+    "Basket has a 6x6 notched floor of jungle stairs/slabs. Wall is stripped jungle logs and jungle slabs with jungle fences/gates. Hidden gate width (two cells), stair directions, slab halves and corner connections are inferred.",
+    "Wall is one full log plus a bottom slab, 1.5 blocks above the outer floor edge at y=1. Interior top slabs have the same walking surface as the outer stair upper surfaces.",
+    "Mature cocoa pods surround exposed log faces except the inferred rear gate. Four lit pink candles stand on corner fences; hidden sides are symmetric inferences.",
+    "Four inner-corner chains have exactly five lower cells y=1..5, plus one additional connecting chain course at y=6. Burner offsets, notched 4x4 jungle-stair rim at y=5 and supported 2x2 campfire core are inferred from the small render; exact campfire quantity and hidden underside are uncertain.",
+    "Body is an 8x8x8 one-cell hollow shell at y=7..14. Bottom central 2x2 remains open and ceiling is closed, following steps 5-6. No hidden fill is invented.",
+    "No surrounding terrain, clouds, player, extra scene basket, scaffolding, entities, fluids or complex block-entity payloads are included. Campfires have no inventory payload.",
+    "No live-server test. Registry and parser checks cannot establish exact hidden geometry, support stability, attachment behavior or survival placement order.",
+    "Pig has a reconstructed 4x3x1 projecting snout, two terracotta nostrils, white/black wool eyes and pink terracotta side ears. Precise pixel rows and mirrored hidden ear are inferred; projection is at reference z=-1."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:black_wool",
+    "B": "minecraft:campfire[facing=north,lit=true,signal_fire=false,waterlogged=false]",
+    "C": "minecraft:chain[axis=y,waterlogged=false]",
+    "D": "minecraft:cocoa[age=2,facing=east]",
+    "E": "minecraft:cocoa[age=2,facing=north]",
+    "F": "minecraft:cocoa[age=2,facing=south]",
+    "G": "minecraft:cocoa[age=2,facing=west]",
+    "H": "minecraft:jungle_fence[east=false,north=false,south=true,waterlogged=false,west=true]",
+    "I": "minecraft:jungle_fence[east=false,north=true,south=false,waterlogged=false,west=true]",
+    "J": "minecraft:jungle_fence[east=true,north=false,south=true,waterlogged=false,west=false]",
+    "K": "minecraft:jungle_fence[east=true,north=true,south=false,waterlogged=false,west=false]",
+    "L": "minecraft:jungle_fence_gate[facing=south,in_wall=false,open=false,powered=false]",
+    "M": "minecraft:jungle_slab[type=bottom,waterlogged=false]",
+    "N": "minecraft:jungle_slab[type=top,waterlogged=false]",
+    "O": "minecraft:jungle_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "P": "minecraft:jungle_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "Q": "minecraft:jungle_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "R": "minecraft:jungle_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "S": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+    "T": "minecraft:pink_concrete",
+    "U": "minecraft:pink_terracotta",
+    "V": "minecraft:stripped_jungle_log[axis=y]",
+    "W": "minecraft:white_wool"
+  },
+  "layers": [
+    [
+      "........",
+      "........",
+      "..QQQQ..",
+      ".ONNNNR.",
+      ".ONNNNR.",
+      ".ONNNNR.",
+      ".ONNNNR.",
+      "..PPPP..",
+      "........"
+    ],
+    [
+      "........",
+      "..FFFF..",
+      ".JVVVVH.",
+      "DVC..CVG",
+      "DV....VG",
+      "DV....VG",
+      "DVC..CVG",
+      ".KVLLVI.",
+      "..E..E.."
+    ],
+    [
+      "........",
+      "........",
+      ".SMMMMS.",
+      ".MC..CM.",
+      ".M....M.",
+      ".M....M.",
+      ".MC..CM.",
+      ".SM..MS.",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      "..C..C..",
+      "........",
+      "........",
+      "..C..C..",
+      "........",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      "..C..C..",
+      "...NN...",
+      "...NN...",
+      "..C..C..",
+      "........",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      "..CQQC..",
+      "..OBBR..",
+      "..OBBR..",
+      "..CPPC..",
+      "........",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      "..C..C..",
+      "........",
+      "........",
+      "..C..C..",
+      "........",
+      "........"
+    ],
+    [
+      "........",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTT..TTT",
+      "TTT..TTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT"
+    ],
+    [
+      "..TTTT..",
+      "TTTTTTTT",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "..UTTU..",
+      "TTTTTTTT",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "..TTTT..",
+      "TTTTTTTT",
+      "T......T",
+      "U......U",
+      "U......U",
+      "U......U",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "........",
+      "WATTTTAW",
+      "T......T",
+      "U......U",
+      "U......U",
+      "U......U",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "........",
+      "TTTTTTTT",
+      "T......T",
+      "T......T",
+      "U......U",
+      "U......U",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "........",
+      "TTTTTTTT",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "T......T",
+      "TTTTTTTT"
+    ],
+    [
+      "........",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT",
+      "TTTTTTTT"
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 652,
+    "minecraft:black_wool": 2,
+    "minecraft:campfire[facing=north,lit=true,signal_fire=false,waterlogged=false]": 4,
+    "minecraft:chain[axis=y,waterlogged=false]": 24,
+    "minecraft:cocoa[age=2,facing=east]": 4,
+    "minecraft:cocoa[age=2,facing=north]": 2,
+    "minecraft:cocoa[age=2,facing=south]": 4,
+    "minecraft:cocoa[age=2,facing=west]": 4,
+    "minecraft:jungle_fence[east=false,north=false,south=true,waterlogged=false,west=true]": 1,
+    "minecraft:jungle_fence[east=false,north=true,south=false,waterlogged=false,west=true]": 1,
+    "minecraft:jungle_fence[east=true,north=false,south=true,waterlogged=false,west=false]": 1,
+    "minecraft:jungle_fence[east=true,north=true,south=false,waterlogged=false,west=false]": 1,
+    "minecraft:jungle_fence_gate[facing=south,in_wall=false,open=false,powered=false]": 2,
+    "minecraft:jungle_slab[type=bottom,waterlogged=false]": 14,
+    "minecraft:jungle_slab[type=top,waterlogged=false]": 20,
+    "minecraft:jungle_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 6,
+    "minecraft:jungle_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 6,
+    "minecraft:jungle_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 6,
+    "minecraft:jungle_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 6,
+    "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]": 4,
+    "minecraft:pink_concrete": 282,
+    "minecraft:pink_terracotta": 18,
+    "minecraft:stripped_jungle_log[axis=y]": 14,
+    "minecraft:white_wool": 2
+  },
+  "non_air_count": 428,
+  "spot_checks": [
+    {
+      "x": 1,
+      "y": 0,
+      "z": 3,
+      "char": "O",
+      "note": "Floor stair"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "char": "V",
+      "note": "Stripped jungle wall"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "char": "M",
+      "note": "Half-height wall cap"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "z": 2,
+      "char": "S",
+      "note": "Lit corner candle"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "z": 7,
+      "char": "L",
+      "note": "Rear gate"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 1,
+      "char": "F",
+      "note": "Mature cocoa"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "char": "C",
+      "note": "Lower chain start"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "z": 3,
+      "char": "C",
+      "note": "Fifth lower chain"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "z": 3,
+      "char": "C",
+      "note": "Additional upper chain"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "z": 4,
+      "char": "B",
+      "note": "Campfire core"
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "z": 1,
+      "char": "T",
+      "note": "Body lower corner"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "z": 4,
+      "char": ".",
+      "note": "Bottom central opening"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "z": 4,
+      "char": ".",
+      "note": "Hollow interior"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "z": 4,
+      "char": "T",
+      "note": "Closed ceiling"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "z": 0,
+      "char": "U",
+      "note": "Terracotta nostril"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "z": 1,
+      "char": "A",
+      "note": "Black eye"
+    },
+    {
+      "x": 7,
+      "y": 12,
+      "z": 4,
+      "char": "U",
+      "note": "Terracotta ear"
+    }
+  ],
+  "build_notes": [
+    "Non-air count 428 refers to block-state cells, not survival items.",
+    "Build command: !buildSchematic(\"02_pig_hot_air_balloon.schem\")",
+    "Lit campfires/candles and cocoa may change at runtime. No live-server test.",
+    "DONE denotes local validation only, not exact hidden geometry."
+  ]
+}

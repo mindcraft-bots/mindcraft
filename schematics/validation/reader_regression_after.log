@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic
+ok 1 - reads a real serialized Sponge v2 buffer through prismarine-schematic
+  ---
+  duration_ms: 67.132163
+  type: 'test'
+  ...
+# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes
+ok 2 - rejects unknown names and invalid properties or states from real Sponge palettes
+  ---
+  duration_ms: 3.967813
+  type: 'test'
+  ...
+# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+ok 3 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+  ---
+  duration_ms: 4.433337
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.20.4
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.21.4
+# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning
+ok 4 - preserves every candle count, foliage distance and snow layer through production reading and placement planning
+  ---
+  duration_ms: 44.460454
+  type: 'test'
+  ...
+# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+ok 5 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+  ---
+  duration_ms: 0.446136
+  type: 'test'
+  ...
+# Subtest: zero-based integer states and omitted properties retain their existing interpretation
+ok 6 - zero-based integer states and omitted properties retain their existing interpretation
+  ---
+  duration_ms: 4.991224
+  type: 'test'
+  ...
+# Subtest: legacy snow mapping also preserves its one-based layer value
+ok 7 - legacy snow mapping also preserves its one-based layer value
+  ---
+  duration_ms: 2.022816
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 346.630424

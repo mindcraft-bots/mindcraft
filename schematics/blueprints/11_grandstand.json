@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "name": "Horse Racing Grandstand",
+  "slug": "11_grandstand",
+  "folder": "11",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160237-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160250-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160304-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 6,
+    "components": [
+      "starting_gate",
+      "hairpin",
+      "turn",
+      "starting_grid",
+      "grandstand",
+      "safety_fence"
+    ],
+    "interpretation": "Six reusable distinct components across pages48-53. Grandstand steps are one assembly. No invented complete landscape circuit; raised/lowered gate is one stateful build."
+  },
+  "width_x": 13,
+  "height_y": 8,
+  "length_z": 9,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest lowest canopy corner; seating front faces north; rear south; side aisle east. x east/right, y up, z south/back; zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; all cells explicit, including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "grandstand",
+      "printed": "No numeric footprint/height dimensions. Steps2 and4 say several rows of Nether-brick stairs and quartz stairs; step5 smooth-quartz slab canopy.",
+      "implemented": "13x8x9 including roof overhang and front chest; main stand x1..11,z1..7; three seat rows; roof bottom slabs y7 (top7.5)",
+      "confidence": "All lengths/heights,three-tier choice,roof slab half and exact side aisle inferred from step silhouettes."
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "p52 steps1-3",
+      "labels": "Nether bricks,Nether-brick stairs,Nether-brick fences,chiseled Nether bricks",
+      "implemented": "nether_bricks,nether_brick_stairs,nether_brick_fence,chiseled_nether_bricks."
+    },
+    {
+      "source": "p53 steps4-5",
+      "labels": "quartz stairs,Nether-brick side stairs,smooth-quartz slabs,lanterns; optional chest of spyglasses",
+      "implemented": "quartz_stairs (not smooth_quartz_stairs),nether_brick_stairs,smooth_quartz_slab,lantern,chest. Chest empty/default; no spyglass item NBT."
+    }
+  ],
+  "state_audit": {
+    "stairs": "Quartz seats and Nether-brick east aisle stairs face south,high half toward rear; half=bottom,shape=straight,waterlogged=false. Neighbor-derived corner shapes not simulated.",
+    "roof": "Smooth-quartz slabs type=bottom at y7; no doubled roof slab or full-quartz replacement.",
+    "rails": "East-west connected Nether-brick fences between solid endcaps; dry.",
+    "lanterns": "Four hanging=true dry lanterns under roof front edge.",
+    "chest": "Single north-facing dry chest, empty default; no block-entity payload.",
+    "doors": "None; no axis/door hinges applicable.",
+    "prohibitions": "No fluids or entities."
+  },
+  "occlusion_uncertainties": [
+    "Oblique photographs do not determine every voxel. Printed callouts are prioritized; unprinted silhouettes, hidden supports and pixel patterns are inferred, not certified exact.",
+    "No fluids, entities or complex block-entity NBT. No live-world, redstone-timing, gravity-update or placement tests.",
+    "The large landscape circuits on pages51 and53 are explicitly customizable examples, not a dimensioned seventh build. Trees, river, horses and riders are not included. Start-line direction/powered vignettes are states/views of one mechanism, not duplicate builds.",
+    "Three rows are visible; inferred11x7 main foundation and13x9 canopy. Obscured tier fill treated solid under seating, base interior floor hollow where not needed.",
+    "Four hanging front lanterns estimated from master; final diagram partially obscures row ends. Roof front cantilever retained; no invented front posts.",
+    "Front railing and rear posts estimated; nether-brick chiseled endcaps used from step3. Chest optional callout included empty, not filled with spyglasses.",
+    "Seating quartz stairs mapped to ordinary quartz_stairs per printed label; roof explicitly smooth_quartz_slab. Half-height roof is inferred, no numeric half-height callout printed."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "N": "minecraft:nether_bricks",
+    "C": "minecraft:chiseled_nether_bricks",
+    "F": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "L": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "q": "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "n": "minecraft:nether_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "Q": "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]",
+    "H": "minecraft:chest[facing=north,type=single,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "...........H.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      "............."
+    ],
+    [
+      ".............",
+      ".NNNNNNNNNNN.",
+      ".Nqqqqqqqqqn.",
+      ".NNNNNNNNNNn.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      "............."
+    ],
+    [
+      ".............",
+      ".CFFFFFFFFFC.",
+      ".............",
+      ".............",
+      ".Nqqqqqqqqqn.",
+      ".NNNNNNNNNNn.",
+      ".NNNNNNNNNNN.",
+      ".NNNNNNNNNNN.",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".Nqqqqqqqqqn.",
+      ".NNNNNNNNNNN.",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".CFFFFCFFFFC.",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".N....N....N.",
+      "............."
+    ],
+    [
+      ".L..L..L..L..",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".N.........N.",
+      "............."
+    ],
+    [
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ",
+      "QQQQQQQQQQQQQ"
+    ]
+  ],
+  "spot_checks": [
+    {
+      "description": "foundation northwest corner",
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "char": "N",
+      "state": "minecraft:nether_bricks"
+    },
+    {
+      "description": "front foundation",
+      "x": 6,
+      "y": 0,
+      "z": 1,
+      "char": "N",
+      "state": "minecraft:nether_bricks"
+    },
+    {
+      "description": "support under first seating row",
+      "x": 6,
+      "y": 0,
+      "z": 2,
+      "char": "N",
+      "state": "minecraft:nether_bricks"
+    },
+    {
+      "description": "first quartz stair",
+      "x": 6,
+      "y": 1,
+      "z": 2,
+      "char": "q",
+      "state": "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "description": "second quartz stair",
+      "x": 6,
+      "y": 2,
+      "z": 4,
+      "char": "q",
+      "state": "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "description": "third quartz stair",
+      "x": 6,
+      "y": 3,
+      "z": 6,
+      "char": "q",
+      "state": "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "description": "east side Nether-brick stair",
+      "x": 11,
+      "y": 2,
+      "z": 4,
+      "char": "n",
+      "state": "minecraft:nether_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "description": "front chiseled cap",
+      "x": 1,
+      "y": 2,
+      "z": 1,
+      "char": "C",
+      "state": "minecraft:chiseled_nether_bricks"
+    },
+    {
+      "description": "front connected rail",
+      "x": 3,
+      "y": 2,
+      "z": 1,
+      "char": "F",
+      "state": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]"
+    },
+    {
+      "description": "rear middle post",
+      "x": 6,
+      "y": 5,
+      "z": 7,
+      "char": "N",
+      "state": "minecraft:nether_bricks"
+    },
+    {
+      "description": "smooth-quartz bottom-slab canopy",
+      "x": 6,
+      "y": 7,
+      "z": 4,
+      "char": "Q",
+      "state": "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "description": "first roof lantern",
+      "x": 1,
+      "y": 6,
+      "z": 0,
+      "char": "L",
+      "state": "minecraft:lantern[hanging=true,waterlogged=false]"
+    },
+    {
+      "description": "empty optional spyglass chest",
+      "x": 11,
+      "y": 0,
+      "z": 0,
+      "char": "H",
+      "state": "minecraft:chest[facing=north,type=single,waterlogged=false]"
+    },
+    {
+      "description": "open spectator headroom",
+      "x": 6,
+      "y": 5,
+      "z": 3,
+      "char": ".",
+      "state": "minecraft:air"
+    }
+  ],
+  "expected_counts": {
+    "minecraft:air": 567,
+    "minecraft:chest[facing=north,type=single,waterlogged=false]": 1,
+    "minecraft:chiseled_nether_bricks": 5,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 4,
+    "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]": 17,
+    "minecraft:nether_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 5,
+    "minecraft:nether_bricks": 193,
+    "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 27,
+    "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]": 117
+  },
+  "non_air_count": 369,
+  "air_count": 567
+}

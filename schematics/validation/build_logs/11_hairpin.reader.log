@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/11_hairpin.json schematics/11_hairpin.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/11_hairpin.json",
+  "schematic": "schematics/11_hairpin.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    24,
+    2,
+    12
+  ],
+  "volume": 576,
+  "comparedVoxels": 576,
+  "expectedNonAir": 576,
+  "parserDerivedAir": 0,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 6,
+  "spotChecks": 7,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

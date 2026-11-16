@@ -1,0 +1,412 @@
+$ npm run test:schematic
+[exit code: 0]
+
+> test:schematic
+> node --test --test-concurrency=1 test/schematic/*.test.js
+
+TAP version 13
+# Subtest: rejects missing and escaping paths before reading or changing game mode
+ok 1 - rejects missing and escaping paths before reading or changing game mode
+  ---
+  duration_ms: 3.275261
+  type: 'test'
+  ...
+# Subtest: reports parse failures and explicitly rejects listed but unsupported litematic files
+ok 2 - reports parse failures and explicitly rejects listed but unsupported litematic files
+  ---
+  duration_ms: 1.792849
+  type: 'test'
+  ...
+# Subtest: rejects unknown source palette blocks before parser, Creative mode, or supply changes
+ok 3 - rejects unknown source palette blocks before parser, Creative mode, or supply changes
+  ---
+  duration_ms: 48.791166
+  type: 'test'
+  ...
+# Subtest: floors three finite coordinates and otherwise uses bot position offset and floor
+ok 4 - floors three finite coordinates and otherwise uses bot position offset and floor
+  ---
+  duration_ms: 2.080044
+  type: 'test'
+  ...
+# Subtest: Creative permission denial aborts the build and still restores mode and unstuck state
+ok 5 - Creative permission denial aborts the build and still restores mode and unstuck state
+  ---
+  duration_ms: 0.497483
+  type: 'test'
+  ...
+# Subtest: build success is verified and cleans supply, restores game mode and prior unstuck state
+ok 6 - build success is verified and cleans supply, restores game mode and prior unstuck state
+  ---
+  duration_ms: 0.776983
+  type: 'test'
+  ...
+# Subtest: reports rejected and interrupted builds as failures while cancelling and restoring
+ok 7 - reports rejected and interrupted builds as failures while cancelling and restoring
+  ---
+  duration_ms: 0.930334
+  type: 'test'
+  ...
+# Subtest: verification mismatch, cleanup rejection, and hanging cleanup never claim success
+ok 8 - verification mismatch, cleanup rejection, and hanging cleanup never claim success
+  ---
+  duration_ms: 7.292538
+  type: 'test'
+  ...
+# Subtest: does not restore unchanged Creative mode and restores after a timed-out switch
+ok 9 - does not restore unchanged Creative mode and restores after a timed-out switch
+  ---
+  duration_ms: 0.999866
+  type: 'test'
+  ...
+# Subtest: loads mineflayer-schem without retaining its global pathfinder movements
+ok 10 - loads mineflayer-schem without retaining its global pathfinder movements
+  ---
+  duration_ms: 7.776456
+  type: 'test'
+  ...
+# Subtest: real pathfinder keeps unrestricted searchRadius and routes around a distant wall
+ok 11 - real pathfinder keeps unrestricted searchRadius and routes around a distant wall
+  ---
+  duration_ms: 80.525719
+  type: 'test'
+  ...
+# Subtest: queues schematic compatibility after pathfinder with Mineflayer plugin loader
+ok 12 - queues schematic compatibility after pathfinder with Mineflayer plugin loader
+  ---
+  duration_ms: 5.754081
+  type: 'test'
+  ...
+# Subtest: builder.stop cancels the builder and clears the current pathfinder goal
+ok 13 - builder.stop cancels the builder and clears the current pathfinder goal
+  ---
+  duration_ms: 3.104507
+  type: 'test'
+  ...
+# Subtest: Creative supply reuses reserved slot 36 for sequential palette types and restores it
+ok 14 - Creative supply reuses reserved slot 36 for sequential palette types and restores it
+  ---
+  duration_ms: 3.272295
+  type: 'test'
+  ...
+# Subtest: rejects cancelled and non-Creative supply without writing inventory
+ok 15 - rejects cancelled and non-Creative supply without writing inventory
+  ---
+  duration_ms: 4.522045
+  type: 'test'
+  ...
+# Subtest: closing a session prevents queued equips from writing after cancellation
+ok 16 - closing a session prevents queued equips from writing after cancellation
+  ---
+  duration_ms: 2.166838
+  type: 'test'
+  ...
+# Subtest: aborting a timed-out close prevents late equipment and slot restoration writes
+ok 17 - aborting a timed-out close prevents late equipment and slot restoration writes
+  ---
+  duration_ms: 2.192968
+  type: 'test'
+  ...
+# Subtest: uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic
+ok 18 - uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic
+  ---
+  duration_ms: 2.295673
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# Subtest: stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations
+ok 19 - stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations
+  ---
+  duration_ms: 83.243202
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 64, 0)
+# 📐 Area: from (0, 64, 0) to (1, 65, 1)
+# 🎮 Server version: 1.20.4
+# 🏗️  Starting build of 1 blocks...
+# ⚡ Speed: 1 blocks/second
+# Subtest: interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement
+ok 20 - interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement
+  ---
+  duration_ms: 6234.473813
+  type: 'test'
+  ...
+# Subtest: already-Creative build succeeds without a redundant mode command and restores slot and unstuck state
+ok 21 - already-Creative build succeeds without a redundant mode command and restores slot and unstuck state
+  ---
+  duration_ms: 1112.844872
+  type: 'test'
+  ...
+# Subtest: command parser preserves fixed arity and supports build schematic coordinates
+ok 22 - command parser preserves fixed arity and supports build schematic coordinates
+  ---
+  duration_ms: 151.150765
+  type: 'test'
+  ...
+# Subtest: normalizeGameMode accepts supported modes and defaults invalid values to survival
+ok 23 - normalizeGameMode accepts supported modes and defaults invalid values to survival
+  ---
+  duration_ms: 1.598011
+  type: 'test'
+  ...
+# Subtest: setGameMode returns immediately when the bot already has the target mode
+ok 24 - setGameMode returns immediately when the bot already has the target mode
+  ---
+  duration_ms: 0.322191
+  type: 'test'
+  ...
+# Subtest: forced setGameMode sends restoration even when the client already reports the target mode
+ok 25 - forced setGameMode sends restoration even when the client already reports the target mode
+  ---
+  duration_ms: 51.269625
+  type: 'test'
+  ...
+# Subtest: setGameMode registers before chat and resolves when the target mode is observed
+ok 26 - setGameMode registers before chat and resolves when the target mode is observed
+  ---
+  duration_ms: 0.365042
+  type: 'test'
+  ...
+# Subtest: setGameMode continues waiting after unrelated game events
+ok 27 - setGameMode continues waiting after unrelated game events
+  ---
+  duration_ms: 2.141971
+  type: 'test'
+  ...
+# Subtest: setGameMode resolves false on timeout when the mode never changes
+ok 28 - setGameMode resolves false on timeout when the mode never changes
+  ---
+  duration_ms: 5.667476
+  type: 'test'
+  ...
+# Subtest: invalid requested modes safely target survival
+ok 29 - invalid requested modes safely target survival
+  ---
+  duration_ms: 0.434504
+  type: 'test'
+  ...
+# Subtest: setGameMode handles synchronous chat errors and rejected chat promises
+ok 30 - setGameMode handles synchronous chat errors and rejected chat promises
+  ---
+  duration_ms: 0.606309
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, -4)
+# 📐 Area: from (10, 20, -4) to (13, 21, -3)
+# 🎮 Server version: 1.20.4
+# Subtest: creates real mineflayer-schem Build actions from modern block states without legacy stone fallback
+ok 31 - creates real mineflayer-schem Build actions from modern block states without legacy stone fallback
+  ---
+  duration_ms: 18.472587
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 0, 0)
+# 📐 Area: from (0, 0, 0) to (3, 1, 1)
+# 🎮 Server version: 1.20.4
+# Subtest: maps wall torches, wall signs, and redstone wire to actual inventory items
+ok 32 - maps wall torches, wall signs, and redstone wire to actual inventory items
+  ---
+  duration_ms: 3.927968
+  type: 'test'
+  ...
+# 📦 Build initialized at (4, 5, 6)
+# 📐 Area: from (4, 5, 6) to (9, 6, 7)
+# 🎮 Server version: 1.20.4
+# Subtest: retains dependent door and bed blocks in the verification plan but only places their base halves
+ok 33 - retains dependent door and bed blocks in the verification plan but only places their base halves
+  ---
+  duration_ms: 3.949529
+  type: 'test'
+  ...
+# 📦 Build initialized at (0, 0, 0)
+# 📐 Area: from (0, 0, 0) to (1, 1, 1)
+# 🎮 Server version: 1.20.4
+# Subtest: reports unsupported states explicitly and attaches the inspectable adapter
+ok 34 - reports unsupported states explicitly and attaches the inspectable adapter
+  ---
+  duration_ms: 3.407111
+  type: 'test'
+  ...
+# Subtest: rejects invalid and oversized dimensions before decoding block data
+ok 35 - rejects invalid and oversized dimensions before decoding block data
+  ---
+  duration_ms: 1.85616
+  type: 'test'
+  ...
+# Subtest: postinstall verifier accepts the patched installed package
+ok 36 - postinstall verifier accepts the patched installed package
+  ---
+  duration_ms: 177.479218
+  type: 'test'
+  ...
+# Subtest: runtime loader accepts the patched plugin capability
+ok 37 - runtime loader accepts the patched plugin capability
+  ---
+  duration_ms: 187.595169
+  type: 'test'
+  ...
+# Subtest: an unpatched package fails install verification and runtime loading before plugin registration
+ok 38 - an unpatched package fails install verification and runtime loading before plugin registration
+  ---
+  duration_ms: 275.602564
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath accepts confined files and confined missing candidates
+ok 39 - resolveSchematicPath accepts confined files and confined missing candidates
+  ---
+  duration_ms: 8.697552
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath rejects absolute, empty, NUL, and traversal paths
+ok 40 - resolveSchematicPath rejects absolute, empty, NUL, and traversal paths
+  ---
+  duration_ms: 1.319081
+  type: 'test'
+  ...
+# Subtest: resolveSchematicPath rejects symlinks and missing descendants that escape
+ok 41 - resolveSchematicPath rejects symlinks and missing descendants that escape
+  ---
+  duration_ms: 2.507514
+  type: 'test'
+  ...
+# Subtest: listSchematics returns sorted supported regular files and ignores escaping symlinks
+ok 42 - listSchematics returns sorted supported regular files and ignores escaping symlinks
+  ---
+  duration_ms: 10.523324
+  type: 'test'
+  ...
+# Subtest: listSchematics treats a missing directory as empty
+ok 43 - listSchematics treats a missing directory as empty
+  ---
+  duration_ms: 0.874529
+  type: 'test'
+  ...
+# Subtest: parseOptionalCoordinate handles omitted values and finite numeric values/strings
+ok 44 - parseOptionalCoordinate handles omitted values and finite numeric values/strings
+  ---
+  duration_ms: 0.360003
+  type: 'test'
+  ...
+# Subtest: parseOptionalCoordinate rejects invalid and non-finite values
+ok 45 - parseOptionalCoordinate rejects invalid and non-finite values
+  ---
+  duration_ms: 0.281353
+  type: 'test'
+  ...
+# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic
+ok 46 - reads a real serialized Sponge v2 buffer through prismarine-schematic
+  ---
+  duration_ms: 67.694099
+  type: 'test'
+  ...
+# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes
+ok 47 - rejects unknown names and invalid properties or states from real Sponge palettes
+  ---
+  duration_ms: 4.043627
+  type: 'test'
+  ...
+# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+ok 48 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+  ---
+  duration_ms: 4.370267
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.20.4
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.21.4
+# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning
+ok 49 - preserves every candle count, foliage distance and snow layer through production reading and placement planning
+  ---
+  duration_ms: 45.698641
+  type: 'test'
+  ...
+# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+ok 50 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+  ---
+  duration_ms: 0.47483
+  type: 'test'
+  ...
+# Subtest: zero-based integer states and omitted properties retain their existing interpretation
+ok 51 - zero-based integer states and omitted properties retain their existing interpretation
+  ---
+  duration_ms: 5.048543
+  type: 'test'
+  ...
+# Subtest: legacy snow mapping also preserves its one-based layer value
+ok 52 - legacy snow mapping also preserves its one-based layer value
+  ---
+  duration_ms: 2.112966
+  type: 'test'
+  ...
+# Subtest: returns finished only after all build actions are consumed
+ok 53 - returns finished only after all build actions are consumed
+  ---
+  duration_ms: 6.61861
+  type: 'test'
+  ...
+# Subtest: captures builder_error events even when the plugin resolves successfully
+ok 54 - captures builder_error events even when the plugin resolves successfully
+  ---
+  duration_ms: 2.046471
+  type: 'test'
+  ...
+# Subtest: captures rejected builder promises
+ok 55 - captures rejected builder promises
+  ---
+  duration_ms: 2.831259
+  type: 'test'
+  ...
+# Subtest: an already interrupted bot does not start the build and runs cancellation hooks
+ok 56 - an already interrupted bot does not start the build and runs cancellation hooks
+  ---
+  duration_ms: 0.557948
+  type: 'test'
+  ...
+# Subtest: bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement
+ok 57 - bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement
+  ---
+  duration_ms: 22.611515
+  type: 'test'
+  ...
+# Subtest: reports a stalled build when remaining actions stop decreasing
+ok 58 - reports a stalled build when remaining actions stop decreasing
+  ---
+  duration_ms: 23.704207
+  type: 'test'
+  ...
+# Subtest: does not report finished if a resolved builder leaves actions behind
+ok 59 - does not report finished if a resolved builder leaves actions behind
+  ---
+  duration_ms: 2.33642
+  type: 'test'
+  ...
+# Subtest: clears runner polling and grace timers and removes its event listener
+ok 60 - clears runner polling and grace timers and removes its event listener
+  ---
+  duration_ms: 2.105492
+  type: 'test'
+  ...
+1..60
+# tests 60
+# suites 0
+# pass 60
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14392.64111

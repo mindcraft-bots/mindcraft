@@ -1,0 +1,20 @@
+📦 Build initialized at (0, 0, 0)
+📐 Area: from (0, 0, 0) to (1, 1, 1)
+🎮 Server version: 1.21.4
+{"source":"minecraft:pink_candle[candles=1,lit=false,waterlogged=false]","integerDefinitions":[{"name":"candles","type":"int","num_values":4,"values":["1","2","3","4"]}],"expectedStateId":21853,"encodedStateId":21857,"actualName":"pink_candle","actualProperties":{"waterlogged":false,"lit":false,"candles":"2"},"placementItem":"pink_candle","placementProperties":{"waterlogged":false,"lit":false,"candles":"2"}}
+📦 Build initialized at (0, 0, 0)
+📐 Area: from (0, 0, 0) to (1, 1, 1)
+🎮 Server version: 1.21.4
+{"source":"minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]","integerDefinitions":[{"name":"distance","type":"int","num_values":7,"values":["1","2","3","4","5","6","7"]}],"expectedStateId":277,"encodedStateId":281,"actualName":"spruce_leaves","actualProperties":{"waterlogged":false,"persistent":true,"distance":"1"},"placementItem":"spruce_leaves","placementProperties":{"waterlogged":false,"persistent":true,"distance":"1"}}
+📦 Build initialized at (0, 0, 0)
+📐 Area: from (0, 0, 0) to (1, 1, 1)
+🎮 Server version: 1.21.4
+{"source":"minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]","integerDefinitions":[{"name":"distance","type":"int","num_values":7,"values":["1","2","3","4","5","6","7"]}],"expectedStateId":305,"encodedStateId":309,"actualName":"birch_leaves","actualProperties":{"waterlogged":false,"persistent":true,"distance":"1"},"placementItem":"birch_leaves","placementProperties":{"waterlogged":false,"persistent":true,"distance":"1"}}
+📦 Build initialized at (0, 0, 0)
+📐 Area: from (0, 0, 0) to (1, 1, 1)
+🎮 Server version: 1.21.4
+{"source":"minecraft:snow[layers=1]","integerDefinitions":[{"name":"layers","type":"int","num_values":8,"values":["1","2","3","4","5","6","7","8"]}],"expectedStateId":5941,"encodedStateId":5942,"actualName":"snow","actualProperties":{"layers":"2"},"placementItem":"snow","placementProperties":{"layers":"2"}}
+📦 Build initialized at (0, 0, 0)
+📐 Area: from (0, 0, 0) to (1, 1, 1)
+🎮 Server version: 1.21.4
+{"source":"minecraft:snow[layers=8]","integerDefinitions":[{"name":"layers","type":"int","num_values":8,"values":["1","2","3","4","5","6","7","8"]}],"expectedStateId":5948,"encodedStateId":5949,"actualName":"ice","actualProperties":{},"placementItem":"ice","placementProperties":{}}

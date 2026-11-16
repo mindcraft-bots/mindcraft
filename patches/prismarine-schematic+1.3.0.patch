@@ -1,0 +1,14 @@
+diff --git a/node_modules/prismarine-schematic/lib/states.js b/node_modules/prismarine-schematic/lib/states.js
+--- a/node_modules/prismarine-schematic/lib/states.js
++++ b/node_modules/prismarine-schematic/lib/states.js
+@@ -9,7 +9,9 @@ function parseBlockName (str) {
+ }
+ 
+ function parseValue (value, state) {
+-  if (state.type === 'enum') {
++  // Integer values may start at one (candles, leaf distance, snow layers).
++  // State IDs encode the value's index, not its numeric magnitude.
++  if (state.type === 'enum' || (state.type === 'int' && Array.isArray(state.values))) {
+     return state.values.indexOf(value)
+   }
+   if (value === 'true') return 0

@@ -1,0 +1,459 @@
+{
+  "name": "03_storage_silo",
+  "folder": "03",
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/3/IMG_20261115_155842-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/3/IMG_20261115_155852-1536x1152.jpg"
+  ],
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 9,
+  "height_y": 23,
+  "length_z": 9,
+  "source_title": "Силосна вежа / Storage silo",
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Minimum dirt/roof-inclusive corner,+X east,+Y up,+Z south. Dirt base9x9 aty0. Body is notched7x7 atx1..7,z1..7; east-facing exterior ladder atx8,z4. Standalone illustration is the scale reference; no placement relative to barn is encoded."
+  },
+  "dimension_audit": {
+    "printed_dimensions": null,
+    "all_dimensions_inferred": true,
+    "inferred_dirt_x_z": [
+      9,
+      9
+    ],
+    "inferred_body_x_z": [
+      7,
+      7
+    ],
+    "body_corner_notches": "four1x1 corners",
+    "inferred_red_wall_y": [
+      1,
+      17
+    ],
+    "inferred_white_band_y": 18,
+    "inferred_open_vent_y": 19,
+    "inferred_roof_tiers_y": [
+      20,
+      21,
+      22
+    ],
+    "attachment_inclusive_x_y_z": [
+      9,
+      23,
+      9
+    ],
+    "physical_top": 22.5,
+    "scale_basis": "Standalone silo render and relative silhouette in master photo; there is no numeric silo height,width or depth callout. Measurements are chosen integer interpretations, not printed facts."
+  },
+  "material_audit": [
+    "Silo text gives its storage function only; no separate material list or numeric dimensions. Red concrete/terracotta/powder, white concrete, birch fences/planks/stairs/slabs and ladder are inferred from appearance and shared barn palette.",
+    "No chest is visible. Text says storage chests may be inside, so no optional chest inventory or speculative storage arrangement is added."
+  ],
+  "assumptions": [
+    "One voxel is one Minecraft block. Slab and stair geometry is encoded in block states, not half-scale coordinates. No perspective rescaling of printed measurements.",
+    "Images were inspected in the supplied order. The main photograph is the appearance reference; numbered construction diagrams constrain the geometry. Partial construction/cutaway renders are not additional builds.",
+    "Photographs do not uniquely determine every voxel. All geometry outside explicitly printed dimensions is an interpretation, not an assertion of exact recovery. Numeric coordinates below specify the actual choices.",
+    "No player, animal, surrounding landscape, grass, clouds, loose scenic hay outside the illustrated building, fluids, entities, chest inventories or complex block-entity payloads are included.",
+    "No live-server test: local NBT/registry/reader verification cannot prove survival placement order, neighbor-update stability or exact photographic fidelity.",
+    "This is a second distinct illustrated build, not a second barn construction stage. No combined barn+silo scene is generated because relative spacing and attachment are occluded and not dimensioned.",
+    "Body footprint is a7x7 square with four1x1 corner notches (octagonal outline), one-cell hollow perimeter,17 red courses. Interior stays empty above dirt; unseen intermediate floors and access doors are not invented.",
+    "Vertical terracotta ribs at shell coordinates where x or z equals2 or6 approximate visible darker vertical panels. Remaining walls red concrete with limited supported red powder at bottom central strips. Exact red material allocation is unresolvable.",
+    "White concrete cornice follows shell aty18. Eight birch fence vent supports aty19 leave an open ventilation band. One birch plank backing atx7,y19,z4 supports the exterior ladder and is inferred/occluded.",
+    "Roof is three stepped concentric tiers: notched9x9 stair/plank layer aty20; notched7x7 stair/plank tier aty21;5x5 bottom slabs aty22. Outer stairs face uphill. The cap has no central finial. Exact roof half-heights and notch sizes are inferred.",
+    "Exterior ladder runsx8,z4,y1..20,facingeast (attached to west-side support). Visible side in master render implies a ladder, but its precise column and top/bottom offsets are not numerically specified. No ladder wraparound or trapdoor invented.",
+    "Inferred overall height23 voxel layers includes dirt and bottom-slab crown; actual top is22.5 blocks above origin. The tower is not claimed to have a printed23-block height.",
+    "Fence connections explicitly represent local neighbors. All canonical intended ladder/roof states must be preserved even if the production parser disagrees."
+  ],
+  "layer_format": "layers[y][z][x], explicit single-character rows including air",
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:birch_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "B": "minecraft:birch_planks",
+    "C": "minecraft:birch_slab[type=bottom,waterlogged=false]",
+    "D": "minecraft:birch_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "E": "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "F": "minecraft:birch_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "G": "minecraft:birch_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "H": "minecraft:dirt",
+    "I": "minecraft:ladder[facing=east,waterlogged=false]",
+    "J": "minecraft:red_concrete",
+    "K": "minecraft:red_concrete_powder",
+    "L": "minecraft:red_terracotta",
+    "M": "minecraft:white_concrete"
+  },
+  "layers": [
+    [
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH",
+      "HHHHHHHHH"
+    ],
+    [
+      ".........",
+      "..LJKJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".K.....KI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJKJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJKJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".K.....KI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJKJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJKJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".K.....KI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJKJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..LJJJL..",
+      ".L.....L.",
+      ".J.....J.",
+      ".J.....JI",
+      ".J.....J.",
+      ".L.....L.",
+      "..LJJJL..",
+      "........."
+    ],
+    [
+      ".........",
+      "..MMMMM..",
+      ".M.....M.",
+      ".M.....M.",
+      ".M.....MI",
+      ".M.....M.",
+      ".M.....M.",
+      "..MMMMM..",
+      "........."
+    ],
+    [
+      ".........",
+      "..A...A..",
+      ".A.....A.",
+      ".........",
+      ".......BI",
+      ".........",
+      ".A.....A.",
+      "..A...A..",
+      "........."
+    ],
+    [
+      ".FFFFFFF.",
+      "DBBBBBBBG",
+      "DBBBBBBBG",
+      "DBBBBBBBG",
+      "DBBBBBBBI",
+      "DBBBBBBBG",
+      "DBBBBBBBG",
+      "DBBBBBBBG",
+      ".EEEEEEE."
+    ],
+    [
+      ".........",
+      "..FFFFF..",
+      ".DBBBBBG.",
+      ".DBBBBBG.",
+      ".DBBBBBG.",
+      ".DBBBBBG.",
+      ".DBBBBBG.",
+      "..EEEEE..",
+      "........."
+    ],
+    [
+      ".........",
+      ".........",
+      "..CCCCC..",
+      "..CCCCC..",
+      "..CCCCC..",
+      "..CCCCC..",
+      "..CCCCC..",
+      ".........",
+      "........."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 1247,
+    "minecraft:birch_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 8,
+    "minecraft:birch_planks": 75,
+    "minecraft:birch_slab[type=bottom,waterlogged=false]": 25,
+    "minecraft:birch_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:birch_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:birch_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 11,
+    "minecraft:dirt": 81,
+    "minecraft:ladder[facing=east,waterlogged=false]": 20,
+    "minecraft:red_concrete": 192,
+    "minecraft:red_concrete_powder": 12,
+    "minecraft:red_terracotta": 136,
+    "minecraft:white_concrete": 20
+  },
+  "non_air_count": 616,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "H",
+      "description": "Dirt base"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "char": ".",
+      "description": "Notched body corner stays air"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 1,
+      "char": "K",
+      "description": "Supported low red powder"
+    },
+    {
+      "x": 2,
+      "y": 17,
+      "z": 1,
+      "char": "L",
+      "description": "Vertical dark red rib"
+    },
+    {
+      "x": 4,
+      "y": 18,
+      "z": 1,
+      "char": "M",
+      "description": "White cornice"
+    },
+    {
+      "x": 2,
+      "y": 19,
+      "z": 1,
+      "char": "A",
+      "description": "Ventilation fence"
+    },
+    {
+      "x": 4,
+      "y": 19,
+      "z": 1,
+      "char": ".",
+      "description": "Open ventilation gap"
+    },
+    {
+      "x": 4,
+      "y": 20,
+      "z": 0,
+      "char": "F",
+      "description": "Roof outer stair"
+    },
+    {
+      "x": 4,
+      "y": 21,
+      "z": 1,
+      "char": "F",
+      "description": "Upper roof stair"
+    },
+    {
+      "x": 4,
+      "y": 22,
+      "z": 4,
+      "char": "C",
+      "description": "Bottom-slab crown"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 4,
+      "char": "I",
+      "description": "Ladder foot faces east"
+    },
+    {
+      "x": 8,
+      "y": 20,
+      "z": 4,
+      "char": "I",
+      "description": "Ladder top"
+    },
+    {
+      "x": 7,
+      "y": 19,
+      "z": 4,
+      "char": "B",
+      "description": "Backing for top ladder"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "z": 4,
+      "char": ".",
+      "description": "Unfilled tower interior"
+    }
+  ]
+}

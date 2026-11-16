@@ -1,0 +1,694 @@
+{
+  "schema_version": 1,
+  "name": "School Monster-Bus / Шкільний монстер-бус",
+  "slug": "14_school_monster_bus",
+  "folder": "14",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/14/IMG_20261115_160403-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/14/IMG_20261115_160416-1536x1152.jpg"
+  ],
+  "distinct_builds_audit": "One school monster-bus assembled in steps1-8 on pages62-65. Reverse angle and INTERIOR roof-off cutaway show the same vehicle, not additional independent builds. City street, buildings, player and clouds omitted.",
+  "width_x": 8,
+  "height_y": 10,
+  "length_z": 15,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "anchor": "Minimum attachment-inclusive corner: front sign z0, wheel ground y0, west tire side x0. Bus faces north(-z).",
+    "axes": "+x east, +y up, +z south; layers[y][z][x]. North-facing front is at z1.",
+    "placement": "Printed wheel envelope x0..7,z1..13 is8x13. Central black-concrete platform x2..5,y4,z1..13 is4x13. Full8x10x15 envelope includes front/rear wall-sign/button cells at z0/14 and roof y9. Signs are thin geometry but occupy full matrix cells."
+  },
+  "callout_audit": [
+    {
+      "page": 63,
+      "step": 1,
+      "printed": "First build four mega-wheels. Use lodestone, blackstone and stairs of it. Diagram arrows8 blocks across and13 blocks along.",
+      "implementation": "Four3x3x2 blackstone tires at x0..1/6..7,z1..3/11..13,y0..2; outward lodestone centers; corner stairs. Overall wheel envelope8x13.",
+      "status": "Printed8/13 and four tires retained. Arrow endpoints interpreted as outer envelope, not center separation; wheel thickness/profile inferred."
+    },
+    {
+      "page": 63,
+      "step": 2,
+      "printed": "Join the two front wheels and two rear wheels with stone-brick walls.",
+      "implementation": "Wall axles x2..5,y1,z2/12; paired wall risers x3..4,y2..3 meet platform.",
+      "status": "Named block retained; axial offsets, riser width/height and connection states inferred."
+    },
+    {
+      "page": 63,
+      "step": 3,
+      "printed": "Make a13x4 black-concrete platform above wheels, as illustrated, and join it to wall blocks.",
+      "implementation": "Exactly13x4 initial footprint x2..5,y4,z1..13. Final four front cells become furnace grille; four rear cells yellow rear sill, leaving44 original black-concrete floor cells.",
+      "status": "Printed13x4 footprint retained; construction-stage platform end cells covered/replaced by next-step grille/sill."
+    },
+    {
+      "page": 64,
+      "step": 4,
+      "printed": "Build a frame around platform with yellow concrete, polished blackstone slabs and warped planks as pictured. Install four furnaces in nose.",
+      "implementation": "Side yellow lower band and warped top band, top-half polished-blackstone slab undersides. Exactly four unlit north-facing furnaces x2..5,y4,z1.",
+      "status": "Materials/four furnaces retained. End framing replaces floor perimeter cells; slab half and vertical levels inferred."
+    },
+    {
+      "page": 64,
+      "step": 5,
+      "printed": "Continue bus body with yellow concrete, leaving windows. Hood comprises8 blocks; windshield panel above is a row of black concrete.",
+      "implementation": "Hood x2..5,z1..2,y5 exactly8 yellow cells; extra side fenders at x1/6 are separate frame. Black-concrete row x2..5,y6,z3 width4, glass windshield above.",
+      "status": "Printed hood8 and windshield-base material retained; height/window sizes and pillars inferred."
+    },
+    {
+      "page": 64,
+      "step": 6,
+      "printed": "Install tinted windows.",
+      "implementation": "Full tinted-glass blocks on windshield, long side windows and rear upper windows.",
+      "status": "Uses tinted_glass, not black-stained-glass substitute; window splits/entry details inferred."
+    },
+    {
+      "page": 65,
+      "step": 7,
+      "printed": "Bus roof also consists of yellow concrete, warped planks and stairs.",
+      "implementation": "Yellow inset x2..5,z4..12 at y9; warped corner planks and inward-rising bottom stairs around perimeter x1..6,z3..13.",
+      "status": "Three named materials retained; stair-facing/corner shapes and roof level inferred."
+    },
+    {
+      "page": 65,
+      "step": 8,
+      "printed": "Final touches: glow item frames for headlights, warped signs for front grille, iron bars with a redstone block as warning beacon; do not forget ladder. Reverse inset: warped doors/buttons rear; ordinary frames contrast with glowing ones.",
+      "implementation": "Blank warped wall signs front/rear, rear warped double doors/buttons, west ladder, east iron-bar/redstone-block warning bracket.",
+      "status": "Item frames/glow item frames deliberately omitted as entities; no substitute lamp blocks invented. Signs lack text/glow NBT. Redstone is static, not a working flasher."
+    },
+    {
+      "page": 65,
+      "step": "INTERIOR",
+      "printed": "Purpur-brick stair chairs, suspended end rods to hold on during travel, bright carpets.",
+      "implementation": "Eight purpur_stairs seats,16 horizontal end-rod cells in four transverse handrails, yellow/magenta/cyan carpets beneath roof.",
+      "status": "Integrated same build. Colors/counts/seat offsets/bar runs inferred from cutaway; no separate roofless artifact."
+    }
+  ],
+  "material_audit": [
+    {
+      "book": "lodestone; blackstone and its stairs",
+      "ids": [
+        "minecraft:lodestone",
+        "minecraft:blackstone",
+        "minecraft:blackstone_stairs"
+      ],
+      "notes": "Four outward hubs. Blackstone tire corner stairs have explicit top/bottom halves; exact bevel voxelization inferred."
+    },
+    {
+      "book": "stone-brick walls; black concrete13x4 platform and windshield row",
+      "ids": [
+        "minecraft:stone_brick_wall",
+        "minecraft:black_concrete"
+      ],
+      "notes": "Dry wall axles/riser; connection states explicit. End cells of platform reused by final furnace/sill; stage footprint still exact."
+    },
+    {
+      "book": "yellow concrete; polished blackstone slabs; warped planks/stairs",
+      "ids": [
+        "minecraft:yellow_concrete",
+        "minecraft:polished_blackstone_slab",
+        "minecraft:warped_planks",
+        "minecraft:warped_stairs"
+      ],
+      "notes": "Ukrainian polished-plate wording interpreted as polished_blackstone_slab rather than polished_blackstone_brick_slab. Roof warped family and8-cell hood retained."
+    },
+    {
+      "book": "four furnaces; tinted windows",
+      "ids": [
+        "minecraft:furnace",
+        "minecraft:tinted_glass"
+      ],
+      "notes": "Exactly four, unlit and empty; no inventory NBT. Tinted glass is naturally dark, not stained glass."
+    },
+    {
+      "book": "glowing/normal item frames as head/tail lights",
+      "ids": [],
+      "notes": "Omitted: item frames are entities and forbidden. Yellow underlying corners remain bare. No inaccurate block replacement."
+    },
+    {
+      "book": "warped signs, warped doors and buttons",
+      "ids": [
+        "minecraft:warped_wall_sign",
+        "minecraft:warped_door",
+        "minecraft:stone_button"
+      ],
+      "notes": "Blank signs with no block-entity payload; button species inferred gray stone. Door hinges/facing explicitly chosen."
+    },
+    {
+      "book": "iron bars, redstone block, ladder",
+      "ids": [
+        "minecraft:iron_bars",
+        "minecraft:redstone_block",
+        "minecraft:ladder"
+      ],
+      "notes": "Side stop/warning attachment, static redstone cube not flashing. Five west-facing supported ladder cells."
+    },
+    {
+      "book": "purpur-brick stairs, end rods, bright carpets",
+      "ids": [
+        "minecraft:purpur_stairs",
+        "minecraft:end_rod",
+        "minecraft:yellow_carpet",
+        "minecraft:magenta_carpet",
+        "minecraft:cyan_carpet"
+      ],
+      "notes": "Vanilla purpur_stairs maps purpur brick stair wording. Eight chairs and16 rod cells,28 carpet cells; arrangement/colors inferred."
+    }
+  ],
+  "state_audit": {
+    "doors": "Rear doors face south, closed/unpowered. West x3 door hinge=right, east x4 hinge=left. Lower y5 and upper y6 paired, z13; no dynamic opening test.",
+    "stairs": "Blackstone tire bevels face south/north toward tire interior; bottom lower corners/top upper corners. Warped roof edges face inward with bottom half, straight; corner cells are planks. Purpur seats face south so their backs are south and sitters look toward north/front.",
+    "slabs": "Polished-blackstone frame slabs type=top,y3. No waterlogging anywhere.",
+    "walls": "Axle center posts up=true, ends up=false, east/west low arms. Riser posts no horizontal arms and up=true. Inferred static states, not claimed neighbor-update stable.",
+    "furnaces": "facing=north,lit=false; no contents.",
+    "ladder": "facing=west at x0,z5,y1..5, each supported by solid block east at x1; entry gap x1,y6..7,z5.",
+    "signs_buttons": "Front signs facing=north,z0 attached behind atz1. Rear signs and buttons facing=south,z14 attached atz13. All blank/unpressed, no NBT payload.",
+    "iron_bars": "east=false,north=false,south=true,west=true atx7,y5,z5, meeting west body and south redstone block. No powered-state claim.",
+    "end_rods": "Horizontal facing=east across interior x2..5,y8,z6/8/10/12, one block below roof."
+  },
+  "uncertainty": [
+    "One explicit audited reconstruction, not an exact hidden-voxel recovery. Perspective photographs lack complete orthographic layers, measurements of overall height and interior placement.",
+    "Printed8x13 arrows interpreted as complete four-wheel outer envelope; center-to-center interpretation would yield a different vehicle size. Exact original arrow attachment not unambiguously recoverable from perspective. Printed13x4 platform footprint prioritized alongside these arrows.",
+    "Complete structural envelope8x10x13 excludes front/rear thin signs/buttons, whose occupied matrix cells extend z0..14, making artifact8x10x15. Main body width6, floor width4, tire diameter3/depth2 and roof height10 are inferred, not printed callouts.",
+    "Platform construction-stage13x4=52 black-concrete cells is exact as an initial step. Final next-step grille replaces4 front edge cells and rear yellow sill replaces4 rear edge cells, leaving44 of the original52 black-concrete platform cells. No hidden duplicate blocks under replacements.",
+    "Tire corner stair shapes/halves and lodestone face placement, wheel-to-axle offset, raised twin wall posts and slab undersides inferred. Visual fidelity is not guaranteed by binary validation.",
+    "Body/window heights, hood setbacks, side entry and ladder location, rear double-door width/hinges, roof ring/corners and warning bracket placement inferred. No omitted optional side door invented, and no powered mechanism.",
+    "Glow/ordinary item-frame headlights/tail lights are omitted under no-entities rule, leaving bare yellow corners. This is an explicit visual mismatch, not an implementation of the book lights. Blank signs have no lettering/glowing text. No replacement blocks for frames.",
+    "Interior integrated from roof-off cutaway: exact seat count, purpur-stair orientation, colored carpet boundaries and handrail lengths inferred. Roof remains installed; no separate duplicate interior build.",
+    "No live server, physics, neighbor-update, accessibility/climbing, vehicle movement, warning-beacon flashing or redstone-operation claims. Parked decorative bus. Furnace/sign content NBT intentionally absent; no entities/fluids/complex NBT.",
+    "Only folder14 artifacts and folder14 batch-report row authorized; source, dependencies and unrelated files preserved."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "B": "minecraft:blackstone",
+    "O": "minecraft:lodestone",
+    "a": "minecraft:blackstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "b": "minecraft:blackstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "c": "minecraft:blackstone_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "d": "minecraft:blackstone_stairs[facing=north,half=top,shape=straight,waterlogged=false]",
+    "w": "minecraft:stone_brick_wall[east=low,north=none,south=none,up=false,waterlogged=false,west=low]",
+    "u": "minecraft:stone_brick_wall[east=low,north=none,south=none,up=true,waterlogged=false,west=low]",
+    "U": "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]",
+    "C": "minecraft:black_concrete",
+    "Y": "minecraft:yellow_concrete",
+    "P": "minecraft:warped_planks",
+    "s": "minecraft:polished_blackstone_slab[type=top,waterlogged=false]",
+    "F": "minecraft:furnace[facing=north,lit=false]",
+    "G": "minecraft:tinted_glass",
+    "E": "minecraft:warped_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "W": "minecraft:warped_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "N": "minecraft:warped_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "S": "minecraft:warped_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "l": "minecraft:ladder[facing=west,waterlogged=false]",
+    "r": "minecraft:redstone_block",
+    "i": "minecraft:iron_bars[east=false,north=false,south=true,waterlogged=false,west=true]",
+    "t": "minecraft:warped_wall_sign[facing=north,waterlogged=false]",
+    "j": "minecraft:warped_wall_sign[facing=south,waterlogged=false]",
+    "h": "minecraft:warped_door[facing=south,half=lower,hinge=right,open=false,powered=false]",
+    "H": "minecraft:warped_door[facing=south,half=upper,hinge=right,open=false,powered=false]",
+    "k": "minecraft:warped_door[facing=south,half=lower,hinge=left,open=false,powered=false]",
+    "K": "minecraft:warped_door[facing=south,half=upper,hinge=left,open=false,powered=false]",
+    "q": "minecraft:stone_button[face=wall,facing=south,powered=false]",
+    "p": "minecraft:purpur_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "e": "minecraft:end_rod[facing=east]",
+    "m": "minecraft:magenta_carpet",
+    "n": "minecraft:cyan_carpet",
+    "y": "minecraft:yellow_carpet"
+  },
+  "layers": [
+    [
+      "........",
+      "aa....aa",
+      "BB....BB",
+      "bb....bb",
+      "........",
+      "........",
+      "........",
+      "........",
+      "........",
+      "........",
+      "........",
+      "aa....aa",
+      "BB....BB",
+      "bb....bb",
+      "........"
+    ],
+    [
+      "........",
+      "BB....BB",
+      "OBwuuwBO",
+      "BB....BB",
+      "........",
+      "lC......",
+      "........",
+      "........",
+      "........",
+      "........",
+      "........",
+      "BB....BB",
+      "OBwuuwBO",
+      "BB....BB",
+      "........"
+    ],
+    [
+      "........",
+      "cc....cc",
+      "BB.UU.BB",
+      "dd....dd",
+      "........",
+      "lC......",
+      "........",
+      "........",
+      "........",
+      "........",
+      "........",
+      "cc....cc",
+      "BB.UU.BB",
+      "dd....dd",
+      "........"
+    ],
+    [
+      "...tt...",
+      ".CCCCCC.",
+      ".s.UU.s.",
+      ".s....s.",
+      ".s....s.",
+      "lC....s.",
+      ".s....s.",
+      ".s....s.",
+      ".s....s.",
+      ".s....s.",
+      ".s....s.",
+      ".s....s.",
+      ".s.UU.s.",
+      ".CCCCCC.",
+      "........"
+    ],
+    [
+      "........",
+      ".YFFFFY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      "lYCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YCCCCY.",
+      ".YYYYYY.",
+      "..j..j.."
+    ],
+    [
+      "........",
+      ".YYYYYY.",
+      ".YYYYYY.",
+      ".YYYYYY.",
+      ".PyyyyP.",
+      "lPyyyyPi",
+      ".PpyypPr",
+      ".PmmmmP.",
+      ".PpmmpP.",
+      ".PmmmmP.",
+      ".PpnnpP.",
+      ".PnnnnP.",
+      ".PpnnpP.",
+      ".YYhkYY.",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      ".YCCCCY.",
+      ".Y....Y.",
+      "......Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".Y....Y.",
+      ".YYHKYY.",
+      "..q..q.."
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      ".YGGGGY.",
+      ".G....G.",
+      "......Y.",
+      ".G....G.",
+      ".G....G.",
+      ".G....G.",
+      ".G....G.",
+      ".G....G.",
+      ".G....G.",
+      ".G....G.",
+      ".YGGGGY.",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      ".YGGGGY.",
+      ".G....G.",
+      ".G....Y.",
+      ".GeeeeG.",
+      ".G....G.",
+      ".GeeeeG.",
+      ".G....G.",
+      ".GeeeeG.",
+      ".G....G.",
+      ".GeeeeG.",
+      ".YGGGGY.",
+      "........"
+    ],
+    [
+      "........",
+      "........",
+      "........",
+      ".PSSSSP.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".EYYYYW.",
+      ".PNNNNP.",
+      "........"
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 737,
+    "minecraft:black_concrete": 63,
+    "minecraft:blackstone": 36,
+    "minecraft:blackstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:blackstone_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 8,
+    "minecraft:blackstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:blackstone_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 8,
+    "minecraft:cyan_carpet": 8,
+    "minecraft:end_rod[facing=east]": 16,
+    "minecraft:furnace[facing=north,lit=false]": 4,
+    "minecraft:iron_bars[east=false,north=false,south=true,waterlogged=false,west=true]": 1,
+    "minecraft:ladder[facing=west,waterlogged=false]": 5,
+    "minecraft:lodestone": 4,
+    "minecraft:magenta_carpet": 10,
+    "minecraft:polished_blackstone_slab[type=top,waterlogged=false]": 21,
+    "minecraft:purpur_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:redstone_block": 1,
+    "minecraft:stone_brick_wall[east=low,north=none,south=none,up=false,waterlogged=false,west=low]": 4,
+    "minecraft:stone_brick_wall[east=low,north=none,south=none,up=true,waterlogged=false,west=low]": 4,
+    "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 8,
+    "minecraft:stone_button[face=wall,facing=south,powered=false]": 2,
+    "minecraft:tinted_glass": 49,
+    "minecraft:warped_door[facing=south,half=lower,hinge=left,open=false,powered=false]": 1,
+    "minecraft:warped_door[facing=south,half=lower,hinge=right,open=false,powered=false]": 1,
+    "minecraft:warped_door[facing=south,half=upper,hinge=left,open=false,powered=false]": 1,
+    "minecraft:warped_door[facing=south,half=upper,hinge=right,open=false,powered=false]": 1,
+    "minecraft:warped_planks": 22,
+    "minecraft:warped_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 9,
+    "minecraft:warped_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 4,
+    "minecraft:warped_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 4,
+    "minecraft:warped_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 9,
+    "minecraft:warped_wall_sign[facing=north,waterlogged=false]": 2,
+    "minecraft:warped_wall_sign[facing=south,waterlogged=false]": 2,
+    "minecraft:yellow_carpet": 10,
+    "minecraft:yellow_concrete": 121
+  },
+  "non_air_count": 463,
+  "air_count": 737,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 1,
+      "z": 2,
+      "char": "O",
+      "note": "Outward lodestone hub, one per tire"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "z": 2,
+      "char": "O",
+      "note": "Outward lodestone hub, one per tire"
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "z": 12,
+      "char": "O",
+      "note": "Outward lodestone hub, one per tire"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "z": 12,
+      "char": "O",
+      "note": "Outward lodestone hub, one per tire"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "z": 1,
+      "char": "a",
+      "note": "Front lower tire bevel"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "z": 13,
+      "char": "d",
+      "note": "Rear upper tire bevel"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "char": "w",
+      "note": "Horizontal axle"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "z": 12,
+      "char": "U",
+      "note": "Axle riser under platform"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 7,
+      "char": "C",
+      "note": "13x4 black-concrete floor"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "z": 8,
+      "char": "s",
+      "note": "Top-half polished-blackstone frame slab"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "z": 8,
+      "char": "P",
+      "note": "Warped lower side rail"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 1,
+      "char": "F",
+      "note": "First of four north-facing furnaces"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "z": 1,
+      "char": "F",
+      "note": "Fourth north-facing furnace"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "z": 1,
+      "char": "Y",
+      "note": "4x2 yellow hood"
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "z": 2,
+      "char": "Y",
+      "note": "Eighth hood cell corner"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "z": 3,
+      "char": "C",
+      "note": "Black-concrete windshield base"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "z": 3,
+      "char": "G",
+      "note": "Tinted windshield"
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "z": 10,
+      "char": "G",
+      "note": "Tinted long side window"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "z": 5,
+      "char": ".",
+      "note": "Entry air opening"
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "z": 5,
+      "char": "l",
+      "note": "West-facing ladder supported east"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "z": 13,
+      "char": "h",
+      "note": "West rear lower door, right hinge"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "z": 13,
+      "char": "H",
+      "note": "West rear upper door"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "z": 13,
+      "char": "k",
+      "note": "East rear lower door, left hinge"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "z": 13,
+      "char": "K",
+      "note": "East rear upper door"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "z": 6,
+      "char": "r",
+      "note": "Warning redstone block"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "z": 5,
+      "char": "i",
+      "note": "Iron-bar warning bracket"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "z": 0,
+      "char": "t",
+      "note": "Blank front warped wall sign"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 14,
+      "char": "j",
+      "note": "Blank rear warped sign"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "z": 14,
+      "char": "q",
+      "note": "Unpressed rear stone button"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "z": 8,
+      "char": "p",
+      "note": "North-viewing purpur-brick seat"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "z": 8,
+      "char": "m",
+      "note": "Magenta aisle carpet"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "z": 8,
+      "char": "e",
+      "note": "Horizontal overhead end rod"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "z": 8,
+      "char": "E",
+      "note": "East-rising warped roof-edge stair"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "z": 8,
+      "char": "Y",
+      "note": "Yellow roof inset"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "z": 3,
+      "char": "P",
+      "note": "Warped roof corner"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "z": 8,
+      "char": ".",
+      "note": "Interior headroom air"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "z": 7,
+      "char": ".",
+      "note": "Air under high chassis"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "audit": "schematics/validation/batch_validation.json",
+  "builds": {
+    "build_count": 29,
+    "binary_pass": 29,
+    "deterministic_pass": 29,
+    "reader_pass": 29,
+    "reader_mismatch": 0,
+    "reader_error": 0
+  },
+  "coverage": {
+    "expected_folders": [
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19"
+    ],
+    "covered_folders": [
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19"
+    ],
+    "missing_folders": [],
+    "covered_count": 18,
+    "json_count": 29,
+    "schematic_count": 29,
+    "notes_nonempty_count": 29,
+    "artifact_issues": []
+  },
+  "tests": {
+    "varint": 0,
+    "npm_test": 0
+  }
+}

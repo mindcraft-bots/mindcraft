@@ -1,0 +1,515 @@
+{
+  "schema_version": 1,
+  "name": "Pachinko Parkour",
+  "slug": "10_pachinko_parkour",
+  "folder": "10",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/10/IMG_20261115_160205-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/10/IMG_20261115_160220-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 1,
+    "interpretation": "Pages44-47 depict one pachinko-parkour cabinet, steps1-9. Front/rear piston vignettes and rotated assembly views are details, not separate builds."
+  },
+  "width_x": 14,
+  "height_y": 16,
+  "length_z": 6,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest bottom front corner of cabinet; x east/right, y up, z south/back. Front faces north. Main shell x0..10,z0..5; external east stair x11..13. Zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; every cell explicit including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "base",
+      "printed": "11 blocks wide,6 blocks deep,4 blocks high (step1)",
+      "implemented": "main cabinet x0..10,z0..5,y0..3",
+      "confidence": "printed dimensions retained; floor and rear closure inferred"
+    },
+    {
+      "feature": "target wall",
+      "printed": "9x9 wall (step3)",
+      "implemented": "x1..9,y4..12,z3",
+      "confidence": "printed9x9 retained; depth plane and target pixel positions visually estimated"
+    },
+    {
+      "feature": "top",
+      "printed": "add two further layers of concrete,smooth quartz and deepslate bricks; leave ladder entrance (step8)",
+      "implemented": "fascia y13,roof y14,hatch x5z2; half-height rail y15",
+      "confidence": "two added layers honored; roof rail slab form and hatch coordinates inferred"
+    },
+    {
+      "feature": "full envelope",
+      "printed": null,
+      "implemented": "14x16x6 including three-block stair projection; structural cabinet11x15x6 with top rim in layer15",
+      "confidence": "total height,stair projection and slab placement inferred; no printed half-height dimensions exist"
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "steps1,3,5,6,8",
+      "labels": "smooth quartz,yellow/light-blue/red concrete",
+      "implemented": "smooth_quartz,yellow_concrete,light_blue_concrete,red_concrete; no orange concrete inferred from warm lighting"
+    },
+    {
+      "source": "steps2,4",
+      "labels": "sticky piston,red concrete,birch button,redstone dust",
+      "implemented": "five retracted north-facing pistons,unpowered buttons,dust power0; hidden supports/offsets inferred"
+    },
+    {
+      "source": "steps6-8",
+      "labels": "sea lanterns,deepslate-brick stairs/slabs/walls",
+      "implemented": "sea_lantern,deepslate_bricks,deepslate_brick_stairs,deepslate_brick_slab. Top thin rim interpreted as slabs rather than tall wall blocks; ambiguity retained in uncertainty"
+    },
+    {
+      "source": "steps8-9",
+      "labels": "ladder,iron door,button,stairs",
+      "implemented": "north-facing ladder,east-facing closed iron door,birch side button,smooth-quartz stairs"
+    },
+    {
+      "source": "step7",
+      "labels": "deadly lava",
+      "implemented": "EXCLUDED: no-fluids constraint. Interior above dry quartz bottom remains air,not substituted orange blocks."
+    }
+  ],
+  "state_audit": {
+    "pistons": "Five sticky pistons facing north,extended=false; no piston heads/moving-piston block entities. Additional red/light-blue footholds fixed as visible step6. No timing/functional claim.",
+    "buttons": "Birch wall buttons north-facing on quartz supports; side door control east-facing. All powered=false.",
+    "wire": "All wire power0 and isolated-dot connections none. Neighbor updates may alter connection states; concealed routing inferred.",
+    "door": "Iron door x10,z2,lower y4,upper y5,facing=east,hinge=right,open=false,powered=false. On east-facing view right hinge is toward south; side button lies south at z3. No south-facing door hinge assumption.",
+    "stairs_slabs": "External smooth-quartz stairs west-facing,bottom-half; frame stairs east/west and explicit top/bottom halves; roof rim bottom slabs; all dry.",
+    "ladder": "North-facing against south support z3,y11..14; top cell is roof hatch,not air.",
+    "prohibitions": "No entities,fluids,complex block-entity payloads or waterlogged blocks."
+  },
+  "occlusion_uncertainties": [
+    "Exact voxel equivalence cannot be certified from oblique book photographs. Only11x6 base,4-high base,9x9 target and two added top layers are explicit dimensions.",
+    "Shell height15 plus half-height rim,back wall thickness,target plane z3,back cavity and hatch placement estimated from sequence.",
+    "Target color pixels,piston/button offsets and four upper mechanism positions are inferred. Photos show five mechanisms in total but do not provide an orthographic wiring diagram; no tested launch timing or completable route claim.",
+    "Master has warm orange lighting from lava; backing interpreted as smooth quartz per text,not orange material. Lava intentionally excluded; dry game is not the illustrated lethal game.",
+    "Deepslate ring bevels,stair halves,lights and roof rim are visually estimated. Text lists stairs,slabs and walls; thin top rim mapped to slabs,not separate wall registry blocks.",
+    "Door location is on visible right wall; hinge,button species and exact stair projection inferred. Stair approach intentionally has middle gap per final instruction; no physics/live test.",
+    "Redstone connection states are initial isolated dots. Game neighbor updates/door redstone connectivity and piston behavior not simulated. No source or dependency modification may hide parser state mismatches."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "Q": "minecraft:smooth_quartz",
+    "Y": "minecraft:yellow_concrete",
+    "B": "minecraft:light_blue_concrete",
+    "R": "minecraft:red_concrete",
+    "G": "minecraft:deepslate_bricks",
+    "S": "minecraft:sea_lantern",
+    "P": "minecraft:sticky_piston[extended=false,facing=north]",
+    "b": "minecraft:birch_button[face=wall,facing=north,powered=false]",
+    "e": "minecraft:birch_button[face=wall,facing=east,powered=false]",
+    "d": "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]",
+    "l": "minecraft:ladder[facing=north,waterlogged=false]",
+    "i": "minecraft:iron_door[facing=east,half=lower,hinge=right,open=false,powered=false]",
+    "I": "minecraft:iron_door[facing=east,half=upper,hinge=right,open=false,powered=false]",
+    "s": "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "a": "minecraft:deepslate_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "c": "minecraft:deepslate_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "t": "minecraft:deepslate_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]",
+    "u": "minecraft:deepslate_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]",
+    "h": "minecraft:deepslate_brick_slab[type=bottom,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "YQQQQQQQQQB...",
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQQ.s",
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QQQQQQQQQQQ...",
+      "Q...Q.....Q...",
+      "Q...Q.....QQ..",
+      "Q.........Q...",
+      "Q.........Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YQQQbRQQQQB...",
+      "Q...QP....Q...",
+      "Q...d.....Qs..",
+      "Q.........Q...",
+      "Q.........Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "Q.........Q...",
+      "Q.........Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YSGGGGGGGSB...",
+      "QQ.......QQ...",
+      "QQ.......Qi...",
+      "QQQQQQQQQQQe..",
+      "Q...Q.....Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QGc.....aGQ...",
+      "QQ.......QQ...",
+      "Q...bR....I...",
+      "QQQQQRBQQQQ...",
+      "Q...dP....Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YG.......GB...",
+      "Q.........Q...",
+      "Q.........Q...",
+      "QQQBRRRBQQQ...",
+      "Q.Q.......Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QG.......GQ...",
+      "Q.........Q...",
+      "Q.b.......Q...",
+      "QQQRYQYRBQQ...",
+      "Q.dPQ.....Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YG.......GB...",
+      "Q.........Q...",
+      "Q.B.b.....Q...",
+      "QQBRQRQRBQQ...",
+      "Q...dP....Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QG.......GQ...",
+      "Q.........Q...",
+      "Q.......B.Q...",
+      "QQBRYQYRBQQ...",
+      "Q.....Q...Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YG.......GB...",
+      "Q.........Q...",
+      "Q.....bR..Q...",
+      "QQQBRRQRQQQ...",
+      "Q.....dP..Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QGu.....tGQ...",
+      "QQ.......QQ...",
+      "Q....l....Q...",
+      "QQQQBBBQQQQ...",
+      "Q.........Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "YSGGGGGGGSB...",
+      "Q.........Q...",
+      "Q....l....Q...",
+      "QQQQQQQQQQQ...",
+      "Q.........Q...",
+      "BQQQQQQQQQY..."
+    ],
+    [
+      "QRQRQRQRQRQ...",
+      "Q.........Q...",
+      "Q....l....Q...",
+      "QQQQQQQQQQQ...",
+      "Q.........Q...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "QQQQQlQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ...",
+      "QQQQQQQQQQQ..."
+    ],
+    [
+      "QhhhhhhhhhQ...",
+      "h.........h...",
+      "h.........h...",
+      "h.........h...",
+      "h.........h...",
+      "QhhhhhhhhhQ..."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 688,
+    "minecraft:birch_button[face=wall,facing=east,powered=false]": 1,
+    "minecraft:birch_button[face=wall,facing=north,powered=false]": 5,
+    "minecraft:deepslate_brick_slab[type=bottom,waterlogged=false]": 26,
+    "minecraft:deepslate_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+    "minecraft:deepslate_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:deepslate_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+    "minecraft:deepslate_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:deepslate_bricks": 28,
+    "minecraft:iron_door[facing=east,half=lower,hinge=right,open=false,powered=false]": 1,
+    "minecraft:iron_door[facing=east,half=upper,hinge=right,open=false,powered=false]": 1,
+    "minecraft:ladder[facing=north,waterlogged=false]": 4,
+    "minecraft:light_blue_concrete": 28,
+    "minecraft:red_concrete": 22,
+    "minecraft:redstone_wire[east=none,north=none,power=0,south=none,west=none]": 5,
+    "minecraft:sea_lantern": 4,
+    "minecraft:smooth_quartz": 502,
+    "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:sticky_piston[extended=false,facing=north]": 5,
+    "minecraft:yellow_concrete": 18
+  },
+  "spot_checks": [
+    {
+      "description": "base left yellow",
+      "state": "minecraft:yellow_concrete",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "Y"
+    },
+    {
+      "description": "base right blue",
+      "state": "minecraft:light_blue_concrete",
+      "x": 10,
+      "y": 0,
+      "z": 0,
+      "char": "B"
+    },
+    {
+      "description": "base fourth layer",
+      "state": "minecraft:smooth_quartz",
+      "x": 1,
+      "y": 3,
+      "z": 0,
+      "char": "Q"
+    },
+    {
+      "description": "base red launch block",
+      "state": "minecraft:red_concrete",
+      "x": 5,
+      "y": 2,
+      "z": 0,
+      "char": "R"
+    },
+    {
+      "description": "base sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 5,
+      "y": 2,
+      "z": 1,
+      "char": "P"
+    },
+    {
+      "description": "base button",
+      "state": "minecraft:birch_button[face=wall,facing=north,powered=false]",
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "char": "b"
+    },
+    {
+      "description": "target southwest",
+      "state": "minecraft:smooth_quartz",
+      "x": 1,
+      "y": 4,
+      "z": 3,
+      "char": "Q"
+    },
+    {
+      "description": "target northeast",
+      "state": "minecraft:smooth_quartz",
+      "x": 9,
+      "y": 12,
+      "z": 3,
+      "char": "Q"
+    },
+    {
+      "description": "target checker center",
+      "state": "minecraft:red_concrete",
+      "x": 5,
+      "y": 8,
+      "z": 3,
+      "char": "R"
+    },
+    {
+      "description": "left blue foothold",
+      "state": "minecraft:light_blue_concrete",
+      "x": 2,
+      "y": 8,
+      "z": 2,
+      "char": "B"
+    },
+    {
+      "description": "upper red foothold",
+      "state": "minecraft:red_concrete",
+      "x": 7,
+      "y": 10,
+      "z": 2,
+      "char": "R"
+    },
+    {
+      "description": "dry lava omission",
+      "state": "minecraft:air",
+      "x": 6,
+      "y": 4,
+      "z": 1,
+      "char": "."
+    },
+    {
+      "description": "frame light",
+      "state": "minecraft:sea_lantern",
+      "x": 1,
+      "y": 12,
+      "z": 0,
+      "char": "S"
+    },
+    {
+      "description": "frame bottom",
+      "state": "minecraft:deepslate_bricks",
+      "x": 5,
+      "y": 4,
+      "z": 0,
+      "char": "G"
+    },
+    {
+      "description": "roof checker red",
+      "state": "minecraft:red_concrete",
+      "x": 1,
+      "y": 13,
+      "z": 0,
+      "char": "R"
+    },
+    {
+      "description": "roof hatch ladder",
+      "state": "minecraft:ladder[facing=north,waterlogged=false]",
+      "x": 5,
+      "y": 14,
+      "z": 2,
+      "char": "l"
+    },
+    {
+      "description": "roof hatch support",
+      "state": "minecraft:smooth_quartz",
+      "x": 5,
+      "y": 14,
+      "z": 3,
+      "char": "Q"
+    },
+    {
+      "description": "iron door lower",
+      "state": "minecraft:iron_door[facing=east,half=lower,hinge=right,open=false,powered=false]",
+      "x": 10,
+      "y": 4,
+      "z": 2,
+      "char": "i"
+    },
+    {
+      "description": "iron door upper",
+      "state": "minecraft:iron_door[facing=east,half=upper,hinge=right,open=false,powered=false]",
+      "x": 10,
+      "y": 5,
+      "z": 2,
+      "char": "I"
+    },
+    {
+      "description": "door east button",
+      "state": "minecraft:birch_button[face=wall,facing=east,powered=false]",
+      "x": 11,
+      "y": 4,
+      "z": 3,
+      "char": "e"
+    },
+    {
+      "description": "lowest outer stair",
+      "state": "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+      "x": 13,
+      "y": 0,
+      "z": 2,
+      "char": "s"
+    },
+    {
+      "description": "intentional stair gap",
+      "state": "minecraft:air",
+      "x": 12,
+      "y": 1,
+      "z": 2,
+      "char": "."
+    },
+    {
+      "description": "upper outer stair",
+      "state": "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+      "x": 11,
+      "y": 2,
+      "z": 2,
+      "char": "s"
+    },
+    {
+      "description": "roof rim slab",
+      "state": "minecraft:deepslate_brick_slab[type=bottom,waterlogged=false]",
+      "x": 5,
+      "y": 15,
+      "z": 0,
+      "char": "h"
+    },
+    {
+      "description": "open game space",
+      "state": "minecraft:air",
+      "x": 6,
+      "y": 8,
+      "z": 1,
+      "char": "."
+    },
+    {
+      "description": "retracted sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 5,
+      "y": 2,
+      "z": 1,
+      "char": "P"
+    },
+    {
+      "description": "retracted sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 5,
+      "y": 5,
+      "z": 4,
+      "char": "P"
+    },
+    {
+      "description": "retracted sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 3,
+      "y": 7,
+      "z": 4,
+      "char": "P"
+    },
+    {
+      "description": "retracted sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 7,
+      "y": 10,
+      "z": 4,
+      "char": "P"
+    },
+    {
+      "description": "retracted sticky piston",
+      "state": "minecraft:sticky_piston[extended=false,facing=north]",
+      "x": 5,
+      "y": 8,
+      "z": 4,
+      "char": "P"
+    }
+  ],
+  "non_air_count": 656,
+  "air_count": 688
+}

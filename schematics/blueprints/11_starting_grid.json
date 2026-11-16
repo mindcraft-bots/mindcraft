@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "name": "Horse Racing Starting Grid",
+  "slug": "11_starting_grid",
+  "folder": "11",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160237-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160250-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160304-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 6,
+    "components": [
+      "starting_gate",
+      "hairpin",
+      "turn",
+      "starting_grid",
+      "grandstand",
+      "safety_fence"
+    ],
+    "interpretation": "Six reusable distinct components across pages48-53. Grandstand steps are one assembly. No invented complete landscape circuit; raised/lowered gate is one stateful build."
+  },
+  "width_x": 9,
+  "height_y": 3,
+  "length_z": 19,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest bottom corner; starting checkers at north end, grid extends south. x east/right, y up, z south/back; zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; all cells explicit, including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "grid footprint",
+      "printed": "9 blocks by19 blocks (p51)",
+      "implemented": "width_x9,length_z19; ground y0,surface y1,edge markers y2",
+      "confidence": "Printed footprint retained. Six grid-box pixels and six edge markers visually estimated; no printed height."
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "p51 grid thumbnail; master p48",
+      "labels": "dark-gray track, white grid marks, grass verges, thin dark edge posts",
+      "implemented": "gray_concrete,white_concrete,dirt,grass_block,nether_brick_fence. Edge posts interpreted as Nether-brick fence from dark racing palette."
+    }
+  ],
+  "state_audit": {
+    "markers": "Six isolated nether_brick_fence posts with no horizontal arms; all dry.",
+    "surface": "Concrete cubes; grass snowy=false; no doors or entities."
+  },
+  "occlusion_uncertainties": [
+    "Oblique photographs do not determine every voxel. Printed callouts are prioritized; unprinted silhouettes, hidden supports and pixel patterns are inferred, not certified exact.",
+    "No fluids, entities or complex block-entity NBT. No live-world, redstone-timing, gravity-update or placement tests.",
+    "The large landscape circuits on pages51 and53 are explicitly customizable examples, not a dimensioned seventh build. Trees, river, horses and riders are not included. Start-line direction/powered vignettes are states/views of one mechanism, not duplicate builds.",
+    "Three pairs of staggered L-shaped white grid marks inferred from oblique thumbnail; exact cells and start-checker row uncertain.",
+    "Nine-wide footprint includes one-block verges each side. Nineteen length read from printed callout; grass/dirt base depth and marker material unprinted."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "A": "minecraft:gray_concrete",
+    "W": "minecraft:white_concrete",
+    "p": "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=false]"
+  },
+  "layers": [
+    [
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD"
+    ],
+    [
+      "GAWAWAWAG",
+      "GWAWAWAWG",
+      "GAAAAAAAG",
+      "GAAAAAAAG",
+      "GAWWAWWAG",
+      "GAAWAWWAG",
+      "GAAAAAWAG",
+      "GAAAAAAAG",
+      "GAAAAAAAG",
+      "GAWWAWWAG",
+      "GAAWAWWAG",
+      "GAAAAAWAG",
+      "GAAAAAAAG",
+      "GAAAAAAAG",
+      "GAWWAWWAG",
+      "GAAWAWWAG",
+      "GAAAAAWAG",
+      "GAAAAAAAG",
+      "GAAAAAAAG"
+    ],
+    [
+      ".........",
+      "p.......p",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "p.......p",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "p.......p",
+      "........."
+    ]
+  ],
+  "spot_checks": [
+    {
+      "description": "west grass verge",
+      "x": 0,
+      "y": 1,
+      "z": 0,
+      "char": "G",
+      "state": "minecraft:grass_block[snowy=false]"
+    },
+    {
+      "description": "east grass verge end",
+      "x": 8,
+      "y": 1,
+      "z": 18,
+      "char": "G",
+      "state": "minecraft:grass_block[snowy=false]"
+    },
+    {
+      "description": "checkered line white",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "char": "W",
+      "state": "minecraft:white_concrete"
+    },
+    {
+      "description": "checkered line gray",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "char": "A",
+      "state": "minecraft:gray_concrete"
+    },
+    {
+      "description": "first grid bay white",
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "char": "W",
+      "state": "minecraft:white_concrete"
+    },
+    {
+      "description": "last staggered grid bay white",
+      "x": 6,
+      "y": 1,
+      "z": 16,
+      "char": "W",
+      "state": "minecraft:white_concrete"
+    },
+    {
+      "description": "west middle post",
+      "x": 0,
+      "y": 2,
+      "z": 9,
+      "char": "p",
+      "state": "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=false]"
+    },
+    {
+      "description": "clear riding volume",
+      "x": 4,
+      "y": 2,
+      "z": 9,
+      "char": ".",
+      "state": "minecraft:air"
+    }
+  ],
+  "expected_counts": {
+    "minecraft:air": 165,
+    "minecraft:dirt": 171,
+    "minecraft:grass_block[snowy=false]": 38,
+    "minecraft:gray_concrete": 102,
+    "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 6,
+    "minecraft:white_concrete": 31
+  },
+  "non_air_count": 348,
+  "air_count": 165
+}

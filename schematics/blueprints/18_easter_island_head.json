@@ -1,0 +1,188 @@
+{
+  "schema": "explicit_layers_v1",
+  "name": "18_easter_island_head",
+  "folder": 18,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 5,
+  "height_y": 9,
+  "length_z": 4,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Northwest bottom bounding-box corner; +x east, +y up, +z south. Main facade faces south. No surrounding terrain.",
+    "layer_order": "layers[y][z][x]; rows advance south, characters east"
+  },
+  "title": "Island of giant heads / Easter Island stone head",
+  "sources": [
+    "data/screenshots/BuildingsCompressed-2/18/IMG_20261115_160541-1536x1152.jpg"
+  ],
+  "distinct_build_audit": "One reusable monument; repeated perspective examples are the same architectural motif, not additional independently dimensioned builds. Exploded component drawings are assembled, not exported separately. Terrain and incidental vegetation excluded.",
+  "printed_callout_audit": [
+    {
+      "component": "plinth",
+      "printed": "5 blocks wide, 2 blocks deep, 2 blocks high",
+      "implementation": "x=0..4,z=0..1,y=0..1"
+    },
+    {
+      "component": "rear head",
+      "printed": "3 blocks wide, 2 deep, 6.5 high",
+      "implementation": "x=1..3,z=0..1,y=2..7 full blocks plus bottom slabs y=8; physical top=8.5, occupied height=9 cells"
+    },
+    {
+      "component": "front plane",
+      "printed": "3 blocks wide, 1 deep, 6 high",
+      "implementation": "x=1..3,z=2,y=2..7"
+    },
+    {
+      "component": "nose and brow",
+      "printed": "3-block vertical stem, 3-block horizontal brow; 1-block depth and 1-block brow height",
+      "implementation": "stem x=2,z=3,y=2..4; brow x=1..3,z=3,y=5 north-facing bottom mossy stairs"
+    }
+  ],
+  "printed_material_audit": {
+    "cobblestone": "plinth and body",
+    "mossy cobblestone": "weathered patches and nose",
+    "cobblestone slabs": "rear half-height cap",
+    "mossy cobblestone slabs": "weathered rear cap",
+    "mossy cobblestone stairs": "brow"
+  },
+  "uncertainty": [
+    "Printed dimensions constrain components, but no complete orthographic assembled drawing is provided. Rear/base alignment, frontal component offset and nose attachment heights are inferred from master render.",
+    "Mossy distribution is not recoverable block-for-block from compressed textures. Explicit deterministic patches are recorded, not claimed to be exact printed weathering.",
+    "Slab cap is bottom-half to realize 6.5 physical height; bounding matrix is 9 blocks high, not 8.5 cells.",
+    "Exploded frontal outline has a subtle side notch that may be perspective/occlusion; six-high frontal plane is retained without inventing a cavity.",
+    "No vines/leaves or landscape are exported; they are incidental to the printed component diagram."
+  ],
+  "state_audit": [
+    "All stairs face north so their low leading edge projects south; half=bottom, shape=straight, waterlogged=false.",
+    "No doors, entities, fluids or block-entity NBT."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:cobblestone",
+    "B": "minecraft:cobblestone_slab[type=bottom,waterlogged=false]",
+    "C": "minecraft:mossy_cobblestone",
+    "D": "minecraft:mossy_cobblestone_slab[type=bottom,waterlogged=false]",
+    "E": "minecraft:mossy_cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "CAAAA",
+      "AAACA",
+      ".....",
+      "....."
+    ],
+    [
+      "AACAA",
+      "CAAAA",
+      ".....",
+      "....."
+    ],
+    [
+      ".CCA.",
+      ".AAA.",
+      ".AAA.",
+      "..C.."
+    ],
+    [
+      ".AAA.",
+      ".AAC.",
+      ".CCA.",
+      "..C.."
+    ],
+    [
+      ".ACC.",
+      ".CAA.",
+      ".AAA.",
+      "..C.."
+    ],
+    [
+      ".AAA.",
+      ".AAA.",
+      ".ACC.",
+      ".EEE."
+    ],
+    [
+      ".AAC.",
+      ".CCA.",
+      ".AAA.",
+      "....."
+    ],
+    [
+      ".CAA.",
+      ".AAA.",
+      ".AAC.",
+      "....."
+    ],
+    [
+      ".BBD.",
+      ".BDB.",
+      ".....",
+      "....."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 94,
+    "minecraft:cobblestone": 55,
+    "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 4,
+    "minecraft:mossy_cobblestone": 22,
+    "minecraft:mossy_cobblestone_slab[type=bottom,waterlogged=false]": 2,
+    "minecraft:mossy_cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3
+  },
+  "non_air_count": 86,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "C",
+      "note": "Five-wide two-high two-deep plinth"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "z": 0,
+      "char": "D",
+      "note": "Rear slab cap at height 8.5"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "z": 2,
+      "char": "A",
+      "note": "Six-block frontal section ends one half-block below rear"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 3,
+      "char": "C",
+      "note": "Three-block projecting central nose begins"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 3,
+      "char": "C",
+      "note": "Three-block nose ends"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "z": 3,
+      "char": "E",
+      "note": "Three-wide north-facing bottom stair brow"
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "z": 3,
+      "char": ".",
+      "note": "Air outside silhouette"
+    }
+  ]
+}

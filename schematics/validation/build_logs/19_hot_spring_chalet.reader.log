@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/19_hot_spring_chalet.json schematics/19_hot_spring_chalet.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/19_hot_spring_chalet.json",
+  "schematic": "schematics/19_hot_spring_chalet.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    10,
+    6,
+    13
+  ],
+  "volume": 780,
+  "comparedVoxels": 780,
+  "expectedNonAir": 239,
+  "parserDerivedAir": 541,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 13,
+  "spotChecks": 14,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

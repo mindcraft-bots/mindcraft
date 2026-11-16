@@ -1,0 +1,541 @@
+{
+  "schema_version": 1,
+  "name": "Wild West Jail",
+  "slug": "06_wild_west_jail",
+  "folder": "06",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/6/IMG_20261115_155946-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/6/IMG_20261115_160003-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 1,
+    "interpretation": "Steps 1-8 and the interior cutaway depict one jail with an attached cell. The step4 stopping point is not a second build. Optional escape-tunnel cutaway is not a separate building and is omitted because it explicitly requires forbidden water and unbounded terrain excavation."
+  },
+  "width_x": 13,
+  "height_y": 9,
+  "length_z": 9,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest bottom corner of main foundation; x east, y up, z south. Main front faces south. Cell projects east. Schematic offset zero."
+  },
+  "coordinate_convention": "layers[y][z][x]; every voxel explicit, including air",
+  "dimension_audit": [
+    {
+      "feature": "main foundation",
+      "printed": "9 blocks by 9 blocks",
+      "implemented": "x0..8,z0..8 at y0",
+      "confidence": "printed"
+    },
+    {
+      "feature": "front acacia columns",
+      "printed": "8 blocks high",
+      "implemented": "x0 and8,z6,y1..8",
+      "confidence": "printed height; porch setback inferred"
+    },
+    {
+      "feature": "rear acacia columns",
+      "printed": "7 blocks high",
+      "implemented": "x0 and8,z0,y1..7",
+      "confidence": "printed height"
+    },
+    {
+      "feature": "cell clear space",
+      "printed": "3x3",
+      "implemented": "x9..11,z2..4,y1..3 clear interior; door at shared wall x8",
+      "confidence": "printed horizontal clear dimensions; height inferred"
+    },
+    {
+      "feature": "complete envelope",
+      "printed": null,
+      "implemented": "13x9x9 including eastern cell, porch and sign",
+      "confidence": "inferred from measured core and illustrated attachment"
+    },
+    {
+      "feature": "slab half heights",
+      "printed": null,
+      "implemented": "birch roof y6 bottom; sandstone coping y7 bottom; sign cap y8 bottom; cell roof y4 bottom",
+      "confidence": "inferred from illustrations; no numeric slab-half callout printed"
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "step1",
+      "label": "birch planks and stairs; smooth/stripped acacia columns",
+      "blocks": [
+        "birch_planks",
+        "birch_stairs",
+        "stripped_acacia_log"
+      ],
+      "note": "Ukrainian smooth acacia interpreted as stripped acacia log with vertical axis."
+    },
+    {
+      "source": "step3",
+      "label": "birch slabs; smooth red sandstone slabs and stairs; acacia buttons; birch gate; iron bars",
+      "blocks": [
+        "birch_slab",
+        "smooth_red_sandstone_slab",
+        "smooth_red_sandstone_stairs",
+        "acacia_button",
+        "birch_fence_gate",
+        "iron_bars"
+      ]
+    },
+    {
+      "source": "step4",
+      "label": "birch fences; smooth red sandstone and stairs; lanterns",
+      "blocks": [
+        "birch_fence",
+        "smooth_red_sandstone_stairs",
+        "lantern",
+        "spruce_fence"
+      ],
+      "note": "Dark porch supports inferred as spruce fences from render; awning uses smooth red sandstone stairs."
+    },
+    {
+      "source": "steps5-8",
+      "label": "smooth stone floor; andesite blocks and stairs; cobblestone blocks and stairs; smooth stone slabs; iron bars",
+      "blocks": [
+        "smooth_stone",
+        "andesite",
+        "andesite_stairs",
+        "cobblestone",
+        "smooth_stone_slab",
+        "iron_bars",
+        "cobblestone_stairs"
+      ],
+      "note": "Andesite full-block corner caps rise half a block above smooth stone slab roof. Both andesite and cobblestone stair vents retained; exact north-wall cobblestone stair positions inferred, not independently visible."
+    },
+    {
+      "source": "interior",
+      "label": "spruce trapdoor court; iron bars, door, lever",
+      "blocks": [
+        "spruce_trapdoor",
+        "iron_bars",
+        "iron_door",
+        "lever",
+        "spruce_stairs",
+        "spruce_planks",
+        "lantern",
+        "composter",
+        "flowering_azalea"
+      ],
+      "note": "Chair, cabinet and potted flowering bush are visible but exact species/states/offsets partly obscured; use registry blocks only, no sign or container payload."
+    }
+  ],
+  "state_audit": {
+    "entrance": "Birch fence gate facing south, closed, unpowered; not a wooden door.",
+    "cell_door": "Iron door on x8 facing west into office, lower/upper at y1/y2, hinge left, closed and unpowered. Door hinge is inferred because original thin edge is not visible.",
+    "lever": "Wall-mounted facing west at x7,y2,z1 attached to solid birch wall x8; depicted control, no hidden electrical route invented or operation verified.",
+    "stairs": "Front step faces north/up toward office; awning faces north with low edge south; east vents top-half with north/south orientations inferred.",
+    "connections": "All fence and bar cardinal connections are explicit and calculated against neighboring full blocks/fences/gates/bars.",
+    "logs": "All acacia axes y.",
+    "waterlogging": "All eligible blocks explicitly waterlogged=false; no fluids."
+  },
+  "occlusion_uncertainties": [
+    "Book photographs are oblique and compressed; no orthographic complete voxel plan exists. Exact unseen placements cannot be certified. This is a documented best-effort reconstruction, not proven block-exact reproduction.",
+    "Main foundation and post heights are printed; porch depth2, wall height6, roof level6, cell exterior5x5 and 13x9x9 assembled envelope are inferred.",
+    "Facade sign step profile, three awning stair courses, exact button height, fence support spacing and window offsets are inferred from step3/4 and finished render.",
+    "Cell interior3x3 is preserved. Its outer connection uses the main east wall; opaque floor is smooth stone. Side vent stair halves/orientations and cobble/andesite patches are ambiguous.",
+    "Printed cobblestone stairs represented as two north-wall top-half slit vents at x9 and11,y2,z1. Exact hidden placement and orientation inferred; east-wall vents use labeled andesite stairs.",
+    "Interior cutaway exposes walls that remain closed in the final schematic. Furniture is included inside the completed building; exact hidden desk and cabinet construction is inferred.",
+    "Lever attached to solid birch wall near cell entrance; no redstone route visible and interactive door operation not guaranteed. No wiring invented.",
+    "Optional secret escape tunnel requires water and unspecified terrain; not included under no-fluid/no-unrelated-terrain rule. Background mesas, cacti, sheriff entity and landscape also excluded.",
+    "No entities, fluids, inventories, signs, custom block-entity payloads or live-server test. Registry/reader verification is delegated and any mismatch must remain reported."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:acacia_button[face=wall,facing=south,powered=false]",
+    "B": "minecraft:andesite",
+    "C": "minecraft:andesite_stairs[facing=north,half=top,shape=straight,waterlogged=false]",
+    "D": "minecraft:andesite_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "E": "minecraft:birch_fence[east=false,north=true,south=true,waterlogged=false,west=false]",
+    "F": "minecraft:birch_fence[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "G": "minecraft:birch_fence_gate[facing=south,in_wall=false,open=false,powered=false]",
+    "H": "minecraft:birch_planks",
+    "I": "minecraft:birch_slab[type=bottom,waterlogged=false]",
+    "J": "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "K": "minecraft:cobblestone",
+    "L": "minecraft:cobblestone_stairs[facing=east,half=top,shape=straight,waterlogged=false]",
+    "M": "minecraft:cobblestone_stairs[facing=west,half=top,shape=straight,waterlogged=false]",
+    "N": "minecraft:composter[level=0]",
+    "O": "minecraft:flowering_azalea",
+    "P": "minecraft:iron_bars[east=false,north=false,south=true,waterlogged=false,west=false]",
+    "Q": "minecraft:iron_bars[east=false,north=true,south=false,waterlogged=false,west=false]",
+    "R": "minecraft:iron_bars[east=false,north=true,south=true,waterlogged=false,west=false]",
+    "S": "minecraft:iron_bars[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "T": "minecraft:iron_door[facing=west,half=lower,hinge=left,open=false,powered=false]",
+    "U": "minecraft:iron_door[facing=west,half=upper,hinge=left,open=false,powered=false]",
+    "V": "minecraft:lantern[hanging=false,waterlogged=false]",
+    "W": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "X": "minecraft:lever[face=wall,facing=west,powered=false]",
+    "Y": "minecraft:smooth_red_sandstone_slab[type=bottom,waterlogged=false]",
+    "Z": "minecraft:smooth_red_sandstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "a": "minecraft:smooth_stone",
+    "b": "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]",
+    "c": "minecraft:spruce_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "d": "minecraft:spruce_fence[east=false,north=false,south=false,waterlogged=false,west=true]",
+    "e": "minecraft:spruce_fence[east=false,north=true,south=false,waterlogged=false,west=true]",
+    "f": "minecraft:spruce_fence[east=true,north=false,south=false,waterlogged=false,west=false]",
+    "g": "minecraft:spruce_fence[east=true,north=true,south=false,waterlogged=false,west=false]",
+    "h": "minecraft:spruce_planks",
+    "i": "minecraft:spruce_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "j": "minecraft:spruce_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]",
+    "k": "minecraft:spruce_trapdoor[facing=north,half=top,open=false,powered=false,waterlogged=false]",
+    "l": "minecraft:spruce_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]",
+    "m": "minecraft:spruce_trapdoor[facing=south,half=top,open=false,powered=false,waterlogged=false]",
+    "n": "minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]",
+    "o": "minecraft:stripped_acacia_log[axis=y]"
+  },
+  "layers": [
+    [
+      "HHHHHHHHH....",
+      "HHHHHHHHHaaaa",
+      "HHHHHHHHHaaaa",
+      "HHHHHHHHHaaaa",
+      "HHHHHHHHHaaaa",
+      "HHHHHHHHHaaaa",
+      "HHHHHHHHH....",
+      "HHHHHHHHH....",
+      "HHHHJHHHH...."
+    ],
+    [
+      "oHHHHHHHo....",
+      "Hh......HKKKK",
+      "H..i....Q...B",
+      "Hnkkkj..T...B",
+      "H.lll...P...B",
+      "H......NHSSSK",
+      "oHHHGHHHo....",
+      "E.......E....",
+      "gFFd.fFFe...."
+    ],
+    [
+      "oHHHHHHHo....",
+      "Hh.....XHLKMK",
+      "Hm......Q...C",
+      "H.......U...B",
+      "H.......P...D",
+      "H......OHSSSK",
+      "oHSH.HSHo....",
+      ".............",
+      "c..c.c..c...."
+    ],
+    [
+      "oHHHHHHHo....",
+      "HV......HKKKK",
+      "H.......R...B",
+      "H.......R...B",
+      "H.......R...B",
+      "H.......HSSSK",
+      "oHSHHHSHo....",
+      ".............",
+      "c.Wc.cW.c...."
+    ],
+    [
+      "oHHHHHHHo....",
+      "H.......HbbbB",
+      "H.......Hbbbb",
+      "H.......Hbbbb",
+      "H.......Hbbbb",
+      "H.......HbbbB",
+      "oHHHHHHHo....",
+      ".............",
+      "ZZZZZZZZZ...."
+    ],
+    [
+      "oHHHHHHHo....",
+      "H.......H....",
+      "H.......H....",
+      "H.......H....",
+      "H.......H....",
+      "H.......H....",
+      "oHHHHHHHo....",
+      "ZZZZZZZZZ....",
+      "............."
+    ],
+    [
+      "oHHHHHHHo....",
+      "HIIIIIIIH....",
+      "HIIIIIIIH....",
+      "HIIIIIIIH....",
+      "HIIIIIIIH....",
+      "HIIIIIIIH....",
+      "oZZZZZZZo....",
+      ".............",
+      "............."
+    ],
+    [
+      "oYYYYYYYo....",
+      "Y.......Y....",
+      "Y.......Y....",
+      "Y.......Y....",
+      "Y.......Y....",
+      "Y.......Y....",
+      "oYYHHHYYo....",
+      "...AAA.......",
+      "............."
+    ],
+    [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      "o..YYY..o....",
+      ".............",
+      "............."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:acacia_button[face=wall,facing=south,powered=false]": 3,
+    "minecraft:air": 607,
+    "minecraft:andesite": 9,
+    "minecraft:andesite_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:andesite_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:birch_fence[east=false,north=true,south=true,waterlogged=false,west=false]": 2,
+    "minecraft:birch_fence[east=true,north=false,south=false,waterlogged=false,west=true]": 4,
+    "minecraft:birch_fence_gate[facing=south,in_wall=false,open=false,powered=false]": 1,
+    "minecraft:birch_planks": 205,
+    "minecraft:birch_slab[type=bottom,waterlogged=false]": 35,
+    "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+    "minecraft:cobblestone": 13,
+    "minecraft:cobblestone_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:cobblestone_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
+    "minecraft:composter[level=0]": 1,
+    "minecraft:flowering_azalea": 1,
+    "minecraft:iron_bars[east=false,north=false,south=true,waterlogged=false,west=false]": 2,
+    "minecraft:iron_bars[east=false,north=true,south=false,waterlogged=false,west=false]": 2,
+    "minecraft:iron_bars[east=false,north=true,south=true,waterlogged=false,west=false]": 3,
+    "minecraft:iron_bars[east=true,north=false,south=false,waterlogged=false,west=true]": 13,
+    "minecraft:iron_door[facing=west,half=lower,hinge=left,open=false,powered=false]": 1,
+    "minecraft:iron_door[facing=west,half=upper,hinge=left,open=false,powered=false]": 1,
+    "minecraft:lantern[hanging=false,waterlogged=false]": 1,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 2,
+    "minecraft:lever[face=wall,facing=west,powered=false]": 1,
+    "minecraft:smooth_red_sandstone_slab[type=bottom,waterlogged=false]": 24,
+    "minecraft:smooth_red_sandstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 25,
+    "minecraft:smooth_stone": 20,
+    "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 18,
+    "minecraft:spruce_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 8,
+    "minecraft:spruce_fence[east=false,north=false,south=false,waterlogged=false,west=true]": 1,
+    "minecraft:spruce_fence[east=false,north=true,south=false,waterlogged=false,west=true]": 1,
+    "minecraft:spruce_fence[east=true,north=false,south=false,waterlogged=false,west=false]": 1,
+    "minecraft:spruce_fence[east=true,north=true,south=false,waterlogged=false,west=false]": 1,
+    "minecraft:spruce_planks": 2,
+    "minecraft:spruce_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+    "minecraft:spruce_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]": 1,
+    "minecraft:spruce_trapdoor[facing=north,half=top,open=false,powered=false,waterlogged=false]": 3,
+    "minecraft:spruce_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]": 3,
+    "minecraft:spruce_trapdoor[facing=south,half=top,open=false,powered=false,waterlogged=false]": 1,
+    "minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]": 1,
+    "minecraft:stripped_acacia_log[axis=y]": 30
+  },
+  "non_air_count": 446,
+  "material_counts": {
+    "minecraft:acacia_button": 3,
+    "minecraft:air": 607,
+    "minecraft:andesite": 9,
+    "minecraft:andesite_stairs": 2,
+    "minecraft:birch_fence": 6,
+    "minecraft:birch_fence_gate": 1,
+    "minecraft:birch_planks": 205,
+    "minecraft:birch_slab": 35,
+    "minecraft:birch_stairs": 1,
+    "minecraft:cobblestone": 13,
+    "minecraft:cobblestone_stairs": 2,
+    "minecraft:composter": 1,
+    "minecraft:flowering_azalea": 1,
+    "minecraft:iron_bars": 20,
+    "minecraft:iron_door": 2,
+    "minecraft:lantern": 3,
+    "minecraft:lever": 1,
+    "minecraft:smooth_red_sandstone_slab": 24,
+    "minecraft:smooth_red_sandstone_stairs": 25,
+    "minecraft:smooth_stone": 20,
+    "minecraft:smooth_stone_slab": 18,
+    "minecraft:spruce_fence": 12,
+    "minecraft:spruce_planks": 2,
+    "minecraft:spruce_stairs": 1,
+    "minecraft:spruce_trapdoor": 9,
+    "minecraft:stripped_acacia_log": 30
+  },
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "H",
+      "description": "foundation northwest"
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "z": 8,
+      "char": "H",
+      "description": "foundation southeast"
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 8,
+      "char": "J",
+      "description": "front entry stair"
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "z": 6,
+      "char": "o",
+      "description": "eight-block front post"
+    },
+    {
+      "x": 8,
+      "y": 7,
+      "z": 0,
+      "char": "o",
+      "description": "seven-block rear post"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 6,
+      "char": "G",
+      "description": "closed birch entrance gate"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 6,
+      "char": ".",
+      "description": "headroom over gate"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 6,
+      "char": "S",
+      "description": "barred office window"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "z": 6,
+      "char": "Y",
+      "description": "central sign cap"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "z": 7,
+      "char": "A",
+      "description": "acacia sign button"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 8,
+      "char": "W",
+      "description": "hanging porch lantern"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 3,
+      "char": "T",
+      "description": "lower iron cell door"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 3,
+      "char": "U",
+      "description": "upper iron cell door"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "z": 1,
+      "char": "X",
+      "description": "door control lever"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 3,
+      "char": ".",
+      "description": "clear cell interior"
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "z": 3,
+      "char": "a",
+      "description": "cell smooth-stone floor"
+    },
+    {
+      "x": 10,
+      "y": 4,
+      "z": 3,
+      "char": "b",
+      "description": "cell slab roof"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 5,
+      "char": "S",
+      "description": "cell barred front"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "z": 2,
+      "char": "C",
+      "description": "east slit stair"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "z": 5,
+      "char": "O",
+      "description": "office flowering azalea"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "z": 3,
+      "char": "k",
+      "description": "trapdoor desk top"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "z": 1,
+      "char": "V",
+      "description": "cabinet lantern"
+    },
+    {
+      "x": 12,
+      "y": 8,
+      "z": 8,
+      "char": ".",
+      "description": "empty envelope corner"
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "z": 1,
+      "char": "L",
+      "description": "inferred north-wall cobblestone stair vent"
+    }
+  ],
+  "serialization_audit": {
+    "property_order": "Alphabetically sorted for all block-state property strings.",
+    "validation_history": "Initial production-reader comparison matched all1053 voxels and24 spots, but aggregate exact-string count check exited2 due to11 property-order variants (22 difference entries). Property strings were canonicalized without changing any voxel, state property, layer character, count, or geometry; revalidation required."
+  }
+}

@@ -1,0 +1,736 @@
+{
+  "schema_version": 1,
+  "name": "Skull Cave / Печера Черепа",
+  "slug": "13_skull_cave",
+  "folder": "13",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/13/IMG_20261115_160341-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/13/IMG_20261115_160352-1536x1152.jpg"
+  ],
+  "distinct_builds_audit": "One Skull Cave, progressively assembled in steps1-9 across book pages58-61. The U-shaped jaw, cheek/nose/eye/forehead diagrams and platform/stair inset are details of this same build, not distinct buildings. Boat and player are contextual entities, not builds.",
+  "width_x": 20,
+  "height_y": 16,
+  "length_z": 16,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "anchor": "Minimum full-envelope corner; host cliff begins at (0,0,3), skull faces north (-z).",
+    "axes": "+x east, +y up, +z south; layers[y][z][x]. Viewed from north, image left is west.",
+    "placement": "Printed host cliff x0..19,y0..14,z3..15 =20x15x13. Skull projects north to z0; roof leaf layer y15. Full artifact20x16x16; dry cave floor y0. No water apron/basin imported."
+  },
+  "callout_audit": [
+    {
+      "page": 59,
+      "step": 1,
+      "printed": "Find a cliffside near water with space20 blocks wide,15 high,13 deep.",
+      "implementation": "Exact host-cliff box x0..19,y0..14,z3..15. Stone, dirt under cap and grass top reconstructed from diagrams.",
+      "status": "printed site dimensions retained; full envelope includes facade/foliage"
+    },
+    {
+      "page": 59,
+      "step": 2,
+      "printed": "Excavate12 blocks deep. Entrance11 high,9 wide in upper5 rows and7 wide in lower4 rows.",
+      "implementation": "Cave z3..14 inclusive (depth12), rear wall z15. Throat z3..4: y1..4 width7 x6..12; y7..11 width9 x5..13. Unspecified y5..6 width7. Wider hidden chamber x3..16,z5..14.",
+      "status": "11/9/7/5/4/12 retained; printed5+4 does not account for2 of11 entrance rows; two transition rows and chamber width inferred"
+    },
+    {
+      "page": 59,
+      "step": 3,
+      "printed": "Light cave inside with soul lanterns hung from ceiling, then fill with treasures.",
+      "implementation": "Five hanging soul lanterns at y11 with stone ceiling y12. Empty chests and gold/diamond/emerald block piles along side/back walls.",
+      "status": "material intent retained; exact count/treasure layout not readable"
+    },
+    {
+      "page": 60,
+      "step": 4,
+      "printed": "Build platform on outside of entrance from jungle slabs, stairs and fences.",
+      "implementation": "Seven-wide jungle bottom-slab platform y4,z2..6; two fence supports and three descending stair steps at each side.",
+      "status": "named materials retained; platform height, size, stair offsets and half states inferred"
+    },
+    {
+      "page": 60,
+      "step": 5,
+      "printed": "Start skull from smooth white quartz blocks and stairs/slabs of it as illustrated; leave room for a boat between teeth.",
+      "implementation": "Smooth-quartz U-jaw y1..4, center gap three cells x8..10 at y2, and dry mouth route under platform.",
+      "status": "material family/U silhouette retained; entity and water omitted; navigability not tested"
+    },
+    {
+      "page": 60,
+      "step": 6,
+      "printed": "Build cheekbones around platform with smooth quartz blocks; add nose hole from slabs and stairs, making it jagged/scary.",
+      "implementation": "Stepped cheeks at x4..5/13..14; triangular nose hole y6..7; explicit bottom slabs and mirrored east/west stairs.",
+      "status": "silhouette intent retained; pixel profile/depth/half states inferred"
+    },
+    {
+      "page": 61,
+      "step": 7,
+      "printed": "Make eye sockets with slabs and stairs.",
+      "implementation": "Two stepped three-to-four-cell sockets y8..10; top-half south-facing brow stairs and bottom-slab sills.",
+      "status": "paired hollow sockets retained; exact widths/half states inferred"
+    },
+    {
+      "page": 61,
+      "step": 8,
+      "printed": "Final skull construction stage is forehead.",
+      "implementation": "Stepped white forehead y11..13 with additional north projection at z0 and half-height crest.",
+      "status": "intent retained; thickness and pixel transitions inferred"
+    },
+    {
+      "page": 61,
+      "step": 9,
+      "printed": "Decorate skull using blocks appropriate to local biome; this example uses vines and jungle leaves.",
+      "implementation": "Persistent jungle roof clumps, side curtains and south-attached wall/cheek vines; no extra trees/logs.",
+      "status": "named final materials retained; irregular distribution inferred"
+    }
+  ],
+  "material_audit": [
+    {
+      "book": "cliff terrain (render/diagrams)",
+      "ids": [
+        "minecraft:stone",
+        "minecraft:dirt",
+        "minecraft:grass_block"
+      ],
+      "notes": "Exact rectangular host-site dimensions retained; internal excavation and one dirt cap row inferred. Water excluded, not converted to a substitute material."
+    },
+    {
+      "book": "smooth white quartz blocks, stairs and slabs",
+      "ids": [
+        "minecraft:smooth_quartz",
+        "minecraft:smooth_quartz_stairs",
+        "minecraft:smooth_quartz_slab"
+      ],
+      "notes": "Same smooth-quartz family throughout skull; no bone/white concrete substitute. Slab and stair halves explicitly selected from visible bevel intent, not recoverable exactly."
+    },
+    {
+      "book": "jungle slabs, stairs and fences",
+      "ids": [
+        "minecraft:jungle_slab",
+        "minecraft:jungle_stairs",
+        "minecraft:jungle_fence"
+      ],
+      "notes": "Jungle translates Ukrainian tropical-wood wording; all dry. Platform bottom slabs, stairs north-rising, isolated vertical fence supports with all horizontal connections false."
+    },
+    {
+      "book": "soul lanterns attached to ceiling",
+      "ids": [
+        "minecraft:soul_lantern"
+      ],
+      "notes": "Five hanging=true ceiling lights, no speculative chains or underwater lights. Count inferred."
+    },
+    {
+      "book": "treasures; colored block piles and chests visible in cutaway",
+      "ids": [
+        "minecraft:gold_block",
+        "minecraft:diamond_block",
+        "minecraft:emerald_block",
+        "minecraft:chest"
+      ],
+      "notes": "Visible color family approximated as nine gold, four diamond, four emerald blocks and four empty chests; piles/positions inferred. No inventory or loot NBT."
+    },
+    {
+      "book": "vines and jungle leaves",
+      "ids": [
+        "minecraft:vine",
+        "minecraft:jungle_leaves"
+      ],
+      "notes": "Persistent leaves, distance7 because no logs. Vines attached to south-side supporting blocks. Keep intended leaf state even if production parser reports mismatch."
+    }
+  ],
+  "state_audit": {
+    "doors": "None shown or added; no door hinge inference needed.",
+    "quartz_stairs": "facing=south,half=top brows; south/bottom forehead and lower jaw; east/west bottom nose/cheek bevels; straight, waterlogged=false.",
+    "slabs": "Quartz bottom crest/socket sill/nose sill; top slabs hanging teeth. Jungle platform bottom; no fluids/waterlogging.",
+    "jungle_stairs": "North-facing bottom stairs climb toward elevated platform, z9/y1 -> z8/y2 -> z7/y3 -> z6/y4 slab. Half-step junction is inferred, not certified walkable.",
+    "fences": "Vertical isolated support posts; no horizontal neighboring fence/full-block side connections.",
+    "soul_lanterns": "hanging=true,waterlogged=false; stone directly above each.",
+    "chests": "Explicit east/west/north facing, type=single,waterlogged=false; nonadjacent, no inventory NBT.",
+    "leaves": "distance=7,persistent=true,waterlogged=false; no logs so no closer source.",
+    "vines": "south=true, other side properties=false, up=false; supporting quartz/stone/leaves at z+1. No freestanding vine claims."
+  },
+  "uncertainty": [
+    "No pixel-perfect or hidden-geometry guarantee: two photographed perspective spreads do not expose every voxel. This is an audited, explicit reconstruction, not an exact recoverable plan.",
+    "Printed entrance contradiction: total height11 versus five upper + four lower =9 specified rows. Preserve total11 and both widths; infer two middle width7 rows. Choosing width9 there would also fit the incomplete prose.",
+    "Printed20x15x13 is the host location, not a fully dimensioned skull. Retained exactly as host box. Complete20x16x16 envelope includes3 northward facade cells and one leaf layer above grass.",
+    "Skull13-wide,13-row silhouette, jaw curve, eye pixels, nose, forehead, depth projections, stair orientations and slab halves are inferred from master render and assembly insets. Main face z1, backing z2, frontmost accents z0.",
+    "Excavation depth12 is retained. Hidden chamber14-wide, throat2-deep, ceiling and floor levels, one-block rear wall and widened treasure alcoves are inferred. No unsupported claim that chamber shape is fully visible.",
+    "Platform size/height, two stairs, fence count, five lantern count, treasure pile species/count/positions and chest states inferred. No chest contents or extra functional mechanisms.",
+    "Water seen in master render and diagrams is deliberately omitted under no-fluid rule; no ocean/basin/river apron replacement. Boat/player/entities omitted. Dry route is not a functional boat entrance and no live/physics/navigation test performed.",
+    "Final roof foliage distribution is inferred, not a solid second grass canopy. Jungle leaves persistent to prevent decay, no invented logs. Production reader leaf-distance conversion issue may affect reconstructed states and must be reported without workaround.",
+    "No source/dependency/unrelated files changed; only folder13 artifacts and folder13 report row are authorized. No entities, fluids or complex block-entity NBT."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "S": "minecraft:stone",
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "Q": "minecraft:smooth_quartz",
+    "b": "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]",
+    "t": "minecraft:smooth_quartz_slab[type=top,waterlogged=false]",
+    "n": "minecraft:smooth_quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "u": "minecraft:smooth_quartz_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "e": "minecraft:smooth_quartz_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "w": "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "p": "minecraft:jungle_slab[type=bottom,waterlogged=false]",
+    "s": "minecraft:jungle_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "f": "minecraft:jungle_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "h": "minecraft:soul_lantern[hanging=true,waterlogged=false]",
+    "A": "minecraft:gold_block",
+    "B": "minecraft:diamond_block",
+    "C": "minecraft:emerald_block",
+    "c": "minecraft:chest[facing=east,type=single,waterlogged=false]",
+    "d": "minecraft:chest[facing=west,type=single,waterlogged=false]",
+    "k": "minecraft:chest[facing=north,type=single,waterlogged=false]",
+    "L": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+    "v": "minecraft:vine[east=false,north=false,south=true,up=false,west=false]"
+  },
+  "layers": [
+    [
+      "....................",
+      "....................",
+      "....................",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      ".......b...b........",
+      ".......QQQQQ........",
+      "....................",
+      "SSSSSS.......SSSSSSS",
+      "SSSSSS.......SSSSSSS",
+      "SSS...f.....f....SSS",
+      "SSS..............SSS",
+      "SSSc.............SSS",
+      "SSS..............SSS",
+      "SSSc..s.....s...dSSS",
+      "SSS..............SSS",
+      "SSS.AA........BB.SSS",
+      "SSS.AAA.......B..SSS",
+      "SSS.AA.......CC..SSS",
+      "SSS..........C.k.SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "......n.....n.......",
+      "......QQ...QQ.......",
+      "L.................vL",
+      "SSSSSS.......SSSSSSS",
+      "SSSSSS.......SSSSSSS",
+      "SSS...f.....f....SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS...s.....s....SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS............B.SSS",
+      "SSS.A............SSS",
+      "SSS..A.......C...SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....................",
+      ".v...QQ.....QQ......",
+      "LLv...............vL",
+      "SSSSSS.......SSSSSSS",
+      "SSSSSS.......SSSSSSS",
+      "SSS...f.....f....SSS",
+      "SSS..............SSS",
+      "SSS...s.....s....SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....................",
+      ".v...t.t.t.t.t......",
+      "LLv...ppppppp....LvL",
+      "SSSSSSpppppppSSSSSSS",
+      "SSSSSSpppppppSSSSSSS",
+      "SSS...ppppppp....SSS",
+      "SSS...ppppppp....SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "........bbb.........",
+      ".v...QQQQQQQQQ...v..",
+      "LLv..QQQQQQQQQ..vLvL",
+      "SSSSSS.......SSSSSSS",
+      "SSSSSS.......SSSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....................",
+      ".v...QQQ...QQQ...v..",
+      "LLv..QQQ...QQQ..vLv.",
+      "SSSSSS.......SSSSSSS",
+      "SSSSSS.......SSSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....Qe.......wQ.....",
+      ".v..QQQQe.wQQQQ..v..",
+      ".LL.QQQQQ.QQQQQ.vLv.",
+      "SSSSS.........SSSSSS",
+      "SSSSS.........SSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....Q.........Q.....",
+      ".vvQQbbbQQQbbbQQ....",
+      ".LLQQ...QQQ...QQvLL.",
+      "SSSSS.........SSSSSS",
+      "SSSSS.........SSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....Q.........Q.....",
+      "..vQ....QQQ....Q..v.",
+      ".LLQ....QQQ....QvvL.",
+      "SSSSS.........SSSSSS",
+      "SSSSS.........SSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      "....................",
+      "..vQQuuuQQQuuuQQ..v.",
+      ".LLQQ...QQQ...QQvvL.",
+      "SSSSS.........SSSSSS",
+      "SSSSS.........SSSSSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      ".....v.......v......",
+      "..vQQQQQQQQQQQQQ..v.",
+      "..LQQQQQQQQQQQQQvvL.",
+      "SSSSS.........SSSSSS",
+      "SSSSS.........SSSSSS",
+      "SSS..............SSS",
+      "SSS...h.....h....SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS......h.......SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS..............SSS",
+      "SSS...h.....h....SSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      ".....nQQQQQQQn......",
+      "....QQQQQQQQQQQ.....",
+      "..LvQQQQQQQQQQQvvvL.",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS",
+      "SSSSSSSSSSSSSSSSSSSS"
+    ],
+    [
+      ".......bbbbb........",
+      "......QQQQQQQ.......",
+      "...vv.QQQQQQQ..vvv..",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD",
+      "DDDDDDDDDDDDDDDDDDDD"
+    ],
+    [
+      "....................",
+      "....................",
+      ".................v..",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG",
+      "GGGGGGGGGGGGGGGGGGGG"
+    ],
+    [
+      "....................",
+      "....................",
+      "....................",
+      ".LL..LL....LL....LL.",
+      ".L...LL...LL.....LL.",
+      "..LL...LL...LL..L...",
+      "...L...L...LL...LL..",
+      ".L..LL...LL...L...L.",
+      ".L..L...LL...LL...L.",
+      "..LL..LL...L...LL...",
+      "..L...LL..LL...L...L",
+      "L...LL...L...LL...L.",
+      "L...L...LL...L...LL.",
+      ".LL...LL...LL...L...",
+      "..L..LL...LL...LL...",
+      ".L...L...LL...L...L."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 2481,
+    "minecraft:chest[facing=east,type=single,waterlogged=false]": 2,
+    "minecraft:chest[facing=north,type=single,waterlogged=false]": 1,
+    "minecraft:chest[facing=west,type=single,waterlogged=false]": 1,
+    "minecraft:diamond_block": 4,
+    "minecraft:dirt": 260,
+    "minecraft:emerald_block": 4,
+    "minecraft:gold_block": 9,
+    "minecraft:grass_block[snowy=false]": 260,
+    "minecraft:jungle_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 6,
+    "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]": 123,
+    "minecraft:jungle_slab[type=bottom,waterlogged=false]": 35,
+    "minecraft:jungle_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 6,
+    "minecraft:smooth_quartz": 174,
+    "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]": 16,
+    "minecraft:smooth_quartz_slab[type=top,waterlogged=false]": 5,
+    "minecraft:smooth_quartz_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:smooth_quartz_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 4,
+    "minecraft:smooth_quartz_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 6,
+    "minecraft:smooth_quartz_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:soul_lantern[hanging=true,waterlogged=false]": 5,
+    "minecraft:stone": 1666,
+    "minecraft:vine[east=false,north=false,south=true,up=false,west=false]": 48
+  },
+  "non_air_count": 2639,
+  "air_count": 2481,
+  "volume": 5120,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 3,
+      "char": "S",
+      "note": "Minimum host-cliff foundation corner"
+    },
+    {
+      "x": 19,
+      "y": 14,
+      "z": 15,
+      "char": "G",
+      "note": "Maximum 20x15x13 host-cliff corner"
+    },
+    {
+      "x": 19,
+      "y": 13,
+      "z": 15,
+      "char": "D",
+      "note": "Dirt directly under grass"
+    },
+    {
+      "x": 9,
+      "y": 6,
+      "z": 3,
+      "char": ".",
+      "note": "Inferred middle entrance row remains width7"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "z": 3,
+      "char": ".",
+      "note": "Upper five-row opening begins width9"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "z": 3,
+      "char": "S",
+      "note": "Width9 upper throat west bound retained"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 3,
+      "char": ".",
+      "note": "Lower four-row opening west bound"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 3,
+      "char": "S",
+      "note": "Width7 lower throat west exterior"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "z": 14,
+      "char": ".",
+      "note": "Excavated twelve-deep limit"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "z": 15,
+      "char": "S",
+      "note": "One-block rear wall"
+    },
+    {
+      "x": 9,
+      "y": 12,
+      "z": 10,
+      "char": "S",
+      "note": "Solid ceiling over hanging soul lantern"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "z": 10,
+      "char": "h",
+      "note": "Central ceiling soul lantern"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "z": 5,
+      "char": "p",
+      "note": "Jungle bottom-slab platform"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "z": 5,
+      "char": "f",
+      "note": "Jungle fence platform support"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "z": 8,
+      "char": "s",
+      "note": "North-rising interior staircase"
+    },
+    {
+      "x": 9,
+      "y": 13,
+      "z": 0,
+      "char": "b",
+      "note": "Half-height projecting forehead"
+    },
+    {
+      "x": 9,
+      "y": 12,
+      "z": 0,
+      "char": "Q",
+      "note": "Central forehead"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "z": 1,
+      "char": "u",
+      "note": "Upside-down eye brow"
+    },
+    {
+      "x": 6,
+      "y": 9,
+      "z": 1,
+      "char": ".",
+      "note": "Left eye socket"
+    },
+    {
+      "x": 12,
+      "y": 9,
+      "z": 1,
+      "char": ".",
+      "note": "Right eye socket"
+    },
+    {
+      "x": 9,
+      "y": 7,
+      "z": 1,
+      "char": ".",
+      "note": "Nose upper hole"
+    },
+    {
+      "x": 9,
+      "y": 6,
+      "z": 1,
+      "char": ".",
+      "note": "Nose lower hole"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "z": 1,
+      "char": "t",
+      "note": "Hanging central upper tooth"
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "z": 1,
+      "char": ".",
+      "note": "Three-wide dry mouth gap"
+    },
+    {
+      "x": 9,
+      "y": 1,
+      "z": 1,
+      "char": "Q",
+      "note": "Lower-jaw bottom"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 12,
+      "char": "A",
+      "note": "Stacked gold treasure"
+    },
+    {
+      "x": 15,
+      "y": 2,
+      "z": 11,
+      "char": "B",
+      "note": "Diamond treasure"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "z": 13,
+      "char": "C",
+      "note": "Emerald treasure"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "z": 7,
+      "char": "c",
+      "note": "Empty east-facing single chest"
+    },
+    {
+      "x": 1,
+      "y": 15,
+      "z": 3,
+      "char": "L",
+      "note": "Persistent jungle roof foliage; no parser workaround"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 2,
+      "char": "v",
+      "note": "South-attached stone-wall vine"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": ".",
+      "note": "Water apron excluded, not replaced with solids"
+    }
+  ]
+}

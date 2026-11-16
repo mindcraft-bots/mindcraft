@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/04_pagoda.json schematics/04_pagoda.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/04_pagoda.json",
+  "schematic": "schematics/04_pagoda.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    15,
+    39,
+    16
+  ],
+  "volume": 9360,
+  "comparedVoxels": 9360,
+  "expectedNonAir": 2468,
+  "parserDerivedAir": 6892,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 41,
+  "spotChecks": 19,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

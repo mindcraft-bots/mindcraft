@@ -1,0 +1,761 @@
+{
+  "schema": "explicit-layer-matrix-v1",
+  "name": "15_potion_factory",
+  "folder": 15,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 19,
+  "height_y": 13,
+  "length_z": 15,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Minimum envelope corner; +x east along 15-block long wall, +z south across 11-block span, +y up. Front long wall faces north at z2. Printed post bases y1; inferred floor y0. Frame x2..16, z2..12 inclusive."
+  },
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160431-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160442-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/15/IMG_20261115_160454-1536x1152.jpg"
+  ],
+  "distinct_build_audit": "One potion factory, steps 1..11 plus final interior cutaway. No independent vignette build. Exterior Nether scenery/player excluded.",
+  "printed_dimension_audit": [
+    {
+      "page": 67,
+      "step": 1,
+      "printed": "15 blocks by 11 blocks; eight stripped dark oak columns four blocks tall; add two blocks to central columns",
+      "realization": "Frame x2..16 by z2..12 =15x11 inclusive; eight posts; six y1..4 and two short-end midpoint posts y1..6. Which midpoint pair rises is inferred from gables."
+    },
+    {
+      "page": 67,
+      "step": 2,
+      "printed": "Walls two blocks high, calcite and waxed oxidized cut copper",
+      "realization": "Initial y1..2 outer calcite perimeter and inner copper strip; later calcite extends to y3."
+    },
+    {
+      "page": 67,
+      "step": 3,
+      "printed": "Industrial chimney 12 blocks high, oxidized cut copper blocks/stairs/slabs, large lower furnace opening",
+      "realization": "Base y1 through cap y12 inclusive =12; hollow 3x3 shaft x5..7,z8..10, furnace mouth north; inferred 5x5 notched cap."
+    },
+    {
+      "page": 68,
+      "step": 5,
+      "printed": "Calcite side walls three blocks high; front/back five each",
+      "realization": "Long walls y1..3; short gables rise to y5 with stepped shoulders; central timber posts to6."
+    },
+    {
+      "page": 71,
+      "section": "interior",
+      "printed": "Four brewing stands; one cauldron suffices for three bottles",
+      "realization": "Exactly four brewing stands; one empty cauldron instead of illustrated water-filled cauldron. Three-bottle statement informational, no bottle entities/NBT."
+    },
+    {
+      "page": 70,
+      "step": 10,
+      "printed": "Two additional small chimneys",
+      "realization": "Exactly two waxed copper flues, with campfires and crimson trapdoors."
+    },
+    {
+      "page": 70,
+      "step": 11,
+      "printed": "Lantern on every roof corner; azalea blocks below walls",
+      "realization": "Exactly four hanging lanterns; azalea perimeter patches inferred."
+    }
+  ],
+  "printed_material_audit": [
+    {
+      "printed": "Stripped dark oak wood, dark oak stairs",
+      "used": [
+        "stripped_dark_oak_log[axis=y]",
+        "stripped_dark_oak_log[axis=x]",
+        "dark_oak_stairs",
+        "dark_oak_slab"
+      ],
+      "notes": "Log species/color/axis follows render. Ukrainian wood wording does not uniquely resolve six-sided wood versus log; log ends chosen as visible in cutaway."
+    },
+    {
+      "printed": "Calcite; waxed oxidized cut copper",
+      "used": [
+        "calcite",
+        "waxed_oxidized_cut_copper"
+      ],
+      "notes": "No standalone numerical materials inventory on these pages; amounts are reconstructed, not printed quantities."
+    },
+    {
+      "printed": "Main oxidized cut copper blocks, stairs, slabs; campfires",
+      "used": [
+        "oxidized_cut_copper",
+        "oxidized_cut_copper_stairs",
+        "oxidized_cut_copper_slab",
+        "campfire"
+      ],
+      "notes": "Unwaxed main chimney per step3; waxed wall liners/small chimneys per steps2/10. Cut versus chiseled translation resolved by visible square-tiled texture."
+    },
+    {
+      "printed": "Crimson slabs, stairs, trapdoors; roof crimson slabs and planks",
+      "used": [
+        "crimson_slab",
+        "crimson_planks",
+        "crimson_trapdoor",
+        "crimson_stairs"
+      ],
+      "notes": "Crimson slab courses, stair hood shoulders, trapdoor planter vents, and plank ridge match the printed palette; exact half-block profiles inferred."
+    },
+    {
+      "printed": "Two calcite blocks below windows replaced with soul sand and Nether wart",
+      "used": [
+        "soul_sand",
+        "nether_wart[age=3]"
+      ],
+      "notes": "Two soul-sand positions for each paired window. Growth age inferred mature, rather than printed."
+    },
+    {
+      "printed": "Dark glass panes over doors/windows",
+      "used": [
+        "black_stained_glass_pane"
+      ],
+      "notes": "Vanilla has no tinted-glass-pane block; black stained glass panes match the dark thin render. Connection states explicitly set."
+    },
+    {
+      "printed": "Lanterns and azalea blocks; barrels, brewing stands and cauldron in interior",
+      "used": [
+        "lantern",
+        "flowering_azalea",
+        "flowering_azalea_leaves",
+        "barrel",
+        "brewing_stand",
+        "cauldron",
+        "crafting_table",
+        "furnace"
+      ],
+      "notes": "Interior furniture visible in cutaway integrated; empty barrels/stands, no inventory NBT. Flowering variants follow visible pink foliage."
+    }
+  ],
+  "inferred_detail_uncertainty": [
+    "Not a certified exact voxel recovery: perspective photos conceal rear wall, roof underside, interior and many state halves. Explicit matrix is one documented reconstruction, not a claim of uniquely recoverable hidden geometry.",
+    "19x13x15 complete envelope includes inferred one-layer calcite floor, overhanging stepped roof, timber braces and cap. Printed 15x11 is structural frame, not envelope. Main chimney height12 excludes floor.",
+    "Roof half-levels, upturned gable verge, hood profiles, copper cap pattern, chimney position, secondary flue spacing and dark oak brace orientation inferred from sequential diagrams. Hood shoulders use bottom crimson stairs and slabs; exact silhouette is inferred.",
+    "Door count, species and positions inferred; one north and one south long-wall door. All door states explicit, closed left hinges; south-facing door hingeleft places hinge toward east. No claimed visible hinge evidence.",
+    "Four paired growing-window bays and end high-glass openings inferred; wart age3. Black pane connection booleans explicit; runtime neighbors may update connection states.",
+    "Calcite floor and copper internal liner inferred; furnishings positioned from partial cutaway. Four stands retained, barrels/crafting table/empty cauldron have no inventories. No recipe supplies or functional brewing claim.",
+    "Illustrated water-filled cauldron omitted under no-fluid requirement, replaced with dry cauldron; no fluid blocks, entities, smoke entities, or complex block-entity payloads. Campfires are lit block states only.",
+    "Interior decorative flowering azalea leaves retain persistent=true,distance=7,waterlogged=false. Exact hidden leaf distance is unknowable; production parser may misdecode integer-valued properties. Intended states must not be changed to mask reader discrepancies.",
+    "No surrounding Nether landscape, player, smoke plume entities or separate cutaway export. No live-server placement, physics, visual equivalence or brewing-function test."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:barrel[facing=north,open=false]",
+    "B": "minecraft:black_stained_glass_pane[east=false,north=true,south=true,waterlogged=false,west=false]",
+    "C": "minecraft:black_stained_glass_pane[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "D": "minecraft:brewing_stand[has_bottle_0=false,has_bottle_1=false,has_bottle_2=false]",
+    "E": "minecraft:calcite",
+    "F": "minecraft:campfire[facing=north,lit=true,signal_fire=false,waterlogged=false]",
+    "G": "minecraft:cauldron",
+    "H": "minecraft:crafting_table",
+    "I": "minecraft:crimson_planks",
+    "J": "minecraft:crimson_slab[type=bottom,waterlogged=false]",
+    "K": "minecraft:crimson_slab[type=top,waterlogged=false]",
+    "L": "minecraft:crimson_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "M": "minecraft:crimson_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "N": "minecraft:crimson_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]",
+    "O": "minecraft:crimson_trapdoor[facing=north,half=bottom,open=true,powered=false,waterlogged=false]",
+    "P": "minecraft:crimson_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]",
+    "Q": "minecraft:crimson_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]",
+    "R": "minecraft:dark_oak_door[facing=north,half=lower,hinge=left,open=false,powered=false]",
+    "S": "minecraft:dark_oak_door[facing=north,half=upper,hinge=left,open=false,powered=false]",
+    "T": "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=false,powered=false]",
+    "U": "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=false,powered=false]",
+    "V": "minecraft:dark_oak_slab[type=top,waterlogged=false]",
+    "W": "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "X": "minecraft:dark_oak_stairs[facing=east,half=top,shape=straight,waterlogged=false]",
+    "Y": "minecraft:dark_oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "Z": "minecraft:dark_oak_stairs[facing=north,half=top,shape=straight,waterlogged=false]",
+    "a": "minecraft:dark_oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "b": "minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "c": "minecraft:dark_oak_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "d": "minecraft:dark_oak_stairs[facing=west,half=top,shape=straight,waterlogged=false]",
+    "e": "minecraft:flowering_azalea",
+    "f": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+    "g": "minecraft:furnace[facing=north,lit=false]",
+    "h": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "i": "minecraft:nether_wart[age=3]",
+    "j": "minecraft:oxidized_cut_copper",
+    "k": "minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=false]",
+    "l": "minecraft:oxidized_cut_copper_slab[type=top,waterlogged=false]",
+    "m": "minecraft:oxidized_cut_copper_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "n": "minecraft:soul_sand",
+    "o": "minecraft:stripped_dark_oak_log[axis=x]",
+    "p": "minecraft:stripped_dark_oak_log[axis=y]",
+    "q": "minecraft:waxed_oxidized_cut_copper"
+  },
+  "layers": [
+    [
+      "...................",
+      "...................",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "..EEEEEEEEEEEEEEE..",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "..aeePP..a..PPeea..",
+      ".WpEEnnEEpREnnEEpc.",
+      "..Eqqqqqqq.qqqqqE..",
+      "..Eq..........GqE..",
+      ".eEq...........qEe.",
+      "..Eq......H....qE..",
+      ".Wpq...........qpc.",
+      "..Eq.j.j..VVVV.qE..",
+      ".eEq.jgj.......qEe.",
+      "..Eq.jjj....VVVqE..",
+      "..Eqqqqqqq.qpqpqE..",
+      ".WpEEnnEEpTEnnEEpc.",
+      "..YeeOO..Y..OOeeY..",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "..pEEiiEEpSEiiEEp..",
+      "..Eqqqqqqq.qqqqqE..",
+      "..Eq...........qE..",
+      "..Eq...........qE..",
+      "..Eq...........qE..",
+      "..pq.m.m.......qp..",
+      "..Eq.j.j..DDDD.qE..",
+      "..Eq.j.j.......qE..",
+      "..Eq.jjj.....AAqE..",
+      "..Eqqqqqqq.qpqpqE..",
+      "..pEEiiEEpUEiiEEp..",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      ".hb.LKKM.b.LKKM.bh.",
+      ".XpVVCCVVpCVCCVVpd.",
+      "..V.............V..",
+      "..V.............V..",
+      "..V.f...........V..",
+      "..V.............V..",
+      ".Xp.............pd.",
+      "..V..jkj........V..",
+      "..V..j.j....f.f.V..",
+      "..V..jjj.....AA.V..",
+      "..V.........p.p.V..",
+      ".XpVVCCVVpCVCCVVpd.",
+      ".hZ.LKKM.Z.LKKM.Zh.",
+      "..................."
+    ],
+    [
+      "KJJJJJJJJJJJJJJJJJK",
+      ".KKKKKKKKKKKKKKKKK.",
+      "..p......p......p..",
+      "..E.............E..",
+      "..E.............E..",
+      "..B.f...........B..",
+      "..E.f...........E..",
+      "..p.............p..",
+      "..E..jjj........E..",
+      "..B..j.j....fff.B..",
+      "..E..jjj....VVV.E..",
+      "..E.........p.p.E..",
+      "..p......p......p..",
+      ".KKKKKKKKKKKKKKKKK.",
+      "KJJJJJJJJJJJJJJJJJK"
+    ],
+    [
+      "...................",
+      "J.................J",
+      "KJJJJJJJJJJJJJJJJJK",
+      ".KKKKKKKKKKKKKKKKK.",
+      "...................",
+      "..E.............E..",
+      "..E.............E..",
+      "..pooooooooooooop..",
+      "..E..jjj........E..",
+      "..E..j.j........E..",
+      ".....jjj...........",
+      ".KKKKKKKKKKKKKKKKK.",
+      "KJJJJJJJJJJJJJJJJJK",
+      "J.................J",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "J.................J",
+      "KJJJJJJJJJJJJJJJJJK",
+      ".KKKKKKKKKKKKKKKKK.",
+      "...................",
+      "..p.............p..",
+      ".....jjj...........",
+      ".KKKKj.jKKKKKKKKKK.",
+      "KJJJJjjjJJJJJJJJJJK",
+      "J.................J",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "J..........q..q...J",
+      "KJJJJJJJJJJJJJJJJJK",
+      ".IIIIIIIIIIIIIIIII.",
+      "KJJJJjjjJJJJJJJJJJK",
+      "J....j.j..........J",
+      ".....jjj...........",
+      "...................",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...........q..q....",
+      "...................",
+      "JJJJJJJJJJJJJJJJJJJ",
+      ".....jjj...........",
+      ".....j.j...........",
+      ".....jjj...........",
+      "...................",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...........q..q....",
+      "...................",
+      "...................",
+      ".....jjj...........",
+      ".....j.j...........",
+      ".....jjj...........",
+      "...................",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...........P..P....",
+      "..........NFQNFQ...",
+      "...........O..O....",
+      "...................",
+      ".....jjj...........",
+      ".....j.j...........",
+      ".....jjj...........",
+      "...................",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      ".....jjj...........",
+      ".....j.j...........",
+      ".....jjj...........",
+      "...................",
+      "...................",
+      "...................",
+      "..................."
+    ],
+    [
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      "...................",
+      ".....lll...........",
+      "....lF.Fl..........",
+      "....l...l..........",
+      "....lF.Fl..........",
+      ".....lll...........",
+      "...................",
+      "...................",
+      "..................."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 2761,
+    "minecraft:barrel[facing=north,open=false]": 4,
+    "minecraft:black_stained_glass_pane[east=false,north=true,south=true,waterlogged=false,west=false]": 4,
+    "minecraft:black_stained_glass_pane[east=true,north=false,south=false,waterlogged=false,west=true]": 10,
+    "minecraft:brewing_stand[has_bottle_0=false,has_bottle_1=false,has_bottle_2=false]": 4,
+    "minecraft:calcite": 245,
+    "minecraft:campfire[facing=north,lit=true,signal_fire=false,waterlogged=false]": 6,
+    "minecraft:cauldron": 1,
+    "minecraft:crafting_table": 1,
+    "minecraft:crimson_planks": 17,
+    "minecraft:crimson_slab[type=bottom,waterlogged=false]": 161,
+    "minecraft:crimson_slab[type=top,waterlogged=false]": 123,
+    "minecraft:crimson_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 4,
+    "minecraft:crimson_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 4,
+    "minecraft:crimson_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]": 2,
+    "minecraft:crimson_trapdoor[facing=north,half=bottom,open=true,powered=false,waterlogged=false]": 6,
+    "minecraft:crimson_trapdoor[facing=south,half=bottom,open=true,powered=false,waterlogged=false]": 6,
+    "minecraft:crimson_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]": 2,
+    "minecraft:dark_oak_door[facing=north,half=lower,hinge=left,open=false,powered=false]": 1,
+    "minecraft:dark_oak_door[facing=north,half=upper,hinge=left,open=false,powered=false]": 1,
+    "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=false,powered=false]": 1,
+    "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=false,powered=false]": 1,
+    "minecraft:dark_oak_slab[type=top,waterlogged=false]": 40,
+    "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 3,
+    "minecraft:dark_oak_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:flowering_azalea": 12,
+    "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]": 8,
+    "minecraft:furnace[facing=north,lit=false]": 1,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 4,
+    "minecraft:nether_wart[age=3]": 8,
+    "minecraft:oxidized_cut_copper": 85,
+    "minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=false]": 1,
+    "minecraft:oxidized_cut_copper_slab[type=top,waterlogged=false]": 12,
+    "minecraft:oxidized_cut_copper_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:soul_sand": 8,
+    "minecraft:stripped_dark_oak_log[axis=x]": 13,
+    "minecraft:stripped_dark_oak_log[axis=y]": 44,
+    "minecraft:waxed_oxidized_cut_copper": 78
+  },
+  "non_air_count": 944,
+  "air_count": 2761,
+  "material_counts_by_block": {
+    "minecraft:air": 2761,
+    "minecraft:barrel": 4,
+    "minecraft:black_stained_glass_pane": 14,
+    "minecraft:brewing_stand": 4,
+    "minecraft:calcite": 245,
+    "minecraft:campfire": 6,
+    "minecraft:cauldron": 1,
+    "minecraft:crafting_table": 1,
+    "minecraft:crimson_planks": 17,
+    "minecraft:crimson_slab": 284,
+    "minecraft:crimson_stairs": 8,
+    "minecraft:crimson_trapdoor": 16,
+    "minecraft:dark_oak_door": 4,
+    "minecraft:dark_oak_slab": 40,
+    "minecraft:dark_oak_stairs": 24,
+    "minecraft:flowering_azalea": 12,
+    "minecraft:flowering_azalea_leaves": 8,
+    "minecraft:furnace": 1,
+    "minecraft:lantern": 4,
+    "minecraft:nether_wart": 8,
+    "minecraft:oxidized_cut_copper": 85,
+    "minecraft:oxidized_cut_copper_slab": 13,
+    "minecraft:oxidized_cut_copper_stairs": 2,
+    "minecraft:soul_sand": 8,
+    "minecraft:stripped_dark_oak_log": 57,
+    "minecraft:waxed_oxidized_cut_copper": 78
+  },
+  "spot_checks": [
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "char": "p",
+      "description": "original four-block corner post base"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 2,
+      "char": "p",
+      "description": "original four-block corner post top"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "z": 7,
+      "char": "p",
+      "description": "six-block central gable post"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "z": 7,
+      "char": "I",
+      "description": "gable post above-height air or roof"
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "z": 2,
+      "char": "E",
+      "description": "inferred floor"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 2,
+      "char": "n",
+      "description": "soul-sand window sill"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "z": 2,
+      "char": "i",
+      "description": "wart planter"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "z": 2,
+      "char": "C",
+      "description": "black glass window"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "char": "P",
+      "description": "open crimson vent trapdoor"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 2,
+      "char": "R",
+      "description": "north door lower"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 2,
+      "char": "S",
+      "description": "north door upper"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 12,
+      "char": "T",
+      "description": "south door lower"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 12,
+      "char": "U",
+      "description": "south door upper"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "z": 0,
+      "char": "J",
+      "description": "bottom eave slab"
+    },
+    {
+      "x": 0,
+      "y": 4,
+      "z": 0,
+      "char": "K",
+      "description": "raised edge slab"
+    },
+    {
+      "x": 9,
+      "y": 8,
+      "z": 7,
+      "char": "J",
+      "description": "ridge slab"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 8,
+      "char": "j",
+      "description": "main chimney foot"
+    },
+    {
+      "x": 5,
+      "y": 11,
+      "z": 8,
+      "char": "j",
+      "description": "main chimney shaft top"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "z": 9,
+      "char": ".",
+      "description": "hollow flue"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 9,
+      "char": "g",
+      "description": "furnace"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 8,
+      "char": ".",
+      "description": "fireplace mouth"
+    },
+    {
+      "x": 4,
+      "y": 12,
+      "z": 8,
+      "char": "l",
+      "description": "cap slab"
+    },
+    {
+      "x": 5,
+      "y": 12,
+      "z": 8,
+      "char": "F",
+      "description": "cap campfire"
+    },
+    {
+      "x": 6,
+      "y": 12,
+      "z": 9,
+      "char": ".",
+      "description": "cap central opening"
+    },
+    {
+      "x": 11,
+      "y": 9,
+      "z": 5,
+      "char": "q",
+      "description": "small copper flue"
+    },
+    {
+      "x": 11,
+      "y": 10,
+      "z": 5,
+      "char": "F",
+      "description": "small flue campfire"
+    },
+    {
+      "x": 11,
+      "y": 10,
+      "z": 4,
+      "char": "P",
+      "description": "small flue crimson hatch"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "z": 1,
+      "char": "h",
+      "description": "hanging corner lantern"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "char": "e",
+      "description": "exterior azalea"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 8,
+      "char": "V",
+      "description": "brewing bench"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 8,
+      "char": "D",
+      "description": "brewing stand 1"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "z": 8,
+      "char": "D",
+      "description": "brewing stand 4"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "z": 10,
+      "char": "A",
+      "description": "empty storage barrel"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 6,
+      "char": "H",
+      "description": "crafting table"
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "z": 4,
+      "char": "G",
+      "description": "dry cauldron"
+    },
+    {
+      "x": 13,
+      "y": 4,
+      "z": 9,
+      "char": "f",
+      "description": "interior flowering foliage"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": ".",
+      "description": "envelope corner air"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "z": 1,
+      "char": "L",
+      "description": "east-facing crimson hood stair"
+    }
+  ]
+}

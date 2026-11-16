@@ -1,0 +1,110 @@
+TAP version 13
+# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic
+ok 1 - reads a real serialized Sponge v2 buffer through prismarine-schematic
+  ---
+  duration_ms: 65.655833
+  type: 'test'
+  ...
+# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes
+ok 2 - rejects unknown names and invalid properties or states from real Sponge palettes
+  ---
+  duration_ms: 3.970779
+  type: 'test'
+  ...
+# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+ok 3 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs
+  ---
+  duration_ms: 4.316514
+  type: 'test'
+  ...
+# 📦 Build initialized at (10, 20, 30)
+# 📐 Area: from (10, 20, 30) to (47, 21, 31)
+# 🎮 Server version: 1.20.4
+# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning
+not ok 4 - preserves every candle count, foliage distance and snow layer through production reading and placement planning
+  ---
+  duration_ms: 11.099477
+  type: 'test'
+  location: '/home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:91:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    1.20.4 minecraft:candle[candles=1,lit=false,waterlogged=false]
+    
+    20732 !== 20728
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 20728
+  actual: 20732
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:117:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+not ok 5 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior
+  ---
+  duration_ms: 0.625916
+  type: 'test'
+  location: '/home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:127:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    105 !== 100
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 100
+  actual: 105
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:132:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: zero-based integer states and omitted properties retain their existing interpretation
+ok 6 - zero-based integer states and omitted properties retain their existing interpretation
+  ---
+  duration_ms: 31.951484
+  type: 'test'
+  ...
+# Subtest: legacy snow mapping also preserves its one-based layer value
+not ok 7 - legacy snow mapping also preserves its one-based layer value
+  ---
+  duration_ms: 2.783688
+  type: 'test'
+  location: '/home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:156:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    '2' !== '1'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '1'
+  actual: '2'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/sunny/Projects/github.com/mindcraft-bots/mindcraft/test/schematic/reader.test.js:160:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 4
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 342.577729

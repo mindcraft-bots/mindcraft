@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/08_greenhouse.json schematics/08_greenhouse.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/08_greenhouse.json",
+  "schematic": "schematics/08_greenhouse.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    15,
+    16,
+    19
+  ],
+  "volume": 4560,
+  "comparedVoxels": 4560,
+  "expectedNonAir": 1119,
+  "parserDerivedAir": 3441,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 38,
+  "spotChecks": 25,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

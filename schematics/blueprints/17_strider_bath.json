@@ -1,0 +1,323 @@
+{
+  "schema": "explicit-layer-matrix-v1",
+  "name": "17_strider_bath",
+  "folder": 17,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 9,
+  "height_y": 8,
+  "length_z": 11,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Minimum northwest corner of inferred9x11 rectangular bath plinth. +x east across bath, +z south along length. Open/front end north z0; covered rear z6..10. Base y0, sandstone rim y1, rear supports y2..4, gabled prismarine roof y3..7. Pool cavity is deliberately dry air y1; no substituted lava material."
+  },
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160520-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/17/IMG_20261115_160530-1536x1152.jpg"
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:prismarine_bricks",
+    "B": "minecraft:smooth_sandstone",
+    "C": "minecraft:mangrove_fence[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "D": "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]",
+    "E": "minecraft:lantern[hanging=false,waterlogged=false]",
+    "F": "minecraft:mangrove_planks",
+    "G": "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "H": "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]",
+    "I": "minecraft:prismarine_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "AAAAAAAAA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "ABBBBBBBA",
+      "AAAAAAAAA"
+    ],
+    [
+      "BCCCCCCCB",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "B.......B",
+      "BBBBBBBBB"
+    ],
+    [
+      "E.......E",
+      "D.......D",
+      "D.......D",
+      "D.......D",
+      "D.......D",
+      "D.......D",
+      "H.......H",
+      "H.......H",
+      "H.......H",
+      "H.......H",
+      "HBBBBBBBH"
+    ],
+    [
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "G.......I",
+      "G.......I",
+      "G.......I",
+      "G.......I",
+      "GBBBBBBBI"
+    ],
+    [
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "FGFFFFFIF",
+      ".G.....I.",
+      ".G.....I.",
+      "FG.....IF",
+      "FGFFFFFIF"
+    ],
+    [
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "..G...I..",
+      "..G...I..",
+      "..G...I..",
+      "..G...I..",
+      "..G...I.."
+    ],
+    [
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "...G.I...",
+      "...G.I...",
+      "...G.I...",
+      "...G.I...",
+      "...G.I..."
+    ],
+    [
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      ".........",
+      "....H....",
+      "....H....",
+      "....H....",
+      "....H....",
+      "....H...."
+    ]
+  ],
+  "distinct_build_audit": "Separate optional strider bath (ЛАВОВА ВАННА), page77 lower-right vignette. Exported independently from carousel. Three illustrated striders and lava contents excluded; dry architectural shell only.",
+  "printed_dimension_audit": [
+    {
+      "page": 77,
+      "printed": "No numeric dimensions for bath or roof.",
+      "realization": "Inferred9x11 plinth,7x9 interior basin, rear5-block canopy length and8-block maximum height. These are not printed measurements."
+    }
+  ],
+  "printed_material_audit": [
+    {
+      "printed": "Build from the same building materials as carousel, so both structures share a style.",
+      "used": [
+        "prismarine_bricks",
+        "prismarine_brick_stairs",
+        "prismarine_brick_slab",
+        "smooth_sandstone",
+        "smooth_sandstone_slab",
+        "mangrove_planks",
+        "mangrove_fence",
+        "lantern"
+      ],
+      "notes": "No separate inventory/counts printed. Cyan base and roof, pale sandstone rim/posts, reddish railing/beam and two warm lanterns inferred from vignette. Bath lava and striders explicitly omitted, not replaced with orange blocks or statues. No fluids/entities/block-entity payloads."
+    }
+  ],
+  "inferred_detail_uncertainty": [
+    "Only one small perspective vignette with no grid or numerical callouts.9x11x8 envelope, wall thickness, canopy dimensions, roof profile and rear-wall depth are inferred; exact hidden fidelity cannot be certified.",
+    "Dry basin x1..7,z1..9,y1; source shows lava, deliberately omitted under no-fluid rule. Floor at y0 is prismarine brick with sandstone lining. No magma or other invented substitute for fluid.",
+    "Rear canopy interpreted as a compact9x5 gable with prismarine brick bottom stairs and a slab ridge. The small render does not uniquely resolve mono-pitch versus gable or the concealed rear roof slope. Rear sandstone wall and timber beam supports inferred.",
+    "Mangrove-fence front barrier and sandstone side rims/corner posts follow visible style. Fence connectivity and stair half/shape states explicit; all slabs bottom-half; two ordinary standing lanterns at front corners. No doors/log axes.",
+    "No striders, saddles, minecarts, lava or other fluids, entities or complex NBT. This dry shell is not a working strider bath or certified live placement/physics result."
+  ],
+  "expected_counts": {
+    "minecraft:air": 560,
+    "minecraft:lantern[hanging=false,waterlogged=false]": 2,
+    "minecraft:mangrove_fence[east=true,north=false,south=false,waterlogged=false,west=true]": 7,
+    "minecraft:mangrove_planks": 16,
+    "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]": 15,
+    "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 20,
+    "minecraft:prismarine_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 20,
+    "minecraft:prismarine_bricks": 36,
+    "minecraft:smooth_sandstone": 106,
+    "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]": 10
+  },
+  "non_air_count": 232,
+  "air_count": 560,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "A",
+      "state": "minecraft:prismarine_bricks",
+      "description": "Prismarine foundation front corner"
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 4,
+      "char": "B",
+      "state": "minecraft:smooth_sandstone",
+      "description": "Solid sandstone dry basin floor"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 4,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Omitted lava represented by air"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "char": "C",
+      "state": "minecraft:mangrove_fence[east=true,north=false,south=false,waterlogged=false,west=true]",
+      "description": "Front mangrove fence barrier"
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "z": 4,
+      "char": "B",
+      "state": "minecraft:smooth_sandstone",
+      "description": "Sandstone side rim"
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "z": 0,
+      "char": "E",
+      "state": "minecraft:lantern[hanging=false,waterlogged=false]",
+      "description": "West standing lantern"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 0,
+      "char": "E",
+      "state": "minecraft:lantern[hanging=false,waterlogged=false]",
+      "description": "East standing lantern"
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "char": "D",
+      "state": "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]",
+      "description": "Bottom sandstone slab rim"
+    },
+    {
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "char": "G",
+      "state": "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+      "description": "Prismarine roof west eave"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "z": 6,
+      "char": "G",
+      "state": "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+      "description": "East-facing roof slope stair"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "z": 8,
+      "char": "H",
+      "state": "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]",
+      "description": "Bottom prismarine slab ridge"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 8,
+      "char": "I",
+      "state": "minecraft:prismarine_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+      "description": "West-facing roof slope stair"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "z": 10,
+      "char": "B",
+      "state": "minecraft:smooth_sandstone",
+      "description": "Sandstone rear wall"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "z": 10,
+      "char": "F",
+      "state": "minecraft:mangrove_planks",
+      "description": "Mangrove rear beam"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "z": 6,
+      "char": "F",
+      "state": "minecraft:mangrove_planks",
+      "description": "Mangrove front canopy beam"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 7,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Clear dry sheltered basin"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "z": 0,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Air above open forecourt"
+    }
+  ]
+}

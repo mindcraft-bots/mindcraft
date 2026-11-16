@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "name": "Horse Racing Safety Fence",
+  "slug": "11_safety_fence",
+  "folder": "11",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160237-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160250-1536x1152.jpg",
+    "data/screenshots/BuildingsCompressed-2/11/IMG_20261115_160304-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 6,
+    "components": [
+      "starting_gate",
+      "hairpin",
+      "turn",
+      "starting_grid",
+      "grandstand",
+      "safety_fence"
+    ],
+    "interpretation": "Six reusable distinct components across pages48-53. Grandstand steps are one assembly. No invented complete landscape circuit; raised/lowered gate is one stateful build."
+  },
+  "width_x": 9,
+  "height_y": 5,
+  "length_z": 3,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest bottom plinth corner; fence spans east-west at z1. x east/right, y up, z south/back; zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; all cells explicit, including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "fence segment",
+      "printed": "No numeric dimensions; p53 safety-fence vignette.",
+      "implemented": "9x5x3; dirt y0,grass surface y1; brick footing replaces grass x1..7,y1,z1; three fence layers y2..4",
+      "confidence": "All dimensions and fence height inferred from vignette. Three high railing rows above brick footing; thin grassy plinth retained."
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "p53 safety fence vignette and racing palette",
+      "labels": "Caption says fences prevent players leaving track; material not named",
+      "implemented": "Dark nether_bricks footing and nether_brick_fence lattice; dirt/grass plinth."
+    }
+  ],
+  "state_audit": {
+    "fences": "Three rows,all east-west connections explicit; west/east endpoints have only inward arms; north/south=false,waterlogged=false.",
+    "surface": "Grass snowy=false; no doors,slabs,fluids,entities or block-entity data."
+  },
+  "occlusion_uncertainties": [
+    "Oblique photographs do not determine every voxel. Printed callouts are prioritized; unprinted silhouettes, hidden supports and pixel patterns are inferred, not certified exact.",
+    "No fluids, entities or complex block-entity NBT. No live-world, redstone-timing, gravity-update or placement tests.",
+    "The large landscape circuits on pages51 and53 are explicitly customizable examples, not a dimensioned seventh build. Trees, river, horses and riders are not included. Start-line direction/powered vignettes are states/views of one mechanism, not duplicate builds.",
+    "Standalone reusable seven-wide dark safety railing on9x3 grassy base; unprinted scale and row count inferred.",
+    "The course examples contain additional scattered rails with variable lengths; only the detailed standalone fence is exported."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "N": "minecraft:nether_bricks",
+    "F": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]",
+    "f": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=false]",
+    "g": "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=true]"
+  },
+  "layers": [
+    [
+      "DDDDDDDDD",
+      "DDDDDDDDD",
+      "DDDDDDDDD"
+    ],
+    [
+      "GGGGGGGGG",
+      "GNNNNNNNG",
+      "GGGGGGGGG"
+    ],
+    [
+      ".........",
+      ".fFFFFFg.",
+      "........."
+    ],
+    [
+      ".........",
+      ".fFFFFFg.",
+      "........."
+    ],
+    [
+      ".........",
+      ".fFFFFFg.",
+      "........."
+    ]
+  ],
+  "spot_checks": [
+    {
+      "description": "dirt plinth origin",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "D",
+      "state": "minecraft:dirt"
+    },
+    {
+      "description": "opposite grassy corner",
+      "x": 8,
+      "y": 1,
+      "z": 2,
+      "char": "G",
+      "state": "minecraft:grass_block[snowy=false]"
+    },
+    {
+      "description": "west brick footing",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "char": "N",
+      "state": "minecraft:nether_bricks"
+    },
+    {
+      "description": "west endpoint inward east arm",
+      "x": 1,
+      "y": 2,
+      "z": 1,
+      "char": "f",
+      "state": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=false]"
+    },
+    {
+      "description": "middle fence both arms",
+      "x": 4,
+      "y": 3,
+      "z": 1,
+      "char": "F",
+      "state": "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]"
+    },
+    {
+      "description": "east upper endpoint inward west arm",
+      "x": 7,
+      "y": 4,
+      "z": 1,
+      "char": "g",
+      "state": "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=true]"
+    },
+    {
+      "description": "air in front of top rail",
+      "x": 4,
+      "y": 4,
+      "z": 0,
+      "char": ".",
+      "state": "minecraft:air"
+    }
+  ],
+  "expected_counts": {
+    "minecraft:air": 60,
+    "minecraft:dirt": 27,
+    "minecraft:grass_block[snowy=false]": 20,
+    "minecraft:nether_brick_fence[east=false,north=false,south=false,waterlogged=false,west=true]": 3,
+    "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=false]": 3,
+    "minecraft:nether_brick_fence[east=true,north=false,south=false,waterlogged=false,west=true]": 15,
+    "minecraft:nether_bricks": 7
+  },
+  "non_air_count": 75,
+  "air_count": 60
+}

@@ -1,0 +1,4057 @@
+{
+  "checked_at_utc": "2026-11-15T22:07:51.806508+00:00",
+  "summary": {
+    "build_count": 29,
+    "binary_pass": 29,
+    "deterministic_pass": 29,
+    "reader_pass": 18,
+    "reader_mismatch": 11,
+    "reader_error": 0
+  },
+  "builds": [
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/02_bee_hot_air_balloon.json",
+        "bytes": 12926,
+        "sha256": "f8de9587cc23bdaec6d8bf3a7de8db9d6d5219ca0e8064548aa73ffb9647c396",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/02_bee_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 761,
+        "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/02_bee_hot_air_balloon.json",
+          "schematics/02_bee_hot_air_balloon.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/02_bee_hot_air_balloon.reader.log",
+        "compared_voxels": 1530,
+        "mismatch_count": 4,
+        "count_match": false,
+        "spot_check_count": 18,
+        "spot_check_failures": [
+          {
+            "x": 2,
+            "y": 2,
+            "z": 2,
+            "note": "Lit corner candle",
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 2,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/02_bee_hot_air_balloon.json",
+          "schematic": "schematics/02_bee_hot_air_balloon.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            10,
+            17,
+            9
+          ],
+          "volume": 1530,
+          "comparedVoxels": 1530,
+          "expectedNonAir": 440,
+          "parserDerivedAir": 1090,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "expected": 4,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 4
+            }
+          ],
+          "legendEntriesValidated": 25,
+          "spotChecks": 18,
+          "spotCheckFailures": [
+            {
+              "x": 2,
+              "y": 2,
+              "z": 2,
+              "note": "Lit corner candle",
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 4,
+          "firstMismatches": [
+            {
+              "x": 2,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 7,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 7,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/02_enderman_hot_air_balloon.json",
+        "bytes": 11505,
+        "sha256": "3ceadb13ac2b10dff6ffc8cf7d2deb1c5e54b6716e46ff29fc8d4006cf893242",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/02_enderman_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 680,
+        "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/02_enderman_hot_air_balloon.json",
+          "schematics/02_enderman_hot_air_balloon.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/02_enderman_hot_air_balloon.reader.log",
+        "compared_voxels": 960,
+        "mismatch_count": 4,
+        "count_match": false,
+        "spot_check_count": 16,
+        "spot_check_failures": [
+          {
+            "x": 1,
+            "y": 2,
+            "z": 1,
+            "note": "Lit corner candle",
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 1,
+            "y": 2,
+            "z": 1,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "z": 1,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 6,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "z": 6,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/02_enderman_hot_air_balloon.json",
+          "schematic": "schematics/02_enderman_hot_air_balloon.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            8,
+            15,
+            8
+          ],
+          "volume": 960,
+          "comparedVoxels": 960,
+          "expectedNonAir": 416,
+          "parserDerivedAir": 544,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "expected": 4,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 4
+            }
+          ],
+          "legendEntriesValidated": 23,
+          "spotChecks": 16,
+          "spotCheckFailures": [
+            {
+              "x": 1,
+              "y": 2,
+              "z": 1,
+              "note": "Lit corner candle",
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 4,
+          "firstMismatches": [
+            {
+              "x": 1,
+              "y": 2,
+              "z": 1,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 2,
+              "z": 1,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 6,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 2,
+              "z": 6,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/02_pig_hot_air_balloon.json",
+        "bytes": 11913,
+        "sha256": "4780bdd7ca726ad934546c4bf34d8490ffd56ea305917456dfda5ac010192317",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/02_pig_hot_air_balloon.schem",
+        "exists": true,
+        "bytes": 713,
+        "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/02_pig_hot_air_balloon.json",
+          "schematics/02_pig_hot_air_balloon.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/02_pig_hot_air_balloon.reader.log",
+        "compared_voxels": 1080,
+        "mismatch_count": 4,
+        "count_match": false,
+        "spot_check_count": 17,
+        "spot_check_failures": [
+          {
+            "x": 1,
+            "y": 2,
+            "z": 2,
+            "note": "Lit corner candle",
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 1,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+            "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/02_pig_hot_air_balloon.json",
+          "schematic": "schematics/02_pig_hot_air_balloon.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            8,
+            15,
+            9
+          ],
+          "volume": 1080,
+          "comparedVoxels": 1080,
+          "expectedNonAir": 428,
+          "parserDerivedAir": 652,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "expected": 4,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 4
+            }
+          ],
+          "legendEntriesValidated": 24,
+          "spotChecks": 17,
+          "spotCheckFailures": [
+            {
+              "x": 1,
+              "y": 2,
+              "z": 2,
+              "note": "Lit corner candle",
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[{\"candles\":\"2\",\"lit\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 4,
+          "firstMismatches": [
+            {
+              "x": 1,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:pink_candle[candles=1,lit=true,waterlogged=false]",
+              "actual": "minecraft:pink_candle[candles=2,lit=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/03_big_red_barn.json",
+        "bytes": 22424,
+        "sha256": "05299a5636968e39fc9f225abbd9b5df98d3552601ddef017e016514c44da106",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/03_big_red_barn.schem",
+        "exists": true,
+        "bytes": 946,
+        "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/03_big_red_barn.json",
+          "schematics/03_big_red_barn.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/03_big_red_barn.reader.log",
+        "compared_voxels": 5814,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 16,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/03_big_red_barn.json",
+          "schematic": "schematics/03_big_red_barn.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            18,
+            17,
+            19
+          ],
+          "volume": 5814,
+          "comparedVoxels": 5814,
+          "expectedNonAir": 1102,
+          "parserDerivedAir": 4712,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 26,
+          "spotChecks": 16,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/03_storage_silo.json",
+        "bytes": 12321,
+        "sha256": "aa8a08a42b2049f0cfda9e6ec376875740dc78d0b90fabac2d7462555855b920",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/03_storage_silo.schem",
+        "exists": true,
+        "bytes": 497,
+        "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/03_storage_silo.json",
+          "schematics/03_storage_silo.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/03_storage_silo.reader.log",
+        "compared_voxels": 1863,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 14,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/03_storage_silo.json",
+          "schematic": "schematics/03_storage_silo.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            9,
+            23,
+            9
+          ],
+          "volume": 1863,
+          "comparedVoxels": 1863,
+          "expectedNonAir": 616,
+          "parserDerivedAir": 1247,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 14,
+          "spotChecks": 14,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/04_pagoda.json",
+        "bytes": 31559,
+        "sha256": "8e49d9c1e0943ab7fecfbcdcfd2eb1255bd125c79eb2566217a7e9d7fa331529",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/04_pagoda.schem",
+        "exists": true,
+        "bytes": 1413,
+        "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/04_pagoda.json",
+          "schematics/04_pagoda.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/04_pagoda.reader.log",
+        "compared_voxels": 9360,
+        "mismatch_count": 4,
+        "count_match": false,
+        "spot_check_count": 19,
+        "spot_check_failures": [],
+        "first_mismatches": [
+          {
+            "x": 4,
+            "y": 8,
+            "z": 10,
+            "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 8,
+            "z": 10,
+            "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "z": 10,
+            "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 9,
+            "z": 10,
+            "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/04_pagoda.json",
+          "schematic": "schematics/04_pagoda.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            15,
+            39,
+            16
+          ],
+          "volume": 9360,
+          "comparedVoxels": 9360,
+          "expectedNonAir": 2468,
+          "parserDerivedAir": 6892,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 4,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 4
+            }
+          ],
+          "legendEntriesValidated": 41,
+          "spotChecks": 19,
+          "spotCheckFailures": [],
+          "parserMismatches": 4,
+          "firstMismatches": [
+            {
+              "x": 4,
+              "y": 8,
+              "z": 10,
+              "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 8,
+              "z": 10,
+              "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 9,
+              "z": 10,
+              "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 9,
+              "z": 10,
+              "expected": "minecraft:oak_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/05_allay_statue.json",
+        "bytes": 13514,
+        "sha256": "380605d376522947ff1c4c1c1d7f8811b20e940e71d2d917139a1938724e131a",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/05_allay_statue.schem",
+        "exists": true,
+        "bytes": 509,
+        "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/05_allay_statue.json",
+          "schematics/05_allay_statue.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/05_allay_statue.reader.log",
+        "compared_voxels": 1428,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 23,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/05_allay_statue.json",
+          "schematic": "schematics/05_allay_statue.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            17,
+            14,
+            6
+          ],
+          "volume": 1428,
+          "comparedVoxels": 1428,
+          "expectedNonAir": 284,
+          "parserDerivedAir": 1144,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 13,
+          "spotChecks": 23,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/06_wild_west_jail.json",
+        "bytes": 19979,
+        "sha256": "4d858bfec368e410e54e48de76f38d665f1be9dfc27a2a48af1cdd9ae888d415",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/06_wild_west_jail.schem",
+        "exists": true,
+        "bytes": 1019,
+        "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/06_wild_west_jail.json",
+          "schematics/06_wild_west_jail.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/06_wild_west_jail.reader.log",
+        "compared_voxels": 1053,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 24,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/06_wild_west_jail.json",
+          "schematic": "schematics/06_wild_west_jail.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            9,
+            9
+          ],
+          "volume": 1053,
+          "comparedVoxels": 1053,
+          "expectedNonAir": 446,
+          "parserDerivedAir": 607,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 42,
+          "spotChecks": 24,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/07_secret_island_base.json",
+        "bytes": 21380,
+        "sha256": "1669bce4d246a6edbcaca0b8a41c3604b62e8a1a2e7df95e6494ee15e7b8164b",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/07_secret_island_base.schem",
+        "exists": true,
+        "bytes": 965,
+        "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/07_secret_island_base.json",
+          "schematics/07_secret_island_base.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/07_secret_island_base.reader.log",
+        "compared_voxels": 4056,
+        "mismatch_count": 36,
+        "count_match": false,
+        "spot_check_count": 29,
+        "spot_check_failures": [
+          {
+            "x": 6,
+            "y": 23,
+            "z": 7,
+            "note": "highest leaf",
+            "expected": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[{\"distance\":\"4\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 3,
+            "y": 19,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 9,
+            "y": 19,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 19,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 20,
+            "z": 4,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 20,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 9,
+            "y": 20,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 20,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 21,
+            "z": 4,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 21,
+            "z": 5,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 21,
+            "z": 5,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 21,
+            "z": 6,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 21,
+            "z": 6,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 21,
+            "z": 6,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 7,
+            "y": 21,
+            "z": 6,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 8,
+            "y": 21,
+            "z": 6,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 21,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 21,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 21,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 21,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 7,
+            "y": 21,
+            "z": 7,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/07_secret_island_base.json",
+          "schematic": "schematics/07_secret_island_base.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            24,
+            13
+          ],
+          "volume": 4056,
+          "comparedVoxels": 4056,
+          "expectedNonAir": 1222,
+          "parserDerivedAir": 2834,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:birch_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 2
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 13,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "expected": 18,
+              "actual": 13
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]",
+              "expected": 3,
+              "actual": 18
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=4,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 3
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 2,
+              "actual": 0
+            }
+          ],
+          "legendEntriesValidated": 32,
+          "spotChecks": 29,
+          "spotCheckFailures": [
+            {
+              "x": 6,
+              "y": 23,
+              "z": 7,
+              "note": "highest leaf",
+              "expected": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[{\"distance\":\"4\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 36,
+          "firstMismatches": [
+            {
+              "x": 3,
+              "y": 19,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 9,
+              "y": 19,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 19,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 20,
+              "z": 4,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 20,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 9,
+              "y": 20,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 20,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "z": 4,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 21,
+              "z": 5,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "z": 5,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 21,
+              "z": 6,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 21,
+              "z": 6,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "z": 6,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 7,
+              "y": 21,
+              "z": 6,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 8,
+              "y": 21,
+              "z": 6,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 21,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 21,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 21,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 7,
+              "y": 21,
+              "z": 7,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/08_greenhouse.json",
+        "bytes": 22709,
+        "sha256": "a631e6b9c012dfbe8fff6858fe39cd8c120faff1ca3e5afc258161975ebbccd3",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/08_greenhouse.schem",
+        "exists": true,
+        "bytes": 1263,
+        "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/08_greenhouse.json",
+          "schematics/08_greenhouse.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/08_greenhouse.reader.log",
+        "compared_voxels": 4560,
+        "mismatch_count": 76,
+        "count_match": false,
+        "spot_check_count": 25,
+        "spot_check_failures": [
+          {
+            "x": 3,
+            "y": 5,
+            "z": 4,
+            "note": "",
+            "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[{\"distance\":\"2\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 3,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "z": 3,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 3,
+            "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "z": 3,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "z": 3,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "z": 4,
+            "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "z": 4,
+            "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "z": 4,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "z": 5,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 5,
+            "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "z": 5,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "z": 5,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "z": 6,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 6,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "z": 6,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+            "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/08_greenhouse.json",
+          "schematic": "schematics/08_greenhouse.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            15,
+            16,
+            19
+          ],
+          "volume": 4560,
+          "comparedVoxels": 4560,
+          "expectedNonAir": 1119,
+          "parserDerivedAir": 3441,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 18,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "expected": 34,
+              "actual": 18
+            },
+            {
+              "state": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "expected": 24,
+              "actual": 34
+            },
+            {
+              "state": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 24
+            }
+          ],
+          "legendEntriesValidated": 38,
+          "spotChecks": 25,
+          "spotCheckFailures": [
+            {
+              "x": 3,
+              "y": 5,
+              "z": 4,
+              "note": "",
+              "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[{\"distance\":\"2\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 76,
+          "firstMismatches": [
+            {
+              "x": 3,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "z": 3,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 3,
+              "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "z": 3,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "z": 3,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "z": 4,
+              "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "z": 4,
+              "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "z": 4,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "z": 5,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 5,
+              "expected": "minecraft:oak_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "z": 5,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "z": 5,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "z": 6,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 6,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "z": 6,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 3,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 5,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:oak_leaves[distance=3,persistent=true,waterlogged=false]",
+              "actual": "minecraft:oak_leaves[distance=4,persistent=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/09_river_steamboat.json",
+        "bytes": 24014,
+        "sha256": "a0f4c7f8cd2289e33dbd4b7ec1ed328b9105184f6e2fb4332a68f0d0427acd00",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/09_river_steamboat.schem",
+        "exists": true,
+        "bytes": 1210,
+        "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/09_river_steamboat.json",
+          "schematics/09_river_steamboat.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/09_river_steamboat.reader.log",
+        "compared_voxels": 4576,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 29,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/09_river_steamboat.json",
+          "schematic": "schematics/09_river_steamboat.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            16,
+            22
+          ],
+          "volume": 4576,
+          "comparedVoxels": 4576,
+          "parserDerivedAir": 3383,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 34,
+          "spotChecks": 29,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/10_pachinko_parkour.json",
+        "bytes": 16365,
+        "sha256": "ef1b704dabda1de46ee20dc21c784dbcd01398323a86836b7551072d10d45272",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/10_pachinko_parkour.schem",
+        "exists": true,
+        "bytes": 751,
+        "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/10_pachinko_parkour.json",
+          "schematics/10_pachinko_parkour.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/10_pachinko_parkour.reader.log",
+        "compared_voxels": 1344,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 30,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/10_pachinko_parkour.json",
+          "schematic": "schematics/10_pachinko_parkour.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            14,
+            16,
+            6
+          ],
+          "volume": 1344,
+          "comparedVoxels": 1344,
+          "expectedNonAir": 656,
+          "parserDerivedAir": 688,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 20,
+          "spotChecks": 30,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_grandstand.json",
+        "bytes": 10016,
+        "sha256": "47c028216f4cb6471045e895665a605e2a8a8804179e36ea5342ab83f3b41d17",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_grandstand.schem",
+        "exists": true,
+        "bytes": 430,
+        "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_grandstand.json",
+          "schematics/11_grandstand.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_grandstand.reader.log",
+        "compared_voxels": 936,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 14,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_grandstand.json",
+          "schematic": "schematics/11_grandstand.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            8,
+            9
+          ],
+          "volume": 936,
+          "comparedVoxels": 936,
+          "expectedNonAir": 369,
+          "parserDerivedAir": 567,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 9,
+          "spotChecks": 14,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_hairpin.json",
+        "bytes": 5357,
+        "sha256": "5de9163103af74613d7682025b3572c8bf35106b557515edfdfd691bdf19cf4f",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_hairpin.schem",
+        "exists": true,
+        "bytes": 303,
+        "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_hairpin.json",
+          "schematics/11_hairpin.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_hairpin.reader.log",
+        "compared_voxels": 576,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 7,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_hairpin.json",
+          "schematic": "schematics/11_hairpin.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            24,
+            2,
+            12
+          ],
+          "volume": 576,
+          "comparedVoxels": 576,
+          "expectedNonAir": 576,
+          "parserDerivedAir": 0,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 6,
+          "spotChecks": 7,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_safety_fence.json",
+        "bytes": 5708,
+        "sha256": "960d436fdd6ac93896549475512ac809815337dadd563979a297cc2139eb8abb",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_safety_fence.schem",
+        "exists": true,
+        "bytes": 299,
+        "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_safety_fence.json",
+          "schematics/11_safety_fence.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_safety_fence.reader.log",
+        "compared_voxels": 135,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 7,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_safety_fence.json",
+          "schematic": "schematics/11_safety_fence.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            9,
+            5,
+            3
+          ],
+          "volume": 135,
+          "comparedVoxels": 135,
+          "expectedNonAir": 75,
+          "parserDerivedAir": 60,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 7,
+          "spotChecks": 7,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_starting_gate.json",
+        "bytes": 11394,
+        "sha256": "a958d15cac51b0fd912d00af4cfc2e3b6c452c4ca3ef3518a60fe7aa7bc63d38",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_starting_gate.schem",
+        "exists": true,
+        "bytes": 587,
+        "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_starting_gate.json",
+          "schematics/11_starting_gate.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_starting_gate.reader.log",
+        "compared_voxels": 847,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 13,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_starting_gate.json",
+          "schematic": "schematics/11_starting_gate.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            11,
+            11,
+            7
+          ],
+          "volume": 847,
+          "comparedVoxels": 847,
+          "expectedNonAir": 184,
+          "parserDerivedAir": 663,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 18,
+          "spotChecks": 13,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_starting_grid.json",
+        "bytes": 6123,
+        "sha256": "75abf1cb0f0bad5f53efc18f23b3bd13c772a62316a62360898ebb35fcb5b40e",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_starting_grid.schem",
+        "exists": true,
+        "bytes": 312,
+        "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_starting_grid.json",
+          "schematics/11_starting_grid.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_starting_grid.reader.log",
+        "compared_voxels": 513,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 8,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_starting_grid.json",
+          "schematic": "schematics/11_starting_grid.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            9,
+            3,
+            19
+          ],
+          "volume": 513,
+          "comparedVoxels": 513,
+          "expectedNonAir": 348,
+          "parserDerivedAir": 165,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 6,
+          "spotChecks": 8,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/11_turn.json",
+        "bytes": 4839,
+        "sha256": "125255711b1be05863e1bfa691eb77c20257a595bcb5009b28385d87838c348f",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/11_turn.schem",
+        "exists": true,
+        "bytes": 275,
+        "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/11_turn.json",
+          "schematics/11_turn.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/11_turn.reader.log",
+        "compared_voxels": 288,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 6,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/11_turn.json",
+          "schematic": "schematics/11_turn.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            12,
+            2,
+            12
+          ],
+          "volume": 288,
+          "comparedVoxels": 288,
+          "expectedNonAir": 288,
+          "parserDerivedAir": 0,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 6,
+          "spotChecks": 6,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/12_scouting_tower.json",
+        "bytes": 27580,
+        "sha256": "767816c9b1ddad56a41ddf5341de7048eb558db896ad7594ce077d6d44c74072",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/12_scouting_tower.schem",
+        "exists": true,
+        "bytes": 1106,
+        "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/12_scouting_tower.json",
+          "schematics/12_scouting_tower.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/12_scouting_tower.reader.log",
+        "compared_voxels": 4563,
+        "mismatch_count": 54,
+        "count_match": false,
+        "spot_check_count": 25,
+        "spot_check_failures": [
+          {
+            "x": 6,
+            "y": 26,
+            "z": 5,
+            "note": "",
+            "expected": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:birch_leaves[{\"distance\":\"1\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+          },
+          {
+            "x": 2,
+            "y": 12,
+            "z": 1,
+            "note": "",
+            "expected": "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[{\"distance\":\"7\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 11,
+            "y": 0,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 1,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 1,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 2,
+            "z": 9,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 2,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 2,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 3,
+            "z": 9,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 3,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 3,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 4,
+            "z": 9,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 4,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 9,
+            "y": 4,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 4,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 2,
+            "y": 5,
+            "z": 3,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 5,
+            "z": 9,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 5,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 9,
+            "y": 5,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 10,
+            "y": 5,
+            "z": 11,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 6,
+            "z": 9,
+            "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 11,
+            "y": 6,
+            "z": 10,
+            "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+            "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/12_scouting_tower.json",
+          "schematic": "schematics/12_scouting_tower.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            27,
+            13
+          ],
+          "volume": 4563,
+          "comparedVoxels": 4563,
+          "expectedNonAir": 872,
+          "parserDerivedAir": 3691,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:birch_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 8
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 20,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "expected": 15,
+              "actual": 20
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]",
+              "expected": 5,
+              "actual": 15
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=4,persistent=true,waterlogged=false]",
+              "expected": 2,
+              "actual": 5
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=5,persistent=true,waterlogged=false]",
+              "expected": 3,
+              "actual": 2
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]",
+              "expected": 1,
+              "actual": 3
+            },
+            {
+              "state": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 8,
+              "actual": 1
+            }
+          ],
+          "legendEntriesValidated": 36,
+          "spotChecks": 25,
+          "spotCheckFailures": [
+            {
+              "x": 6,
+              "y": 26,
+              "z": 5,
+              "note": "",
+              "expected": "minecraft:spruce_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:birch_leaves[{\"distance\":\"1\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+            },
+            {
+              "x": 2,
+              "y": 12,
+              "z": 1,
+              "note": "",
+              "expected": "minecraft:spruce_leaves[distance=6,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[{\"distance\":\"7\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 54,
+          "firstMismatches": [
+            {
+              "x": 11,
+              "y": 0,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 1,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 1,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 2,
+              "z": 9,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 2,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 2,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 3,
+              "z": 9,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 3,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 3,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 4,
+              "z": 9,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 4,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 9,
+              "y": 4,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 4,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 2,
+              "y": 5,
+              "z": 3,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 5,
+              "z": 9,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 5,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 9,
+              "y": 5,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 10,
+              "y": 5,
+              "z": 11,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 6,
+              "z": 9,
+              "expected": "minecraft:spruce_leaves[distance=1,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 11,
+              "y": 6,
+              "z": 10,
+              "expected": "minecraft:spruce_leaves[distance=2,persistent=true,waterlogged=false]",
+              "actual": "minecraft:spruce_leaves[distance=3,persistent=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/13_skull_cave.json",
+        "bytes": 24723,
+        "sha256": "a29881f90e96309bf2372e9f68ee99abb4e7633841b05b1d1497a96f5de02cea",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/13_skull_cave.schem",
+        "exists": true,
+        "bytes": 915,
+        "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/13_skull_cave.json",
+          "schematics/13_skull_cave.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/13_skull_cave.reader.log",
+        "compared_voxels": 5120,
+        "mismatch_count": 123,
+        "count_match": false,
+        "spot_check_count": 32,
+        "spot_check_failures": [
+          {
+            "x": 1,
+            "y": 15,
+            "z": 3,
+            "note": "Persistent jungle roof foliage; no parser workaround",
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[{\"distance\":\"1\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 0,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 19,
+            "y": 2,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 3,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 19,
+            "y": 3,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 17,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 19,
+            "y": 4,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 17,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 19,
+            "y": 5,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 6,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 17,
+            "y": 6,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 7,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 17,
+            "y": 7,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "z": 2,
+            "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/13_skull_cave.json",
+          "schematic": "schematics/13_skull_cave.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            20,
+            16,
+            16
+          ],
+          "volume": 5120,
+          "comparedVoxels": 5120,
+          "expectedNonAir": 2639,
+          "parserDerivedAir": 2481,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 123
+            },
+            {
+              "state": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 123,
+              "actual": 0
+            }
+          ],
+          "legendEntriesValidated": 23,
+          "spotChecks": 32,
+          "spotCheckFailures": [
+            {
+              "x": 1,
+              "y": 15,
+              "z": 3,
+              "note": "Persistent jungle roof foliage; no parser workaround",
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[{\"distance\":\"1\",\"persistent\":\"true\",\"waterlogged\":\"false\"}]"
+            }
+          ],
+          "parserMismatches": 123,
+          "firstMismatches": [
+            {
+              "x": 0,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 19,
+              "y": 2,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 3,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 19,
+              "y": 3,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 17,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 19,
+              "y": 4,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 17,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 19,
+              "y": 5,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 6,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 17,
+              "y": 6,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 7,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 2,
+              "y": 7,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 17,
+              "y": 7,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 8,
+              "z": 2,
+              "expected": "minecraft:jungle_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:acacia_leaves[distance=1,persistent=true,waterlogged=false]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/14_school_monster_bus.json",
+        "bytes": 23965,
+        "sha256": "a87d1591bbeb937f1ce20ec3e9ed6fc407c9ad74dd6aa67cf20b369a1ef36018",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/14_school_monster_bus.schem",
+        "exists": true,
+        "bytes": 920,
+        "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/14_school_monster_bus.json",
+          "schematics/14_school_monster_bus.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/14_school_monster_bus.reader.log",
+        "compared_voxels": 1200,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 37,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/14_school_monster_bus.json",
+          "schematic": "schematics/14_school_monster_bus.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            8,
+            10,
+            15
+          ],
+          "volume": 1200,
+          "comparedVoxels": 1200,
+          "expectedNonAir": 463,
+          "parserDerivedAir": 737,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 35,
+          "spotChecks": 37,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/15_potion_factory.json",
+        "bytes": 25452,
+        "sha256": "1881bfe51e27535123b22d394c720f48f24d412a9f59dd4d8f4a6360a73bcea0",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/15_potion_factory.schem",
+        "exists": true,
+        "bytes": 1255,
+        "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/15_potion_factory.json",
+          "schematics/15_potion_factory.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/15_potion_factory.reader.log",
+        "compared_voxels": 3705,
+        "mismatch_count": 8,
+        "count_match": false,
+        "spot_check_count": 38,
+        "spot_check_failures": [
+          {
+            "x": 13,
+            "y": 4,
+            "z": 9,
+            "note": "",
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge[{}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 4,
+            "y": 3,
+            "z": 5,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 12,
+            "y": 3,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 14,
+            "y": 3,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 5,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 6,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 12,
+            "y": 4,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 13,
+            "y": 4,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 14,
+            "y": 4,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/15_potion_factory.json",
+          "schematic": "schematics/15_potion_factory.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            19,
+            13,
+            15
+          ],
+          "volume": 3705,
+          "comparedVoxels": 3705,
+          "expectedNonAir": 944,
+          "parserDerivedAir": 2761,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 8,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:wet_sponge",
+              "expected": 0,
+              "actual": 8
+            }
+          ],
+          "legendEntriesValidated": 44,
+          "spotChecks": 38,
+          "spotCheckFailures": [
+            {
+              "x": 13,
+              "y": 4,
+              "z": 9,
+              "note": "",
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge[{}]"
+            }
+          ],
+          "parserMismatches": 8,
+          "firstMismatches": [
+            {
+              "x": 4,
+              "y": 3,
+              "z": 5,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 12,
+              "y": 3,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 14,
+              "y": 3,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 5,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "z": 6,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 12,
+              "y": 4,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 13,
+              "y": 4,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 14,
+              "y": 4,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/16_wishing_well.json",
+        "bytes": 14847,
+        "sha256": "8e70bc29bcea96084f791c55ffb3b09f2a0c50fa2985f4a3f79823f18a413adf",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/16_wishing_well.schem",
+        "exists": true,
+        "bytes": 728,
+        "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/16_wishing_well.json",
+          "schematics/16_wishing_well.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/16_wishing_well.reader.log",
+        "compared_voxels": 600,
+        "mismatch_count": 28,
+        "count_match": false,
+        "spot_check_count": 30,
+        "spot_check_failures": [
+          {
+            "x": 0,
+            "y": 12,
+            "z": 4,
+            "note": "",
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge[{}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 0,
+            "y": 8,
+            "z": 0,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "z": 1,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "z": 3,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "z": 3,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "z": 4,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 2,
+            "y": 8,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "z": 5,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "z": 5,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "z": 1,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "z": 3,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 1,
+            "y": 9,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 2,
+            "y": 9,
+            "z": 4,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "z": 5,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 1,
+            "y": 9,
+            "z": 5,
+            "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+          },
+          {
+            "x": 0,
+            "y": 10,
+            "z": 3,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 10,
+            "z": 4,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/16_wishing_well.json",
+          "schematic": "schematics/16_wishing_well.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            5,
+            15,
+            8
+          ],
+          "volume": 600,
+          "comparedVoxels": 600,
+          "parserDerivedAir": 245,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 9,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]",
+              "expected": 0,
+              "actual": 9
+            },
+            {
+              "state": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 19,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:wet_sponge",
+              "expected": 0,
+              "actual": 19
+            }
+          ],
+          "legendEntriesValidated": 21,
+          "spotChecks": 30,
+          "spotCheckFailures": [
+            {
+              "x": 0,
+              "y": 12,
+              "z": 4,
+              "note": "",
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge[{}]"
+            }
+          ],
+          "parserMismatches": 28,
+          "firstMismatches": [
+            {
+              "x": 0,
+              "y": 8,
+              "z": 0,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "z": 1,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "z": 3,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 4,
+              "y": 8,
+              "z": 3,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "z": 4,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 1,
+              "y": 8,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 2,
+              "y": 8,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 4,
+              "y": 8,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "z": 5,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 1,
+              "y": 8,
+              "z": 5,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "z": 1,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "z": 3,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 1,
+              "y": 9,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 2,
+              "y": 9,
+              "z": 4,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 4,
+              "y": 9,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "z": 5,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 1,
+              "y": 9,
+              "z": 5,
+              "expected": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:flowering_azalea_leaves[distance=1,persistent=true,waterlogged=false]"
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "z": 3,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "z": 4,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/17_carousel.json",
+        "bytes": 29351,
+        "sha256": "c3227059fdb670b236ad91b9245d675fa675bba05d5c56a41bc0980524e501b8",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/17_carousel.schem",
+        "exists": true,
+        "bytes": 1250,
+        "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/17_carousel.json",
+          "schematics/17_carousel.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/17_carousel.reader.log",
+        "compared_voxels": 4913,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 28,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/17_carousel.json",
+          "schematic": "schematics/17_carousel.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            17,
+            17,
+            17
+          ],
+          "volume": 4913,
+          "comparedVoxels": 4913,
+          "expectedNonAir": 1283,
+          "parserDerivedAir": 3630,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 41,
+          "spotChecks": 28,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/17_strider_bath.json",
+        "bytes": 9555,
+        "sha256": "347c50d6765551e113783e98261e86cd3214f805fbf2cce0f2a3420234ea31a5",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/17_strider_bath.schem",
+        "exists": true,
+        "bytes": 441,
+        "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/17_strider_bath.json",
+          "schematics/17_strider_bath.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/17_strider_bath.reader.log",
+        "compared_voxels": 792,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 17,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/17_strider_bath.json",
+          "schematic": "schematics/17_strider_bath.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            9,
+            8,
+            11
+          ],
+          "volume": 792,
+          "comparedVoxels": 792,
+          "expectedNonAir": 232,
+          "parserDerivedAir": 560,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 10,
+          "spotChecks": 17,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/18_easter_island_head.json",
+        "bytes": 5299,
+        "sha256": "80ea9817ac671bbb02ddcc6a12867ee22685ebfdc1f0e049c26aef9959f1e336",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/18_easter_island_head.schem",
+        "exists": true,
+        "bytes": 324,
+        "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/18_easter_island_head.json",
+          "schematics/18_easter_island_head.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/18_easter_island_head.reader.log",
+        "compared_voxels": 180,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 7,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/18_easter_island_head.json",
+          "schematic": "schematics/18_easter_island_head.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            5,
+            9,
+            4
+          ],
+          "volume": 180,
+          "comparedVoxels": 180,
+          "expectedNonAir": 86,
+          "parserDerivedAir": 94,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 6,
+          "spotChecks": 7,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/18_giant_grandfather_clock.json",
+        "bytes": 26459,
+        "sha256": "5da2a65806aca69e81db643361108a7639230045072a92218208b83c4b640169",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/18_giant_grandfather_clock.schem",
+        "exists": true,
+        "bytes": 1438,
+        "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/18_giant_grandfather_clock.json",
+          "schematics/18_giant_grandfather_clock.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/18_giant_grandfather_clock.reader.log",
+        "compared_voxels": 4719,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 19,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/18_giant_grandfather_clock.json",
+          "schematic": "schematics/18_giant_grandfather_clock.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            13,
+            33,
+            11
+          ],
+          "volume": 4719,
+          "comparedVoxels": 4719,
+          "expectedNonAir": 1309,
+          "parserDerivedAir": 3410,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 52,
+          "spotChecks": 19,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/19_hot_spring_chalet.json",
+        "bytes": 9751,
+        "sha256": "770031104501fbbe974ead1db6461fb2cd4b1cee88ac2c628644eaca43e7a6ac",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/19_hot_spring_chalet.schem",
+        "exists": true,
+        "bytes": 473,
+        "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/19_hot_spring_chalet.json",
+          "schematics/19_hot_spring_chalet.schem"
+        ],
+        "exit_code": 0,
+        "result": "PASS",
+        "log": "schematics/validation/build_logs/19_hot_spring_chalet.reader.log",
+        "compared_voxels": 780,
+        "mismatch_count": 0,
+        "count_match": true,
+        "spot_check_count": 14,
+        "spot_check_failures": [],
+        "first_mismatches": [],
+        "output": {
+          "blueprint": "schematics/blueprints/19_hot_spring_chalet.json",
+          "schematic": "schematics/19_hot_spring_chalet.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            10,
+            6,
+            13
+          ],
+          "volume": 780,
+          "comparedVoxels": 780,
+          "expectedNonAir": 239,
+          "parserDerivedAir": 541,
+          "parserDerivedCountsMatch": true,
+          "countDiffs": [],
+          "legendEntriesValidated": 13,
+          "spotChecks": 14,
+          "spotCheckFailures": [],
+          "parserMismatches": 0,
+          "firstMismatches": [],
+          "fullVoxelAndStateComparison": "PASS"
+        }
+      }
+    },
+    {
+      "blueprint": {
+        "path": "schematics/blueprints/19_thermal_springs.json",
+        "bytes": 18431,
+        "sha256": "c747e39e98eb82b5a6567c68e32f7cec2faf9e025008971b65b1c576192062d2",
+        "nonempty": true
+      },
+      "schematic": {
+        "path": "schematics/19_thermal_springs.schem",
+        "exists": true,
+        "bytes": 1025,
+        "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+        "nonempty": true
+      },
+      "production_reader": {
+        "command": [
+          "node",
+          "schematics/validate_blueprint.mjs",
+          "schematics/blueprints/19_thermal_springs.json",
+          "schematics/19_thermal_springs.schem"
+        ],
+        "exit_code": 2,
+        "result": "MISMATCH",
+        "log": "schematics/validation/build_logs/19_thermal_springs.reader.log",
+        "compared_voxels": 4048,
+        "mismatch_count": 23,
+        "count_match": false,
+        "spot_check_count": 20,
+        "spot_check_failures": [
+          {
+            "x": 20,
+            "y": 1,
+            "z": 8,
+            "note": "",
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge[{}]"
+          },
+          {
+            "x": 20,
+            "y": 2,
+            "z": 8,
+            "note": "",
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[{\"layers\":\"2\"}]"
+          }
+        ],
+        "first_mismatches": [
+          {
+            "x": 0,
+            "y": 1,
+            "z": 7,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "z": 7,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 8,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 20,
+            "y": 1,
+            "z": 8,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 21,
+            "y": 1,
+            "z": 8,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 22,
+            "y": 1,
+            "z": 8,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 20,
+            "y": 1,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 21,
+            "y": 1,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 22,
+            "y": 1,
+            "z": 9,
+            "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+            "actual": "minecraft:wet_sponge"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "z": 7,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 8,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 20,
+            "y": 2,
+            "z": 8,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 21,
+            "y": 2,
+            "z": 8,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 22,
+            "y": 2,
+            "z": 8,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 20,
+            "y": 2,
+            "z": 9,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 21,
+            "y": 2,
+            "z": 9,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 22,
+            "y": 2,
+            "z": 9,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "z": 3,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          },
+          {
+            "x": 20,
+            "y": 3,
+            "z": 3,
+            "expected": "minecraft:snow[layers=1]",
+            "actual": "minecraft:snow[layers=2]"
+          }
+        ],
+        "output": {
+          "blueprint": "schematics/blueprints/19_thermal_springs.json",
+          "schematic": "schematics/19_thermal_springs.schem",
+          "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+          "registry": "minecraft-data 1.21.4",
+          "dimensions": [
+            23,
+            8,
+            22
+          ],
+          "volume": 4048,
+          "comparedVoxels": 4048,
+          "expectedNonAir": 1170,
+          "parserDerivedAir": 2878,
+          "parserDerivedCountsMatch": false,
+          "countDiffs": [
+            {
+              "state": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "expected": 9,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:snow[layers=1]",
+              "expected": 14,
+              "actual": 0
+            },
+            {
+              "state": "minecraft:snow[layers=2]",
+              "expected": 0,
+              "actual": 14
+            },
+            {
+              "state": "minecraft:wet_sponge",
+              "expected": 0,
+              "actual": 9
+            }
+          ],
+          "legendEntriesValidated": 23,
+          "spotChecks": 20,
+          "spotCheckFailures": [
+            {
+              "x": 20,
+              "y": 1,
+              "z": 8,
+              "note": "",
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge[{}]"
+            },
+            {
+              "x": 20,
+              "y": 2,
+              "z": 8,
+              "note": "",
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[{\"layers\":\"2\"}]"
+            }
+          ],
+          "parserMismatches": 23,
+          "firstMismatches": [
+            {
+              "x": 0,
+              "y": 1,
+              "z": 7,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 7,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 8,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 20,
+              "y": 1,
+              "z": 8,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 21,
+              "y": 1,
+              "z": 8,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 22,
+              "y": 1,
+              "z": 8,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 20,
+              "y": 1,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 21,
+              "y": 1,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 22,
+              "y": 1,
+              "z": 9,
+              "expected": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+              "actual": "minecraft:wet_sponge"
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 7,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 8,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 20,
+              "y": 2,
+              "z": 8,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 21,
+              "y": 2,
+              "z": 8,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 22,
+              "y": 2,
+              "z": 8,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 20,
+              "y": 2,
+              "z": 9,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 21,
+              "y": 2,
+              "z": 9,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 22,
+              "y": 2,
+              "z": 9,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 2,
+              "y": 3,
+              "z": 3,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            },
+            {
+              "x": 20,
+              "y": 3,
+              "z": 3,
+              "expected": "minecraft:snow[layers=1]",
+              "actual": "minecraft:snow[layers=2]"
+            }
+          ],
+          "fullVoxelAndStateComparison": "FAIL"
+        }
+      }
+    }
+  ]
+}
