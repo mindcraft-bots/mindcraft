@@ -1,11 +1,8 @@
 # Batch Task: Generate Mindcraft Sponge v2 Schematics for Folders 2–19
 
 ## Scope & Exclusions (Strict)
-- **Root Input Directory:** `data/screenshots/BuildingsCompressed-2`
-- **Target Folders:** Process ONLY numeric subdirectories `2` through `19` in ascending numerical order (`2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19`).
-- **Explicit Exclusions:**
-  - **IGNORE** subdirectory `1` (`data/screenshots/BuildingsCompressed-2/1`).
-  - **IGNORE** any loose files in the root of `data/screenshots/BuildingsCompressed-2` (such as `IMG_20261115_160656-1536x1152.jpg`).
+- **Root Input Directory:** `screenshots/packN`
+- **Target Folders:** Process ONLY numeric subdirectories `1` through `19` in ascending numerical order (`1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19`).
 - **Target Minecraft Version:** Minecraft Java Edition `1.21.4` (`DataVersion: 4189`).
 
 ---
