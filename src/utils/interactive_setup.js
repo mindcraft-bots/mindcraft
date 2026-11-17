@@ -127,15 +127,20 @@ export async function runInteractiveSetup(force = false) {
 
         // 2. Ask for API Key(s)
         let apiKey = '';
+        const existingKey = (hasKey(selectedProvider.keyName) ? getKey(selectedProvider.keyName) : null) 
+            || (hasKey(selectedProvider.name) ? getKey(selectedProvider.name) : null);
         while (!apiKey) {
-            const keyAns = await rl.question(`Enter your ${selectedProvider.name} API Key (or comma-separated keys): `);
+            const prompt = existingKey
+                ? `Enter your ${selectedProvider.name} API Key [press Enter to keep existing key]: `
+                : `Enter your ${selectedProvider.name} API Key (or comma-separated keys): `;
+            const keyAns = await rl.question(prompt);
             apiKey = keyAns.trim();
+            if (!apiKey && existingKey) {
+                apiKey = existingKey;
+                console.log(`-> Keeping existing key for ${selectedProvider.keyName}.`);
+                break;
+            }
             if (!apiKey) {
-                // Check if key is already available in environment
-                if (hasKey(selectedProvider.keyName)) {
-                    console.log(`-> Using existing key from environment for ${selectedProvider.keyName}.`);
-                    break;
-                }
                 console.log('API key cannot be empty. Please enter a valid API key.');
             }
         }
@@ -206,19 +211,38 @@ export async function runInteractiveSetup(force = false) {
         }
 
         writeFileSync('./keys.json', JSON.stringify(keysData, null, 4), 'utf8');
-        reloadKeys();
 
         // Save to config.json
+        let existingConfig = {};
+        if (existsSync('./config.json')) {
+            try {
+                existingConfig = JSON.parse(readFileSync('./config.json', 'utf8'));
+            } catch {}
+        }
+
         const configData = {
+            ...existingConfig,
             host,
             port,
             minecraft_version: mcVersion,
             auth,
+            provider: selectedProvider.name,
+            model: selectedProvider.defaultModel,
+            api_key: apiKey,
+            api_key_name: selectedProvider.keyName,
+            [selectedProvider.keyName]: apiKey,
             fast_mode: isFastLow,
             low_memory_mode: isFastLow,
             max_messages: isFastLow ? 10 : 15
         };
+        if (customUrl) {
+            configData.custom_api_url = customUrl;
+            configData.CUSTOM_API_URL = customUrl;
+        }
         writeFileSync('./config.json', JSON.stringify(configData, null, 4), 'utf8');
+
+        // Reload keys from both files
+        reloadKeys();
 
         // Save to andy.json (or bot profile)
         const profileData = {

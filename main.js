@@ -5,7 +5,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { readFileSync, existsSync } from 'fs';
 import { selectAPI } from './src/models/_model_map.js';
-import { hasKey, reloadKeys } from './src/utils/keys.js';
+import { hasKey, reloadKeys, getAvailableProviders } from './src/utils/keys.js';
 import { runInteractiveSetup } from './src/utils/interactive_setup.js';
 
 function parseArguments() {
@@ -109,18 +109,25 @@ if (process.env.SETTINGS_JSON) {
 const wantsConfigure = args.configure || args.setup || process.env.CONFIGURE === 'true';
 
 let needsKey = false;
+reloadKeys();
 try {
     const firstProfile = settings.profiles[0];
     if (firstProfile && existsSync(firstProfile)) {
         const profileData = JSON.parse(readFileSync(firstProfile, 'utf8'));
         const modelProfile = selectAPI(profileData.model);
         const localApis = ['ollama', 'vllm', 'lmstudio'];
-        if (!localApis.includes(modelProfile.api) && !hasKey(modelProfile.api)) {
-            needsKey = true;
+        if (!localApis.includes(modelProfile.api)) {
+            if (!hasKey(modelProfile.api)) {
+                needsKey = true;
+            }
         }
+    } else {
+        const providers = getAvailableProviders();
+        if (providers.length === 0) needsKey = true;
     }
-} catch {
-    needsKey = true;
+} catch (e) {
+    const providers = getAvailableProviders();
+    if (providers.length === 0) needsKey = true;
 }
 
 if (wantsConfigure || (needsKey && process.stdin.isTTY)) {

@@ -2,38 +2,42 @@ import { readFileSync, existsSync } from 'fs';
 
 // Aliases mapping canonical name <-> alternative names
 const KEY_ALIASES = {
-    'OPENAI_API_KEY': ['OPENAI_KEY', 'OPENAI_TOKEN'],
-    'GEMINI_API_KEY': ['GOOGLE_API_KEY', 'GEMINI_KEY', 'GOOGLE_KEY'],
-    'ANTHROPIC_API_KEY': ['CLAUDE_API_KEY', 'ANTHROPIC_KEY', 'CLAUDE_KEY'],
-    'GROQCLOUD_API_KEY': ['GROQ_API_KEY', 'GROQ_KEY', 'GROQCLOUD_KEY'],
-    'CEREBRAS_API_KEY': ['CEREBRAS_KEY'],
-    'SAMBANOVA_API_KEY': ['SAMBANOVA_KEY', 'SAMBA_API_KEY', 'SAMBA_KEY'],
-    'TOGETHER_API_KEY': ['TOGETHERAI_API_KEY', 'TOGETHER_KEY'],
-    'FIREWORKS_API_KEY': ['FIREWORKS_KEY', 'FIREWORKS_AI_API_KEY'],
-    'DEEPSEEK_API_KEY': ['DEEPSEEK_KEY'],
-    'DEEPINFRA_API_KEY': ['DEEPINFRA_KEY', 'DEEP_INFRA_API_KEY'],
-    'PERPLEXITY_API_KEY': ['PERPLEXITY_KEY', 'PPLX_API_KEY'],
-    'COHERE_API_KEY': ['COHERE_KEY'],
-    'SILICONFLOW_API_KEY': ['SILICONFLOW_KEY', 'SILICON_FLOW_KEY'],
-    'XAI_API_KEY': ['GROK_API_KEY', 'XAI_KEY', 'GROK_KEY'],
-    'QWEN_API_KEY': ['DASHSCOPE_API_KEY', 'QWEN_KEY', 'ALIYUN_API_KEY'],
-    'MISTRAL_API_KEY': ['MISTRAL_KEY', 'CODESTRAL_API_KEY', 'CODESTRAL_KEY'],
-    'OPENROUTER_API_KEY': ['OPENROUTER_KEY'],
-    'HYPERBOLIC_API_KEY': ['HYPERBOLIC_KEY'],
-    'NOVITA_API_KEY': ['NOVITA_KEY'],
-    'HUGGINGFACE_API_KEY': ['HUGGINGFACE_KEY', 'HF_API_KEY', 'HF_TOKEN'],
-    'REPLICATE_API_KEY': ['REPLICATE_KEY', 'REPLICATE_API_TOKEN'],
-    'MERCURY_API_KEY': ['MERCURY_KEY'],
-    'AZURE_OPENAI_API_KEY': ['AZURE_API_KEY'],
-    'CUSTOM_API_KEY': ['CUSTOM_KEY'],
+    'OPENAI_API_KEY': ['OPENAI_KEY', 'OPENAI_TOKEN', 'openai', 'gpt'],
+    'GEMINI_API_KEY': ['GOOGLE_API_KEY', 'GEMINI_KEY', 'GOOGLE_KEY', 'google', 'gemini'],
+    'ANTHROPIC_API_KEY': ['CLAUDE_API_KEY', 'ANTHROPIC_KEY', 'CLAUDE_KEY', 'anthropic', 'claude'],
+    'GROQCLOUD_API_KEY': ['GROQ_API_KEY', 'GROQ_KEY', 'GROQCLOUD_KEY', 'groq', 'groqcloud'],
+    'CEREBRAS_API_KEY': ['CEREBRAS_KEY', 'cerebras'],
+    'SAMBANOVA_API_KEY': ['SAMBANOVA_KEY', 'SAMBA_API_KEY', 'SAMBA_KEY', 'sambanova', 'samba'],
+    'TOGETHER_API_KEY': ['TOGETHERAI_API_KEY', 'TOGETHER_KEY', 'together', 'togetherai'],
+    'FIREWORKS_API_KEY': ['FIREWORKS_KEY', 'FIREWORKS_AI_API_KEY', 'fireworks'],
+    'DEEPSEEK_API_KEY': ['DEEPSEEK_KEY', 'deepseek'],
+    'DEEPINFRA_API_KEY': ['DEEPINFRA_KEY', 'DEEP_INFRA_API_KEY', 'deepinfra'],
+    'PERPLEXITY_API_KEY': ['PERPLEXITY_KEY', 'PPLX_API_KEY', 'perplexity', 'pplx'],
+    'COHERE_API_KEY': ['COHERE_KEY', 'cohere'],
+    'SILICONFLOW_API_KEY': ['SILICONFLOW_KEY', 'SILICON_FLOW_KEY', 'siliconflow'],
+    'XAI_API_KEY': ['GROK_API_KEY', 'XAI_KEY', 'GROK_KEY', 'xai', 'grok'],
+    'QWEN_API_KEY': ['DASHSCOPE_API_KEY', 'QWEN_KEY', 'ALIYUN_API_KEY', 'qwen'],
+    'MISTRAL_API_KEY': ['MISTRAL_KEY', 'CODESTRAL_API_KEY', 'CODESTRAL_KEY', 'mistral'],
+    'OPENROUTER_API_KEY': ['OPENROUTER_KEY', 'openrouter'],
+    'HYPERBOLIC_API_KEY': ['HYPERBOLIC_KEY', 'hyperbolic'],
+    'NOVITA_API_KEY': ['NOVITA_KEY', 'novita'],
+    'HUGGINGFACE_API_KEY': ['HUGGINGFACE_KEY', 'HF_API_KEY', 'HF_TOKEN', 'huggingface'],
+    'REPLICATE_API_KEY': ['REPLICATE_KEY', 'REPLICATE_API_TOKEN', 'replicate'],
+    'MERCURY_API_KEY': ['MERCURY_KEY', 'mercury'],
+    'AZURE_OPENAI_API_KEY': ['AZURE_API_KEY', 'azure'],
+    'CUSTOM_API_KEY': ['CUSTOM_KEY', 'custom'],
 };
 
 // Map alternative names back to canonical names
 const ALIAS_LOOKUP = {};
 for (const [canonical, aliases] of Object.entries(KEY_ALIASES)) {
     ALIAS_LOOKUP[canonical] = canonical;
+    ALIAS_LOOKUP[canonical.toLowerCase()] = canonical;
+    ALIAS_LOOKUP[canonical.toUpperCase()] = canonical;
     for (const alias of aliases) {
         ALIAS_LOOKUP[alias] = canonical;
+        ALIAS_LOOKUP[alias.toLowerCase()] = canonical;
+        ALIAS_LOOKUP[alias.toUpperCase()] = canonical;
     }
 }
 
@@ -78,6 +82,30 @@ export function reloadKeys() {
         console.warn('keys.json could not be loaded, defaulting to environment variables:', err.message);
     }
 
+    // Also load from config.json if keys or api_key are present
+    try {
+        if (existsSync('./config.json')) {
+            const configJson = JSON.parse(readFileSync('./config.json', 'utf8'));
+            for (const [k, v] of Object.entries(configJson)) {
+                if (!v) continue;
+                if (k === 'api_key' || k === 'apiKey') {
+                    const keyName = configJson.api_key_name || (configJson.provider ? getCanonicalName(configJson.provider) : null);
+                    if (keyName) {
+                        const canonical = getCanonicalName(keyName);
+                        rawKeys[canonical] = v;
+                    }
+                } else if (k === 'custom_api_url' || k === 'CUSTOM_API_URL') {
+                    rawKeys['CUSTOM_API_URL'] = v;
+                } else if (k.endsWith('_KEY') || k.endsWith('_TOKEN') || k.endsWith('_URL') || ALIAS_LOOKUP[k]) {
+                    const canonical = getCanonicalName(k);
+                    rawKeys[canonical] = v;
+                }
+            }
+        }
+    } catch {
+        // ignore
+    }
+
     const envFileVars = parseEnvFile();
     const allEnv = { ...envFileVars, ...process.env };
 
@@ -108,9 +136,9 @@ export function reloadKeys() {
         }
     }
 
-    // Load from rawKeys (keys.json)
+    // Load from rawKeys (keys.json & config.json)
     for (const [k, v] of Object.entries(rawKeys)) {
-        const canonical = ALIAS_LOOKUP[k] || k;
+        const canonical = getCanonicalName(k);
         addKeysToPool(canonical, v);
     }
 
@@ -131,7 +159,8 @@ export function reloadKeys() {
 reloadKeys();
 
 export function getCanonicalName(name) {
-    return ALIAS_LOOKUP[name] || name;
+    if (!name || typeof name !== 'string') return name;
+    return ALIAS_LOOKUP[name] || ALIAS_LOOKUP[name.toLowerCase()] || ALIAS_LOOKUP[name.toUpperCase()] || name;
 }
 
 export function getAliases(name) {
