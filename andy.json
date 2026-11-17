@@ -1,6 +1,13 @@
 {
     "name": "andy",
-
-    "model": "gpt-5.4-mini"
-
+    "model": "groq/llama-3.3-70b-versatile",
+    "cooldown": 0,
+    "fast_mode": true,
+    "low_memory_mode": true,
+    "max_messages": 10,
+    "max_tokens": 1024,
+    "params": {
+        "temperature": 0.2,
+        "max_completion_tokens": 1024
+    }
 }

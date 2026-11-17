@@ -18,7 +18,7 @@ export class History {
         this.memory = '';
 
         // Maximum number of messages to keep in context before saving chunk to memory
-        this.max_messages = settings.max_messages;
+        this.max_messages = this.agent.prompter?.profile?.max_messages || settings.max_messages;
 
         // Number of messages to remove from current history and save into memory
         this.summary_chunk_size = 5; 

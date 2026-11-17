@@ -43,6 +43,20 @@ export class Prompter {
         }
         // base overrides default, individual overrides base
 
+        // Profile-level fast & low memory configuration
+        if (this.profile.fast_mode !== undefined) {
+            settings.fast_mode = Boolean(this.profile.fast_mode);
+        }
+        if (this.profile.low_memory_mode !== undefined) {
+            settings.low_memory_mode = Boolean(this.profile.low_memory_mode);
+        }
+        if (this.profile.max_messages !== undefined) {
+            settings.max_messages = Number(this.profile.max_messages);
+        }
+        if (this.profile.num_examples !== undefined) {
+            settings.num_examples = Number(this.profile.num_examples);
+        }
+
         this.convo_examples = null;
         this.coding_examples = null;
         
