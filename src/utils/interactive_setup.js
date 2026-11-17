@@ -146,8 +146,6 @@ export async function runInteractiveSetup(force = false) {
 
         // 4. Server Host
         const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');
-        // 4. Server Host
-        const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');
         let rawHost = hostAns.trim() || '127.0.0.1';
         let host = rawHost;
         let detectedPort = null;
