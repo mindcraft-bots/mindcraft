@@ -101,9 +101,9 @@ export class Agent {
             else
                 this.bot.chat(`/skin clear`);
         });
-		const spawnTimeoutDuration = settings.spawn_timeout;
+		const spawnTimeoutDuration = settings.spawn_timeout || 90;
         const spawnTimeout = setTimeout(() => {
-            const msg = `Bot has not spawned after ${spawnTimeoutDuration} seconds. Exiting.`;
+            const msg = `[LoginGuard] Bot has not spawned after ${spawnTimeoutDuration} seconds. (Server may be loading chunks or generating terrain).`;
             log(this.name, msg);
             process.exit(1);
         }, spawnTimeoutDuration * 1000);

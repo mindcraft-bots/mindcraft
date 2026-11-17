@@ -121,8 +121,8 @@ export function initBot(username) {
         if (event === 'error' && args[0]) {
             const err = args[0];
             const errStr = err instanceof Error ? err.message : String(err);
-            if (errStr.includes('PartialReadError')) {
-                console.warn('[mcdata] Suppressed PartialReadError:', errStr.substring(0, 120));
+            if (errStr.includes('PartialReadError') || errStr.includes('SizeError')) {
+                console.warn('[mcdata] Suppressed non-critical packet error:', errStr.substring(0, 120));
                 return true; // Swallow the error
             }
         }
@@ -134,7 +134,7 @@ export function initBot(username) {
     bot.loadPlugin(collectblock);
     bot.loadPlugin(autoEat);
     bot.loadPlugin(armorManager); // auto equip armor
-    bot.once('resourcePack', () => {
+    bot.on('resourcePack', () => {
         bot.acceptResourcePack();
     });
 

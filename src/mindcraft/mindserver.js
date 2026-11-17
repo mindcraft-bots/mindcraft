@@ -169,6 +169,7 @@ export function createMindServer(host_public = false, port = 8080) {
         socket.on('connect-agent-process', (agentName) => {
             if (agent_connections[agentName]) {
                 agent_connections[agentName].socket = socket;
+                curAgentName = agentName;
                 agentsStatusUpdate();
             }
         });
@@ -186,7 +187,7 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('disconnect', () => {
-            if (agent_connections[curAgentName]) {
+            if (curAgentName && agent_connections[curAgentName]) {
                 console.log(`Agent ${curAgentName} disconnected`);
                 agent_connections[curAgentName].in_game = false;
                 agent_connections[curAgentName].socket = null;
