@@ -55,17 +55,32 @@ export const WOOL_COLORS = [
 
 
 export function initBot(username) {
+    let host = settings.host || '127.0.0.1';
+    let port = settings.port || 25565;
+    if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
+        const parts = host.split(':');
+        host = parts[0];
+        const parsedPort = parseInt(parts[1], 10);
+        if (!isNaN(parsedPort)) port = parsedPort;
+    }
+
     const targetVersion = resolveJavaVersion(mc_version || settings.minecraft_version);
     const options = {
         username: username,
-        host: settings.host,
-        port: settings.port,
-        auth: settings.auth,
+        host: host,
+        port: port,
+        auth: settings.auth || 'offline',
         version: targetVersion,
+        fakeHost: host,
         checkTimeoutInterval: 60000,  // 60s keep-alive check (default 30s) — reduces disconnects on slow servers
     }
 
+    console.log(`[mcdata] Connecting bot '${username}' to ${options.host}:${options.port} (protocol: ${options.version}, auth: ${options.auth})...`);
     const bot = createBot(options);
+
+    bot._client.on('connect', () => {
+        console.log(`[mcdata] TCP connection established to ${options.host}:${options.port}. Sending login handshake...`);
+    });
 
     // Throttle position packets to avoid kicks on Paper/Spigot servers
     // Paper enforces stricter packet rate limits than vanilla, causing ECONNRESET

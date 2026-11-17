@@ -50,7 +50,6 @@ export async function createAgent(settings) {
     let agent_name = settings.profile.name;
     const agentIndex = agent_count++;
     const viewer_port = 3000 + agentIndex;
-    registerAgent(settings, viewer_port);
     let load_memory = settings.load_memory || false;
     let init_message = settings.init_message || null;
 
@@ -69,6 +68,9 @@ export async function createAgent(settings) {
             }
             console.warn(`Attempting to connect with compatible Java version ${settings.minecraft_version}...`);
         }
+
+        // Register agent in MindServer with fully resolved settings
+        registerAgent(settings, viewer_port);
 
         const agentProcess = new AgentProcess(agent_name, mindserver_port);
         agentProcess.start(load_memory, init_message, agentIndex);

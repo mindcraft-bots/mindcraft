@@ -47,6 +47,9 @@ export class AgentProcess {
         });
         
         let last_restart = Date.now();
+        this.retryCount = this.retryCount || 0;
+        const MAX_RETRIES = 5;
+
         agentProcess.on('exit', (code, signal) => {
             console.log(`Agent process exited with code ${code} and signal ${signal}`);
             this.running = false;
@@ -58,14 +61,23 @@ export class AgentProcess {
             }
 
             if (code !== 0 && signal !== 'SIGINT') {
-                // agent must run for at least 10 seconds before restarting
-                if (Date.now() - last_restart < 10000) {
-                    console.error(`Agent process exited too quickly and will not be restarted.`);
-                    return;
+                if (Date.now() - last_restart >= 15000) {
+                    this.retryCount = 0;
                 }
-                console.log('Restarting agent...');
-                this.start(true, 'Agent process restarted.', count_id, this.port);
-                last_restart = Date.now();
+
+                if (this.retryCount < MAX_RETRIES) {
+                    this.retryCount++;
+                    const delayMs = Math.min(5000 * this.retryCount, 25000);
+                    console.log(`[AgentProcess] Connection attempt failed. Retrying in ${delayMs / 1000}s (attempt ${this.retryCount}/${MAX_RETRIES})...`);
+                    setTimeout(() => {
+                        this.start(true, 'Agent process restarted.', count_id, this.port);
+                    }, delayMs);
+                } else {
+                    console.error(`[AgentProcess] Stopped reconnecting after ${MAX_RETRIES} failed attempts.`);
+                    console.error(`[AgentProcess] Please check server address, port, and online status in config.json or run 'node setup.js'.`);
+                }
+            } else {
+                this.retryCount = 0;
             }
         });
     

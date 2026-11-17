@@ -28,8 +28,8 @@ const ERROR_DEFINITIONS = {
         isFatal: false
     },
     'network_error': {
-        keywords: ['timeout', 'timed out', 'connection lost', 'reset', 'refused', 'keepalive'],
-        msg: 'Network Error: Connection timed out or was lost.',
+        keywords: ['timeout', 'timed out', 'connection lost', 'reset', 'refused', 'keepalive', 'epipe', 'socketclosed', 'econnreset', 'closed'],
+        msg: 'Network Error: Connection timed out, refused, or closed by server.',
         isFatal: false
     },
     'behavior': {
@@ -79,6 +79,19 @@ export function handleDisconnection(agentName, reason) {
     
     // Only call log once (it handles console printing)
     log(agentName, finalMsg);
+
+    if (type === 'network_error') {
+        console.error(`\n[LoginGuard] 💡 Server Connection Tips:`);
+        console.error(`   1. Verify your server is fully ONLINE and running.`);
+        console.error(`   2. Aternos Note: Aternos servers use a unique 5-digit Port (e.g. 12345, not 25565).`);
+        console.error(`      Find your port on your Aternos dashboard under 'Connect'.`);
+        console.error(`   3. In Aternos Options: turn ON 'Cracked' if using offline authentication.`);
+        console.error(`   4. If Whitelist is on: type '/whitelist add ${agentName}' in server console.\n`);
+    } else if (type === 'access_denied') {
+        console.error(`\n[LoginGuard] 💡 Whitelist Notice: Type '/whitelist add ${agentName}' in your Minecraft server console to allow the bot to join.\n`);
+    } else if (type === 'name_conflict') {
+        console.error(`\n[LoginGuard] 💡 Name Conflict: The username '${agentName}' is already online on the server. Change the bot name in config.json or kick the duplicate player.\n`);
+    }
     
     return { type, msg: finalMsg };
 }

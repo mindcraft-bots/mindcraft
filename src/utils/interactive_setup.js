@@ -162,11 +162,20 @@ export async function runInteractiveSetup(force = false) {
         }
 
         // 5. Server Port
+        const isAternos = host.toLowerCase().includes('aternos.me') || host.toLowerCase().includes('aternos.host');
+        if (isAternos && !detectedPort) {
+            console.log('\n  ⚠️  Aternos Notice: Aternos servers use a unique 5-digit port (not 25565)!');
+            console.log('  👉 Check your Aternos dashboard: click "Connect" to view your Port (e.g. 12345 or 38291).\n');
+        }
+
         const isLan = host === '127.0.0.1' || host === 'localhost';
-        const defaultPort = detectedPort || (isLan ? 55916 : 25565);
-        const portAns = await rl.question(`Minecraft Server Port (or -1 for auto-scan) [${defaultPort}]: `);
-        const portParsed = parseInt(portAns.trim() || String(defaultPort), 10);
-        const port = isNaN(portParsed) ? defaultPort : portParsed;
+        const defaultPort = detectedPort || (isLan ? 55916 : (isAternos ? '' : 25565));
+        const portPrompt = defaultPort 
+            ? `Minecraft Server Port (or -1 for auto-scan) [${defaultPort}]: `
+            : `Minecraft Server Port (enter your Aternos 5-digit port): `;
+        const portAns = await rl.question(portPrompt);
+        const portParsed = parseInt(portAns.trim() || String(defaultPort || 25565), 10);
+        const port = isNaN(portParsed) ? (defaultPort || 25565) : portParsed;
 
         // 6. Minecraft Version
         const versionAns = await rl.question('Minecraft Version [auto]: ');

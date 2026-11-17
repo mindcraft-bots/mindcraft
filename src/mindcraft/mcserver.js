@@ -116,6 +116,13 @@ export async function findServers(ip, earlyExit = false, timeout = 100) {
  * @returns {Promise<Object>} - A Promise that resolves to the server info object.
  */
 export async function getServer(host, port, version) {
+    if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
+        const parts = host.split(':');
+        host = parts[0];
+        const parsedPort = parseInt(parts[1], 10);
+        if (!isNaN(parsedPort)) port = parsedPort;
+    }
+
     let server = null;
     let serverString = "";
     let serverVersion = "";
@@ -134,11 +141,17 @@ export async function getServer(host, port, version) {
             throw new Error(`No server found on LAN.`);
     }
     else
-        server = await serverInfo(host, port, 3500, true);
+        server = await serverInfo(host, port, 3500, false);
 
-    // Server not found
-    if (server == null) 
-        throw new Error(`MC server not found. (Host: ${host}, Port: ${port}) Check the host and port in settings.js or config.json, and ensure the server is online.`);
+    // If ping fails or times out (common for reverse proxies like Aternos/Bungee/Geyser), proceed directly
+    if (server == null) {
+        console.log(`[mcserver] Direct ping to ${host}:${port} did not return status (common for proxies like Aternos / BungeeCord). Proceeding with direct connection.`);
+        server = {
+            host,
+            port,
+            version: resolveJavaVersion(version)
+        };
+    }
 
     if (server.version) {
         server.version = resolveJavaVersion(server.version);
@@ -150,16 +163,6 @@ export async function getServer(host, port, version) {
     else
         serverVersion = resolveJavaVersion(version);
 
-    // Server version check
-    const isSupported = mc.supportedVersions.some(v => 
-        serverVersion === v || (serverVersion.startsWith(v) && serverVersion.charAt(v.length) === '.')
-    );
-    if (!isSupported) {
-        console.warn(`[mcserver] Server version '${serverVersion}' not in default protocol list. Using compatible Java 1.21.4 for ViaVersion / ViaBackwards.`);
-        server.version = '1.21.4';
-    } else {
-        console.log(`MC server found. ${serverString}`);
-    }
-
+    console.log(`MC server target ready. ${serverString}`);
     return server;
 }
