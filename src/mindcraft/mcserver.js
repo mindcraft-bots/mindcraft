@@ -1,5 +1,6 @@
 import net from 'net';
 import mc from 'minecraft-protocol';
+import { resolveJavaVersion } from '../utils/version_patch.js';
 
 /**
  * Scans the IP address for Minecraft LAN servers and collects their info.
@@ -9,7 +10,7 @@ import mc from 'minecraft-protocol';
  * @param {boolean} verbose - Whether to print output on connection errors.
  * @returns {Promise<Array>} - A Promise that resolves to an array of server info objects.
  */
-export async function serverInfo(ip, port, timeout = 1000, verbose = false) {
+export async function serverInfo(ip, port, timeout = 3500, verbose = false) {
     return new Promise((resolve) => {
 
         let timeoutId = setTimeout(() => {
@@ -33,15 +34,21 @@ export async function serverInfo(ip, port, timeout = 1000, verbose = false) {
             // extract version number from modded servers like "Paper 1.21.4"
             const version = response?.version?.name || '';
             const match = String(version).match(/\d+\.\d+(?:\.\d+)?/);
-            const numericVersion = match ? match[0] : null;
-            if (numericVersion !== version) {
-                console.log(`Modded server found (${version}), attempting to use ${numericVersion}...`);
+            let numericVersion = match ? match[0] : null;
+            if (numericVersion) {
+                const resolved = resolveJavaVersion(numericVersion);
+                if (resolved !== numericVersion) {
+                    console.log(`[mcserver] Server reported version '${version}' (${numericVersion}). Using compatible Java version '${resolved}' (compatible with ViaVersion / ViaBackwards / Geyser).`);
+                    numericVersion = resolved;
+                } else if (numericVersion !== version) {
+                    console.log(`Modded server found (${version}), attempting to use ${numericVersion}...`);
+                }
             }
 
             const serverInfo = {
                 host: ip,
                 port,
-                name: response.description.text || 'No description provided.',
+                name: response?.description?.text || response?.description || 'No description provided.',
                 ping: response.latency,
                 version: numericVersion
             };
@@ -127,28 +134,32 @@ export async function getServer(host, port, version) {
             throw new Error(`No server found on LAN.`);
     }
     else
-        server = await serverInfo(host, port, 1000, true);
+        server = await serverInfo(host, port, 3500, true);
 
     // Server not found
     if (server == null) 
-        throw new Error(`MC server not found. (Host: ${host}, Port: ${port}) Check the host and port in settings.js, and ensure the server is running and open to public or LAN.`);
+        throw new Error(`MC server not found. (Host: ${host}, Port: ${port}) Check the host and port in settings.js or config.json, and ensure the server is online.`);
 
+    if (server.version) {
+        server.version = resolveJavaVersion(server.version);
+    }
     serverString = `(Host: ${server.host}, Port: ${server.port}, Version: ${server.version})`;
 
     if (version === "auto") 
         serverVersion = server.version;
     else
-        serverVersion = version;
-    // Server version unsupported / mismatch
+        serverVersion = resolveJavaVersion(version);
+
+    // Server version check
     const isSupported = mc.supportedVersions.some(v => 
         serverVersion === v || (serverVersion.startsWith(v) && serverVersion.charAt(v.length) === '.')
-    ); // Checks version or parent version (e.g. if 1.7 is supported then 1.7.2 will be allowed)
-     if (!isSupported)
-        throw new Error(`MC server was found ${serverString}, but version is unsupported. Supported versions are: ${mc.supportedVersions.join(", ")}.`);
-    else if (version !== "auto" && server.version !== version)
-        throw new Error(`MC server was found ${serverString}, but version is incorrect. Expected ${version}, but found ${server.version}. Check the server version in settings.js.`);
-    else
+    );
+    if (!isSupported) {
+        console.warn(`[mcserver] Server version '${serverVersion}' not in default protocol list. Using compatible Java 1.21.4 for ViaVersion / ViaBackwards.`);
+        server.version = '1.21.4';
+    } else {
         console.log(`MC server found. ${serverString}`);
+    }
 
     return server;
 }

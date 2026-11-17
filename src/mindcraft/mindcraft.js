@@ -1,6 +1,7 @@
 import { createMindServer, registerAgent, numStateListeners } from './mindserver.js';
 import { AgentProcess } from '../process/agent_process.js';
 import { getServer } from './mcserver.js';
+import { resolveJavaVersion } from '../utils/version_patch.js';
 import open from 'open';
 
 let mindserver;
@@ -58,13 +59,15 @@ export async function createAgent(settings) {
             const server = await getServer(settings.host, settings.port, settings.minecraft_version);
             settings.host = server.host;
             settings.port = server.port;
-            settings.minecraft_version = server.version;
+            settings.minecraft_version = resolveJavaVersion(server.version);
         } catch (error) {
-            console.warn(`Error getting server:`, error);
-            if (settings.minecraft_version === "auto") {
-                settings.minecraft_version = null;
+            console.warn(`Error getting server:`, error.message || error);
+            if (settings.minecraft_version === "auto" || !settings.minecraft_version) {
+                settings.minecraft_version = "1.21.4";
+            } else {
+                settings.minecraft_version = resolveJavaVersion(settings.minecraft_version);
             }
-            console.warn(`Attempting to connect anyway...`);
+            console.warn(`Attempting to connect with compatible Java version ${settings.minecraft_version}...`);
         }
 
         const agentProcess = new AgentProcess(agent_name, mindserver_port);

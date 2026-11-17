@@ -1,3 +1,4 @@
+import '../utils/version_patch.js';
 import { History } from './history.js';
 import { Coder } from './coder.js';
 import { VisionInterpreter } from './vision/vision_interpreter.js';

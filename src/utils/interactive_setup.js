@@ -146,16 +146,33 @@ export async function runInteractiveSetup(force = false) {
 
         // 4. Server Host
         const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');
-        const host = hostAns.trim() || '127.0.0.1';
+        // 4. Server Host
+        const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');
+        let rawHost = hostAns.trim() || '127.0.0.1';
+        let host = rawHost;
+        let detectedPort = null;
+        if (rawHost.includes(':') && !rawHost.startsWith('http')) {
+            const parts = rawHost.split(':');
+            host = parts[0];
+            const parsed = parseInt(parts[1], 10);
+            if (!isNaN(parsed)) detectedPort = parsed;
+        }
 
         // 5. Server Port
-        const portAns = await rl.question('Minecraft Server Port (or -1 for auto-scan) [55916]: ');
-        const portParsed = parseInt(portAns.trim() || '55916', 10);
-        const port = isNaN(portParsed) ? 55916 : portParsed;
+        const isLan = host === '127.0.0.1' || host === 'localhost';
+        const defaultPort = detectedPort || (isLan ? 55916 : 25565);
+        const portAns = await rl.question(`Minecraft Server Port (or -1 for auto-scan) [${defaultPort}]: `);
+        const portParsed = parseInt(portAns.trim() || String(defaultPort), 10);
+        const port = isNaN(portParsed) ? defaultPort : portParsed;
 
         // 6. Minecraft Version
         const versionAns = await rl.question('Minecraft Version [auto]: ');
-        const mcVersion = versionAns.trim() || 'auto';
+        let mcVersion = versionAns.trim() || 'auto';
+        if (mcVersion === '1.21.11' || mcVersion === '1.21.10') {
+            console.log(`  -> Note: ${mcVersion} is a Bedrock/Geyser version.`);
+            console.log(`  -> Connecting with Java 1.21.4 (compatible with ViaVersion / ViaBackwards / Geyser).`);
+            mcVersion = '1.21.4';
+        }
 
         // 7. Auth Mode
         const authAns = await rl.question('Account Auth Mode [1: offline/cracked, 2: microsoft] [1]: ');

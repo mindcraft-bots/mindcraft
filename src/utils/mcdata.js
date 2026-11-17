@@ -1,3 +1,5 @@
+import './version_patch.js';
+import { resolveJavaVersion } from './version_patch.js';
 import minecraftData from 'minecraft-data';
 import settings from '../agent/settings.js';
 import { createBot } from 'mineflayer';
@@ -53,16 +55,14 @@ export const WOOL_COLORS = [
 
 
 export function initBot(username) {
+    const targetVersion = resolveJavaVersion(mc_version || settings.minecraft_version);
     const options = {
         username: username,
         host: settings.host,
         port: settings.port,
         auth: settings.auth,
-        version: mc_version,
+        version: targetVersion,
         checkTimeoutInterval: 60000,  // 60s keep-alive check (default 30s) — reduces disconnects on slow servers
-    }
-    if (!mc_version || mc_version === "auto") {
-        delete options.version;
     }
 
     const bot = createBot(options);
@@ -124,9 +124,9 @@ export function initBot(username) {
     });
 
     bot.once('login', () => {
-        mc_version = bot.version;
-        mcdata = minecraftData(mc_version);
-        Item = prismarine_items(mc_version);
+        mc_version = resolveJavaVersion(bot.version);
+        mcdata = minecraftData(mc_version) || minecraftData('1.21.4');
+        Item = prismarine_items(mc_version) || prismarine_items('1.21.4');
     });
 
     // In low memory mode (e.g. 4GB RAM Linux or Termux), prune distant chunks periodically
