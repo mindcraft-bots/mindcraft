@@ -1,0 +1,13 @@
+{
+    "name": "andy",
+    "model": "ollama/qwen2.5:0.5b",
+    "cooldown": 0,
+    "fast_mode": true,
+    "low_memory_mode": true,
+    "max_messages": 10,
+    "max_tokens": 1024,
+    "params": {
+        "temperature": 0.2,
+        "max_completion_tokens": 1024
+    }
+}

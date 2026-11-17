@@ -127,21 +127,28 @@ export async function getServer(host, port, version) {
     let serverString = "";
     let serverVersion = "";
     
-    // Search for server
-    if (port == -1)
-    {
-        console.log(`No port provided. Searching for LAN server on host ${host}...`);
-        
-        await findServers(host, true).then((servers) => {
-            if (servers.length > 0)
-                server = servers[0];
-        });
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
 
-        if (server == null)
-            throw new Error(`No server found on LAN.`);
-    }
-    else
+    // Search for server
+    if (port == -1) {
+        if (isLocal) {
+            console.log(`No port provided. Searching for LAN server on host ${host}...`);
+            
+            await findServers(host, true).then((servers) => {
+                if (servers.length > 0)
+                    server = servers[0];
+            });
+
+            if (server == null)
+                throw new Error(`No server found on LAN.`);
+        } else {
+            console.log(`No port provided for remote host ${host}. Defaulting to port 25565.`);
+            port = 25565;
+            server = await serverInfo(host, port, 3500, false);
+        }
+    } else {
         server = await serverInfo(host, port, 3500, false);
+    }
 
     // If ping fails or times out (common for reverse proxies like Aternos/Bungee/Geyser), proceed directly
     if (server == null) {

@@ -41,6 +41,10 @@ export function selectAPI(profile) {
             profile.model = profile.model.replace('local', 'ollama');
         }
     }
+    // Tagged local models like qwen2.5:0.5b, llama3.2:1b default to Ollama
+    if (!profile.api && profile.model?.includes(':') && !profile.model?.startsWith('http')) {
+        profile.api = 'ollama';
+    }
     if (!profile.api) {
         const api = Object.keys(apiMap).find(key => profile.model?.startsWith(key));
         if (api) {

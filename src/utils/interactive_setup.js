@@ -1,9 +1,16 @@
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { reloadKeys, hasKey } from './keys.js';
+import { reloadKeys, hasKey, getKey } from './keys.js';
 
 export const PROVIDERS = [
+    {
+        name: 'Ollama (Local / Offline - qwen2.5:0.5b)',
+        desc: 'Local offline model on 127.0.0.1:11434 (No API key needed, ideal for 4GB RAM)',
+        keyName: 'OLLAMA_API_KEY',
+        defaultModel: 'ollama/qwen2.5:0.5b',
+        isLocal: true
+    },
     {
         name: 'GroqCloud',
         desc: 'Ultra-fast inference with free tier (Recommended)',
@@ -127,21 +134,27 @@ export async function runInteractiveSetup(force = false) {
 
         // 2. Ask for API Key(s)
         let apiKey = '';
-        const existingKey = (hasKey(selectedProvider.keyName) ? getKey(selectedProvider.keyName) : null) 
-            || (hasKey(selectedProvider.name) ? getKey(selectedProvider.name) : null);
-        while (!apiKey) {
-            const prompt = existingKey
-                ? `Enter your ${selectedProvider.name} API Key [press Enter to keep existing key]: `
-                : `Enter your ${selectedProvider.name} API Key (or comma-separated keys): `;
-            const keyAns = await rl.question(prompt);
-            apiKey = keyAns.trim();
-            if (!apiKey && existingKey) {
-                apiKey = existingKey;
-                console.log(`-> Keeping existing key for ${selectedProvider.keyName}.`);
-                break;
-            }
-            if (!apiKey) {
-                console.log('API key cannot be empty. Please enter a valid API key.');
+        if (selectedProvider.isLocal) {
+            console.log(`\n  -> ${selectedProvider.name} is a local offline model.`);
+            console.log(`  -> No API key required! Mindcraft will connect to Ollama at http://127.0.0.1:11434.\n`);
+            apiKey = 'local';
+        } else {
+            const existingKey = (hasKey(selectedProvider.keyName) ? getKey(selectedProvider.keyName) : null) 
+                || (hasKey(selectedProvider.name) ? getKey(selectedProvider.name) : null);
+            while (!apiKey) {
+                const prompt = existingKey
+                    ? `Enter your ${selectedProvider.name} API Key [press Enter to keep existing key]: `
+                    : `Enter your ${selectedProvider.name} API Key (or comma-separated keys): `;
+                const keyAns = await rl.question(prompt);
+                apiKey = keyAns.trim();
+                if (!apiKey && existingKey) {
+                    apiKey = existingKey;
+                    console.log(`-> Keeping existing key for ${selectedProvider.keyName}.`);
+                    break;
+                }
+                if (!apiKey) {
+                    console.log('API key cannot be empty. Please enter a valid API key.');
+                }
             }
         }
 
