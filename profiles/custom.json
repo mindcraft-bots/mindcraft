@@ -1,0 +1,6 @@
+{
+    "name": "andy",
+    "model": "custom/default",
+    "cooldown": 0,
+    "max_tokens": 2048
+}

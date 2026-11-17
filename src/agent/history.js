@@ -74,8 +74,18 @@ export class History {
             while (this.turns.length > 0 && this.turns[0].role === 'assistant')
                 chunk.push(this.turns.shift()); // remove until turns starts with system/user message
 
-            await this.summarizeMemories(chunk);
-            await this.appendFullHistory(chunk);
+            if (settings.fast_mode) {
+                // In fast mode, run memory summarization asynchronously in the background so responses are not delayed
+                this.summarizeMemories(chunk).catch(err => console.warn('Background memory summarization error:', err?.message || err));
+                this.appendFullHistory(chunk).catch(err => console.warn('Background history write error:', err?.message || err));
+            } else {
+                await this.summarizeMemories(chunk);
+                await this.appendFullHistory(chunk);
+            }
+
+            if (settings.low_memory_mode && typeof global.gc === 'function') {
+                try { global.gc(); } catch {}
+            }
         }
     }
 

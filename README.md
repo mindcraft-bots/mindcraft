@@ -56,27 +56,103 @@ You can configure the agent's name, model, and prompts in their profile like `an
 <details>
 <summary><strong>⭐ VIEW SUPPORTED APIs ⭐</strong></summary>
 
-| API Name | Config Variable| Docs |
+| API Name | Config Variable | Docs / Info |
 |------|------|------|
-| `openai` | `OPENAI_API_KEY` | [docs](https://platform.openai.com/docs/models) |
-| `google` | `GEMINI_API_KEY` | [docs](https://ai.google.dev/gemini-api/docs/models/gemini) |
-| `anthropic` | `ANTHROPIC_API_KEY` | [docs](https://docs.anthropic.com/claude/docs/models-overview) |
-| `xai` | `XAI_API_KEY` | [docs](https://docs.x.ai/docs) |
-| `deepseek` | `DEEPSEEK_API_KEY` | [docs](https://api-docs.deepseek.com/) |
-| `ollama` (local) | n/a | [docs](https://ollama.com/library) |
-| `qwen` | `QWEN_API_KEY` | [Intl.](https://www.alibabacloud.com/help/en/model-studio/developer-reference/use-qwen-by-calling-api)/[cn](https://help.aliyun.com/zh/model-studio/getting-started/models) |
-| `mistral` | `MISTRAL_API_KEY` | [docs](https://docs.mistral.ai/getting-started/models/models_overview/) |
+| `groq` | `GROQCLOUD_API_KEY` (or `GROQ_API_KEY`) | [docs](https://console.groq.com/docs/models) (Ultra-fast Llama-3.3-70B) |
+| `cerebras` | `CEREBRAS_API_KEY` | [docs](https://inference-docs.cerebras.ai/introduction) (World-record speed) |
+| `sambanova` | `SAMBANOVA_API_KEY` | [docs](https://sambanova.ai/) (Ultra-fast SN40L inference) |
+| `together` | `TOGETHER_API_KEY` | [docs](https://docs.together.ai/) (Fast Llama-3.3 Turbo & DeepSeek) |
+| `fireworks` | `FIREWORKS_API_KEY` | [docs](https://fireworks.ai/) (Low-latency Llama-3.3 & Vision) |
+| `deepinfra` | `DEEPINFRA_API_KEY` | [docs](https://deepinfra.com/) (Fast, affordable inference) |
+| `deepseek` | `DEEPSEEK_API_KEY` | [docs](https://api-docs.deepseek.com/) (DeepSeek V3 / R1) |
+| `openai` | `OPENAI_API_KEY` | [docs](https://platform.openai.com/docs/models) (GPT-4o, GPT-4o-mini) |
+| `google` | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | [docs](https://ai.google.dev/gemini-api/docs/models/gemini) (Gemini Flash) |
+| `anthropic` | `ANTHROPIC_API_KEY` (or `CLAUDE_API_KEY`) | [docs](https://docs.anthropic.com/claude/docs/models-overview) (Claude 3.5 Sonnet) |
+| `perplexity` | `PERPLEXITY_API_KEY` | [docs](https://docs.perplexity.ai/) (Sonar models) |
+| `cohere` | `COHERE_API_KEY` | [docs](https://docs.cohere.com/) (Command R / Command R+) |
+| `siliconflow` | `SILICONFLOW_API_KEY` | [docs](https://siliconflow.cn/) (Fast DeepSeek & Qwen) |
+| `openrouter` | `OPENROUTER_API_KEY` | [docs](https://openrouter.ai/models) (Aggregated models) |
+| `custom` | `CUSTOM_API_KEY`, `CUSTOM_API_URL` | Connect to ANY OpenAI-compatible server (vLLM, Ollama, etc.) |
+| `mistral` | `MISTRAL_API_KEY` (or `CODESTRAL_API_KEY`) | [docs](https://docs.mistral.ai/getting-started/models/models_overview/) |
+| `xai` | `XAI_API_KEY` (or `GROK_API_KEY`) | [docs](https://docs.x.ai/docs) |
+| `qwen` | `QWEN_API_KEY` (or `DASHSCOPE_API_KEY`) | [Intl.](https://www.alibabacloud.com/help/en/model-studio/developer-reference/use-qwen-by-calling-api)/[cn](https://help.aliyun.com/zh/model-studio/getting-started/models) |
 | `replicate` | `REPLICATE_API_KEY` | [docs](https://replicate.com/collections/language-models) |
-| `groq` (not grok) | `GROQCLOUD_API_KEY` | [docs](https://console.groq.com/docs/models) |
 | `huggingface` | `HUGGINGFACE_API_KEY` | [docs](https://huggingface.co/models) |
-| `novita` | `NOVITA_API_KEY` | [docs](https://novita.ai/model-api/product/llm-api?utm_source=github_mindcraft&utm_medium=github_readme&utm_campaign=link) |
-| `openrouter` | `OPENROUTER_API_KEY` | [docs](https://openrouter.ai/models) |
+| `novita` | `NOVITA_API_KEY` | [docs](https://novita.ai/model-api/product/llm-api) |
 | `hyperbolic` | `HYPERBOLIC_API_KEY` | [docs](https://docs.hyperbolic.xyz/docs/getting-started) |
-| `vllm` | n/a | n/a |
-| `cerebras` | `CEREBRAS_API_KEY` | [docs](https://inference-docs.cerebras.ai/introduction) |
 | `mercury` | `MERCURY_API_KEY` | [docs](https://www.inceptionlabs.ai/) |
+| `azure` | `AZURE_OPENAI_API_KEY` | [docs](https://azure.microsoft.com/) |
+| `ollama` (local) | n/a | [docs](https://ollama.com/library) |
+| `lmstudio` (local) | n/a | [docs](https://lmstudio.ai/) |
+| `vllm` (local) | n/a | [docs](https://docs.vllm.ai/) |
 
 </details>
+
+### Multi-Key Support & Key Rotation
+You can provide **multiple API keys** for any provider in `keys.json` or environment variables:
+- **As an array**: `"GROQCLOUD_API_KEY": ["gsk_key1...", "gsk_key2...", "gsk_key3..."]`
+- **As comma-separated string**: `"GROQCLOUD_API_KEY": "gsk_key1, gsk_key2, gsk_key3"`
+- **As numbered environment variables**: `GROQCLOUD_API_KEY_1`, `GROQCLOUD_API_KEY_2`, etc.
+
+When multiple keys are provided, Mindcraft automatically rotates keys when rate limits (HTTP 429) or quota errors are encountered, keeping your bots running smoothly without disconnects!
+
+## ⚡ Fast Mode & Maximum Performance
+To achieve the fastest possible bot responses while maintaining high gameplay reasoning and command accuracy:
+1. **Choose an ultra-fast model provider**:
+   - **Groq** (`groq/llama-3.3-70b-versatile`): ~300 tokens/sec, near-instant bot reactions.
+   - **Cerebras** (`cerebras/llama-3.3-70b`): 1000+ tokens/sec, world-record inference latency.
+   - **SambaNova** (`sambanova/Meta-Llama-3.3-70B-Instruct`): 200+ tokens/sec on SN40L hardware.
+   - **Together AI** (`together/meta-llama/Llama-3.3-70B-Instruct-Turbo`): Ultra-fast and accurate.
+2. **Use pre-configured fast profiles**:
+   ```bash
+   node main.js --profiles ./profiles/fast.json
+   ```
+   Or use `./profiles/cerebras.json`, `./profiles/sambanova.json`, or `./profiles/groq.json`.
+3. **Fast mode features**:
+   - Cooldown is set to 0 (no artificial 3-second delay).
+   - Memory summarization runs asynchronously in the background so player chat responses are not blocked.
+   - Run with `npm run start:fast` or `--fast`.
+
+## 🐧 Linux 4GB RAM Optimization
+Mindcraft is optimized to run smoothly on Linux machines with 4GB of RAM or less:
+- **Constrained V8 heap size** (`--max-old-space-size=1536` for mindserver, `1024` per agent) prevents Linux OOM (Out Of Memory) killer crashes.
+- **Automatic chunk pruning**: Periodically unloads distant chunks from Mineflayer's world cache so long bot sessions don't bloat memory.
+- **Aggressive Garbage Collection**: Automatic GC after memory saves and periodic cleanup.
+- **Run low memory mode**:
+  ```bash
+  npm run start:low-mem
+  # or
+  ./start-low-memory.sh
+  # or
+  node --max-old-space-size=1536 main.js --low-memory
+  ```
+
+## 📱 Termux (Android) Support
+Mindcraft can run directly inside Termux on Android phones and tablets!
+
+### 1. One-Step Setup
+In the Termux terminal, run:
+```bash
+chmod +x termux-setup.sh
+./termux-setup.sh
+```
+This automatically updates packages, installs Node.js LTS, Git, and Python, and installs dependencies without desktop-only native C++/X11 modules (`canvas`, `gl`).
+
+### 2. Configure Keys
+Add your API key (such as `GROQCLOUD_API_KEY` or `OPENAI_API_KEY`) to `keys.json`:
+```bash
+nano keys.json
+```
+
+### 3. Start the Bot
+```bash
+./termux-start.sh
+# or
+npm run start:termux
+```
+- Browser auto-open is disabled automatically on Termux. The MindServer UI is hosted at `http://localhost:8080`.
+- Memory is capped at 1024MB to avoid Android OS killing background apps.
+- Native canvas/webgl is safely bypassed without throwing errors.
 
 For more comprehensive model configuration and syntax, see [Model Specifications](#model-specifications).
 

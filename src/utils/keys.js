@@ -1,24 +1,255 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
-let keys = {};
-try {
-    const data = readFileSync('./keys.json', 'utf8');
-    keys = JSON.parse(data);
-} catch (err) {
-    console.warn('keys.json not found. Defaulting to environment variables.'); // still works with local models
+// Aliases mapping canonical name <-> alternative names
+const KEY_ALIASES = {
+    'OPENAI_API_KEY': ['OPENAI_KEY', 'OPENAI_TOKEN'],
+    'GEMINI_API_KEY': ['GOOGLE_API_KEY', 'GEMINI_KEY', 'GOOGLE_KEY'],
+    'ANTHROPIC_API_KEY': ['CLAUDE_API_KEY', 'ANTHROPIC_KEY', 'CLAUDE_KEY'],
+    'GROQCLOUD_API_KEY': ['GROQ_API_KEY', 'GROQ_KEY', 'GROQCLOUD_KEY'],
+    'CEREBRAS_API_KEY': ['CEREBRAS_KEY'],
+    'SAMBANOVA_API_KEY': ['SAMBANOVA_KEY', 'SAMBA_API_KEY', 'SAMBA_KEY'],
+    'TOGETHER_API_KEY': ['TOGETHERAI_API_KEY', 'TOGETHER_KEY'],
+    'FIREWORKS_API_KEY': ['FIREWORKS_KEY', 'FIREWORKS_AI_API_KEY'],
+    'DEEPSEEK_API_KEY': ['DEEPSEEK_KEY'],
+    'DEEPINFRA_API_KEY': ['DEEPINFRA_KEY', 'DEEP_INFRA_API_KEY'],
+    'PERPLEXITY_API_KEY': ['PERPLEXITY_KEY', 'PPLX_API_KEY'],
+    'COHERE_API_KEY': ['COHERE_KEY'],
+    'SILICONFLOW_API_KEY': ['SILICONFLOW_KEY', 'SILICON_FLOW_KEY'],
+    'XAI_API_KEY': ['GROK_API_KEY', 'XAI_KEY', 'GROK_KEY'],
+    'QWEN_API_KEY': ['DASHSCOPE_API_KEY', 'QWEN_KEY', 'ALIYUN_API_KEY'],
+    'MISTRAL_API_KEY': ['MISTRAL_KEY', 'CODESTRAL_API_KEY', 'CODESTRAL_KEY'],
+    'OPENROUTER_API_KEY': ['OPENROUTER_KEY'],
+    'HYPERBOLIC_API_KEY': ['HYPERBOLIC_KEY'],
+    'NOVITA_API_KEY': ['NOVITA_KEY'],
+    'HUGGINGFACE_API_KEY': ['HUGGINGFACE_KEY', 'HF_API_KEY', 'HF_TOKEN'],
+    'REPLICATE_API_KEY': ['REPLICATE_KEY', 'REPLICATE_API_TOKEN'],
+    'MERCURY_API_KEY': ['MERCURY_KEY'],
+    'AZURE_OPENAI_API_KEY': ['AZURE_API_KEY'],
+    'CUSTOM_API_KEY': ['CUSTOM_KEY'],
+};
+
+// Map alternative names back to canonical names
+const ALIAS_LOOKUP = {};
+for (const [canonical, aliases] of Object.entries(KEY_ALIASES)) {
+    ALIAS_LOOKUP[canonical] = canonical;
+    for (const alias of aliases) {
+        ALIAS_LOOKUP[alias] = canonical;
+    }
 }
 
-export function getKey(name) {
-    let key = keys[name];
-    if (!key) {
-        key = process.env[name];
+// Key pool storage: canonicalName -> { keys: string[], index: number, cooldowns: Map<string, number> }
+const keyPools = new Map();
+let rawKeys = {};
+
+// Helper to parse .env file if present
+function parseEnvFile() {
+    const envVars = {};
+    if (existsSync('./.env')) {
+        try {
+            const lines = readFileSync('./.env', 'utf8').split('\n');
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) continue;
+                const eqIdx = trimmed.indexOf('=');
+                if (eqIdx !== -1) {
+                    const key = trimmed.slice(0, eqIdx).trim();
+                    let val = trimmed.slice(eqIdx + 1).trim();
+                    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                        val = val.slice(1, -1);
+                    }
+                    envVars[key] = val;
+                }
+            }
+        } catch {
+            // ignore
+        }
     }
-    if (!key) {
-        throw new Error(`API key "${name}" not found in keys.json or environment variables!`);
+    return envVars;
+}
+
+export function reloadKeys() {
+    rawKeys = {};
+    try {
+        if (existsSync('./keys.json')) {
+            const data = readFileSync('./keys.json', 'utf8');
+            rawKeys = JSON.parse(data);
+        }
+    } catch (err) {
+        console.warn('keys.json could not be loaded, defaulting to environment variables:', err.message);
     }
-    return key;
+
+    const envFileVars = parseEnvFile();
+    const allEnv = { ...envFileVars, ...process.env };
+
+    // Reset key pools
+    keyPools.clear();
+
+    // Helper to add keys to a pool
+    function addKeysToPool(canonicalName, value) {
+        if (!value) return;
+        if (!keyPools.has(canonicalName)) {
+            keyPools.set(canonicalName, { keys: [], index: 0, cooldowns: new Map() });
+        }
+        const pool = keyPools.get(canonicalName);
+
+        if (Array.isArray(value)) {
+            for (const item of value) {
+                if (typeof item === 'string' && item.trim().length > 0 && !pool.keys.includes(item.trim())) {
+                    pool.keys.push(item.trim());
+                }
+            }
+        } else if (typeof value === 'string') {
+            const split = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            for (const k of split) {
+                if (!pool.keys.includes(k)) {
+                    pool.keys.push(k);
+                }
+            }
+        }
+    }
+
+    // Load from rawKeys (keys.json)
+    for (const [k, v] of Object.entries(rawKeys)) {
+        const canonical = ALIAS_LOOKUP[k] || k;
+        addKeysToPool(canonical, v);
+    }
+
+    // Load from env variables (including numbered ones like GROQ_API_KEY_1, GROQ_API_KEY_2)
+    for (const [k, v] of Object.entries(allEnv)) {
+        if (!v || typeof v !== 'string') continue;
+        const baseKey = k.replace(/_\d+$/, '');
+        const canonical = ALIAS_LOOKUP[baseKey] || ALIAS_LOOKUP[k] || (KEY_ALIASES[k] ? k : null);
+        if (canonical) {
+            addKeysToPool(canonical, v);
+        } else if (k.endsWith('_KEY') || k.endsWith('_TOKEN') || k.endsWith('_ID') || k.endsWith('_URL')) {
+            addKeysToPool(k, v);
+        }
+    }
+}
+
+// Initial load
+reloadKeys();
+
+export function getCanonicalName(name) {
+    return ALIAS_LOOKUP[name] || name;
+}
+
+export function getAliases(name) {
+    const canonical = getCanonicalName(name);
+    const aliases = KEY_ALIASES[canonical] || [];
+    return [canonical, ...aliases];
 }
 
 export function hasKey(name) {
-    return keys[name] || process.env[name];
+    const canonical = getCanonicalName(name);
+    const pool = keyPools.get(canonical);
+    if (pool && pool.keys.length > 0) return true;
+    for (const alias of getAliases(name)) {
+        if (rawKeys[alias] || process.env[alias]) return true;
+    }
+    return false;
 }
+
+export function getKey(name) {
+    const canonical = getCanonicalName(name);
+    let pool = keyPools.get(canonical);
+
+    // If pool is empty or doesn't have keys, check if newly defined in process.env or rawKeys
+    if (!pool || pool.keys.length === 0) {
+        for (const alias of getAliases(name)) {
+            const val = process.env[alias] || rawKeys[alias];
+            if (val) {
+                if (!pool) {
+                    keyPools.set(canonical, { keys: [], index: 0, cooldowns: new Map() });
+                    pool = keyPools.get(canonical);
+                }
+                if (Array.isArray(val)) {
+                    for (const item of val) {
+                        if (typeof item === 'string' && item.trim()) pool.keys.push(item.trim());
+                    }
+                } else if (typeof val === 'string') {
+                    for (const item of val.split(',').map(s => s.trim()).filter(Boolean)) {
+                        if (!pool.keys.includes(item)) pool.keys.push(item);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    if (pool && pool.keys.length > 0) {
+        const now = Date.now();
+        // Find first non-cooldown key or pick least recently cooled down
+        for (let i = 0; i < pool.keys.length; i++) {
+            const idx = (pool.index + i) % pool.keys.length;
+            const candidate = pool.keys[idx];
+            const cooldownUntil = pool.cooldowns.get(candidate) || 0;
+            if (now >= cooldownUntil) {
+                pool.index = idx;
+                return candidate;
+            }
+        }
+        // If all are on cooldown, return current key anyway
+        return pool.keys[pool.index % pool.keys.length];
+    }
+
+    // Direct fallback check
+    for (const alias of getAliases(name)) {
+        let direct = rawKeys[alias] || process.env[alias];
+        if (direct && typeof direct === 'string') {
+            const first = direct.split(',')[0].trim();
+            if (first) return first;
+        }
+    }
+
+    throw new Error(`API key "${name}" not found in keys.json, .env, or environment variables!`);
+}
+
+export function rotateKey(name) {
+    const canonical = getCanonicalName(name);
+    const pool = keyPools.get(canonical);
+    if (!pool || pool.keys.length <= 1) {
+        return getKey(name);
+    }
+    pool.index = (pool.index + 1) % pool.keys.length;
+    console.log(`[KeyManager] Rotated ${canonical} to key #${pool.index + 1} of ${pool.keys.length}`);
+    return pool.keys[pool.index];
+}
+
+export function recordKeyFailure(name, failedKey, cooldownMs = 60000) {
+    const canonical = getCanonicalName(name);
+    const pool = keyPools.get(canonical);
+    if (!pool) return;
+    if (failedKey) {
+        pool.cooldowns.set(failedKey, Date.now() + cooldownMs);
+    }
+    if (pool.keys.length > 1) {
+        rotateKey(canonical);
+    }
+}
+
+export function getAllKeys(name) {
+    const canonical = getCanonicalName(name);
+    const pool = keyPools.get(canonical);
+    return pool ? [...pool.keys] : [];
+}
+
+export function getKeyCount(name) {
+    const canonical = getCanonicalName(name);
+    const pool = keyPools.get(canonical);
+    return pool ? pool.keys.length : 0;
+}
+
+export function getAvailableProviders() {
+    const available = [];
+    for (const [canonical, pool] of keyPools.entries()) {
+        if (pool.keys.length > 0) {
+            available.push({
+                provider: canonical,
+                keyCount: pool.keys.length
+            });
+        }
+    }
+    return available;
+}
+

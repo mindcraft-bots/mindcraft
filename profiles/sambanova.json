@@ -1,0 +1,9 @@
+{
+    "name": "andy",
+    "model": "sambanova/Meta-Llama-3.3-70B-Instruct",
+    "cooldown": 0,
+    "max_tokens": 2048,
+    "params": {
+        "temperature": 0.2
+    }
+}

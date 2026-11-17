@@ -1,0 +1,9 @@
+{
+    "name": "andy",
+    "model": "cerebras/llama-3.3-70b",
+    "cooldown": 0,
+    "max_tokens": 2048,
+    "params": {
+        "temperature": 0.2
+    }
+}

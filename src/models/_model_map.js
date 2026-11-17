@@ -48,7 +48,7 @@ export function selectAPI(profile) {
         }
         else {
             // check for some common models that do not require prefixes
-            if (profile.model.includes('gpt') || profile.model.includes('o1')|| profile.model.includes('o3'))
+            if (profile.model.includes('gpt') || profile.model.includes('o1') || profile.model.includes('o3'))
                 profile.api = 'openai';
             else if (profile.model.includes('claude'))
                 profile.api = 'anthropic';
@@ -62,6 +62,26 @@ export function selectAPI(profile) {
                 profile.api = 'deepseek';
             else if (profile.model.includes('qwen'))
                 profile.api = 'qwen';
+            else if (profile.model.includes('cerebras'))
+                profile.api = 'cerebras';
+            else if (profile.model.includes('groq'))
+                profile.api = 'groq';
+            else if (profile.model.includes('sambanova'))
+                profile.api = 'sambanova';
+            else if (profile.model.includes('together'))
+                profile.api = 'together';
+            else if (profile.model.includes('fireworks'))
+                profile.api = 'fireworks';
+            else if (profile.model.includes('deepinfra'))
+                profile.api = 'deepinfra';
+            else if (profile.model.includes('perplexity') || profile.model.includes('sonar'))
+                profile.api = 'perplexity';
+            else if (profile.model.includes('cohere') || profile.model.includes('command-r'))
+                profile.api = 'cohere';
+            else if (profile.model.includes('siliconflow'))
+                profile.api = 'siliconflow';
+            else if (profile.model.includes('custom'))
+                profile.api = 'custom';
         }
         if (!profile.api) {
             throw new Error('Unknown model:', profile.model);

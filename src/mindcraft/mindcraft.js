@@ -17,13 +17,23 @@ export async function init(host_public=false, port=8080, auto_open_ui=true) {
     mindserver = createMindServer(host_public, port);
     mindserver_port = port;
     connected = true;
-    if (auto_open_ui) {
-        setTimeout(() => {
+
+    const isTermux = Boolean(process.env.TERMUX_VERSION || (process.env.PREFIX && process.env.PREFIX.includes('com.termux')));
+    const isHeadless = isTermux || (!process.env.DISPLAY && !process.env.WAYLAND_DISPLAY && process.platform !== 'win32' && process.platform !== 'darwin');
+
+    if (auto_open_ui && !isHeadless) {
+        setTimeout(async () => {
             // check if browser listener is already open
             if (numStateListeners() === 0) {
-                open('http://localhost:'+port);
+                try {
+                    await open('http://localhost:'+port);
+                } catch {
+                    console.log(`MindServer UI available at http://localhost:${port}`);
+                }
             }
         }, 3000);
+    } else {
+        console.log(`MindServer UI available at http://localhost:${port}`);
     }
 }
 

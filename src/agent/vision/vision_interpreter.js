@@ -1,5 +1,4 @@
 import { Vec3 } from 'vec3';
-import { Camera } from "./camera.js";
 import fs from 'fs';
 
 export class VisionInterpreter {
@@ -7,8 +6,20 @@ export class VisionInterpreter {
         this.agent = agent;
         this.allow_vision = allow_vision;
         this.fp = './bots/'+agent.name+'/screenshots/';
+        this.camera = null;
         if (allow_vision) {
-            this.camera = new Camera(agent.bot, this.fp);
+            this._initCamera();
+        }
+    }
+
+    async _initCamera() {
+        try {
+            const { Camera } = await import('./camera.js');
+            this.camera = new Camera(this.agent.bot, this.fp);
+        } catch (err) {
+            console.warn('[Vision] Vision dependencies could not be loaded:', err?.message || err);
+            console.warn('[Vision] Bot vision is disabled.');
+            this.allow_vision = false;
         }
     }
 

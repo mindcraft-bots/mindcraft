@@ -1,29 +1,50 @@
+import os from 'os';
+
+// Automatic environment detection for Termux, low RAM (<=4GB), and headless Linux
+export const isTermux = Boolean(
+    process.env.TERMUX_VERSION || 
+    (process.env.PREFIX && process.env.PREFIX.includes('com.termux'))
+);
+
+const totalMemBytes = (typeof os.totalmem === 'function') ? os.totalmem() : 4 * 1024 * 1024 * 1024;
+export const isLowMemorySystem = totalMemBytes <= 4.5 * 1024 * 1024 * 1024; // 4GB or less
+const autoLowMem = process.env.LOW_MEMORY_MODE !== undefined 
+    ? process.env.LOW_MEMORY_MODE === 'true' 
+    : (isTermux || isLowMemorySystem);
+
+const autoFastMode = process.env.FAST_MODE !== undefined
+    ? process.env.FAST_MODE !== 'false'
+    : true; // Default to fast mode for fastest response times
+
 const settings = {
     "minecraft_version": "auto", // or specific version like "1.21.6"
     "host": "127.0.0.1", // or "localhost", "your.ip.address.here"
     "port": 55916, // set to -1 to automatically scan for open ports
     "auth": "offline", // or "microsoft"
 
+    // Performance & Memory optimization for Linux 4GB RAM & Termux
+    "fast_mode": autoFastMode, // eliminates artificial latency, enables async memory saves
+    "low_memory_mode": autoLowMem, // memory caps, periodic chunk pruning, aggressive GC
+    "max_agent_memory_mb": isTermux ? 768 : (isLowMemorySystem ? 1024 : 1536), // Node V8 heap ceiling per agent
+
     // the mindserver manages all agents and hosts the UI
     "mindserver_port": 8080,
-    "auto_open_ui": true, // opens UI in browser on startup
+    "auto_open_ui": !isTermux && !process.env.HEADLESS, // disable auto browser launch on Termux/headless Linux
     
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
     "profiles": [
         "./andy.json",
-        // "./profiles/gpt.json",
-        // "./profiles/claude.json",
-        // "./profiles/gemini.json",
-        // "./profiles/llama.json",
-        // "./profiles/qwen.json",
-        // "./profiles/grok.json",
-        // "./profiles/mistral.json",
-        // "./profiles/deepseek.json",
-        // "./profiles/mercury.json",
-        // "./profiles/andy-4.json", // Supports up to 75 messages!
-
-        // using more than 1 profile requires you to /msg each bot indivually
-        // individual profiles override values from the base profile
+        // "./profiles/fast.json",       // Ultra-fast and accurate (Groq / Cerebras)
+        // "./profiles/cerebras.json",   // World-record inference speed (Cerebras)
+        // "./profiles/sambanova.json",  // Ultra-fast SN40L inference (SambaNova)
+        // "./profiles/together.json",   // Blazing fast Llama-3.3-Turbo (Together AI)
+        // "./profiles/fireworks.json",  // Fast & accurate low-latency (Fireworks AI)
+        // "./profiles/deepseek.json",   // DeepSeek V3/R1
+        // "./profiles/gpt.json",        // OpenAI GPT
+        // "./profiles/claude.json",     // Anthropic Claude
+        // "./profiles/gemini.json",     // Google Gemini Flash
+        // "./profiles/llama.json",      // Llama 3.3
+        // "./profiles/qwen.json",       // Qwen 2.5
     ],
 
     "load_memory": false, // load memory from previous session
@@ -38,15 +59,15 @@ const settings = {
 
     "chat_ingame": true, // bot responses are shown in minecraft chat
     "language": "en", // translate to/from this language. Supports these language names: https://cloud.google.com/translate/docs/languages
-    "render_bot_view": false, // show bot's view in browser at localhost:3000, 3001...
+    "render_bot_view": false, // Keep false on Termux & 4GB Linux to save RAM (show bot's view in browser at localhost:3000, 3001...)
 
     "allow_insecure_coding": false, // allows newAction command and model can write/run code on your computer. enable at own risk
-    "allow_vision": false, // allows vision model to interpret screenshots as inputs
+    "allow_vision": false, // allows vision model to interpret screenshots as inputs (keep false on Termux)
     "blocked_actions" : ["!checkBlueprint", "!checkBlueprintLevel", "!getBlueprint", "!getBlueprintLevel"] , // commands to disable and remove from docs. Ex: ["!setMode"]
     "code_timeout_mins": -1, // minutes code is allowed to run. -1 for no timeout
     "relevant_docs_count": 5, // number of relevant code function docs to select for prompting. -1 for all
 
-    "max_messages": 15, // max number of messages to keep in context
+    "max_messages": autoLowMem ? 12 : 15, // max number of messages to keep in context (tuned for low memory)
     "num_examples": 2, // number of examples to give to the model
     "max_commands": -1, // max number of commands that can be used in consecutive responses. -1 for no limit
     "show_command_syntax": "full", // "full", "shortened", or "none"

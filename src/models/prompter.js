@@ -204,6 +204,11 @@ export class Prompter {
     }
 
     async checkCooldown() {
+        if (settings.fast_mode && (!this.profile.cooldown || this.profile.cooldown === 3000)) {
+            // Fast mode bypasses default artificial 3s cooldown
+            this.last_prompt_time = Date.now();
+            return;
+        }
         let elapsed = Date.now() - this.last_prompt_time;
         if (elapsed < this.cooldown && this.cooldown > 0) {
             await new Promise(r => setTimeout(r, this.cooldown - elapsed));

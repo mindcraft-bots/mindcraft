@@ -1,0 +1,9 @@
+{
+    "name": "andy",
+    "model": "fireworks/accounts/fireworks/models/llama-v3p3-70b-instruct",
+    "cooldown": 0,
+    "max_tokens": 2048,
+    "params": {
+        "temperature": 0.2
+    }
+}

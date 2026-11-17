@@ -8,7 +8,6 @@
         "@google/genai": "^1.15.0",
         "@huggingface/inference": "^2.8.1",
         "@mistralai/mistralai": "^1.1.0",
-        "canvas": "^3.1.0",
         "cheerio": "^1.0.0",
         "eslint": "^9.13.0",
         "eslint-plugin-no-floating-promise": "^2.0.0",
@@ -16,19 +15,17 @@
         "globals": "^15.11.0",
         "google-translate-api-x": "^10.7.1",
         "groq-sdk": "^0.15.0",
-        "minecraft-data": "^3.97.0",
         "minecraft-assets": "^1.16.0",
-        "mineflayer": "^4.33.0",
+        "minecraft-data": "3.97.0",
+        "mineflayer": "4.33.0",
         "mineflayer-armor-manager": "^2.0.1",
         "mineflayer-auto-eat": "^3.3.6",
         "mineflayer-collectblock": "^1.4.1",
         "mineflayer-pathfinder": "^2.4.5",
         "mineflayer-pvp": "^1.3.2",
-        "node-canvas-webgl": "^0.3.0",
         "open": "^10.2.0",
         "openai": "^4.4.0",
         "prismarine-item": "^1.15.0",
-        "prismarine-viewer": "^1.32.0",
         "replicate": "^0.29.4",
         "ses": "^1.9.1",
         "socket.io": "^4.7.2",
@@ -37,13 +34,21 @@
         "vec3": "^0.1.10",
         "yargs": "^17.7.2"
     },
+    "optionalDependencies": {
+        "canvas": "^3.1.0",
+        "node-canvas-webgl": "^0.3.0",
+        "prismarine-viewer": "^1.32.0"
+    },
     "overrides": {
-      "canvas": "^3.1.0",
-      "gl": "^8.1.6"
+        "canvas": "^3.1.0",
+        "gl": "^8.1.6"
     },
     "scripts": {
-        "postinstall": "patch-package",
+        "postinstall": "node scripts/apply-patches.js",
         "start": "node main.js",
+        "start:low-mem": "LOW_MEMORY_MODE=true node --max-old-space-size=1536 main.js",
+        "start:termux": "LOW_MEMORY_MODE=true FAST_MODE=true node --max-old-space-size=1024 main.js",
+        "start:fast": "FAST_MODE=true node main.js",
         "reinstall": "npm run clean:modules && npm install",
         "clean:modules": "node -e \"const fs=require('fs');const p=require('path');['node_modules','package-lock.json'].forEach(f=>{if(fs.existsSync(f)){if(fs.lstatSync(f).isDirectory()){fs.rmSync(f,{recursive:true,force:true});}else{fs.unlinkSync(f);}}});\""
     },

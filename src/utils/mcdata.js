@@ -129,6 +129,32 @@ export function initBot(username) {
         Item = prismarine_items(mc_version);
     });
 
+    // In low memory mode (e.g. 4GB RAM Linux or Termux), prune distant chunks periodically
+    if (settings.low_memory_mode) {
+        const chunkPruneInterval = setInterval(() => {
+            if (!bot.entity || !bot.world || !bot.world.columns) return;
+            try {
+                const botPos = bot.entity.position;
+                const maxChunkDist = 8; // keep ~128 blocks around the bot
+                const botChunkX = Math.floor(botPos.x / 16);
+                const botChunkZ = Math.floor(botPos.z / 16);
+                
+                for (const key of Object.keys(bot.world.columns)) {
+                    const [cx, cz] = key.split(',').map(Number);
+                    if (Math.abs(cx - botChunkX) > maxChunkDist || Math.abs(cz - botChunkZ) > maxChunkDist) {
+                        delete bot.world.columns[key];
+                    }
+                }
+            } catch {}
+
+            if (typeof global.gc === 'function') {
+                try { global.gc(); } catch {}
+            }
+        }, 60000);
+
+        bot.once('end', () => clearInterval(chunkPruneInterval));
+    }
+
     return bot;
 }
 

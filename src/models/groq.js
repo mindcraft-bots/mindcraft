@@ -1,5 +1,5 @@
-import Groq from 'groq-sdk'
-import { getKey } from '../utils/keys.js';
+import Groq from 'groq-sdk';
+import { getKey, recordKeyFailure, getKeyCount } from '../utils/keys.js';
 
 // THIS API IS NOT TO BE CONFUSED WITH GROK!
 // Go to grok.js for that. :)
@@ -9,66 +9,69 @@ export class GroqCloudAPI {
     static prefix = 'groq';
 
     constructor(model_name, url, params) {
-
         this.model_name = model_name;
         this.url = url;
         this.params = params || {};
 
-        // Remove any mention of "tools" from params:
         if (this.params.tools)
             delete this.params.tools;
-        // This is just a bit of future-proofing in case we drag Mindcraft in that direction.
 
-        // I'm going to do a sneaky ReplicateAPI theft for a lot of this, aren't I?
-        if (this.url)
-            console.warn("Groq Cloud has no implementation for custom URLs. Ignoring provided URL.");
+        this._initClient();
+    }
 
-        this.groq = new Groq({ apiKey: getKey('GROQCLOUD_API_KEY') });
-
-
+    _initClient() {
+        this.currentKey = getKey('GROQCLOUD_API_KEY');
+        const opts = { apiKey: this.currentKey };
+        if (this.url) opts.baseURL = this.url;
+        this.groq = new Groq(opts);
     }
 
     async sendRequest(turns, systemMessage, stop_seq = null) {
-        // Construct messages array
-        let messages = [{"role": "system", "content": systemMessage}].concat(turns);
+        let messages = [{ role: 'system', content: systemMessage }].concat(turns);
 
-        let res = null;
-
-        try {
-            console.log("Awaiting Groq response...");
-
-            // Handle deprecated max_tokens parameter
-            if (this.params.max_tokens) {
-                console.warn("GROQCLOUD WARNING: A profile is using `max_tokens`. This is deprecated. Please move to `max_completion_tokens`.");
-                this.params.max_completion_tokens = this.params.max_tokens;
-                delete this.params.max_tokens;
-            }
-
-            if (!this.params.max_completion_tokens) {
-                this.params.max_completion_tokens = 4000;
-            }
-
-            let completion = await this.groq.chat.completions.create({
-                "messages": messages,
-                "model": this.model_name || "qwen/qwen3-32b",
-                "stream": false,
-                "stop": stop_seq,
-                ...(this.params || {})
-            });
-
-            res = completion.choices[0].message.content;
-
-            res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+        // Handle deprecated max_tokens parameter
+        if (this.params.max_tokens) {
+            this.params.max_completion_tokens = this.params.max_tokens;
+            delete this.params.max_tokens;
         }
-        catch(err) {
-            if (err.message.includes("content must be a string")) {
-                res = "Vision is only supported by certain models.";
-            } else {
-                res = "My brain disconnected, try again.";
-            }
-            console.log(err);
+
+        if (!this.params.max_completion_tokens) {
+            this.params.max_completion_tokens = 4000;
         }
-        return res;
+
+        const model = this.model_name || 'llama-3.3-70b-versatile';
+        const pack = {
+            messages,
+            model,
+            stream: false,
+            stop: stop_seq,
+            ...(this.params || {})
+        };
+
+        const maxRetries = getKeyCount('GROQCLOUD_API_KEY') > 1 ? 2 : 1;
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                console.log(`Awaiting Groq response (${model})...`);
+                let completion = await this.groq.chat.completions.create(pack);
+                let res = completion.choices[0]?.message?.content || '';
+                res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+                return res;
+            } catch (err) {
+                const isRateLimit = err?.status === 429 || err?.message?.includes('rate limit') || err?.message?.includes('429');
+                if (isRateLimit && attempt < maxRetries - 1) {
+                    console.warn('[Groq] Rate limit encountered, rotating key...');
+                    recordKeyFailure('GROQCLOUD_API_KEY', this.currentKey);
+                    this._initClient();
+                    continue;
+                }
+                if (err.message && err.message.includes('content must be a string')) {
+                    return 'Vision is only supported by certain models.';
+                }
+                console.error('[Groq] Error:', err?.message || err);
+                return 'My brain disconnected, try again.';
+            }
+        }
+        return 'My brain disconnected, try again.';
     }
 
     async sendVisionRequest(messages, systemMessage, imageBuffer) {

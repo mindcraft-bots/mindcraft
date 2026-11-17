@@ -18,6 +18,14 @@ function parseArguments() {
             type: 'string',
             describe: 'Task ID to execute'
         })
+        .option('low-memory', {
+            type: 'boolean',
+            describe: 'Enable memory optimizations for Linux 4GB RAM & Termux'
+        })
+        .option('fast', {
+            type: 'boolean',
+            describe: 'Enable fast response mode (minimizes cooldown & latency)'
+        })
         .help()
         .alias('help', 'h')
         .parse();
@@ -25,6 +33,12 @@ function parseArguments() {
 const args = parseArguments();
 if (args.profiles) {
     settings.profiles = args.profiles;
+}
+if (args['low-memory'] !== undefined) {
+    settings.low_memory_mode = args['low-memory'];
+}
+if (args.fast !== undefined) {
+    settings.fast_mode = args.fast;
 }
 if (args.task_path) {
     let tasks = JSON.parse(readFileSync(args.task_path, 'utf8'));
@@ -55,6 +69,15 @@ if (process.env.BLOCKED_ACTIONS) {
 }
 if (process.env.MAX_MESSAGES) {
     settings.max_messages = process.env.MAX_MESSAGES;
+}
+if (process.env.LOW_MEMORY_MODE !== undefined) {
+    settings.low_memory_mode = process.env.LOW_MEMORY_MODE === 'true';
+}
+if (process.env.FAST_MODE !== undefined) {
+    settings.fast_mode = process.env.FAST_MODE !== 'false';
+}
+if (process.env.AGENT_MAX_MEMORY) {
+    settings.max_agent_memory_mb = parseInt(process.env.AGENT_MAX_MEMORY);
 }
 if (process.env.NUM_EXAMPLES) {
     settings.num_examples = process.env.NUM_EXAMPLES;

@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { logoutAgent } from '../mindcraft/mindserver.js';
+import settings from '../../settings.js';
 
 const init_agent_path = fileURLToPath(new URL('./init_agent.js', import.meta.url));
 
@@ -14,7 +15,19 @@ export class AgentProcess {
         this.count_id = count_id;
         this.running = true;
 
-        let args = [init_agent_path, this.name];
+        // Node V8 options must come before the script path!
+        let nodeArgs = [];
+        const maxMem = process.env.AGENT_MAX_MEMORY || 
+            (settings?.max_agent_memory_mb ? settings.max_agent_memory_mb : 1024);
+
+        if (!process.env.NODE_OPTIONS || !process.env.NODE_OPTIONS.includes('max-old-space-size')) {
+            nodeArgs.push(`--max-old-space-size=${maxMem}`);
+        }
+        if (settings?.low_memory_mode || process.env.EXPOSE_GC) {
+            nodeArgs.push('--expose-gc');
+        }
+
+        let args = [...nodeArgs, init_agent_path, this.name];
         args.push('-n', this.name);
         args.push('-c', count_id);
         if (load_memory)
@@ -26,6 +39,11 @@ export class AgentProcess {
         const agentProcess = spawn(process.execPath, args, {
             stdio: 'inherit',
             stderr: 'inherit',
+            env: {
+                ...process.env,
+                LOW_MEMORY_MODE: settings?.low_memory_mode ? 'true' : (process.env.LOW_MEMORY_MODE || ''),
+                FAST_MODE: settings?.fast_mode ? 'true' : (process.env.FAST_MODE || ''),
+            }
         });
         
         let last_restart = Date.now();
