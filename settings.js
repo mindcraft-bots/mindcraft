@@ -1,4 +1,5 @@
 import os from 'os';
+import fs from 'fs';
 
 // Automatic environment detection for Termux, low RAM (<=4GB), and headless Linux
 export const isTermux = Boolean(
@@ -79,5 +80,15 @@ const settings = {
   
     "log_all_prompts": false, // log ALL prompts to file
 };
+
+// Automatically load saved terminal configuration if config.json exists
+try {
+    if (fs.existsSync('./config.json')) {
+        const savedConfig = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+        Object.assign(settings, savedConfig);
+    }
+} catch {
+    // ignore
+}
 
 export default settings;

@@ -18,14 +18,13 @@ echo "[3/4] Installing npm dependencies..."
 # Omit optional dependencies (canvas, gl, viewer) which require desktop C++/X11
 npm install --omit=optional
 
-echo "[4/4] Setting up keys.json..."
+echo "[4/4] Setting up keys.json & configuration..."
 if [ ! -f "keys.json" ]; then
     cp keys.example.json keys.json
-    echo "-> Created keys.json from keys.example.json."
-    echo "-> Remember to edit keys.json (e.g. 'nano keys.json') and add your API key!"
-else
-    echo "-> keys.json already exists."
 fi
+
+# Run interactive terminal setup wizard
+node setup.js
 
 echo ""
 echo "=========================================="

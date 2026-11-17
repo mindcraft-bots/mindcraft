@@ -2,7 +2,10 @@ import * as Mindcraft from './src/mindcraft/mindcraft.js';
 import settings from './settings.js';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
+import { selectAPI } from './src/models/_model_map.js';
+import { hasKey, reloadKeys } from './src/utils/keys.js';
+import { runInteractiveSetup } from './src/utils/interactive_setup.js';
 
 function parseArguments() {
     return yargs(hideBin(process.argv))
@@ -25,6 +28,14 @@ function parseArguments() {
         .option('fast', {
             type: 'boolean',
             describe: 'Enable fast response mode (minimizes cooldown & latency)'
+        })
+        .option('configure', {
+            type: 'boolean',
+            describe: 'Run interactive terminal setup to configure API keys and settings'
+        })
+        .option('setup', {
+            type: 'boolean',
+            describe: 'Alias for --configure'
         })
         .help()
         .alias('help', 'h')
@@ -93,6 +104,37 @@ if (process.env.SETTINGS_JSON) {
     }
 }
 
+// Interactive terminal setup wizard
+const wantsConfigure = args.configure || args.setup || process.env.CONFIGURE === 'true';
+
+let needsKey = false;
+try {
+    const firstProfile = settings.profiles[0];
+    if (firstProfile && existsSync(firstProfile)) {
+        const profileData = JSON.parse(readFileSync(firstProfile, 'utf8'));
+        const modelProfile = selectAPI(profileData.model);
+        const localApis = ['ollama', 'vllm', 'lmstudio'];
+        if (!localApis.includes(modelProfile.api) && !hasKey(modelProfile.api)) {
+            needsKey = true;
+        }
+    }
+} catch {
+    needsKey = true;
+}
+
+if (wantsConfigure || (needsKey && process.stdin.isTTY)) {
+    if (needsKey && !wantsConfigure) {
+        console.log('\n[Doombots] No API key detected for the selected model.');
+    }
+    await runInteractiveSetup(true);
+    reloadKeys();
+    try {
+        if (existsSync('./config.json')) {
+            const savedConfig = JSON.parse(readFileSync('./config.json', 'utf8'));
+            Object.assign(settings, savedConfig);
+        }
+    } catch {}
+}
 
 Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui);
 

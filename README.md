@@ -35,13 +35,26 @@ Do not connect this bot to public servers with coding enabled. This project allo
 
 2. Download the [latest release](https://github.com/mindcraft-bots/mindcraft/releases/latest) and unzip it, or clone the repository.
 
-3. Rename `keys.example.json` to `keys.json` and fill in your API keys (you only need one). The desired model is set in `andy.json` or other profiles. For other models refer to the table below.
+3. In terminal/command prompt, run:
+   ```bash
+   npm install --omit=optional
+   ```
 
-4. In terminal/command prompt, run `npm install` from the installed directory
+4. **Interactive Setup Wizard**: Run the terminal setup wizard to configure your API key, bot name, server host/port, and performance options:
+   ```bash
+   npm run configure
+   # or: node setup.js
+   ```
+   *(Alternatively, `node main.js` will automatically launch the setup wizard if no API key is detected!)*
 
-5. Start a minecraft world and open it to LAN on localhost port `55916`
+5. Start a Minecraft world and open it to LAN on port `55916` (or join any server).
 
-6. Run `node main.js` from the installed directory
+6. Run the bot:
+   ```bash
+   node main.js
+   # or for Linux 4GB: npm run start:low-mem
+   # or for Termux:    npm run start:termux
+   ```
 
 If you encounter issues, check the [FAQ](https://github.com/mindcraft-bots/mindcraft/blob/main/FAQ.md) or find support on [discord](https://discord.gg/mp73p35dzC). We are currently not very responsive to github issues. To run tasks please refer to [Minecollab Instructions](minecollab.md#installation)
 

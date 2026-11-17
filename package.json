@@ -46,6 +46,7 @@
     "scripts": {
         "postinstall": "node scripts/apply-patches.js",
         "start": "node main.js",
+        "configure": "node setup.js",
         "start:low-mem": "LOW_MEMORY_MODE=true node --max-old-space-size=1536 main.js",
         "start:termux": "LOW_MEMORY_MODE=true FAST_MODE=true node --max-old-space-size=1024 main.js",
         "start:fast": "FAST_MODE=true node main.js",
