@@ -12,20 +12,20 @@ export class AzureGPT extends GPT {
 
         const config = {};
 
-        if (url)
+        if (url) {
             config.endpoint = url;
-
-        config.apiKey = hasKey('AZURE_OPENAI_API_KEY') ? getKey('AZURE_OPENAI_API_KEY') : getKey('OPENAI_API_KEY');
-
-        config.deployment = model_name;
-
-        if (this.params.apiVersion) {
-            config.apiVersion = this.params.apiVersion;
-            delete this.params.apiVersion; // remove from params for later use in requests
+        } else if (hasKey('AZURE_OPENAI_ENDPOINT')) {
+            config.endpoint = getKey('AZURE_OPENAI_ENDPOINT');
+        } else {
+            config.endpoint = 'https://example.openai.azure.com';
         }
-        else {
-            throw new Error('apiVersion is required in params for azure!');
-        }
+
+        config.apiKey = hasKey('AZURE_OPENAI_API_KEY') ? getKey('AZURE_OPENAI_API_KEY') : (hasKey('OPENAI_API_KEY') ? getKey('OPENAI_API_KEY') : 'none');
+
+        config.deployment = model_name || 'gpt-4o';
+
+        config.apiVersion = this.params.apiVersion || '2024-08-01-preview';
+        delete this.params.apiVersion; // remove from params for later use in requests
 
         this.openai = new AzureOpenAI(config)
     }

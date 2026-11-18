@@ -23,8 +23,42 @@ const KEY_ALIASES = {
     'NOVITA_API_KEY': ['NOVITA_KEY', 'novita'],
     'HUGGINGFACE_API_KEY': ['HUGGINGFACE_KEY', 'HF_API_KEY', 'HF_TOKEN', 'huggingface'],
     'REPLICATE_API_KEY': ['REPLICATE_KEY', 'REPLICATE_API_TOKEN', 'replicate'],
-    'MERCURY_API_KEY': ['MERCURY_KEY', 'mercury'],
+    'MERCURY_API_KEY': ['MERCURY_KEY', 'mercury', 'inception'],
     'AZURE_OPENAI_API_KEY': ['AZURE_API_KEY', 'azure'],
+    'MINIMAX_API_KEY': ['MINIMAX_KEY', 'minimax', 'hailuo'],
+    'MOONSHOT_API_KEY': ['MOONSHOT_KEY', 'moonshot', 'kimi', 'KIMI_API_KEY'],
+    'ZHIPU_API_KEY': ['ZHIPU_KEY', 'zhipu', 'glm', 'GLM_API_KEY', 'ZHIPUAI_API_KEY'],
+    'BAICHUAN_API_KEY': ['BAICHUAN_KEY', 'baichuan'],
+    'YI_API_KEY': ['YI_KEY', 'yi', 'lingyi', '01AI_API_KEY', 'LINGYI_API_KEY'],
+    'STEPFUN_API_KEY': ['STEPFUN_KEY', 'stepfun', 'jieyue'],
+    'INTERNLM_API_KEY': ['INTERNLM_KEY', 'internlm', 'sensetime', 'PUYU_API_KEY'],
+    'AI21_API_KEY': ['AI21_KEY', 'ai21', 'jamba'],
+    'CLOUDFLARE_API_KEY': ['CLOUDFLARE_KEY', 'cloudflare', 'CF_API_KEY'],
+    'ANYSCALE_API_KEY': ['ANYSCALE_KEY', 'anyscale'],
+    'OCTOAI_API_KEY': ['OCTOAI_KEY', 'octoai'],
+    'LEPTON_API_KEY': ['LEPTON_KEY', 'lepton'],
+    'SCALEWAY_API_KEY': ['SCALEWAY_KEY', 'scaleway'],
+    'MONSTERAPI_API_KEY': ['MONSTERAPI_KEY', 'monsterapi', 'monster'],
+    'NEBIUS_API_KEY': ['NEBIUS_KEY', 'nebius'],
+    'OVH_API_KEY': ['OVH_KEY', 'ovh', 'ovhcloud'],
+    'UPSTAGE_API_KEY': ['UPSTAGE_KEY', 'upstage', 'solar'],
+    'FRIENDLI_API_KEY': ['FRIENDLI_KEY', 'friendli', 'friendliai'],
+    'LAMBDA_API_KEY': ['LAMBDA_KEY', 'lambda', 'lambdalabs'],
+    'VOYAGE_API_KEY': ['VOYAGE_KEY', 'voyage', 'voyageai'],
+    'WRITER_API_KEY': ['WRITER_KEY', 'writer', 'palmyra'],
+    'SHUTTLE_API_KEY': ['SHUTTLE_KEY', 'shuttle', 'shuttleai'],
+    'AIMLAPI_API_KEY': ['AIMLAPI_KEY', 'aimlapi', 'aiml'],
+    'INFINENCE_API_KEY': ['INFINENCE_KEY', 'infinence'],
+    'CHUTES_API_KEY': ['CHUTES_KEY', 'chutes'],
+    'KLUSTER_API_KEY': ['KLUSTER_KEY', 'kluster', 'klusterai'],
+    'GLHF_API_KEY': ['GLHF_KEY', 'glhf'],
+    'OLLAMA_API_KEY': ['OLLAMA_KEY', 'ollama', 'local'],
+    'LMSTUDIO_API_KEY': ['LMSTUDIO_KEY', 'lmstudio'],
+    'VLLM_API_KEY': ['VLLM_KEY', 'vllm'],
+    'LOCALAI_API_KEY': ['LOCALAI_KEY', 'localai'],
+    'JAN_API_KEY': ['JAN_KEY', 'jan', 'janai'],
+    'TEXTGEN_API_KEY': ['TEXTGEN_KEY', 'textgen', 'oobabooga'],
+    'KOBOLD_API_KEY': ['KOBOLD_KEY', 'kobold', 'koboldcpp'],
     'CUSTOM_API_KEY': ['CUSTOM_KEY', 'custom'],
 };
 
@@ -176,6 +210,16 @@ export function hasKey(name) {
     for (const alias of getAliases(name)) {
         if (rawKeys[alias] || process.env[alias]) return true;
     }
+    const variations = [
+        name,
+        name?.toUpperCase(),
+        name?.toLowerCase(),
+        name?.endsWith('_API_KEY') ? name : `${name?.toUpperCase()}_API_KEY`,
+        name?.endsWith('_KEY') ? name : `${name?.toUpperCase()}_KEY`
+    ];
+    for (const v of variations) {
+        if (v && (rawKeys[v] || process.env[v])) return true;
+    }
     return false;
 }
 
@@ -222,12 +266,23 @@ export function getKey(name) {
         return pool.keys[pool.index % pool.keys.length];
     }
 
-    // Direct fallback check
-    for (const alias of getAliases(name)) {
-        let direct = rawKeys[alias] || process.env[alias];
-        if (direct && typeof direct === 'string') {
-            const first = direct.split(',')[0].trim();
-            if (first) return first;
+    // Direct fallback check across aliases and name variations
+    const candidates = [
+        ...getAliases(name),
+        name,
+        name.toUpperCase(),
+        name.toLowerCase(),
+        name.endsWith('_API_KEY') ? name : `${name.toUpperCase()}_API_KEY`,
+        name.endsWith('_KEY') ? name : `${name.toUpperCase()}_KEY`
+    ];
+    for (const cand of candidates) {
+        let direct = rawKeys[cand] || process.env[cand];
+        if (direct) {
+            if (Array.isArray(direct) && direct.length > 0) return String(direct[0]).trim();
+            if (typeof direct === 'string') {
+                const first = direct.split(',')[0].trim();
+                if (first) return first;
+            }
         }
     }
 

@@ -35,71 +35,103 @@ export function selectAPI(profile) {
     if (typeof profile === 'string' || profile instanceof String) {
         profile = {model: profile};
     }
-    // backwards compatibility with local->ollama
-    if (profile.api?.includes('local') || profile.model?.includes('local')) {
+    // backwards compatibility with legacy local->ollama
+    if (profile.api === 'local' || profile.model === 'local' || profile.model?.startsWith('local/')) {
         profile.api = 'ollama';
         if (profile.model) {
-            profile.model = profile.model.replace('local', 'ollama');
+            profile.model = profile.model.replace(/^local\/?/, 'ollama/');
         }
     }
     // Tagged local models like qwen2.5:0.5b, llama3.2:1b default to Ollama
-    if (!profile.api && profile.model?.includes(':') && !profile.model?.startsWith('http')) {
+    if (!profile.api && profile.model?.includes(':') && !profile.model?.startsWith('http') && !profile.model?.includes('/')) {
         profile.api = 'ollama';
     }
     if (!profile.api) {
-        const api = Object.keys(apiMap).find(key => profile.model?.startsWith(key));
+        // First check if model starts with any known prefix in apiMap
+        const api = Object.keys(apiMap).find(key => profile.model?.startsWith(key + '/') || profile.model === key);
         if (api) {
             profile.api = api;
         }
         else {
             // check for some common models that do not require prefixes
-            if (profile.model.includes('gpt') || profile.model.includes('o1') || profile.model.includes('o3'))
+            const m = (profile.model || '').toLowerCase();
+            if (m.includes('gpt') || m.includes('o1') || m.includes('o3'))
                 profile.api = 'openai';
-            else if (profile.model.includes('claude'))
+            else if (m.includes('claude'))
                 profile.api = 'anthropic';
-            else if (profile.model.includes('gemini'))
+            else if (m.includes('gemini'))
                 profile.api = "google";
-            else if (profile.model.includes('grok'))
+            else if (m.includes('grok'))
                 profile.api = 'xai';
-            else if (profile.model.includes('mistral'))
+            else if (m.includes('mistral') || m.includes('codestral'))
                 profile.api = 'mistral';
-            else if (profile.model.includes('deepseek'))
+            else if (m.includes('deepseek'))
                 profile.api = 'deepseek';
-            else if (profile.model.includes('qwen'))
+            else if (m.includes('qwen'))
                 profile.api = 'qwen';
-            else if (profile.model.includes('cerebras'))
+            else if (m.includes('cerebras'))
                 profile.api = 'cerebras';
-            else if (profile.model.includes('groq'))
+            else if (m.includes('groq'))
                 profile.api = 'groq';
-            else if (profile.model.includes('sambanova'))
+            else if (m.includes('sambanova'))
                 profile.api = 'sambanova';
-            else if (profile.model.includes('together'))
+            else if (m.includes('together'))
                 profile.api = 'together';
-            else if (profile.model.includes('fireworks'))
+            else if (m.includes('fireworks'))
                 profile.api = 'fireworks';
-            else if (profile.model.includes('deepinfra'))
+            else if (m.includes('deepinfra'))
                 profile.api = 'deepinfra';
-            else if (profile.model.includes('perplexity') || profile.model.includes('sonar'))
+            else if (m.includes('perplexity') || m.includes('sonar'))
                 profile.api = 'perplexity';
-            else if (profile.model.includes('cohere') || profile.model.includes('command-r'))
+            else if (m.includes('cohere') || m.includes('command-r'))
                 profile.api = 'cohere';
-            else if (profile.model.includes('siliconflow'))
+            else if (m.includes('siliconflow'))
                 profile.api = 'siliconflow';
-            else if (profile.model.includes('custom'))
+            else if (m.includes('minimax') || m.includes('hailuo'))
+                profile.api = 'minimax';
+            else if (m.includes('moonshot') || m.includes('kimi'))
+                profile.api = 'moonshot';
+            else if (m.includes('zhipu') || m.includes('glm'))
+                profile.api = 'zhipu';
+            else if (m.includes('baichuan'))
+                profile.api = 'baichuan';
+            else if (m.includes('yi-') || m.includes('01.ai'))
+                profile.api = 'yi';
+            else if (m.includes('stepfun') || m.includes('step-'))
+                profile.api = 'stepfun';
+            else if (m.includes('internlm'))
+                profile.api = 'internlm';
+            else if (m.includes('jamba') || m.includes('ai21'))
+                profile.api = 'ai21';
+            else if (m.includes('solar') || m.includes('upstage'))
+                profile.api = 'upstage';
+            else if (m.includes('palmyra') || m.includes('writer'))
+                profile.api = 'writer';
+            else if (m.includes('custom'))
                 profile.api = 'custom';
-            else if (profile.model.includes('llama')) {
+            else if (m.includes('llama')) {
                 if (hasKey('CEREBRAS_API_KEY')) profile.api = 'cerebras';
                 else if (hasKey('TOGETHER_API_KEY')) profile.api = 'together';
                 else if (hasKey('SAMBANOVA_API_KEY')) profile.api = 'sambanova';
                 else profile.api = 'groq';
+            } else if (profile.model?.includes('/')) {
+                // If model has unknown prefix like "myprovider/model", check if prefix is in apiMap or fallback to custom
+                const prefix = profile.model.split('/')[0];
+                if (apiMap[prefix]) {
+                    profile.api = prefix;
+                } else {
+                    profile.api = 'custom';
+                }
+            } else {
+                profile.api = 'custom';
             }
         }
         if (!profile.api) {
-            throw new Error('Unknown model:', profile.model);
+            profile.api = 'custom';
         }
     }
     if (!apiMap[profile.api]) {
-        throw new Error('Unknown api:', profile.api);
+        profile.api = 'custom';
     }
     let model_name = profile.model.replace(profile.api + '/', ''); // remove prefix
     profile.model = model_name === "" ? null : model_name; // if model is empty, set to null

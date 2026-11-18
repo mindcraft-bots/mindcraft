@@ -67,7 +67,7 @@ You can configure project details in `settings.js`. [See file.](settings.js)
 You can configure the agent's name, model, and prompts in their profile like `andy.json`. The model can be specified with the `model` field, with values like `model: "gemini-2.5-pro"`. You will need the correct API key for the API provider you choose. See all supported APIs below.
 
 <details>
-<summary><strong>⭐ VIEW SUPPORTED APIs ⭐</strong></summary>
+<summary><strong>⭐ VIEW SUPPORTED APIs (50+ Options) ⭐</strong></summary>
 
 | API Name | Config Variable | Docs / Info |
 |------|------|------|
@@ -75,29 +75,60 @@ You can configure the agent's name, model, and prompts in their profile like `an
 | `cerebras` | `CEREBRAS_API_KEY` | [docs](https://inference-docs.cerebras.ai/introduction) (World-record speed) |
 | `sambanova` | `SAMBANOVA_API_KEY` | [docs](https://sambanova.ai/) (Ultra-fast SN40L inference) |
 | `together` | `TOGETHER_API_KEY` | [docs](https://docs.together.ai/) (Fast Llama-3.3 Turbo & DeepSeek) |
+| `deepseek` | `DEEPSEEK_API_KEY` | [docs](https://api-docs.deepseek.com/) (DeepSeek V3 / R1) |
+| `openai` | `OPENAI_API_KEY` | [docs](https://platform.openai.com/docs/models) (GPT-4o, GPT-4o-mini, o1, o3-mini) |
+| `google` | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | [docs](https://ai.google.dev/gemini-api/docs/models/gemini) (Gemini 2.0 Flash) |
+| `anthropic` | `ANTHROPIC_API_KEY` (or `CLAUDE_API_KEY`) | [docs](https://docs.anthropic.com/claude/docs/models-overview) (Claude 3.5 Sonnet) |
+| `xai` | `XAI_API_KEY` (or `GROK_API_KEY`) | [docs](https://docs.x.ai/docs) (Grok-2) |
+| `mistral` | `MISTRAL_API_KEY` (or `CODESTRAL_API_KEY`) | [docs](https://docs.mistral.ai/getting-started/models/models_overview/) |
 | `fireworks` | `FIREWORKS_API_KEY` | [docs](https://fireworks.ai/) (Low-latency Llama-3.3 & Vision) |
 | `deepinfra` | `DEEPINFRA_API_KEY` | [docs](https://deepinfra.com/) (Fast, affordable inference) |
-| `deepseek` | `DEEPSEEK_API_KEY` | [docs](https://api-docs.deepseek.com/) (DeepSeek V3 / R1) |
-| `openai` | `OPENAI_API_KEY` | [docs](https://platform.openai.com/docs/models) (GPT-4o, GPT-4o-mini) |
-| `google` | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | [docs](https://ai.google.dev/gemini-api/docs/models/gemini) (Gemini Flash) |
-| `anthropic` | `ANTHROPIC_API_KEY` (or `CLAUDE_API_KEY`) | [docs](https://docs.anthropic.com/claude/docs/models-overview) (Claude 3.5 Sonnet) |
 | `perplexity` | `PERPLEXITY_API_KEY` | [docs](https://docs.perplexity.ai/) (Sonar models) |
 | `cohere` | `COHERE_API_KEY` | [docs](https://docs.cohere.com/) (Command R / Command R+) |
+| `qwen` | `QWEN_API_KEY` (or `DASHSCOPE_API_KEY`) | [docs](https://www.alibabacloud.com/help/en/model-studio/developer-reference/use-qwen-by-calling-api) |
 | `siliconflow` | `SILICONFLOW_API_KEY` | [docs](https://siliconflow.cn/) (Fast DeepSeek & Qwen) |
-| `openrouter` | `OPENROUTER_API_KEY` | [docs](https://openrouter.ai/models) (Aggregated models) |
-| `custom` | `CUSTOM_API_KEY`, `CUSTOM_API_URL` | Connect to ANY OpenAI-compatible server (vLLM, Ollama, etc.) |
-| `mistral` | `MISTRAL_API_KEY` (or `CODESTRAL_API_KEY`) | [docs](https://docs.mistral.ai/getting-started/models/models_overview/) |
-| `xai` | `XAI_API_KEY` (or `GROK_API_KEY`) | [docs](https://docs.x.ai/docs) |
-| `qwen` | `QWEN_API_KEY` (or `DASHSCOPE_API_KEY`) | [Intl.](https://www.alibabacloud.com/help/en/model-studio/developer-reference/use-qwen-by-calling-api)/[cn](https://help.aliyun.com/zh/model-studio/getting-started/models) |
-| `replicate` | `REPLICATE_API_KEY` | [docs](https://replicate.com/collections/language-models) |
-| `huggingface` | `HUGGINGFACE_API_KEY` | [docs](https://huggingface.co/models) |
-| `novita` | `NOVITA_API_KEY` | [docs](https://novita.ai/model-api/product/llm-api) |
+| `openrouter` | `OPENROUTER_API_KEY` | [docs](https://openrouter.ai/models) (Aggregated 200+ models) |
 | `hyperbolic` | `HYPERBOLIC_API_KEY` | [docs](https://docs.hyperbolic.xyz/docs/getting-started) |
+| `novita` | `NOVITA_API_KEY` | [docs](https://novita.ai/model-api/product/llm-api) |
+| `huggingface` | `HUGGINGFACE_API_KEY` | [docs](https://huggingface.co/models) |
+| `replicate` | `REPLICATE_API_KEY` | [docs](https://replicate.com/collections/language-models) |
 | `mercury` | `MERCURY_API_KEY` | [docs](https://www.inceptionlabs.ai/) |
 | `azure` | `AZURE_OPENAI_API_KEY` | [docs](https://azure.microsoft.com/) |
-| `ollama` (local) | n/a | [docs](https://ollama.com/library) |
-| `lmstudio` (local) | n/a | [docs](https://lmstudio.ai/) |
-| `vllm` (local) | n/a | [docs](https://docs.vllm.ai/) |
+| `minimax` | `MINIMAX_API_KEY` | [docs](https://www.minimaxi.com/) (MiniMax-Text-01) |
+| `moonshot` | `MOONSHOT_API_KEY` (or `KIMI_API_KEY`) | [docs](https://platform.moonshot.cn/) (Kimi moonshot-v1) |
+| `zhipu` | `ZHIPU_API_KEY` (or `GLM_API_KEY`) | [docs](https://open.bigmodel.cn/) (GLM-4-Plus, GLM-4-Flash) |
+| `baichuan` | `BAICHUAN_API_KEY` | [docs](https://platform.baichuan-ai.com/) (Baichuan 4) |
+| `yi` | `YI_API_KEY` | [docs](https://platform.lingyiwanwu.com/) (Yi-Lightning) |
+| `stepfun` | `STEPFUN_API_KEY` | [docs](https://platform.stepfun.com/) (Step-1, Step-2) |
+| `internlm` | `INTERNLM_API_KEY` | [docs](https://internlm.intern-ai.org.cn/) (InternLM 2.5) |
+| `ai21` | `AI21_API_KEY` | [docs](https://www.ai21.com/) (Jamba 1.5 Large & Mini) |
+| `cloudflare` | `CLOUDFLARE_API_KEY` | [docs](https://developers.cloudflare.com/workers-ai/) |
+| `anyscale` | `ANYSCALE_API_KEY` | [docs](https://docs.endpoints.anyscale.com/) |
+| `octoai` | `OCTOAI_API_KEY` | [docs](https://octo.ai/) |
+| `lepton` | `LEPTON_API_KEY` | [docs](https://www.lepton.ai/) |
+| `scaleway` | `SCALEWAY_API_KEY` | [docs](https://www.scaleway.com/en/ai-apis/) |
+| `monsterapi` | `MONSTERAPI_API_KEY` | [docs](https://monsterapi.ai/) |
+| `nebius` | `NEBIUS_API_KEY` | [docs](https://nebius.com/studio) |
+| `ovh` | `OVH_API_KEY` | [docs](https://www.ovhcloud.com/en/public-cloud/ai-endpoints/) |
+| `upstage` | `UPSTAGE_API_KEY` | [docs](https://www.upstage.ai/) (Solar Pro) |
+| `friendli` | `FRIENDLI_API_KEY` | [docs](https://friendli.ai/) |
+| `lambda` | `LAMBDA_API_KEY` | [docs](https://lambdalabs.com/service/gpu-cloud/inference) |
+| `voyage` | `VOYAGE_API_KEY` | [docs](https://www.voyageai.com/) |
+| `writer` | `WRITER_API_KEY` | [docs](https://writer.com/) (Palmyra X 004) |
+| `shuttle` | `SHUTTLE_API_KEY` | [docs](https://shuttleai.com/) |
+| `aimlapi` | `AIMLAPI_API_KEY` | [docs](https://aimlapi.com/) |
+| `infinence` | `INFINENCE_API_KEY` | [docs](https://infinence.ai/) |
+| `chutes` | `CHUTES_API_KEY` | [docs](https://chutes.ai/) |
+| `kluster` | `KLUSTER_API_KEY` | [docs](https://kluster.ai/) |
+| `glhf` | `GLHF_API_KEY` | [docs](https://glhf.chat/) |
+| `ollama` (local) | `OLLAMA_API_KEY` (optional) | [docs](https://ollama.com/library) (Offline, no key needed) |
+| `lmstudio` (local) | `LMSTUDIO_API_KEY` (optional) | [docs](https://lmstudio.ai/) (Offline, localhost:1234) |
+| `vllm` (local) | `VLLM_API_KEY` (optional) | [docs](https://docs.vllm.ai/) (Offline, localhost:8000) |
+| `localai` (local) | `LOCALAI_API_KEY` (optional) | [docs](https://localai.io/) (Offline, localhost:8080) |
+| `jan` (local) | `JAN_API_KEY` (optional) | [docs](https://jan.ai/) (Offline, localhost:1337) |
+| `textgen` (local) | `TEXTGEN_API_KEY` (optional) | [docs](https://github.com/oobabooga/text-generation-webui) (localhost:5000) |
+| `kobold` (local) | `KOBOLD_API_KEY` (optional) | [docs](https://koboldai.org/) (Offline, localhost:5001) |
+| `custom` | `CUSTOM_API_KEY`, `CUSTOM_API_URL` | Connect to ANY OpenAI-compatible server |
 
 </details>
 
