@@ -175,15 +175,13 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('login-agent', (agentName) => {
-            if (agent_connections[agentName]) {
-                agent_connections[agentName].socket = socket;
-                agent_connections[agentName].in_game = true;
-                curAgentName = agentName;
-                agentsStatusUpdate();
+            if (!agent_connections[agentName]) {
+                agent_connections[agentName] = new AgentConnection({ profile: { name: agentName } }, 3000);
             }
-            else {
-                console.warn(`Unregistered agent ${agentName} tried to login`);
-            }
+            agent_connections[agentName].socket = socket;
+            agent_connections[agentName].in_game = true;
+            curAgentName = agentName;
+            agentsStatusUpdate();
         });
 
         socket.on('disconnect', () => {
@@ -288,7 +286,7 @@ export function createMindServer(host_public = false, port = 8080) {
     });
 
     server.listen(port, () => {
-        console.log(`\x1b[32m✔ Control Center online: \x1b[1m\x1b[36mhttp://localhost:${port}\x1b[0m`);
+        console.log(`\x1b[32m✔ Control Center online: \x1b[1m\x1b[36mhttp://localhost:${port}\x1b[0m (controlcenter:localhost:${port})`);
     });
 
     return server;

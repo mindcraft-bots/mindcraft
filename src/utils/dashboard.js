@@ -36,7 +36,7 @@ ${cyan}${bold}  ██████╗  ██████╗  ██████
   ${dim}Autonomous AI Minecraft Agent Platform • Fast & Low-Memory Optimized${reset}
 
   ${cyan}┌────────────────────────────────────────────────────────────────────────┐${reset}
-  ${cyan}│${reset}  ${bold}${green}🎮 CONTROL CENTER :${reset} ${bold}${cyan}${controlCenterUrl}${reset}${' '.repeat(Math.max(0, 48 - controlCenterUrl.length))}${cyan}│${reset}
+  ${cyan}│${reset}  ${bold}${green}🎮 CONTROL CENTER :${reset} ${bold}${cyan}${controlCenterUrl}${reset} ${dim}(controlcenter:localhost)${reset}${' '.repeat(Math.max(0, 48 - (controlCenterUrl.length + 26)))}${cyan}│${reset}
   ${cyan}│${reset}  ${bold}🌍 SERVER TARGET  :${reset} ${yellow}${serverTarget}${reset} ${dim}(Java ${protocolVersion})${reset}${' '.repeat(Math.max(0, 31 - serverTarget.length))}${cyan}│${reset}
   ${cyan}│${reset}  ${bold}🤖 AGENT NAME     :${reset} ${bold}${green}${agentName}${reset}${' '.repeat(Math.max(0, 48 - agentName.length))}${cyan}│${reset}
   ${cyan}│${reset}  ${bold}🧠 AI MODEL       :${reset} ${magenta}${modelTarget}${reset}${' '.repeat(Math.max(0, 48 - modelTarget.length))}${cyan}│${reset}

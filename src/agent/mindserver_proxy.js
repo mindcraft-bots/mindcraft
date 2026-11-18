@@ -110,7 +110,11 @@ class MindServerProxy {
     }
 
     login() {
-        this.socket.emit('login-agent', this.agent.name);
+        this._loggedIn = true;
+        const name = this.name || this.agent?.name;
+        if (this.socket && this.connected && name) {
+            this.socket.emit('login-agent', name);
+        }
     }
 
     shutdown() {

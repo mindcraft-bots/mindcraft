@@ -128,16 +128,23 @@ export function initBot(username) {
         return originalWrite(name, data);
     };
 
-    // Suppress PartialReadError for non-critical packets
-    // Paper servers sometimes send packets that node-minecraft-protocol
-    // can't fully parse (scoreboard, resource_pack, custom_payload, etc.)
-    // These errors crash the bot but the packets aren't needed for gameplay
+    // Suppress PartialReadError and non-critical packet errors
+    // Paper servers and cross-play proxies sometimes send packets that node-minecraft-protocol
+    // can't fully parse (custom_payload, unknown packets, etc.)
+    // These errors would crash the bot but the packets aren't needed for gameplay
     const originalEmit = bot._client.emit.bind(bot._client);
     bot._client.emit = function(event, ...args) {
         if (event === 'error' && args[0]) {
             const err = args[0];
             const errStr = err instanceof Error ? err.message : String(err);
-            if (errStr.includes('PartialReadError') || errStr.includes('SizeError') || errStr.includes('deserialization error')) {
+            if (
+                errStr.includes('PartialReadError') || 
+                errStr.includes('SizeError') || 
+                errStr.includes('deserialization error') ||
+                errStr.includes('Unknown packet') ||
+                errStr.includes('Failed to decode') ||
+                (errStr.includes('buffer') && errStr.includes('out of range'))
+            ) {
                 console.warn('[mcdata] Suppressed non-critical packet error:', errStr.substring(0, 120));
                 return true; // Swallow the error
             }
@@ -150,6 +157,27 @@ export function initBot(username) {
     bot.loadPlugin(collectblock);
     bot.loadPlugin(autoEat);
     bot.loadPlugin(armorManager); // auto equip armor
+
+    // Handle resource packs immediately so servers do not hang in configuration/joining state
+    const handleResourcePack = (data) => {
+        try {
+            const uuid = data?.uuid;
+            if (uuid) {
+                bot._client.write('resource_pack_receive', { uuid, result: 3 }); // ACCEPTED
+                bot._client.write('resource_pack_receive', { uuid, result: 0 }); // SUCCESSFULLY_LOADED
+            } else if (data?.hash) {
+                bot._client.write('resource_pack_receive', { hash: data.hash, result: 3 });
+                bot._client.write('resource_pack_receive', { hash: data.hash, result: 0 });
+            } else {
+                bot._client.write('resource_pack_receive', { result: 3 });
+                bot._client.write('resource_pack_receive', { result: 0 });
+            }
+        } catch {
+            try { bot.acceptResourcePack(); } catch {}
+        }
+    };
+    bot._client.on('add_resource_pack', handleResourcePack);
+    bot._client.on('resource_pack_send', handleResourcePack);
     bot.on('resourcePack', () => {
         try {
             bot.acceptResourcePack();
@@ -158,7 +186,31 @@ export function initBot(username) {
         }
     });
 
+    // Send player_loaded packet on 1.21.2+ servers to finish joining/spawning without hanging
+    const sendPlayerLoaded = () => {
+        try {
+            if (bot._client && bot._client.state === 'play') {
+                const hasPlayerLoaded = Boolean(
+                    bot._client.serializer?.types?.packet_player_loaded ||
+                    bot._client.serializer?.proto?.play?.toServer?.types?.packet_player_loaded ||
+                    bot.registry?.protocol?.play?.toServer?.types?.packet_player_loaded
+                );
+                if (hasPlayerLoaded) {
+                    bot._client.write('player_loaded', {});
+                }
+            }
+        } catch {
+            // Ignored if protocol does not have player_loaded packet
+        }
+    };
+
+    bot._client.on('chunk_batch_finished', sendPlayerLoaded);
+    bot._client.on('position', sendPlayerLoaded);
+    bot.on('spawn', sendPlayerLoaded);
+    bot.on('respawn', sendPlayerLoaded);
+
     bot.once('login', () => {
+        sendPlayerLoaded();
         mc_version = resolveJavaVersion(bot.version);
         mcdata = minecraftData(mc_version) || minecraftData('1.21.4');
         Item = prismarine_items(mc_version) || prismarine_items('1.21.4');

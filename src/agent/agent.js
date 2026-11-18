@@ -114,19 +114,32 @@ export class Agent {
         });
 
         // Auto-authenticate on servers running AuthMe, nLogin, or LoginSecurity
-        this.bot.on('messagestr', (msg) => {
+        const handleAuthPrompt = (raw) => {
+            if (!raw) return;
+            const msg = typeof raw === 'string' ? raw : (raw.toString ? raw.toString() : JSON.stringify(raw));
             const lower = msg.toLowerCase();
-            if (lower.includes('/register ') || lower.includes('/login ')) {
+            if (
+                lower.includes('/register') || 
+                lower.includes('/login') || 
+                lower.includes('register <password>') || 
+                lower.includes('login <password>') || 
+                lower.includes('use /register') || 
+                lower.includes('use /login')
+            ) {
                 const pass = settings.server_password || 'DoombotPass123';
-                if (lower.includes('/register ')) {
+                if (lower.includes('register')) {
                     console.log(`[LoginGuard] Server requested registration. Auto-registering...`);
                     try { this.bot.chat(`/register ${pass} ${pass}`); } catch {}
-                } else if (lower.includes('/login ')) {
+                } else if (lower.includes('login')) {
                     console.log(`[LoginGuard] Server requested login. Auto-authenticating...`);
                     try { this.bot.chat(`/login ${pass}`); } catch {}
                 }
             }
-        });
+        };
+
+        this.bot.on('messagestr', handleAuthPrompt);
+        this.bot.on('title', handleAuthPrompt);
+        this.bot.on('actionBar', handleAuthPrompt);
 
 		const spawnTimeoutDuration = settings.spawn_timeout || 90;
         const spawnTimeout = setTimeout(() => {
@@ -138,6 +151,7 @@ export class Agent {
         this.bot.once('spawn', async () => {
             try {
                 clearTimeout(spawnTimeout);
+                serverProxy.login();
 
                 // Set skin for profile after spawning (requires Fabric Tailor on server)
                 try {
