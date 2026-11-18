@@ -44,6 +44,7 @@
         "gl": "^8.1.6"
     },
     "scripts": {
+        "test": "eslint src/ main.js settings.js setup.js scripts/",
         "postinstall": "node scripts/apply-patches.js",
         "start": "node main.js",
         "configure": "node setup.js",

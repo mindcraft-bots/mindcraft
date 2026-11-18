@@ -73,9 +73,9 @@ export class Agent {
 
             // Log and Analyze
             // handleDisconnection handles logging to console and server
-            const { type } = handleDisconnection(this.name, reason);
-     
-            process.exit(1);
+            const { type, msg } = handleDisconnection(this.name, reason);
+            try { this.history.save(); } catch {}
+            setTimeout(() => process.exit(1), 500);
         };
         
         // Bind events
@@ -105,7 +105,8 @@ export class Agent {
         const spawnTimeout = setTimeout(() => {
             const msg = `[LoginGuard] Bot has not spawned after ${spawnTimeoutDuration} seconds. (Server may be loading chunks or generating terrain).`;
             log(this.name, msg);
-            process.exit(1);
+            try { this.history.save(); } catch {}
+            setTimeout(() => process.exit(1), 500);
         }, spawnTimeoutDuration * 1000);
         this.bot.once('spawn', async () => {
             try {
@@ -530,10 +531,14 @@ export class Agent {
     
 
     cleanKill(msg='Killing agent process...', code=1) {
-        this.history.add('system', msg);
-        this.bot.chat(code > 1 ? 'Restarting.': 'Exiting.');
-        this.history.save();
-        process.exit(code);
+        try { this.history.add('system', msg); } catch {}
+        try {
+            if (this.bot && this.bot._client && this.bot._client.socket && !this.bot._client.socket.destroyed) {
+                this.bot.chat(code > 1 ? 'Restarting.': 'Exiting.');
+            }
+        } catch {}
+        try { this.history.save(); } catch {}
+        setTimeout(() => process.exit(code), 200);
     }
     async checkTaskDone() {
         if (this.task.data) {

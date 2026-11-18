@@ -135,6 +135,7 @@ export function parseCommandMessage(message) {
             case 'ItemName':
                 if (arg.endsWith('plank') || arg.endsWith('seed'))
                     arg += 's'; // add 's' to for common mistakes like "oak_plank" or "wheat_seed"
+                break;
             case 'string':
                 break;
             default:

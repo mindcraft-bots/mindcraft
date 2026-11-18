@@ -9,7 +9,7 @@ import { Vec3 } from 'vec3';
 import { EventEmitter } from 'events';
 
 import worker_threads from 'worker_threads';
-global.Worker = worker_threads.Worker;
+globalThis.Worker = worker_threads.Worker;
 
 
 export class Camera extends EventEmitter {

@@ -1,4 +1,4 @@
-import { writeFile, readFile, mkdirSync } from 'fs';
+import { writeFile, readFile, readFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { makeCompartment, lockdown } from './library/lockdown.js';
@@ -17,14 +17,16 @@ export class Coder {
         this.code_template = '';
         this.code_lint_template = '';
 
-        readFile(path.join(__dirname, '../../bots/execTemplate.js'), 'utf8', (err, data) => {
-            if (err) throw err;
-            this.code_template = data;
-        });
-        readFile(path.join(__dirname, '../../bots/lintTemplate.js'), 'utf8', (err, data) => {
-            if (err) throw err;
-            this.code_lint_template = data;
-        });
+        try {
+            this.code_template = readFileSync(path.join(__dirname, '../../bots/execTemplate.js'), 'utf8');
+        } catch (err) {
+            console.error('Failed to read execTemplate.js:', err);
+        }
+        try {
+            this.code_lint_template = readFileSync(path.join(__dirname, '../../bots/lintTemplate.js'), 'utf8');
+        } catch (err) {
+            console.error('Failed to read lintTemplate.js:', err);
+        }
         mkdirSync('.' + this.fp, { recursive: true });
     }
 

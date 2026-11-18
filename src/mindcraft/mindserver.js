@@ -277,6 +277,16 @@ export function createMindServer(host_public = false, port = 8080) {
         });
     });
 
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.warn(`[ControlCenter] Port ${port} is already in use. Retrying on port ${port + 1}...`);
+            port = port + 1;
+            server.listen(port);
+        } else {
+            console.error('[ControlCenter] Server error:', err?.message || err);
+        }
+    });
+
     server.listen(port, () => {
         console.log(`\x1b[32m✔ Control Center online: \x1b[1m\x1b[36mhttp://localhost:${port}\x1b[0m`);
     });

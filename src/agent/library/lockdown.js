@@ -9,24 +9,30 @@ let lockeddown = false;
 export function lockdown() {
   if (lockeddown) return;
   lockeddown = true;
-  lockdown({
-    // basic devex and quality of life improvements
-    localeTaming: 'unsafe',
-    consoleTaming: 'unsafe',
-    errorTaming: 'unsafe',
-    stackFiltering: 'verbose',
-    // allow eval outside of created compartments
-    // (mineflayer dep "protodef" uses eval)
-    evalTaming: 'unsafeEval',
-  });
+  if (typeof globalThis.lockdown === 'function') {
+    globalThis.lockdown({
+      // basic devex and quality of life improvements
+      localeTaming: 'unsafe',
+      consoleTaming: 'unsafe',
+      errorTaming: 'unsafe',
+      stackFiltering: 'verbose',
+      // allow eval outside of created compartments
+      // (mineflayer dep "protodef" uses eval)
+      evalTaming: 'unsafeEval',
+    });
+  }
 }
 
 export const makeCompartment = (endowments = {}) => {
-  return new Compartment({
+  const CompartmentClass = globalThis.Compartment;
+  if (typeof CompartmentClass !== 'function') {
+    throw new Error('SES Compartment is not available in this environment');
+  }
+  return new CompartmentClass({
     // provide untamed Math, Date, etc
     Math,
     Date,
     // standard endowments
     ...endowments
   });
-}
+};

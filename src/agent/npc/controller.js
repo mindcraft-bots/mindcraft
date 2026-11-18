@@ -170,7 +170,7 @@ export class NPCContoller {
             // Build construction goal
             else {
                 let res = null;
-                if (this.data.built.hasOwnProperty(goal.name)) {
+                if (Object.prototype.hasOwnProperty.call(this.data.built, goal.name)) {
                     res = await this.build_goal.executeNext(
                         this.constructions[goal.name],
                         this.data.built[goal.name].position,

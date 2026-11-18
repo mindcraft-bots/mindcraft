@@ -165,8 +165,8 @@ export function initBot(username) {
                 }
             } catch {}
 
-            if (typeof global.gc === 'function') {
-                try { global.gc(); } catch {}
+            if (typeof globalThis.gc === 'function') {
+                try { globalThis.gc(); } catch {}
             }
         }, 60000);
 

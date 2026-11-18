@@ -140,7 +140,7 @@ export class Blueprint {
         return explanation;
     }
     check(bot) {
-        if (!bot || typeof bot !== 'object' || !bot.hasOwnProperty('blockAt')) {
+        if (!bot || typeof bot !== 'object' || typeof bot.blockAt !== 'function') {
             throw new Error('Invalid bot object. Expected a mineflayer bot.');
         }
         const levels = this.data.levels;

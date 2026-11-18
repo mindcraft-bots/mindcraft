@@ -83,8 +83,8 @@ export class History {
                 await this.appendFullHistory(chunk);
             }
 
-            if (settings.low_memory_mode && typeof global.gc === 'function') {
-                try { global.gc(); } catch {}
+            if (settings.low_memory_mode && typeof globalThis.gc === 'function') {
+                try { globalThis.gc(); } catch {}
             }
         }
     }
