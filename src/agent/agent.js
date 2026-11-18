@@ -121,6 +121,11 @@ export class Agent {
               
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
+
+                // Start autonomous self-prompting when no chat, no saved goal, and no task
+                if (!save_data?.self_prompt && !settings.task) {
+                    await this.self_prompter.start("Explore the world, mine some blocks, or build something interesting. Be proactive and do things on your own.");
+                }
               
                 if (!load_mem) {
                     if (settings.task) {
