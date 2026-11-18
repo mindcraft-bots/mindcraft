@@ -320,12 +320,16 @@ function addListener(listener_socket) {
             const states = {};
             for (let agentName in agent_connections) {
                 let agent = agent_connections[agentName];
-                if (agent.in_game) {
+                if (agent.in_game && agent.socket) {
                     try {
                         const state = await new Promise((resolve) => {
-                            agent.socket.emit('get-full-state', (s) => resolve(s));
+                            const timer = setTimeout(() => resolve(null), 800);
+                            agent.socket.emit('get-full-state', (s) => {
+                                clearTimeout(timer);
+                                resolve(s);
+                            });
                         });
-                        states[agentName] = state;
+                        if (state) states[agentName] = state;
                     } catch (e) {
                         states[agentName] = { error: String(e) };
                     }

@@ -1,4 +1,6 @@
 import { readdirSync, readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { NPCData } from './data.js';
 import { ItemGoal } from './item_goal.js';
 import { BuildGoal } from './build_goal.js';
@@ -6,6 +8,9 @@ import { itemSatisfied, rotateXZ } from './utils.js';
 import * as skills from '../library/skills.js';
 import * as world from '../library/world.js';
 import * as mc from '../../utils/mcdata.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 export class NPCContoller {
@@ -40,13 +45,14 @@ export class NPCContoller {
 
     init() {
         try {
-            for (let file of readdirSync('src/agent/npc/construction')) {
+            const dir = path.join(__dirname, 'construction');
+            for (let file of readdirSync(dir)) {
                 if (file.endsWith('.json')) {
-                    this.constructions[file.slice(0, -5)] = JSON.parse(readFileSync('src/agent/npc/construction/' + file, 'utf8'));
+                    this.constructions[file.slice(0, -5)] = JSON.parse(readFileSync(path.join(dir, file), 'utf8'));
                 }
             }
         } catch (e) {
-            console.log('Error reading construction file');
+            console.log('Error reading construction file:', e?.message || e);
         }
 
         for (let name in this.constructions) {

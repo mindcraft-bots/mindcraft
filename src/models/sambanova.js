@@ -37,7 +37,7 @@ export class SambaNova {
             try {
                 console.log(`Awaiting SambaNova response (${model})...`);
                 const completion = await this.openai.chat.completions.create(pack);
-                let res = completion.choices[0]?.message?.content || '';
+                let res = completion?.choices?.[0]?.message?.content || '';
                 // Strip reasoning tags if present
                 res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
                 return res;

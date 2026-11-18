@@ -41,8 +41,11 @@ export class SelfPrompter {
             state = STOPPED;
         this.state = state;
         this.prompt = prompt;
-        if (state !== STOPPED && !prompt)
-            throw new Error('No prompt loaded when self-prompting is active');
+        if (state !== STOPPED && !prompt) {
+            console.warn('[SelfPrompter] No prompt loaded when self-prompting was active. Resetting to STOPPED.');
+            this.state = STOPPED;
+            return;
+        }
         if (state === ACTIVE) {
             await this.start(prompt);
         }

@@ -270,8 +270,8 @@ export class Prompter {
             }
 
             if (generation?.includes('</think>')) {
-                const [_, afterThink] = generation.split('</think>')
-                generation = afterThink
+                const parts = generation.split('</think>');
+                generation = parts[parts.length - 1].trim();
             }
 
             return generation;
@@ -303,8 +303,8 @@ export class Prompter {
         let resp = await this.chat_model.sendRequest([], prompt);
         await this._saveLog(prompt, to_summarize, resp, 'memSaving');
         if (resp?.includes('</think>')) {
-            const [_, afterThink] = resp.split('</think>')
-            resp = afterThink;
+            const parts = resp.split('</think>');
+            resp = parts[parts.length - 1].trim();
         }
         return resp;
     }

@@ -45,7 +45,8 @@ export function strictFormat(turns) {
     let prev_role = null;
     let messages = [];
     let filler = {role: 'user', content: '_'};
-    for (let msg of turns) {
+    for (let rawMsg of turns) {
+        let msg = { ...rawMsg };
         if (typeof msg.content === 'string')  {
             msg.content = msg.content.trim();
         }
@@ -55,12 +56,15 @@ export function strictFormat(turns) {
         }
         if (msg.role === prev_role && msg.role === 'assistant') {
             // insert empty user message to separate assistant messages
-            messages.push(filler);
+            messages.push({ ...filler });
             messages.push(msg);
         }
         else if (msg.role === prev_role) {
             // combine new message with previous message instead of adding a new one
-            messages[messages.length-1].content += '\n' + msg.content;
+            messages[messages.length-1] = {
+                ...messages[messages.length-1],
+                content: messages[messages.length-1].content + '\n' + msg.content
+            };
         }
         else {
             messages.push(msg);

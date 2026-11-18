@@ -36,7 +36,7 @@ export class Perplexity {
             try {
                 console.log(`Awaiting Perplexity response (${model})...`);
                 const completion = await this.openai.chat.completions.create(pack);
-                let res = completion.choices[0]?.message?.content || '';
+                let res = completion?.choices?.[0]?.message?.content || '';
                 res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
                 return res;
             } catch (err) {

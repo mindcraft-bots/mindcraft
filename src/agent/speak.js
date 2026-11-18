@@ -134,8 +134,15 @@ async function processQueue() {
                 const player = spawn('ffplay', ['-nodisp','-autoexit','pipe:0'], {
                     stdio: ['pipe','ignore','ignore']
                 });
-                player.stdin.write(Buffer.from(audioData, 'base64'));
-                player.stdin.end();
+                player.on('error', (err) => {
+                    console.warn('[TTS] Audio player (ffplay) not found:', err?.message || err);
+                    isSpeaking = false;
+                    processQueue();
+                });
+                try {
+                    player.stdin.write(Buffer.from(audioData, 'base64'));
+                    player.stdin.end();
+                } catch {}
                 player.on('exit', () => {
                     isSpeaking = false;
                     processQueue();

@@ -46,20 +46,23 @@ export class Gemini {
             });
         }
 
-        const result = await this.genAI.models.generateContent({
-            model: this.model_name || "gemini-2.5-flash",
-            contents: contents,
-            safetySettings: this.safetySettings,
-            config: {
-                systemInstruction: systemMessage,
-                ...(this.params || {})
-            }
-        });
-        const response = await result.text;
-
-        console.log('Received.');
-
-        return response;
+        try {
+            const result = await this.genAI.models.generateContent({
+                model: this.model_name || "gemini-2.5-flash",
+                contents: contents,
+                safetySettings: this.safetySettings,
+                config: {
+                    systemInstruction: systemMessage,
+                    ...(this.params || {})
+                }
+            });
+            const response = (await result?.text) || '';
+            console.log('Received.');
+            return response;
+        } catch (err) {
+            console.error('Gemini error:', err?.message || err);
+            return 'My brain disconnected, try again.';
+        }
     }
 
     async sendVisionRequest(turns, systemMessage, imageBuffer) {

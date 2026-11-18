@@ -120,9 +120,11 @@ export function destroyAgent(agentName) {
 export function shutdown() {
     console.log('Shutting down');
     for (let agentName in agent_processes) {
-        agent_processes[agentName].stop();
+        try {
+            agent_processes[agentName].stop();
+        } catch {}
     }
     setTimeout(() => {
         process.exit(0);
-    }, 2000);
+    }, 1000);
 }

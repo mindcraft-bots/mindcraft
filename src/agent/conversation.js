@@ -227,7 +227,7 @@ class ConversationManager {
     endConversation(sender) {
         if (this.convos[sender]) {
             this.convos[sender].end();
-            if (this.activeConversation.name === sender) {
+            if (this.activeConversation?.name === sender) {
                 this._stopMonitor();
                 this.activeConversation = null;
                 if (agent.self_prompter.isPaused() && !this.inConversation()) {

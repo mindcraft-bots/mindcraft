@@ -42,7 +42,7 @@ export class CustomOpenAI {
             try {
                 console.log(`Awaiting custom API response (${this.model_name}) from ${this.url}...`);
                 const completion = await this.openai.chat.completions.create(pack);
-                let res = completion.choices[0]?.message?.content || '';
+                let res = completion?.choices?.[0]?.message?.content || '';
                 res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
                 return res;
             } catch (err) {

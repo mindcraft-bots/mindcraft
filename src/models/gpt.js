@@ -48,10 +48,10 @@ export class GPT {
                     delete pack.stop;
                 }
                 let completion = await this.openai.chat.completions.create(pack);
-                if (completion.choices[0].finish_reason == 'length')
+                if (completion.choices?.[0]?.finish_reason == 'length')
                     throw new Error('Context length exceeded'); 
                 console.log('Received.');
-                res = completion.choices[0].message.content;
+                res = completion.choices?.[0]?.message?.content || '';
             } 
             // otherwise, use responses
             else {
@@ -67,7 +67,7 @@ export class GPT {
                     ...(this.params || {})
                 });
                 console.log('Received.');
-                res = response.output_text;
+                res = response?.output_text || '';
                 let stop_seq_index = res.indexOf(stop_seq);
                 res = stop_seq_index !== -1 ? res.slice(0, stop_seq_index) : res;
             }
