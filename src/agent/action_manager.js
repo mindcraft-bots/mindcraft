@@ -26,11 +26,12 @@ export class ActionManager {
     async stop() {
         if (!this.executing) return;
         const timeout = setTimeout(() => {
-            this.agent.cleanKill('Code execution refused stop after 10 seconds. Killing process.');
+            console.warn('Action stop timeout reached - forcing interrupt but NOT killing process');
+            this.agent.requestInterrupt();
+            this.timedout = true;
         }, 10000);
         while (this.executing) {
             this.agent.requestInterrupt();
-            console.log('waiting for code to finish executing...');
             await new Promise(resolve => setTimeout(resolve, 300));
         }
         clearTimeout(timeout);
@@ -145,7 +146,7 @@ export class ActionManager {
             if (!interrupted) {
                 this.agent.bot.emit('idle');
             }
-            return { success: false, message, interrupted, timedout: false };
+            return { success: false, message, interrupted, timedout: this.timedout || false };
         }
     }
 
