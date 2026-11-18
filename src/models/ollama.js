@@ -71,8 +71,15 @@ export class Ollama {
     async embed(text) {
         let model = this.model_name || 'embeddinggemma';
         let body = { model: model, input: text };
-        let res = await this.send(this.embedding_endpoint, body);
-        return res['embedding'];
+        try {
+            let res = await this.send(this.embedding_endpoint, body);
+            if (res && res['embedding']) return res['embedding'];
+            let res2 = await this.send('/api/embed', body);
+            if (res2 && res2['embeddings'] && res2['embeddings'][0]) return res2['embeddings'][0];
+        } catch {
+            // fallback handled by skill library
+        }
+        return null;
     }
 
     async send(endpoint, body) {
@@ -89,8 +96,9 @@ export class Ollama {
                 throw new Error(`Ollama Status: ${res.status}`);
             }
         } catch (err) {
-            console.error('Failed to send Ollama request.');
-            console.error(err);
+            if (!endpoint.includes('embed')) {
+                console.error(`Failed to send Ollama request (${endpoint}):`, err.message || err);
+            }
         }
         return data;
     }

@@ -45,11 +45,20 @@ export async function serverInfo(ip, port, timeout = 3500, verbose = false) {
                 }
             }
 
+            let descText = 'No description provided.';
+            if (typeof response?.description === 'string') {
+                descText = response.description;
+            } else if (response?.description?.text) {
+                descText = response.description.text;
+            } else if (Array.isArray(response?.description?.extra)) {
+                descText = response.description.extra.map(e => e.text || '').join('');
+            }
+
             const serverInfo = {
                 host: ip,
                 port,
-                name: response?.description?.text || response?.description || 'No description provided.',
-                ping: response.latency,
+                name: descText,
+                ping: response?.latency || 0,
                 version: numericVersion
             };
 
@@ -160,12 +169,13 @@ export async function getServer(host, port, version) {
         };
     }
 
-    if (server.version) {
-        server.version = resolveJavaVersion(server.version);
+    server.version = resolveJavaVersion(server.version || version);
+    if (!server.port || server.port <= 0 || server.port >= 65536) {
+        server.port = isLocal ? 55916 : 25565;
     }
     serverString = `(Host: ${server.host}, Port: ${server.port}, Version: ${server.version})`;
 
-    if (version === "auto") 
+    if (version === "auto" || !version) 
         serverVersion = server.version;
     else
         serverVersion = resolveJavaVersion(version);

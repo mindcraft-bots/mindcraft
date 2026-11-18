@@ -56,12 +56,15 @@ export const WOOL_COLORS = [
 
 export function initBot(username) {
     let host = settings.host || '127.0.0.1';
-    let port = settings.port || 25565;
+    let port = typeof settings.port === 'number' && settings.port > 0 && settings.port < 65536 ? settings.port : 25565;
     if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
         const parts = host.split(':');
         host = parts[0];
         const parsedPort = parseInt(parts[1], 10);
-        if (!isNaN(parsedPort)) port = parsedPort;
+        if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) port = parsedPort;
+    }
+    if (!port || port <= 0 || port >= 65536) {
+        port = (host === 'localhost' || host === '127.0.0.1') ? 55916 : 25565;
     }
 
     const targetVersion = resolveJavaVersion(mc_version || settings.minecraft_version);

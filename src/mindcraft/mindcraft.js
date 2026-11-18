@@ -66,6 +66,9 @@ export async function createAgent(settings) {
             } else {
                 settings.minecraft_version = resolveJavaVersion(settings.minecraft_version);
             }
+            if (!settings.port || settings.port <= 0 || settings.port >= 65536) {
+                settings.port = (settings.host === 'localhost' || settings.host === '127.0.0.1') ? 55916 : 25565;
+            }
             console.warn(`Attempting to connect with compatible Java version ${settings.minecraft_version}...`);
         }
 
