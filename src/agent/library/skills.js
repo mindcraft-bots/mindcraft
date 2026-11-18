@@ -441,6 +441,8 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
     const isLiquid = blockType === 'lava' || blockType === 'water';
 
     let collected = 0;
+    const excludedBlocks = exclude || [];
+    const BLOCK_TIMEOUT_MS = 15000;
 
     const movements = new pf.Movements(bot);
     movements.dontMineUnderFallingBlock = false;
@@ -451,14 +453,15 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
 
     for (let i=0; i<num; i++) {
         let blocks = world.getNearestBlocksWhere(bot, block => {
+            if (!block) {
+                return false;
+            }
             if (!blocktypes.includes(block.name)) {
                 return false;
             }
-            if (exclude) {
-                for (let position of exclude) {
-                    if (block.position.x === position.x && block.position.y === position.y && block.position.z === position.z) {
-                        return false;
-                    }
+            for (let position of excludedBlocks) {
+                if (block.position.x === position.x && block.position.y === position.y && block.position.z === position.z) {
+                    return false;
                 }
             }
             if (isLiquid) {
@@ -503,7 +506,17 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
                 success = true;
             }
             else {
-                await bot.collectBlock.collect(block);
+                const collectPromise = bot.collectBlock.collect(block);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error(`collect timeout for ${blockType} at ${block.position.x},${block.position.y},${block.position.z}`)), BLOCK_TIMEOUT_MS)
+                );
+                try {
+                    await Promise.race([collectPromise, timeoutPromise]);
+                } catch (timeoutErr) {
+                    log(bot, `Timeout collecting ${blockType} at ${block.position.x},${block.position.y},${block.position.z}: ${timeoutErr.message}`);
+                    excludedBlocks.push({ x: block.position.x, y: block.position.y, z: block.position.z });
+                    continue;
+                }
                 success = true;
             }
             if (success)
@@ -517,6 +530,9 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
             }
             else {
                 log(bot, `Failed to collect ${blockType}: ${err}.`);
+                if (block) {
+                    excludedBlocks.push({ x: block.position.x, y: block.position.y, z: block.position.z });
+                }
                 continue;
             }
         }
