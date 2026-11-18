@@ -5,7 +5,7 @@ export class Ollama {
     constructor(model_name, url, params) {
         this.model_name = model_name;
         this.params = params;
-        this.url = url || 'http://127.0.0.1:11434';
+        this.url = (url || process.env.OLLAMA_HOST || 'http://127.0.0.1:11434').replace(/\/+$/, '');
         this.chat_endpoint = '/api/chat';
         this.embedding_endpoint = '/api/embeddings';
     }

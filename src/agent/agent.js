@@ -64,7 +64,18 @@ export class Agent {
         blacklistCommands(this.blocked_actions);
 
         console.log(this.name, 'logging into minecraft...');
-        this.bot = initBot(this.name);
+        try {
+            this.bot = initBot(this.name);
+        } catch (err) {
+            const errStr = String(err?.message || err);
+            if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
+                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 protocol alias (bridging to Java 1.21.4)...`);
+                settings.minecraft_version = '1.21.4';
+                this.bot = initBot(this.name);
+            } else {
+                throw err;
+            }
+        }
         
         // Connection Handler
         const onDisconnect = (event, reason) => {
@@ -82,25 +93,41 @@ export class Agent {
         this.bot.once('kicked', (reason) => onDisconnect('Kicked', reason));
         this.bot.once('end', (reason) => onDisconnect('Disconnected', reason));
         this.bot.on('error', (err) => {
-            if (String(err).includes('Duplicate') || String(err).includes('ECONNREFUSED')) {
+            const errStr = String(err?.message || err);
+            if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
+                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 version mismatch. Reconnecting with compatible Java protocol 1.21.4...`);
+                settings.minecraft_version = '1.21.4';
+                return;
+            }
+            if (errStr.includes('Duplicate') || errStr.includes('ECONNREFUSED')) {
                  onDisconnect('Error', err);
             } else {
-                 log(this.name, `[LoginGuard] Connection Error: ${String(err)}`);
+                 log(this.name, `[LoginGuard] Connection Error: ${errStr}`);
             }
         });
 
         initModes(this);
 
         this.bot.on('login', () => {
-            console.log(this.name, 'logged in!');
+            console.log(this.name, 'logged in! Establishing session...');
             serverProxy.login();
-            
-            // Set skin for profile, requires Fabric Tailor. (https://modrinth.com/mod/fabrictailor)
-            if (this.prompter.profile.skin)
-                this.bot.chat(`/skin set URL ${this.prompter.profile.skin.model} ${this.prompter.profile.skin.path}`);
-            else
-                this.bot.chat(`/skin clear`);
         });
+
+        // Auto-authenticate on servers running AuthMe, nLogin, or LoginSecurity
+        this.bot.on('messagestr', (msg) => {
+            const lower = msg.toLowerCase();
+            if (lower.includes('/register ') || lower.includes('/login ')) {
+                const pass = settings.server_password || 'DoombotPass123';
+                if (lower.includes('/register ')) {
+                    console.log(`[LoginGuard] Server requested registration. Auto-registering...`);
+                    try { this.bot.chat(`/register ${pass} ${pass}`); } catch {}
+                } else if (lower.includes('/login ')) {
+                    console.log(`[LoginGuard] Server requested login. Auto-authenticating...`);
+                    try { this.bot.chat(`/login ${pass}`); } catch {}
+                }
+            }
+        });
+
 		const spawnTimeoutDuration = settings.spawn_timeout || 90;
         const spawnTimeout = setTimeout(() => {
             const msg = `[LoginGuard] Bot has not spawned after ${spawnTimeoutDuration} seconds. (Server may be loading chunks or generating terrain).`;
@@ -111,6 +138,13 @@ export class Agent {
         this.bot.once('spawn', async () => {
             try {
                 clearTimeout(spawnTimeout);
+
+                // Set skin for profile after spawning (requires Fabric Tailor on server)
+                try {
+                    if (this.prompter.profile.skin)
+                        this.bot.chat(`/skin set URL ${this.prompter.profile.skin.model} ${this.prompter.profile.skin.path}`);
+                } catch {}
+
                 await addBrowserViewer(this.bot, count_id);
                 console.log('Initializing vision intepreter...');
                 this.vision_interpreter = new VisionInterpreter(this, settings.allow_vision);
@@ -319,7 +353,14 @@ export class Agent {
         for (let i=0; i<max_responses; i++) {
             if (checkInterrupt()) break;
             let history = this.history.getHistory();
-            let res = await this.prompter.promptConvo(history);
+            let res = '';
+            try {
+                res = await this.prompter.promptConvo(history);
+            } catch (err) {
+                console.error(`[AI: ${this.name}] Prompt error:`, err?.message || err);
+                this.routeResponse(source, "I encountered an error connecting to my AI model. Please try again.");
+                break;
+            }
 
             if (!res || typeof res !== 'string' || res.trim().length === 0) {
                 console.warn(`[Bot: ${this.name}] Empty AI response, ending response loop.`);

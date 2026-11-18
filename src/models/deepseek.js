@@ -37,9 +37,9 @@ export class DeepSeek {
             try {
                 console.log(`Awaiting DeepSeek response (${model})...`);
                 let completion = await this.openai.chat.completions.create(pack);
-                if (completion.choices[0].finish_reason == 'length')
+                if (completion?.choices?.[0]?.finish_reason === 'length')
                     throw new Error('Context length exceeded'); 
-                let res = completion.choices[0].message.content || '';
+                let res = completion?.choices?.[0]?.message?.content || '';
                 res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
                 return res;
             } catch (err) {

@@ -1,3 +1,10 @@
+// Clear terminal immediately when software is run
+try {
+    process.stdout.write('\x1Bc');
+} catch {
+    console.clear();
+}
+
 import './src/utils/version_patch.js';
 import * as Mindcraft from './src/mindcraft/mindcraft.js';
 import settings from './settings.js';

@@ -1,4 +1,11 @@
 #!/usr/bin/env node
+// Clear terminal cleanly on launch
+try {
+    process.stdout.write('\x1Bc');
+} catch {
+    console.clear();
+}
+
 import { runInteractiveSetup } from './src/utils/interactive_setup.js';
 
 console.log('Starting terminal setup wizard...');

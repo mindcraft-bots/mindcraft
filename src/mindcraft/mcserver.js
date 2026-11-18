@@ -139,7 +139,11 @@ export async function getServer(host, port, version) {
     const isLocal = host === 'localhost' || host === '127.0.0.1';
 
     // Search for server
-    if (port == -1) {
+    if (!isLocal && (port === 55916 || port == -1 || !port || port <= 0 || port >= 65536)) {
+        console.log(`[mcserver] Remote host ${host} detected. Using standard port 25565.`);
+        port = 25565;
+        server = await serverInfo(host, port, 3500, false);
+    } else if (port == -1) {
         if (isLocal) {
             console.log(`No port provided. Searching for LAN server on host ${host}...`);
             

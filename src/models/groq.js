@@ -64,10 +64,13 @@ export class GroqCloudAPI {
                     this._initClient();
                     continue;
                 }
-                const isNotFound = err?.status === 404 || err?.message?.includes('model_not_found') || err?.message?.includes('does not exist');
+                const isNotFound = err?.status === 404 || err?.message?.includes('model_not_found') || err?.message?.includes('does not exist') || err?.message?.includes('decommissioned');
                 if (isNotFound && pack.model !== 'llama-3.1-8b-instant') {
                     console.warn(`[Groq] Model ${pack.model} not available, falling back to llama-3.1-8b-instant...`);
                     pack.model = 'llama-3.1-8b-instant';
+                    attempt--;
+                    continue;
+                }
                     continue;
                 }
                 if (err.message && err.message.includes('content must be a string')) {

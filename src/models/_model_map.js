@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { hasKey } from '../utils/keys.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,6 +87,12 @@ export function selectAPI(profile) {
                 profile.api = 'siliconflow';
             else if (profile.model.includes('custom'))
                 profile.api = 'custom';
+            else if (profile.model.includes('llama')) {
+                if (hasKey('CEREBRAS_API_KEY')) profile.api = 'cerebras';
+                else if (hasKey('TOGETHER_API_KEY')) profile.api = 'together';
+                else if (hasKey('SAMBANOVA_API_KEY')) profile.api = 'sambanova';
+                else profile.api = 'groq';
+            }
         }
         if (!profile.api) {
             throw new Error('Unknown model:', profile.model);

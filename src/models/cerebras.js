@@ -45,6 +45,13 @@ export class Cerebras {
                     this._initClient();
                     continue;
                 }
+                const isNotFound = err?.status === 404 || err?.message?.includes('model_not_found') || err?.message?.includes('does not exist');
+                if (isNotFound && pack.model !== 'llama3.1-8b') {
+                    console.warn(`[Cerebras] Model ${pack.model} not available, falling back to llama3.1-8b...`);
+                    pack.model = 'llama3.1-8b';
+                    attempt--;
+                    continue;
+                }
                 console.error('Cerebras API error:', err?.message || err);
                 return 'My brain disconnected, try again.';
             }

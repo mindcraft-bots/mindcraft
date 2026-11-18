@@ -63,8 +63,9 @@ export function initBot(username) {
         const parsedPort = parseInt(parts[1], 10);
         if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) port = parsedPort;
     }
-    if (!port || port <= 0 || port >= 65536) {
-        port = (host === 'localhost' || host === '127.0.0.1') ? 55916 : 25565;
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    if (!port || port <= 0 || port >= 65536 || (!isLocal && port === 55916)) {
+        port = isLocal ? 55916 : 25565;
     }
 
     const targetVersion = resolveJavaVersion(mc_version || settings.minecraft_version);
@@ -76,10 +77,22 @@ export function initBot(username) {
         version: targetVersion,
         fakeHost: host,
         checkTimeoutInterval: 60000,  // 60s keep-alive check (default 30s) — reduces disconnects on slow servers
-    }
+    };
 
     console.log(`[mcdata] Connecting bot '${username}' to ${options.host}:${options.port} (protocol: ${options.version}, auth: ${options.auth})...`);
-    const bot = createBot(options);
+    let bot;
+    try {
+        bot = createBot(options);
+    } catch (err) {
+        const errStr = String(err?.message || err);
+        if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
+            console.warn(`[LoginGuard] Handled Minecraft 1.21.11 without missing-data error. Connecting with Java 1.21.4 protocol...`);
+            options.version = '1.21.4';
+            bot = createBot(options);
+        } else {
+            throw err;
+        }
+    }
 
     bot._client.on('connect', () => {
         console.log(`[mcdata] TCP connection established to ${options.host}:${options.port}. Sending login handshake...`);

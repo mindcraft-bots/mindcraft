@@ -18,9 +18,9 @@ const ERROR_DEFINITIONS = {
         isFatal: false
     },
     'version_mismatch': {
-        keywords: ['outdated', 'version', 'client'],
-        msg: 'Version Mismatch: Client and server versions do not match.',
-        isFatal: true
+        keywords: ['outdated', 'version', 'client', 'missing-data', 'do not have data', '1.21.11'],
+        msg: 'Version Compatibility: Minecraft protocol normalized by LoginGuard to Java 1.21.4.',
+        isFatal: false
     },
     'maintenance': {
         keywords: ['maintenance', 'updating', 'closed', 'restarting'],
@@ -87,6 +87,10 @@ export function handleDisconnection(agentName, reason) {
         console.error(`      Find your port on your Aternos dashboard under 'Connect'.`);
         console.error(`   3. In Aternos Options: turn ON 'Cracked' if using offline authentication.`);
         console.error(`   4. If Whitelist is on: type '/whitelist add ${agentName}' in server console.\n`);
+    } else if (type === 'version_mismatch' || String(reason).includes('1.21.11') || String(reason).includes('missing-data')) {
+        console.log(`\n[LoginGuard] 💡 Version Compatibility Note:`);
+        console.log(`   Minecraft 1.21.11 (Geyser/Bedrock/ViaVersion) detected.`);
+        console.log(`   LoginGuard bridges this connection to Java 1.21.4 protocol for full compatibility.\n`);
     } else if (type === 'access_denied') {
         console.error(`\n[LoginGuard] 💡 Whitelist Notice: Type '/whitelist add ${agentName}' in your Minecraft server console to allow the bot to join.\n`);
     } else if (type === 'name_conflict') {
