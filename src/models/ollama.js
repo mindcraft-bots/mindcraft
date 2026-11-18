@@ -11,44 +11,58 @@ export class Ollama {
     }
 
     async sendRequest(turns, systemMessage) {
-        let model = this.model_name || 'sweaterdog/andy-4:micro-q8_0';
+        let model = this.model_name || 'qwen2.5:0.5b';
         let messages = strictFormat(turns);
         messages.unshift({ role: 'system', content: systemMessage });
-        const maxAttempts = 5;
+        const maxAttempts = 3;
         let attempt = 0;
         let finalRes = null;
 
+        // Tune generation parameters for low-latency on CPU/Termux
+        const options = {
+            num_predict: 256,
+            temperature: 0.2,
+            top_p: 0.9,
+            num_ctx: 2048,
+            ...(this.params?.options || {})
+        };
+
         while (attempt < maxAttempts) {
             attempt++;
-            console.log(`Awaiting local response... (model: ${model}, attempt: ${attempt})`);
+            console.log(`[Ollama] Awaiting local response (${model}, attempt: ${attempt})...`);
             let res = null;
             try {
                 let apiResponse = await this.send(this.chat_endpoint, {
                     model: model,
                     messages: messages,
                     stream: false,
+                    options: options,
                     ...(this.params || {})
                 });
-                if (apiResponse) {
-                    res = apiResponse['message']['content'];
+                if (apiResponse && apiResponse.message) {
+                    res = apiResponse.message.content;
                 } else {
                     res = 'No response data.';
                 }
             } catch (err) {
-                if (err.message.toLowerCase().includes('context length') && turns.length > 1) {
-                    console.log('Context length exceeded, trying again with shorter context.');
+                if (err?.message && err.message.toLowerCase().includes('context length') && turns.length > 1) {
+                    console.log('[Ollama] Context length exceeded, retrying with shorter context.');
                     return await this.sendRequest(turns.slice(1), systemMessage);
                 } else {
-                    console.log(err);
+                    console.error('[Ollama] Request error:', err?.message || err);
                     res = 'My brain disconnected, try again.';
                 }
+            }
+
+            if (typeof res !== 'string') {
+                res = String(res || '');
             }
 
             const hasOpenTag = res.includes("<think>");
             const hasCloseTag = res.includes("</think>");
 
             if ((hasOpenTag && !hasCloseTag)) {
-                console.warn("Partial <think> block detected. Re-generating...");
+                console.warn("[Ollama] Partial <think> block detected. Re-generating...");
                 if (attempt < maxAttempts) continue;
             }
             if (hasCloseTag && !hasOpenTag) {

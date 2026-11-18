@@ -7,6 +7,7 @@ import { readFileSync, existsSync } from 'fs';
 import { selectAPI } from './src/models/_model_map.js';
 import { hasKey, reloadKeys, getAvailableProviders } from './src/utils/keys.js';
 import { runInteractiveSetup } from './src/utils/interactive_setup.js';
+import { printDashboard } from './src/utils/dashboard.js';
 
 function parseArguments() {
     return yargs(hideBin(process.argv))
@@ -143,6 +144,15 @@ if (wantsConfigure || (needsKey && process.stdin.isTTY)) {
         }
     } catch {}
 }
+
+let firstProfileData = {};
+try {
+    if (settings.profiles && settings.profiles[0] && existsSync(settings.profiles[0])) {
+        firstProfileData = JSON.parse(readFileSync(settings.profiles[0], 'utf8'));
+    }
+} catch {}
+
+printDashboard(settings, firstProfileData);
 
 Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui);
 

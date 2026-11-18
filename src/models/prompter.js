@@ -316,7 +316,7 @@ export class Prompter {
         messages.push({role: 'user', content: new_message});
         prompt = await this.replaceStrings(prompt, null, null, messages);
         let res = await this.chat_model.sendRequest([], prompt);
-        return res.trim().toLowerCase() === 'respond';
+        return (res && typeof res === 'string') ? res.trim().toLowerCase() === 'respond' : false;
     }
 
     async promptVision(messages, imageBuffer) {

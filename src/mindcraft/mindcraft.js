@@ -29,12 +29,10 @@ export async function init(host_public=false, port=8080, auto_open_ui=true) {
                 try {
                     await open('http://localhost:'+port);
                 } catch {
-                    console.log(`MindServer UI available at http://localhost:${port}`);
+                    // Silently ignore if browser cannot open
                 }
             }
         }, 3000);
-    } else {
-        console.log(`MindServer UI available at http://localhost:${port}`);
     }
 }
 
@@ -60,7 +58,7 @@ export async function createAgent(settings) {
             settings.port = server.port;
             settings.minecraft_version = resolveJavaVersion(server.version);
         } catch (error) {
-            console.warn(`Error getting server:`, error.message || error);
+            console.warn(`[Server] Ping unreachable (${error.message || error}).`);
             if (settings.minecraft_version === "auto" || !settings.minecraft_version) {
                 settings.minecraft_version = "1.21.4";
             } else {
@@ -69,11 +67,12 @@ export async function createAgent(settings) {
             if (!settings.port || settings.port <= 0 || settings.port >= 65536) {
                 settings.port = (settings.host === 'localhost' || settings.host === '127.0.0.1') ? 55916 : 25565;
             }
-            console.warn(`Attempting to connect with compatible Java version ${settings.minecraft_version}...`);
+            console.log(`\x1b[36m[Doombots]\x1b[0m Direct connecting with protocol \x1b[35m${settings.minecraft_version}\x1b[0m...`);
         }
 
         // Register agent in MindServer with fully resolved settings
         registerAgent(settings, viewer_port);
+        console.log(`\x1b[36m[Doombots]\x1b[0m Spawning agent \x1b[1m\x1b[32m${agent_name}\x1b[0m connecting to \x1b[33m${settings.host}:${settings.port}\x1b[0m...`);
 
         const agentProcess = new AgentProcess(agent_name, mindserver_port);
         agentProcess.start(load_memory, init_message, agentIndex);

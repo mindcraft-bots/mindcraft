@@ -277,12 +277,8 @@ export function createMindServer(host_public = false, port = 8080) {
         });
     });
 
-    if (host_public) {
-        console.log('Public hosting not supported yet. Using localhost.');
-    }
-    const host = 'localhost';
-    server.listen(port, host, () => {
-        console.log(`MindServer running on port ${port} on host ${host}`);
+    server.listen(port, () => {
+        console.log(`\x1b[32m✔ Control Center online: \x1b[1m\x1b[36mhttp://localhost:${port}\x1b[0m`);
     });
 
     return server;

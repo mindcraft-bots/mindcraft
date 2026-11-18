@@ -320,12 +320,12 @@ export class Agent {
             let history = this.history.getHistory();
             let res = await this.prompter.promptConvo(history);
 
-            console.log(`${this.name} full response to ${source}: ""${res}""`);
-
-            if (res.trim().length === 0) {
-                console.warn('no response')
+            if (!res || typeof res !== 'string' || res.trim().length === 0) {
+                console.warn(`[Bot: ${this.name}] Empty AI response, ending response loop.`);
                 break; // empty response ends loop
             }
+
+            console.log(`${this.name} full response to ${source}: ""${res}""`);
 
             let command_name = containsCommand(res);
 
