@@ -71,8 +71,6 @@ export class GroqCloudAPI {
                     attempt--;
                     continue;
                 }
-                    continue;
-                }
                 if (err.message && err.message.includes('content must be a string')) {
                     return 'Vision is only supported by certain models.';
                 }
