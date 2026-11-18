@@ -137,7 +137,7 @@ export function initBot(username) {
         if (event === 'error' && args[0]) {
             const err = args[0];
             const errStr = err instanceof Error ? err.message : String(err);
-            if (errStr.includes('PartialReadError') || errStr.includes('SizeError')) {
+            if (errStr.includes('PartialReadError') || errStr.includes('SizeError') || errStr.includes('deserialization error')) {
                 console.warn('[mcdata] Suppressed non-critical packet error:', errStr.substring(0, 120));
                 return true; // Swallow the error
             }
@@ -151,7 +151,11 @@ export function initBot(username) {
     bot.loadPlugin(autoEat);
     bot.loadPlugin(armorManager); // auto equip armor
     bot.on('resourcePack', () => {
-        bot.acceptResourcePack();
+        try {
+            bot.acceptResourcePack();
+        } catch (e) {
+            console.warn('[mcdata] Error accepting resource pack:', e?.message || e);
+        }
     });
 
     bot.once('login', () => {

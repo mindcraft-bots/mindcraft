@@ -35,7 +35,13 @@ export async function serverInfo(ip, port, timeout = 3500, verbose = false) {
             const version = response?.version?.name || '';
             const match = String(version).match(/\d+\.\d+(?:\.\d+)?/);
             let numericVersion = match ? match[0] : null;
-            if (numericVersion) {
+
+            // Direct support for ViaVersion, ViaBackwards, and Geyser multi-version proxies
+            const versionLower = String(version).toLowerCase();
+            if (versionLower.includes('viaversion') || versionLower.includes('viabackwards') || versionLower.includes('geyser')) {
+                numericVersion = '1.21.4';
+                console.log(`[mcserver] ViaVersion / Geyser setup detected ('${version}'). Using Java 1.21.4 protocol for full cross-play.`);
+            } else if (numericVersion) {
                 const resolved = resolveJavaVersion(numericVersion);
                 if (resolved !== numericVersion) {
                     console.log(`[mcserver] Server reported version '${version}' (${numericVersion}). Using compatible Java version '${resolved}' (compatible with ViaVersion / ViaBackwards / Geyser).`);

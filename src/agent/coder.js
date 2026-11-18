@@ -73,6 +73,10 @@ export class Coder {
             }
             code = res.substring(res.indexOf('```')+3, res.lastIndexOf('```'));
             const result = await this._stageCode(code);
+            if (!result || !result.func) {
+                console.warn("Failed to stage code, something is wrong.");
+                return 'Failed to stage code, something is wrong.';
+            }
             const executionModule = result.func;
             const lintResult = await this._lintCode(result.src_lint_copy);
             if (lintResult) {
@@ -80,10 +84,6 @@ export class Coder {
                 console.warn("Linting error:"+'\n'+lintResult+'\n');
                 messages.push({ role: 'system', content: message });
                 continue;
-            }
-            if (!executionModule) {
-                console.warn("Failed to stage code, something is wrong.");
-                return 'Failed to stage code, something is wrong.';
             }
 
             try {
@@ -188,13 +188,19 @@ export class Coder {
         // This is where we determine the environment the agent's code should be exposed to.
         // It will only have access to these things, (in addition to basic javascript objects like Array, Object, etc.)
         // Note that the code may be able to modify the exposed objects.
-        const compartment = makeCompartment({
-            skills,
-            log: skills.log,
-            world,
-            Vec3,
-        });
-        const mainFn = compartment.evaluate(src);
+        let mainFn = null;
+        try {
+            const compartment = makeCompartment({
+                skills,
+                log: skills.log,
+                world,
+                Vec3,
+            });
+            mainFn = compartment.evaluate(src);
+        } catch (evalErr) {
+            console.warn('[Coder] Code evaluation error:', evalErr?.message || evalErr);
+            return null;
+        }
         
         if (write_result) {
             console.error('Error writing code execution file: ' + write_result);
