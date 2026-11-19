@@ -43,7 +43,12 @@ export class Ollama {
                 if (apiResponse && apiResponse.message) {
                     res = apiResponse.message.content;
                 } else {
-                    res = 'No response data.';
+                    if (attempt < maxAttempts) {
+                        console.warn(`[Ollama] Attempt ${attempt} failed to reach server, retrying in 2s...`);
+                        await new Promise(r => setTimeout(r, 2000));
+                        continue;
+                    }
+                    res = 'I could not connect to my brain. Make sure Ollama is running in the background with ollama serve.';
                 }
             } catch (err) {
                 if (err?.message && err.message.toLowerCase().includes('context length') && turns.length > 1) {
@@ -102,21 +107,42 @@ export class Ollama {
     }
 
     async send(endpoint, body) {
-        const url = new URL(endpoint, this.url);
-        let method = 'POST';
-        let headers = new Headers();
-        const request = new Request(url, { method, headers, body: JSON.stringify(body) });
+        let candidateUrls = [this.url];
+        if (this.url.includes('127.0.0.1')) {
+            candidateUrls.push(this.url.replace('127.0.0.1', 'localhost'));
+        } else if (this.url.includes('localhost')) {
+            candidateUrls.push(this.url.replace('localhost', '127.0.0.1'));
+        }
+
         let data = null;
-        try {
-            const res = await fetch(request);
-            if (res.ok) {
-                data = await res.json();
-            } else {
-                throw new Error(`Ollama Status: ${res.status}`);
+        let lastError = null;
+
+        for (const baseUrl of candidateUrls) {
+            try {
+                const url = new URL(endpoint, baseUrl);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (res.ok) {
+                    data = await res.json();
+                    this.url = baseUrl;
+                    return data;
+                } else {
+                    throw new Error(`Ollama HTTP ${res.status}: ${res.statusText}`);
+                }
+            } catch (err) {
+                lastError = err;
             }
-        } catch (err) {
-            if (!endpoint.includes('embed')) {
-                console.error(`Failed to send Ollama request (${endpoint}):`, err.message || err);
+        }
+
+        if (!endpoint.includes('embed')) {
+            const cause = lastError?.cause?.code || lastError?.cause?.message || '';
+            const msg = lastError?.message || String(lastError);
+            console.error(`[Ollama] Connection error on ${endpoint}: ${msg} ${cause ? `(${cause})` : ''}`);
+            if (cause === 'ECONNREFUSED' || msg.includes('ECONNREFUSED') || msg.includes('fetch failed')) {
+                console.error(`[Ollama] 💡 Ensure Ollama is running in the background: type 'ollama serve' in your terminal.`);
             }
         }
         return data;
