@@ -95,14 +95,33 @@ export async function craftRecipe(bot, itemName, num=1) {
 
     const recipe = recipes[0];
     console.log('crafting...');
-    //Check that the agent has sufficient items to use the recipe `num` times.
-    const inventory = world.getInventoryCounts(bot); //Items in the agents inventory
-    const requiredIngredients = mc.ingredientsFromPrismarineRecipe(recipe); //Items required to use the recipe once.
+    // Check that the agent has sufficient items to use the recipe `num` times.
+    const inventory = world.getInventoryCounts(bot); // Items in the agent's inventory.
+    const requiredIngredients = mc.ingredientsFromPrismarineRecipe(recipe); // Items required to use the recipe once.
     const craftLimit = mc.calculateLimitingResource(inventory, requiredIngredients);
-    
-    await bot.craft(recipe, Math.min(craftLimit.num, num), craftingTable);
-    if(craftLimit.num<num) log(bot, `Not enough ${craftLimit.limitingResource} to craft ${num}, crafted ${craftLimit.num}. You now have ${world.getInventoryCounts(bot)[itemName]} ${itemName}.`);
-    else log(bot, `Successfully crafted ${itemName}, you now have ${world.getInventoryCounts(bot)[itemName]} ${itemName}.`);
+    const craftsToMake = Math.min(craftLimit.num, num);
+
+    if (craftsToMake <= 0) {
+        log(bot, `You do not have the resources to craft a ${itemName}.`);
+        if (placedTable) await collectBlock(bot, 'crafting_table', 1);
+        return false;
+    }
+
+    const previousCount = inventory[itemName] || 0;
+    await bot.craft(recipe, craftsToMake, craftingTable);
+
+    // Mineflayer's craft promise can resolve before the inventory snapshot is refreshed.
+    // Poll the inventory briefly instead of assuming a fixed delay is sufficient.
+    const expectedCount = previousCount + (recipe.result?.count || 1) * craftsToMake;
+    const inventoryDeadline = Date.now() + 2000;
+    let newCount = world.getInventoryCounts(bot)[itemName] || 0;
+    while (newCount < expectedCount && Date.now() < inventoryDeadline) {
+        if (!await wait(bot, 50)) break;
+        newCount = world.getInventoryCounts(bot)[itemName] || 0;
+    }
+
+    if (craftLimit.num < num) log(bot, `Not enough ${craftLimit.limitingResource} to craft ${num}, crafted ${craftsToMake}. You now have ${newCount} ${itemName}.`);
+    else log(bot, `Successfully crafted ${itemName}, you now have ${newCount} ${itemName}.`);
     if (placedTable) {
         await collectBlock(bot, 'crafting_table', 1);
     }

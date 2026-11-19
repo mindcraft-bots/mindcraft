@@ -271,7 +271,15 @@ export function getItemCraftingRecipes(itemName) {
         ]);
     }
     // sort recipes by if their ingredients include common items
-    const commonItems = ['oak_planks', 'oak_log', 'coal', 'cobblestone'];
+    const commonItems = [
+        'oak_planks', 'spruce_planks', 'birch_planks', 'jungle_planks', 
+        'acacia_planks', 'dark_oak_planks', 'mangrove_planks', 'bamboo_planks', 
+        'cherry_planks', 'crimson_planks', 'warped_planks',
+        'oak_log', 'spruce_log', 'birch_log', 'jungle_log', 
+        'acacia_log', 'dark_oak_log', 'mangrove_log', 'bamboo_block', 
+        'cherry_log', 'crimson_stem', 'warped_stem',
+        'coal', 'cobblestone'
+    ];
     recipes.sort((a, b) => {
         let commonCountA = Object.keys(a[0]).filter(key => commonItems.includes(key)).reduce((acc, key) => acc + a[0][key], 0);
         let commonCountB = Object.keys(b[0]).filter(key => commonItems.includes(key)).reduce((acc, key) => acc + b[0][key], 0);
@@ -372,25 +380,32 @@ export function makeItem(name, amount=1) {
  * @returns {Object<mc.ItemName, number>} an object describing the number of each ingredient.
  */
 export function ingredientsFromPrismarineRecipe(recipe) {
-    let requiredIngedients = {};
-    if (recipe.inShape)
+    const requiredIngredients = {};
+
+    // Shaped recipes store one entry per occupied crafting slot.
+    if (recipe.inShape) {
         for (const ingredient of recipe.inShape.flat()) {
-            if(ingredient.id<0) continue; //prismarine-recipe uses id -1 as an empty crafting slot
+            if (!ingredient || ingredient.id < 0) continue;
             const ingredientName = getItemName(ingredient.id);
-            requiredIngedients[ingredientName] ??=0;
-            requiredIngedients[ingredientName] += ingredient.count;
+            const count = Math.abs(Number(ingredient.count));
+            if (!ingredientName || !Number.isFinite(count) || count === 0) continue;
+            requiredIngredients[ingredientName] = (requiredIngredients[ingredientName] || 0) + count;
         }
-    if (recipe.ingredients)
+    }
+
+    // Unshaped prismarine recipes may encode ingredient counts as negative values.
+    // Requirements are quantities, so normalize the sign before accumulating.
+    if (recipe.ingredients) {
         for (const ingredient of recipe.ingredients) {
-            if(ingredient.id<0) continue;
+            if (!ingredient || ingredient.id < 0) continue;
             const ingredientName = getItemName(ingredient.id);
-            requiredIngedients[ingredientName] ??=0;
-            requiredIngedients[ingredientName] -= ingredient.count;
-            //Yes, the `-=` is intended.
-            //prismarine-recipe uses positive numbers for the shaped ingredients but negative for unshaped.
-            //Why this is the case is beyond my understanding.
+            const count = Math.abs(Number(ingredient.count));
+            if (!ingredientName || !Number.isFinite(count) || count === 0) continue;
+            requiredIngredients[ingredientName] = (requiredIngredients[ingredientName] || 0) + count;
         }
-    return requiredIngedients;
+    }
+
+    return requiredIngredients;
 }
 
 /**
@@ -404,14 +419,23 @@ export function ingredientsFromPrismarineRecipe(recipe) {
 export function calculateLimitingResource(availableItems, requiredItems, discrete=true) {
     let limitingResource = null;
     let num = Infinity;
-    for (const itemType in requiredItems) {
-        if (availableItems[itemType] < requiredItems[itemType] * num) {
+
+    for (const [itemType, rawRequired] of Object.entries(requiredItems || {})) {
+        const required = Number(rawRequired);
+        if (!Number.isFinite(required) || required <= 0) continue;
+
+        const available = Math.max(0, Number(availableItems?.[itemType]) || 0);
+        const possible = available / required;
+        if (possible < num) {
+            num = possible;
             limitingResource = itemType;
-            num = availableItems[itemType] / requiredItems[itemType];
         }
     }
-    if(discrete) num = Math.floor(num);
-    return {num, limitingResource}
+
+    // No positive requirements means there is no meaningful craftable quantity.
+    if (num === Infinity) num = 0;
+    if (discrete) num = Math.floor(num);
+    return {num, limitingResource};
 }
 
 let loopingItems = new Set();
