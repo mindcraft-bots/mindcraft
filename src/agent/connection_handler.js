@@ -24,7 +24,7 @@ const ERROR_DEFINITIONS = {
     },
     'version_mismatch': {
         keywords: ['outdated', 'version', 'client', 'missing-data', 'do not have data', '1.21.11'],
-        msg: 'Version Compatibility: Minecraft protocol normalized by LoginGuard to Java 1.21.4.',
+        msg: 'Version Compatibility: Minecraft 1.21.11 normalized by LoginGuard to Java 1.21.4 for ViaVersion, ViaBackwards, and Geyser compatibility.',
         isFatal: false
     },
     'maintenance': {
@@ -87,11 +87,12 @@ export function handleDisconnection(agentName, reason) {
 
     if (type === 'network_error') {
         console.error(`\n[LoginGuard] 💡 Server Connection Tips:`);
-        console.error(`   1. Verify your server is fully ONLINE and running.`);
-        console.error(`   2. Aternos Note: Aternos servers use a unique 5-digit Port (e.g. 12345, not 25565).`);
+        console.error(`   1. Verify your server is fully ONLINE and running (e.g. ZCClanOnTOP.aternos.me).`);
+        console.error(`   2. Aternos Note: Aternos servers use a unique 5-digit Port (e.g. 12345, not 25565) or a DynIP.`);
         console.error(`      Find your port on your Aternos dashboard under 'Connect'.`);
         console.error(`   3. In Aternos Options: turn ON 'Cracked' if using offline authentication.`);
-        console.error(`   4. If Whitelist is on: type '/whitelist add ${agentName}' in server console.\n`);
+        console.error(`   4. Compatibility: Server plugins ViaVersion, ViaBackwards, and Geyser are fully supported.`);
+        console.error(`   5. If Whitelist is on: type '/whitelist add ${agentName}' in server console.\n`);
     } else if (type === 'auth_error') {
         console.error(`\n[LoginGuard] 💡 Authentication Tip:`);
         console.error(`   The server requires an official Minecraft account (online-mode=true).`);
@@ -100,7 +101,7 @@ export function handleDisconnection(agentName, reason) {
     } else if (type === 'version_mismatch' || String(reason).includes('1.21.11') || String(reason).includes('missing-data')) {
         console.log(`\n[LoginGuard] 💡 Version Compatibility Note:`);
         console.log(`   Minecraft 1.21.11 (Geyser/Bedrock/ViaVersion) detected.`);
-        console.log(`   LoginGuard bridges this connection to Java 1.21.4 protocol for full compatibility.\n`);
+        console.log(`   LoginGuard bridges this connection to Java 1.21.4 protocol for full cross-play compatibility with ViaVersion, ViaBackwards, and Geyser.\n`);
     } else if (type === 'access_denied') {
         console.error(`\n[LoginGuard] 💡 Whitelist Notice: Type '/whitelist add ${agentName}' in your Minecraft server console to allow the bot to join.\n`);
     } else if (type === 'name_conflict') {

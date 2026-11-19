@@ -1,5 +1,6 @@
 import net from 'net';
 import mc from 'minecraft-protocol';
+import dns from 'dns';
 import { resolveJavaVersion } from '../utils/version_patch.js';
 
 /**
@@ -38,9 +39,17 @@ export async function serverInfo(ip, port, timeout = 3500, verbose = false) {
 
             // Direct support for ViaVersion, ViaBackwards, and Geyser multi-version proxies
             const versionLower = String(version).toLowerCase();
-            if (versionLower.includes('viaversion') || versionLower.includes('viabackwards') || versionLower.includes('geyser')) {
+            const hostLower = String(ip).toLowerCase();
+            if (
+                versionLower.includes('viaversion') || 
+                versionLower.includes('viabackwards') || 
+                versionLower.includes('geyser') ||
+                versionLower.includes('bedrock') ||
+                versionLower.includes('1.21.11') ||
+                hostLower.includes('zcclanontop.aternos.me')
+            ) {
                 numericVersion = '1.21.4';
-                console.log(`[mcserver] ViaVersion / Geyser setup detected ('${version}'). Using Java 1.21.4 protocol for full cross-play.`);
+                console.log(`[LoginGuard] [mcserver] ViaVersion / ViaBackwards / Geyser setup detected ('${version || ip}'). Bridging to Java 1.21.4 protocol for full cross-play.`);
             } else if (numericVersion) {
                 const resolved = resolveJavaVersion(numericVersion);
                 if (resolved !== numericVersion) {
@@ -131,25 +140,53 @@ export async function findServers(ip, earlyExit = false, timeout = 100) {
  * @returns {Promise<Object>} - A Promise that resolves to the server info object.
  */
 export async function getServer(host, port, version) {
+    let explicitPort = false;
     if (typeof host === 'string') {
         host = host.trim();
         if (host.includes(':') && !host.startsWith('http')) {
             const parts = host.split(':');
             host = parts[0].trim();
             const parsedPort = parseInt(parts[1], 10);
-            if (!isNaN(parsedPort)) port = parsedPort;
+            if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) {
+                port = parsedPort;
+                explicitPort = true;
+            }
+        }
+    }
+
+    const hostLower = typeof host === 'string' ? host.toLowerCase() : '';
+    const isZCClan = hostLower.includes('zcclanontop.aternos.me');
+    const isAternos = isZCClan || hostLower.includes('aternos.me');
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+
+    if (isZCClan) {
+        console.log(`[LoginGuard] Target server ZCClanOnTOP.aternos.me detected with ViaVersion / ViaBackwards / Geyser setup.`);
+    }
+
+    // Attempt SRV resolution for remote domain names without an explicit port
+    if (!isLocal && !explicitPort && host) {
+        try {
+            const srvRecords = await dns.promises.resolveSrv(`_minecraft._tcp.${host}`);
+            if (srvRecords && srvRecords.length > 0) {
+                const srv = srvRecords[0];
+                console.log(`[mcserver] DNS SRV record resolved for ${host} -> ${srv.name}:${srv.port}`);
+                if (srv.port && srv.port > 0 && srv.port < 65536) {
+                    port = srv.port;
+                    explicitPort = true;
+                }
+            }
+        } catch (_) {
+            // DNS SRV not available or not supported on this network, proceed normally
         }
     }
 
     let server = null;
     let serverString = "";
     let serverVersion = "";
-    
-    const isLocal = host === 'localhost' || host === '127.0.0.1';
 
     // Search for server
-    if (!isLocal && (port === 55916 || port == -1 || !port || port <= 0 || port >= 65536)) {
-        console.log(`[mcserver] Remote host ${host} detected. Using standard port 25565.`);
+    if (!isLocal && !explicitPort && (port === 55916 || port == -1 || !port || port <= 0 || port >= 65536)) {
+        console.log(`[mcserver] Remote host ${host} detected without custom port. Using standard port 25565.`);
         port = 25565;
         server = await serverInfo(host, port, 3500, false);
     } else if (port == -1) {
@@ -174,15 +211,19 @@ export async function getServer(host, port, version) {
 
     // If ping fails or times out (common for reverse proxies like Aternos/Bungee/Geyser), proceed directly
     if (server == null) {
-        console.log(`[mcserver] Direct ping to ${host}:${port} did not return status (common for proxies like Aternos / BungeeCord). Proceeding with direct connection.`);
+        if (isAternos) {
+            console.log(`[LoginGuard] Direct ping to ${host}:${port} skipped or unreachable (standard for Aternos/Geyser/ViaVersion proxies). Connecting directly with Java 1.21.4 protocol.`);
+        } else {
+            console.log(`[mcserver] Direct ping to ${host}:${port} did not return status (common for proxies like Aternos / BungeeCord). Proceeding with direct connection.`);
+        }
         server = {
             host,
             port,
-            version: resolveJavaVersion(version)
+            version: resolveJavaVersion(version || '1.21.4')
         };
     }
 
-    server.version = resolveJavaVersion(server.version || version);
+    server.version = resolveJavaVersion(server.version || version || '1.21.4');
     if (!server.port || server.port <= 0 || server.port >= 65536) {
         server.port = isLocal ? 55916 : 25565;
     }

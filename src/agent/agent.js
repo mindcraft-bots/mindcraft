@@ -69,7 +69,7 @@ export class Agent {
         } catch (err) {
             const errStr = String(err?.message || err);
             if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
-                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 protocol alias (bridging to Java 1.21.4)...`);
+                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 protocol alias without missing-data error (bridging to Java 1.21.4 for ViaVersion/ViaBackwards/Geyser)...`);
                 settings.minecraft_version = '1.21.4';
                 this.bot = initBot(this.name);
             } else {
@@ -95,7 +95,7 @@ export class Agent {
         this.bot.on('error', (err) => {
             const errStr = String(err?.message || err);
             if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
-                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 version mismatch. Reconnecting with compatible Java protocol 1.21.4...`);
+                log(this.name, `[LoginGuard] Handled Minecraft 1.21.11 version mismatch without missing-data error. Reconnecting with compatible Java protocol 1.21.4 for ViaVersion/ViaBackwards/Geyser...`);
                 settings.minecraft_version = '1.21.4';
                 return;
             }

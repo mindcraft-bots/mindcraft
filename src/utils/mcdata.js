@@ -57,18 +57,28 @@ export const WOOL_COLORS = [
 export function initBot(username) {
     let host = typeof settings.host === 'string' ? settings.host.trim() : '127.0.0.1';
     let port = typeof settings.port === 'number' && settings.port > 0 && settings.port < 65536 ? settings.port : 25565;
+    let explicitPort = false;
     if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
         const parts = host.split(':');
         host = parts[0].trim();
         const parsedPort = parseInt(parts[1], 10);
-        if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) port = parsedPort;
+        if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) {
+            port = parsedPort;
+            explicitPort = true;
+        }
     }
     const isLocal = host === 'localhost' || host === '127.0.0.1';
-    if (!port || port <= 0 || port >= 65536 || (!isLocal && port === 55916)) {
+    if (!explicitPort && (!port || port <= 0 || port >= 65536 || (!isLocal && port === 55916))) {
         port = isLocal ? 55916 : 25565;
     }
 
-    const targetVersion = resolveJavaVersion(mc_version || settings.minecraft_version);
+    const hostLower = host.toLowerCase();
+    const isZCClan = hostLower.includes('zcclanontop.aternos.me');
+    if (isZCClan) {
+        console.log(`[LoginGuard] Configuring connection for '${username}' to ZCClanOnTOP.aternos.me (ViaVersion/ViaBackwards/Geyser setup)...`);
+    }
+
+    const targetVersion = resolveJavaVersion(settings.minecraft_version || mc_version || '1.21.4');
     const options = {
         username: username,
         host: host,
@@ -86,8 +96,9 @@ export function initBot(username) {
     } catch (err) {
         const errStr = String(err?.message || err);
         if (errStr.includes('Do not have data') || errStr.includes('1.21.11') || errStr.includes('missing-data')) {
-            console.warn(`[LoginGuard] Handled Minecraft 1.21.11 without missing-data error. Connecting with Java 1.21.4 protocol...`);
+            console.warn(`[LoginGuard] Handled Minecraft 1.21.11 without missing-data error when connecting to ${host}. Bridging with Java 1.21.4 protocol for ViaVersion/ViaBackwards/Geyser...`);
             options.version = '1.21.4';
+            settings.minecraft_version = '1.21.4';
             bot = createBot(options);
         } else {
             throw err;
@@ -95,7 +106,7 @@ export function initBot(username) {
     }
 
     bot._client.on('connect', () => {
-        console.log(`[mcdata] TCP connection established to ${options.host}:${options.port}. Sending login handshake...`);
+        console.log(`[mcdata] [LoginGuard] TCP connection established to ${options.host}:${options.port}. Sending login handshake (compatible with ViaVersion / ViaBackwards / Geyser)...`);
     });
 
     // Throttle position packets to avoid kicks on Paper/Spigot servers
