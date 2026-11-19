@@ -230,7 +230,7 @@ export async function executeCommand(agent, message) {
     }
 }
 
-export function getCommandDocs(agent) {
+export function getCommandDocs(agent, compact = false) {
     const typeTranslations = {
         //This was added to keep the prompt the same as before type checks were implemented.
         //If the language model is giving invalid inputs changing this might help.
@@ -240,12 +240,32 @@ export function getCommandDocs(agent) {
         'ItemName':          'string',
         'BlockOrItemName':   'string',
         'boolean':           'bool'
+    };
+
+    if (compact) {
+        let docs = '\n*COMMANDS (syntax: !cmd or !cmd("arg1", 2)):\n';
+        for (let command of commandList) {
+            if (agent.blocked_actions && agent.blocked_actions.includes(command.name)) {
+                continue;
+            }
+            let paramSig = '';
+            if (command.params) {
+                const paramNames = Object.keys(command.params);
+                if (paramNames.length > 0) {
+                    paramSig = `(${paramNames.join(', ')})`;
+                }
+            }
+            const shortDesc = (command.description || '').split('.')[0].trim();
+            docs += `${command.name}${paramSig}: ${shortDesc}\n`;
+        }
+        return docs + '*\n';
     }
+
     let docs = `\n*COMMAND DOCS\n You can use the following commands to perform actions and get information about the world. 
     Use the commands with the syntax: !commandName or !commandName("arg1", 1.2, ...) if the command takes arguments.\n
     Do not use codeblocks. Use double quotes for strings. Only use one command in each response, trailing commands and comments will be ignored.\n`;
     for (let command of commandList) {
-        if (agent.blocked_actions.includes(command.name)) {
+        if (agent.blocked_actions && agent.blocked_actions.includes(command.name)) {
             continue;
         }
         docs += command.name + ': ' + command.description + '\n';

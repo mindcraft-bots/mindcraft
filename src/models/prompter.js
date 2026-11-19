@@ -157,8 +157,10 @@ export class Prompter {
 
         if (prompt.includes('$STATS')) {
             let stats = await getCommand('!stats').perform(this.agent) + '\n';
-            stats += await getCommand('!entities').perform(this.agent) + '\n';
-            stats += await getCommand('!nearbyBlocks').perform(this.agent);
+            if (!settings.low_memory_mode && !settings.fast_mode && !this.profile.model?.includes('ollama')) {
+                stats += await getCommand('!entities').perform(this.agent) + '\n';
+                stats += await getCommand('!nearbyBlocks').perform(this.agent);
+            }
             prompt = prompt.replaceAll('$STATS', stats);
         }
         if (prompt.includes('$INVENTORY')) {
@@ -168,8 +170,10 @@ export class Prompter {
         if (prompt.includes('$ACTION')) {
             prompt = prompt.replaceAll('$ACTION', this.agent.actions.currentActionLabel);
         }
-        if (prompt.includes('$COMMAND_DOCS'))
-            prompt = prompt.replaceAll('$COMMAND_DOCS', getCommandDocs(this.agent));
+        if (prompt.includes('$COMMAND_DOCS')) {
+            const isCompact = settings.low_memory_mode || settings.fast_mode || this.profile.model?.includes('ollama');
+            prompt = prompt.replaceAll('$COMMAND_DOCS', getCommandDocs(this.agent, isCompact));
+        }
         if (prompt.includes('$CODE_DOCS')) {
             const code_task_content = messages.slice().reverse().find(msg =>
                 msg.role !== 'system' && msg.content.includes('!newAction(')

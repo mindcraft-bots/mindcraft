@@ -20,10 +20,11 @@ export class Ollama {
 
         // Tune generation parameters for low-latency on CPU/Termux
         const options = {
-            num_predict: 128,
-            temperature: 0.2,
+            num_predict: 64,
+            temperature: 0.1,
             top_p: 0.9,
             num_ctx: 4096,
+            num_thread: 2,
             ...(this.params?.options || {})
         };
 

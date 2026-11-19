@@ -4,13 +4,14 @@
     "cooldown": 0,
     "fast_mode": true,
     "low_memory_mode": true,
-    "max_messages": 8,
-    "num_examples": 1,
+    "max_messages": 6,
+    "num_examples": 0,
     "params": {
-        "temperature": 0.2,
+        "temperature": 0.1,
         "options": {
             "num_ctx": 4096,
-            "num_predict": 128
+            "num_predict": 64,
+            "num_thread": 2
         }
     }
 }
