@@ -32,8 +32,14 @@ const apiMap = await (async () => {
 })();
 
 export function selectAPI(profile) {
+    if (!profile) {
+        profile = {model: 'ollama/qwen2.5:0.5b'};
+    }
     if (typeof profile === 'string' || profile instanceof String) {
         profile = {model: profile};
+    }
+    if (!profile.model) {
+        profile.model = 'ollama/qwen2.5:0.5b';
     }
     // backwards compatibility with legacy local->ollama
     if (profile.api === 'local' || profile.model === 'local' || profile.model?.startsWith('local/')) {

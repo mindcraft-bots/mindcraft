@@ -5,6 +5,13 @@ import { reloadKeys, hasKey, getKey } from './keys.js';
 
 export const PROVIDERS = [
     {
+        name: 'Ollama (Local / Offline)',
+        desc: 'Default offline model on 127.0.0.1:11434 (qwen2.5:0.5b - No key needed)',
+        keyName: 'OLLAMA_API_KEY',
+        defaultModel: 'ollama/qwen2.5:0.5b',
+        isLocal: true
+    },
+    {
         name: 'GroqCloud',
         desc: 'Ultra-fast inference with free tier (Recommended)',
         keyName: 'GROQCLOUD_API_KEY',
@@ -303,13 +310,6 @@ export const PROVIDERS = [
         desc: 'Affordable open-source model inference',
         keyName: 'GLHF_API_KEY',
         defaultModel: 'glhf/hf:meta-llama/Llama-3.3-70B-Instruct'
-    },
-    {
-        name: 'Ollama (Local / Offline)',
-        desc: 'Local offline model on 127.0.0.1:11434 (No key needed)',
-        keyName: 'OLLAMA_API_KEY',
-        defaultModel: 'ollama/qwen2.5:0.5b',
-        isLocal: true
     },
     {
         name: 'LM Studio (Local)',
