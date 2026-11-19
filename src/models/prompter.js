@@ -101,8 +101,12 @@ export class Prompter {
         if (embedding_model_profile) {
             this.embedding_model = createModel(embedding_model_profile);
         }
-        else {
+        else if (chat_model_profile.api === 'openai' && !settings.low_memory_mode) {
             this.embedding_model = createModel({api: chat_model_profile.api});
+        }
+        else {
+            // Local models (Ollama, LM Studio, etc.) and low-memory mode use fast, zero-overhead word-overlap matching
+            this.embedding_model = null;
         }
 
         this.skill_libary = new SkillLibrary(agent, this.embedding_model);

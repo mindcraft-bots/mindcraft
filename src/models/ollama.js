@@ -20,10 +20,10 @@ export class Ollama {
 
         // Tune generation parameters for low-latency on CPU/Termux
         const options = {
-            num_predict: 256,
+            num_predict: 128,
             temperature: 0.2,
             top_p: 0.9,
-            num_ctx: 2048,
+            num_ctx: 4096,
             ...(this.params?.options || {})
         };
 
@@ -83,6 +83,10 @@ export class Ollama {
     }
 
     async embed(text) {
+        // Chat models like qwen2.5:0.5b should not be forced into slow embedding generation on CPU
+        if (!this.model_name || this.model_name.includes('qwen') || this.model_name.includes('llama') || this.model_name.includes('mistral')) {
+            return null;
+        }
         let model = this.model_name || 'embeddinggemma';
         let body = { model: model, input: text };
         try {

@@ -4,10 +4,13 @@
     "cooldown": 0,
     "fast_mode": true,
     "low_memory_mode": true,
-    "max_messages": 10,
-    "max_tokens": 1024,
+    "max_messages": 8,
+    "num_examples": 1,
     "params": {
         "temperature": 0.2,
-        "max_completion_tokens": 1024
+        "options": {
+            "num_ctx": 4096,
+            "num_predict": 128
+        }
     }
 }
