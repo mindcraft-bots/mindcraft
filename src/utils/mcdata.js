@@ -55,11 +55,11 @@ export const WOOL_COLORS = [
 
 
 export function initBot(username) {
-    let host = settings.host || '127.0.0.1';
+    let host = typeof settings.host === 'string' ? settings.host.trim() : '127.0.0.1';
     let port = typeof settings.port === 'number' && settings.port > 0 && settings.port < 65536 ? settings.port : 25565;
     if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
         const parts = host.split(':');
-        host = parts[0];
+        host = parts[0].trim();
         const parsedPort = parseInt(parts[1], 10);
         if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) port = parsedPort;
     }
@@ -109,14 +109,13 @@ export function initBot(username) {
         if (name === 'position' || name === 'position_look' || name === 'look') {
             const now = Date.now();
             if (now - lastPositionUpdate < POSITION_THROTTLE_MS) {
-                // Queue this packet so the last position update is never lost
-                if (!pendingPositionPacket) {
-                    pendingPositionPacket = setTimeout(() => {
-                        pendingPositionPacket = null;
-                        lastPositionUpdate = Date.now();
-                        originalWrite(name, data);
-                    }, POSITION_THROTTLE_MS - (now - lastPositionUpdate));
-                }
+                // Keep the latest position packet so the freshest position is sent
+                if (pendingPositionPacket) clearTimeout(pendingPositionPacket);
+                pendingPositionPacket = setTimeout(() => {
+                    pendingPositionPacket = null;
+                    lastPositionUpdate = Date.now();
+                    originalWrite(name, data);
+                }, POSITION_THROTTLE_MS - (now - lastPositionUpdate));
                 return;
             }
             lastPositionUpdate = now;
@@ -187,7 +186,9 @@ export function initBot(username) {
     });
 
     // Send player_loaded packet on 1.21.2+ servers to finish joining/spawning without hanging
+    let playerLoadedSent = false;
     const sendPlayerLoaded = () => {
+        if (playerLoadedSent) return;
         try {
             if (bot._client && bot._client.state === 'play') {
                 const hasPlayerLoaded = Boolean(
@@ -196,6 +197,7 @@ export function initBot(username) {
                     bot.registry?.protocol?.play?.toServer?.types?.packet_player_loaded
                 );
                 if (hasPlayerLoaded) {
+                    playerLoadedSent = true;
                     bot._client.write('player_loaded', {});
                 }
             }
@@ -207,7 +209,10 @@ export function initBot(username) {
     bot._client.on('chunk_batch_finished', sendPlayerLoaded);
     bot._client.on('position', sendPlayerLoaded);
     bot.on('spawn', sendPlayerLoaded);
-    bot.on('respawn', sendPlayerLoaded);
+    bot.on('respawn', () => {
+        playerLoadedSent = false;
+        sendPlayerLoaded();
+    });
 
     bot.once('login', () => {
         sendPlayerLoaded();

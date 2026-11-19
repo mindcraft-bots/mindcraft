@@ -7,8 +7,13 @@ const ERROR_DEFINITIONS = {
         msg: 'Name Conflict: The name is already in use or you are already logged in.',
         isFatal: true
     },
+    'auth_error': {
+        keywords: ['invalid session', 'verify username', 'not authenticated with minecraft.net', 'failed to verify username', 'authentication', 'verify your account'],
+        msg: 'Authentication Error: The server requires an official Minecraft/Microsoft account (online-mode=true). Set "auth": "microsoft" or enable "Cracked" in server options.',
+        isFatal: true
+    },
     'access_denied': {
-        keywords: ['whitelist', 'not white-listed', 'banned', 'suspended', 'verify'],
+        keywords: ['whitelist', 'not white-listed', 'banned', 'suspended', 'not permitted'],
         msg: 'Access Denied: You are not whitelisted or banned.',
         isFatal: true
     },
@@ -28,7 +33,7 @@ const ERROR_DEFINITIONS = {
         isFatal: false
     },
     'network_error': {
-        keywords: ['timeout', 'timed out', 'connection lost', 'reset', 'refused', 'keepalive', 'epipe', 'socketclosed', 'econnreset', 'closed'],
+        keywords: ['timeout', 'timed out', 'connection lost', 'reset', 'refused', 'keepalive', 'epipe', 'socketclosed', 'econnreset', 'closed', 'enotfound', 'etimedout', 'econnrefused', 'ehostunreach'],
         msg: 'Network Error: Connection timed out, refused, or closed by server.',
         isFatal: false
     },
@@ -87,6 +92,11 @@ export function handleDisconnection(agentName, reason) {
         console.error(`      Find your port on your Aternos dashboard under 'Connect'.`);
         console.error(`   3. In Aternos Options: turn ON 'Cracked' if using offline authentication.`);
         console.error(`   4. If Whitelist is on: type '/whitelist add ${agentName}' in server console.\n`);
+    } else if (type === 'auth_error') {
+        console.error(`\n[LoginGuard] 💡 Authentication Tip:`);
+        console.error(`   The server requires an official Minecraft account (online-mode=true).`);
+        console.error(`   1. To connect offline bots, enable 'Cracked' in server options (e.g. Aternos -> Options -> Cracked).`);
+        console.error(`   2. Alternatively, set "auth": "microsoft" in config.json / settings.js to authenticate with Microsoft.\n`);
     } else if (type === 'version_mismatch' || String(reason).includes('1.21.11') || String(reason).includes('missing-data')) {
         console.log(`\n[LoginGuard] 💡 Version Compatibility Note:`);
         console.log(`   Minecraft 1.21.11 (Geyser/Bedrock/ViaVersion) detected.`);

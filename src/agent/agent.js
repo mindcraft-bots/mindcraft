@@ -99,7 +99,14 @@ export class Agent {
                 settings.minecraft_version = '1.21.4';
                 return;
             }
-            if (errStr.includes('Duplicate') || errStr.includes('ECONNREFUSED')) {
+            if (
+                errStr.includes('Duplicate') || 
+                errStr.includes('ECONNREFUSED') || 
+                errStr.includes('ENOTFOUND') || 
+                errStr.includes('ETIMEDOUT') || 
+                errStr.includes('EHOSTUNREACH') || 
+                errStr.includes('EADDRNOTAVAIL')
+            ) {
                  onDisconnect('Error', err);
             } else {
                  log(this.name, `[LoginGuard] Connection Error: ${errStr}`);

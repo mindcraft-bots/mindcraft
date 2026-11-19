@@ -131,11 +131,14 @@ export async function findServers(ip, earlyExit = false, timeout = 100) {
  * @returns {Promise<Object>} - A Promise that resolves to the server info object.
  */
 export async function getServer(host, port, version) {
-    if (typeof host === 'string' && host.includes(':') && !host.startsWith('http')) {
-        const parts = host.split(':');
-        host = parts[0];
-        const parsedPort = parseInt(parts[1], 10);
-        if (!isNaN(parsedPort)) port = parsedPort;
+    if (typeof host === 'string') {
+        host = host.trim();
+        if (host.includes(':') && !host.startsWith('http')) {
+            const parts = host.split(':');
+            host = parts[0].trim();
+            const parsedPort = parseInt(parts[1], 10);
+            if (!isNaN(parsedPort)) port = parsedPort;
+        }
     }
 
     let server = null;
