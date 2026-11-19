@@ -449,11 +449,23 @@ export async function runInteractiveSetup(force = false) {
         const botNameAns = await rl.question('Enter Bot Name in Minecraft [Doombot]: ');
         const botName = botNameAns.trim() || 'Doombot';
 
+        let savedHost = '127.0.0.1';
+        let savedPort = null;
+        try {
+            if (existsSync('./config.json')) {
+                const cfg = JSON.parse(readFileSync('./config.json', 'utf8'));
+                if (cfg.host && cfg.host !== '127.0.0.1' && cfg.host !== 'localhost') {
+                    savedHost = cfg.host;
+                }
+                if (cfg.port) savedPort = cfg.port;
+            }
+        } catch {}
+
         // 4. Server Host
-        const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');
-        let rawHost = hostAns.trim() || '127.0.0.1';
+        const hostAns = await rl.question(`Minecraft Server Host [${savedHost}]: `);
+        let rawHost = hostAns.trim() || savedHost;
         let host = rawHost;
-        let detectedPort = null;
+        let detectedPort = savedPort;
         if (rawHost.includes(':') && !rawHost.startsWith('http')) {
             const parts = rawHost.split(':');
             host = parts[0];
@@ -465,7 +477,7 @@ export async function runInteractiveSetup(force = false) {
         const isAternos = host.toLowerCase().includes('aternos.me') || host.toLowerCase().includes('aternos.host');
         if (isAternos && !detectedPort) {
             console.log('\n  ⚠️  Aternos Notice: Aternos servers use a unique 5-digit port (not 25565)!');
-            console.log('  👉 Check your Aternos dashboard: click "Connect" to view your Port (e.g. 12345 or 38291).\n');
+            console.log('  👉 Check your Aternos dashboard: click "Connect" to view your Port (e.g. 12345 or 38410).\n');
         }
 
         const isLan = host === '127.0.0.1' || host === 'localhost';

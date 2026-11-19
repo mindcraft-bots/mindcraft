@@ -46,6 +46,14 @@ function parseArguments() {
             type: 'boolean',
             describe: 'Alias for --configure'
         })
+        .option('host', {
+            type: 'string',
+            describe: 'Minecraft server hostname or IP (e.g. ZCClanOnTOP.aternos.me)'
+        })
+        .option('port', {
+            type: 'number',
+            describe: 'Minecraft server port (e.g. 38410 or 25565)'
+        })
         .option('now', {
             type: 'boolean',
             alias: ['y', 'yes'],
@@ -65,6 +73,19 @@ if (args['low-memory'] !== undefined) {
 if (args.fast !== undefined) {
     settings.fast_mode = args.fast;
 }
+if (args.host) {
+    let rawHost = String(args.host).trim();
+    if (rawHost.includes(':') && !rawHost.startsWith('http')) {
+        const parts = rawHost.split(':');
+        settings.host = parts[0];
+        if (parts[1]) settings.port = parseInt(parts[1], 10);
+    } else {
+        settings.host = rawHost;
+    }
+}
+if (args.port !== undefined) {
+    settings.port = parseInt(args.port, 10);
+}
 if (args.task_path) {
     let tasks = JSON.parse(readFileSync(args.task_path, 'utf8'));
     if (args.task_id) {
@@ -77,6 +98,16 @@ if (args.task_path) {
 }
 
 // these environment variables override certain settings
+if (process.env.MINECRAFT_HOST) {
+    let rawHost = process.env.MINECRAFT_HOST.trim();
+    if (rawHost.includes(':') && !rawHost.startsWith('http')) {
+        const parts = rawHost.split(':');
+        settings.host = parts[0];
+        if (parts[1]) settings.port = parseInt(parts[1], 10);
+    } else {
+        settings.host = rawHost;
+    }
+}
 if (process.env.MINECRAFT_PORT) {
     settings.port = parseInt(process.env.MINECRAFT_PORT, 10);
 }
