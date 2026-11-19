@@ -201,8 +201,10 @@ export async function smeltItem(bot, itemName, num=1) {
         return false;
     }
 
-    // fuel the furnace
-    if (!furnace.fuelItem()) {
+    // A furnace can still be burning after its fuel slot becomes empty.
+    // `fuelItem()` reports the slot contents; `fuel` reports active burn remaining.
+    const hasActiveFuel = Number.isFinite(furnace.fuel) && furnace.fuel > 0;
+    if (!furnace.fuelItem() && !hasActiveFuel) {
         let fuel = mc.getSmeltingFuel(bot);
         if (!fuel) {
             log(bot, `You have no fuel to smelt ${itemName}, you need coal, charcoal, or wood.`);
@@ -229,19 +231,32 @@ export async function smeltItem(bot, itemName, num=1) {
     // wait for the items to smelt
     let total = 0;
     let smelted_item = null;
-    await new Promise(resolve => setTimeout(resolve, 200));
-    let last_collected = Date.now();
+    let lastProgress = Number(furnace.progress);
+    let lastFuel = Number(furnace.fuel);
+    let lastProgressAt = Date.now();
     while (total < num) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Furnace progress/fuel updates are a better signal than assuming every
+        // smelt will finish within a fixed 11-second window.
+        const currentProgress = Number(furnace.progress);
+        const currentFuel = Number(furnace.fuel);
+        if ((Number.isFinite(currentProgress) && currentProgress !== lastProgress) ||
+            (Number.isFinite(currentFuel) && currentFuel !== lastFuel)) {
+            lastProgressAt = Date.now();
+            if (Number.isFinite(currentProgress)) lastProgress = currentProgress;
+            if (Number.isFinite(currentFuel)) lastFuel = currentFuel;
+        }
+
         if (furnace.outputItem()) {
             smelted_item = await furnace.takeOutput();
             if (smelted_item) {
                 total += smelted_item.count;
-                last_collected = Date.now();
+                lastProgressAt = Date.now();
             }
         }
-        if (Date.now() - last_collected > 11000) {
-            break; // if nothing has been collected in 11 seconds, stop
+        if (Date.now() - lastProgressAt > 30000) {
+            break; // no furnace progress or output for 30 seconds
         }
         if (bot.interrupt_code) {
             break;
@@ -499,6 +514,7 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
             else if (mc.mustCollectManually(blockType)) {
                 await goToPosition(bot, block.position.x, block.position.y, block.position.z, 2);
                 await bot.dig(block);
+                await waitForItemDrop(bot, block.position);
                 await pickupNearbyItems(bot);
                 success = true;
             }
@@ -526,6 +542,35 @@ export async function collectBlock(bot, blockType, num=1, exclude=null) {
     }
     log(bot, `Collected ${collected} ${blockType}.`);
     return collected > 0;
+}
+
+async function waitForItemDrop(bot, position, timeoutMs = 1500) {
+    const isDropNearBlock = entity =>
+        entity?.name === 'item' &&
+        entity.position &&
+        entity.position.distanceTo(position) <= 4;
+
+    const hasNearbyDrop = () => Object.values(bot.entities).some(isDropNearBlock);
+    if (hasNearbyDrop()) return true;
+
+    return await new Promise(resolve => {
+        let timer;
+        const finish = found => {
+            clearTimeout(timer);
+            bot.removeListener('entitySpawn', onEntitySpawn);
+            resolve(found);
+        };
+        const onEntitySpawn = entity => {
+            if (isDropNearBlock(entity)) finish(true);
+        };
+
+        bot.on('entitySpawn', onEntitySpawn);
+        timer = setTimeout(() => finish(false), timeoutMs);
+
+        // Recheck after subscribing so a drop arriving between the first
+        // check and listener registration cannot be missed.
+        if (hasNearbyDrop()) finish(true);
+    });
 }
 
 export async function pickupNearbyItems(bot) {
