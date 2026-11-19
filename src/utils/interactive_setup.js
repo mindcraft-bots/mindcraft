@@ -581,3 +581,87 @@ export async function runInteractiveSetup(force = false) {
         rl.close();
     }
 }
+
+/**
+ * Prompts the user on startup: "Press 'e' for setup or press [Enter] to run..."
+ * Automatically runs after countdown or on Enter.
+ * Launches setup immediately if 'e' is pressed.
+ * @param {number} countdownSeconds
+ * @returns {Promise<'setup'|'run'>}
+ */
+export async function promptStartupChoice(countdownSeconds = 5) {
+    if (!input.isTTY || process.env.CI || process.env.NON_INTERACTIVE) {
+        return 'run';
+    }
+
+    return new Promise((resolve) => {
+        let timer = null;
+        let remaining = countdownSeconds;
+
+        const cleanup = () => {
+            if (timer) clearInterval(timer);
+            if (input.isTTY && input.setRawMode) {
+                try { input.setRawMode(false); } catch {}
+            }
+            input.pause();
+        };
+
+        const render = () => {
+            output.write(`\r\x1b[36m[Doombots]\x1b[0m Press \x1b[1m\x1b[33m'e'\x1b[0m for setup or press \x1b[1m\x1b[32m[Enter]\x1b[0m to run (auto-run in ${remaining}s)... `);
+        };
+
+        render();
+
+        timer = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                cleanup();
+                output.write('\n');
+                resolve('run');
+            } else {
+                render();
+            }
+        }, 1000);
+
+        if (input.setRawMode) {
+            try {
+                input.setRawMode(true);
+                input.resume();
+                input.setEncoding('utf8');
+
+                const onData = (chunk) => {
+                    const str = String(chunk);
+                    if (str === '\u0003') { // Ctrl+C
+                        cleanup();
+                        output.write('\n');
+                        process.exit(0);
+                    } else if (str.toLowerCase() === 'e') {
+                        cleanup();
+                        input.removeListener('data', onData);
+                        output.write('\n');
+                        resolve('setup');
+                    } else if (str === '\r' || str === '\n' || str === ' ') {
+                        cleanup();
+                        input.removeListener('data', onData);
+                        output.write('\n');
+                        resolve('run');
+                    }
+                };
+
+                input.on('data', onData);
+                return;
+            } catch (_) {
+                // fallback below
+            }
+        }
+
+        // Fallback for environments without rawMode
+        const fallbackRl = readline.createInterface({ input, output });
+        fallbackRl.question('', (ans) => {
+            cleanup();
+            fallbackRl.close();
+            if (ans.trim().toLowerCase() === 'e') resolve('setup');
+            else resolve('run');
+        });
+    });
+}

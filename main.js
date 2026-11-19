@@ -13,7 +13,7 @@ import { hideBin } from 'yargs/helpers';
 import { readFileSync, existsSync } from 'fs';
 import { selectAPI } from './src/models/_model_map.js';
 import { hasKey, reloadKeys, getAvailableProviders } from './src/utils/keys.js';
-import { runInteractiveSetup } from './src/utils/interactive_setup.js';
+import { runInteractiveSetup, promptStartupChoice } from './src/utils/interactive_setup.js';
 import { printDashboard } from './src/utils/dashboard.js';
 
 function parseArguments() {
@@ -45,6 +45,11 @@ function parseArguments() {
         .option('setup', {
             type: 'boolean',
             describe: 'Alias for --configure'
+        })
+        .option('now', {
+            type: 'boolean',
+            alias: ['y', 'yes'],
+            describe: 'Skip startup prompt and run immediately'
         })
         .help()
         .alias('help', 'h')
@@ -138,10 +143,19 @@ try {
     if (providers.length === 0) needsKey = true;
 }
 
-if (wantsConfigure || (needsKey && process.stdin.isTTY)) {
-    if (needsKey && !wantsConfigure) {
-        console.log('\n[Doombots] No API key detected for the selected model.');
+let shouldRunSetup = wantsConfigure;
+
+if (needsKey && process.stdin.isTTY) {
+    console.log('\n[Doombots] No API key detected for the selected model.');
+    shouldRunSetup = true;
+} else if (!wantsConfigure && !args.now && process.stdin.isTTY) {
+    const choice = await promptStartupChoice(5);
+    if (choice === 'setup') {
+        shouldRunSetup = true;
     }
+}
+
+if (shouldRunSetup) {
     await runInteractiveSetup(true);
     reloadKeys();
     try {
