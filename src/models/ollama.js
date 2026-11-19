@@ -3,7 +3,7 @@ import { strictFormat } from '../utils/text.js';
 export class Ollama {
     static prefix = 'ollama';
     constructor(model_name, url, params) {
-        this.model_name = model_name;
+        this.model_name = model_name || 'qwen2.5:0.5b';
         this.params = params;
         this.url = (url || process.env.OLLAMA_HOST || 'http://127.0.0.1:11434').replace(/\/+$/, '');
         this.chat_endpoint = '/api/chat';

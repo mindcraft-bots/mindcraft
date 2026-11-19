@@ -1,6 +1,6 @@
 {
     "name": "andy",
-    "model": "groq/llama-3.3-70b-versatile",
+    "model": "ollama/qwen2.5:0.5b",
     "cooldown": 0,
     "fast_mode": true,
     "low_memory_mode": true,
