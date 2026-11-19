@@ -196,19 +196,16 @@ export function initBot(username) {
         }
     });
 
-    // Send player_loaded packet on 1.21.2+ servers to finish joining/spawning without hanging
-    let playerLoadedSent = false;
+    // Send player_loaded packet on 1.21.2+ servers so the server finalizes spawning
+    let hasSpawned = false;
     const sendPlayerLoaded = () => {
-        if (playerLoadedSent) return;
         try {
             if (bot._client && bot._client.state === 'play') {
                 const hasPlayerLoaded = Boolean(
-                    bot._client.serializer?.types?.packet_player_loaded ||
-                    bot._client.serializer?.proto?.play?.toServer?.types?.packet_player_loaded ||
-                    bot.registry?.protocol?.play?.toServer?.types?.packet_player_loaded
+                    bot.registry?.protocol?.play?.toServer?.types?.packet_player_loaded ||
+                    (bot.registry?.version && bot.registry.version['>='] && bot.registry.version['>=']('1.21.2'))
                 );
                 if (hasPlayerLoaded) {
-                    playerLoadedSent = true;
                     bot._client.write('player_loaded', {});
                 }
             }
@@ -217,17 +214,41 @@ export function initBot(username) {
         }
     };
 
-    bot._client.on('chunk_batch_finished', sendPlayerLoaded);
-    bot._client.on('position', sendPlayerLoaded);
-    bot.on('spawn', sendPlayerLoaded);
+    // When the server sends player position and chunks, ensure player_loaded is sent
+    // and guarantee the bot transitions out of the joining state
+    bot._client.on('position', () => {
+        sendPlayerLoaded();
+        if (!hasSpawned) {
+            setTimeout(() => {
+                if (!hasSpawned && bot._client && bot._client.state === 'play') {
+                    console.log('[mcdata] [LoginGuard] Position confirmed in world. Finalizing spawn transition...');
+                    sendPlayerLoaded();
+                    if (bot.health === undefined) bot.health = 20;
+                    if (bot.food === undefined) bot.food = 20;
+                    hasSpawned = true;
+                    bot.emit('spawn');
+                }
+            }, 800);
+        }
+    });
+
+    bot._client.on('chunk_batch_finished', () => {
+        if (!hasSpawned) sendPlayerLoaded();
+    });
+
+    bot.once('spawn', () => {
+        hasSpawned = true;
+        sendPlayerLoaded();
+    });
+
     bot.on('respawn', () => {
-        playerLoadedSent = false;
+        hasSpawned = false;
         sendPlayerLoaded();
     });
 
     bot.once('login', () => {
         sendPlayerLoaded();
-        mc_version = resolveJavaVersion(bot.version);
+        mc_version = resolveJavaVersion(bot.version || settings.minecraft_version || '1.21.4');
         mcdata = minecraftData(mc_version) || minecraftData('1.21.4');
         Item = prismarine_items(mc_version) || prismarine_items('1.21.4');
     });

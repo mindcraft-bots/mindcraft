@@ -131,15 +131,23 @@ export class Agent {
                 lower.includes('register <password>') || 
                 lower.includes('login <password>') || 
                 lower.includes('use /register') || 
-                lower.includes('use /login')
+                lower.includes('use /login') ||
+                lower.includes('/reg ') ||
+                lower.includes('/l ') ||
+                lower.includes('please register') ||
+                lower.includes('please login')
             ) {
                 const pass = settings.server_password || 'DoombotPass123';
-                if (lower.includes('register')) {
+                if (lower.includes('register') || lower.includes('/reg ') || lower.includes('please register')) {
                     console.log(`[LoginGuard] Server requested registration. Auto-registering...`);
-                    try { this.bot.chat(`/register ${pass} ${pass}`); } catch {}
-                } else if (lower.includes('login')) {
+                    setTimeout(() => {
+                        try { this.bot.chat(`/register ${pass} ${pass}`); } catch {}
+                    }, 250);
+                } else if (lower.includes('login') || lower.includes('/l ') || lower.includes('please login')) {
                     console.log(`[LoginGuard] Server requested login. Auto-authenticating...`);
-                    try { this.bot.chat(`/login ${pass}`); } catch {}
+                    setTimeout(() => {
+                        try { this.bot.chat(`/login ${pass}`); } catch {}
+                    }, 250);
                 }
             }
         };
@@ -147,6 +155,12 @@ export class Agent {
         this.bot.on('messagestr', handleAuthPrompt);
         this.bot.on('title', handleAuthPrompt);
         this.bot.on('actionBar', handleAuthPrompt);
+        this.bot._client.on('systemChat', (packet) => {
+            try { handleAuthPrompt(packet?.formattedMessage || packet?.message); } catch {}
+        });
+        this.bot._client.on('playerChat', (packet) => {
+            try { handleAuthPrompt(packet?.formattedMessage || packet?.message); } catch {}
+        });
 
 		const spawnTimeoutDuration = settings.spawn_timeout || 90;
         const spawnTimeout = setTimeout(() => {
