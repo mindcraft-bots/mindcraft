@@ -10,9 +10,9 @@ import { plugin as collectblock } from 'mineflayer-collectblock';
 import { plugin as autoEat } from 'mineflayer-auto-eat';
 import plugin from 'mineflayer-armor-manager';
 const armorManager = plugin;
-let mc_version = settings.minecraft_version;
-let mcdata = null;
-let Item = null;
+let mc_version = resolveJavaVersion(settings.minecraft_version || '1.21.4');
+let mcdata = minecraftData(mc_version) || minecraftData('1.21.4');
+let Item = prismarine_items(mc_version) || prismarine_items('1.21.4');
 
 /**
  * @typedef {string} ItemName
