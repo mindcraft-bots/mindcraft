@@ -38,9 +38,9 @@ const ERROR_DEFINITIONS = {
         isFatal: false
     },
     'behavior': {
-        keywords: ['flying', 'spam', 'speed'],
-        msg: 'Kicked: Removed from server due to flying, spamming, or invalid movement.',
-        isFatal: true
+        keywords: ['flying', 'spam', 'speed', 'invalid move player', 'invalid_player_movement'],
+        msg: 'Movement Notice: Server movement synchronization adjusted by LoginGuard.',
+        isFatal: false
     }
 };
 

@@ -109,34 +109,67 @@ export function initBot(username) {
         console.log(`[mcdata] [LoginGuard] TCP connection established to ${options.host}:${options.port}. Sending login handshake (compatible with ViaVersion / ViaBackwards / Geyser)...`);
     });
 
-    // Throttle position packets to avoid kicks on Paper/Spigot servers
-    // Paper enforces stricter packet rate limits than vanilla, causing ECONNRESET
-    // when mineflayer sends position updates faster than 50ms apart
-    let lastPositionUpdate = 0;
-    let pendingPositionPacket = null;
-    const POSITION_THROTTLE_MS = 50;
+    // Check if the protocol supports packet_tick_end (Minecraft 1.21.2+ / 1.21.3+ / 1.21.4 / 26.x)
+    // In 1.21.2+, the server enforces a strict one-position-packet-per-tick rule and only clears
+    // its receivedPositionThisTick flag upon receiving packet_tick_end.
+    // Without tick_end, the second position packet ever sent kicks the bot with:
+    // "multiplayer.disconnect.invalid_player_movement" ("invalid move player packet received").
+    let sentPositionThisTick = false;
+    const supportsTickEnd = () => Boolean(
+        bot.registry?.protocol?.play?.toServer?.types?.packet_tick_end ||
+        (bot.registry?.version && bot.registry.version['>='] && bot.registry.version['>=']('1.21.2')) ||
+        (bot.version && (bot.version.startsWith('1.21.3') || bot.version.startsWith('1.21.4') || bot.version.startsWith('1.21.5') || bot.version.startsWith('26.')))
+    );
+
     const originalWrite = bot._client.write.bind(bot._client);
     bot._client.write = function(name, data) {
-        if (name === 'position' || name === 'position_look' || name === 'look') {
-            const now = Date.now();
-            if (now - lastPositionUpdate < POSITION_THROTTLE_MS) {
-                // Keep the latest position packet so the freshest position is sent
-                if (pendingPositionPacket) clearTimeout(pendingPositionPacket);
-                pendingPositionPacket = setTimeout(() => {
-                    pendingPositionPacket = null;
-                    lastPositionUpdate = Date.now();
-                    originalWrite(name, data);
-                }, POSITION_THROTTLE_MS - (now - lastPositionUpdate));
-                return;
-            }
-            lastPositionUpdate = now;
-            if (pendingPositionPacket) {
-                clearTimeout(pendingPositionPacket);
-                pendingPositionPacket = null;
+        if (supportsTickEnd()) {
+            if (name === 'position' || name === 'position_look' || name === 'look' || name === 'flying') {
+                // Validate coordinates and pitch to prevent server invalid movement kicks
+                if (data) {
+                    if (data.x !== undefined && (!Number.isFinite(data.x) || Number.isNaN(data.x))) return;
+                    if (data.y !== undefined && (!Number.isFinite(data.y) || Number.isNaN(data.y))) return;
+                    if (data.z !== undefined && (!Number.isFinite(data.z) || Number.isNaN(data.z))) return;
+                    if (data.pitch !== undefined) {
+                        if (!Number.isFinite(data.pitch) || Number.isNaN(data.pitch)) data.pitch = 0;
+                        else if (data.pitch > 90) data.pitch = 90;
+                        else if (data.pitch < -90) data.pitch = -90;
+                    }
+                    if (data.yaw !== undefined && (!Number.isFinite(data.yaw) || Number.isNaN(data.yaw))) {
+                        data.yaw = 0;
+                    }
+                }
+
+                // If a position-bearing packet was already sent during this tick without a tick_end,
+                // close the previous tick first so the server clears its receivedPositionThisTick flag
+                if (sentPositionThisTick) {
+                    try {
+                        originalWrite('tick_end', {});
+                    } catch {}
+                    sentPositionThisTick = false;
+                }
+                sentPositionThisTick = true;
+            } else if (name === 'tick_end') {
+                sentPositionThisTick = false;
             }
         }
         return originalWrite(name, data);
     };
+
+    const sendTickEnd = () => {
+        if (supportsTickEnd() && bot._client && bot._client.state === 'play') {
+            try {
+                originalWrite('tick_end', {});
+            } catch {}
+            sentPositionThisTick = false;
+        }
+    };
+
+    // Send tick_end at the end of each physics tick to reset server's receivedPositionThisTick flag
+    bot.on('physicsTick', sendTickEnd);
+
+    // Send tick_end immediately after teleport confirmation (forcedMove) to prevent collision with physics tick
+    bot.on('forcedMove', sendTickEnd);
 
     // Suppress PartialReadError and non-critical packet errors
     // Paper servers and cross-play proxies sometimes send packets that node-minecraft-protocol
