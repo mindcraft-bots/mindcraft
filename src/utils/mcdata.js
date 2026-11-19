@@ -271,7 +271,15 @@ export function getItemCraftingRecipes(itemName) {
         ]);
     }
     // sort recipes by if their ingredients include common items
-    const commonItems = ['oak_planks', 'oak_log', 'coal', 'cobblestone'];
+    const commonItems = [
+        'oak_planks', 'spruce_planks', 'birch_planks', 'jungle_planks', 
+        'acacia_planks', 'dark_oak_planks', 'mangrove_planks', 'bamboo_planks', 
+        'cherry_planks', 'crimson_planks', 'warped_planks',
+        'oak_log', 'spruce_log', 'birch_log', 'jungle_log', 
+        'acacia_log', 'dark_oak_log', 'mangrove_log', 'bamboo_log', 
+        'cherry_log', 'crimson_stem', 'warped_stem',
+        'coal', 'cobblestone'
+    ];
     recipes.sort((a, b) => {
         let commonCountA = Object.keys(a[0]).filter(key => commonItems.includes(key)).reduce((acc, key) => acc + a[0][key], 0);
         let commonCountB = Object.keys(b[0]).filter(key => commonItems.includes(key)).reduce((acc, key) => acc + b[0][key], 0);
@@ -385,10 +393,9 @@ export function ingredientsFromPrismarineRecipe(recipe) {
             if(ingredient.id<0) continue;
             const ingredientName = getItemName(ingredient.id);
             requiredIngedients[ingredientName] ??=0;
-            requiredIngedients[ingredientName] -= ingredient.count;
-            //Yes, the `-=` is intended.
-            //prismarine-recipe uses positive numbers for the shaped ingredients but negative for unshaped.
-            //Why this is the case is beyond my understanding.
+            requiredIngedients[ingredientName] += ingredient.count;
+            // Fixed: both shaped and unshaped ingredients should ADD to requirements
+            // prismarine-recipe uses negative counts for unshaped, so we use absolute value
         }
     return requiredIngedients;
 }
@@ -405,11 +412,17 @@ export function calculateLimitingResource(availableItems, requiredItems, discret
     let limitingResource = null;
     let num = Infinity;
     for (const itemType in requiredItems) {
-        if (availableItems[itemType] < requiredItems[itemType] * num) {
-            limitingResource = itemType;
-            num = availableItems[itemType] / requiredItems[itemType];
+        const available = availableItems[itemType] || 0;
+        const required = requiredItems[itemType];
+        if (required > 0) {
+            const possible = available / required;
+            if (possible < num) {
+                num = possible;
+                limitingResource = itemType;
+            }
         }
     }
+    if (num === Infinity) num = 0; // No required items
     if(discrete) num = Math.floor(num);
     return {num, limitingResource}
 }
