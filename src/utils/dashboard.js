@@ -28,13 +28,19 @@ function stringWidth(str) {
     return width;
 }
 
+export function clearTerminal() {
+    try {
+        process.stdout.write('\x1b[2J\x1b[3J\x1b[H\x1bc');
+    } catch {
+        try {
+            console.clear();
+        } catch {}
+    }
+}
+
 export function printDashboard(settings, profileData = {}) {
     // Clear terminal screen cleanly
-    try {
-        process.stdout.write('\x1Bc');
-    } catch {
-        console.clear();
-    }
+    clearTerminal();
 
     const cyan = '\x1b[36m';
     const green = '\x1b[32m';
@@ -52,7 +58,7 @@ export function printDashboard(settings, profileData = {}) {
         port = 25565;
     }
     const serverTarget = `${host}:${port}`;
-    const agentName = profileData.name || settings.profile?.name || 'Andy';
+    const agentName = profileData.name || settings.profile?.name || 'Doombot';
     const modelTarget = profileData.model || settings.profile?.model || 'openai/gpt-4o';
     const mindPort = settings.mindserver_port || 8080;
     const protocolVersion = '1.21.4';

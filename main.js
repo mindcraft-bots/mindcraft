@@ -1,6 +1,6 @@
 // Clear terminal immediately when software is run
 try {
-    process.stdout.write('\x1Bc');
+    process.stdout.write('\x1b[2J\x1b[3J\x1b[H\x1bc');
 } catch {
     console.clear();
 }
@@ -121,13 +121,18 @@ if (process.env.SETTINGS_JSON) {
 // Interactive terminal setup wizard
 const wantsConfigure = args.configure || args.setup || process.env.CONFIGURE === 'true';
 
+let firstProfileData = {};
+try {
+    if (settings.profiles && settings.profiles[0] && existsSync(settings.profiles[0])) {
+        firstProfileData = JSON.parse(readFileSync(settings.profiles[0], 'utf8'));
+    }
+} catch {}
+
 let needsKey = false;
 reloadKeys();
 try {
-    const firstProfile = settings.profiles[0];
-    if (firstProfile && existsSync(firstProfile)) {
-        const profileData = JSON.parse(readFileSync(firstProfile, 'utf8'));
-        const modelProfile = selectAPI(profileData.model);
+    if (firstProfileData.model) {
+        const modelProfile = selectAPI(firstProfileData.model);
         const localApis = ['ollama', 'vllm', 'lmstudio'];
         if (!localApis.includes(modelProfile.api)) {
             if (!hasKey(modelProfile.api)) {
@@ -143,10 +148,13 @@ try {
     if (providers.length === 0) needsKey = true;
 }
 
+// Print dashboard banner and status immediately so the user sees the Doombots interface
+printDashboard(settings, firstProfileData);
+
 let shouldRunSetup = wantsConfigure;
 
 if (needsKey && process.stdin.isTTY) {
-    console.log('\n[Doombots] No API key detected for the selected model.');
+    console.log('\n\x1b[33m[Doombots]\x1b[0m No API key detected for the selected model.');
     shouldRunSetup = true;
 } else if (!wantsConfigure && !args.now && process.stdin.isTTY) {
     const choice = await promptStartupChoice(5);
@@ -164,16 +172,13 @@ if (shouldRunSetup) {
             Object.assign(settings, savedConfig);
         }
     } catch {}
+    try {
+        if (settings.profiles && settings.profiles[0] && existsSync(settings.profiles[0])) {
+            firstProfileData = JSON.parse(readFileSync(settings.profiles[0], 'utf8'));
+        }
+    } catch {}
+    printDashboard(settings, firstProfileData);
 }
-
-let firstProfileData = {};
-try {
-    if (settings.profiles && settings.profiles[0] && existsSync(settings.profiles[0])) {
-        firstProfileData = JSON.parse(readFileSync(settings.profiles[0], 'utf8'));
-    }
-} catch {}
-
-printDashboard(settings, firstProfileData);
 
 Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui);
 

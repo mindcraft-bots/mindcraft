@@ -446,8 +446,8 @@ export async function runInteractiveSetup(force = false) {
         }
 
         // 3. Ask for Bot Name
-        const botNameAns = await rl.question('Enter Bot Name in Minecraft [andy]: ');
-        const botName = botNameAns.trim() || 'andy';
+        const botNameAns = await rl.question('Enter Bot Name in Minecraft [Doombot]: ');
+        const botName = botNameAns.trim() || 'Doombot';
 
         // 4. Server Host
         const hostAns = await rl.question('Minecraft Server Host [127.0.0.1]: ');

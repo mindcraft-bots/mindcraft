@@ -38,11 +38,7 @@ export async function init(host_public=false, port=8080, auto_open_ui=true) {
 
 export async function createAgent(settings) {
     if (!settings.profile.name) {
-        console.error('Agent name is required in profile');
-        return {
-            success: false,
-            error: 'Agent name is required in profile'
-        };
+        settings.profile.name = 'Doombot';
     }
     settings = JSON.parse(JSON.stringify(settings));
     let agent_name = settings.profile.name;

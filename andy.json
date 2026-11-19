@@ -1,5 +1,5 @@
 {
-    "name": "andy",
+    "name": "Doombot",
     "model": "ollama/qwen2.5:0.5b",
     "cooldown": 0,
     "fast_mode": true,
