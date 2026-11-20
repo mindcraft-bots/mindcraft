@@ -1,5 +1,7 @@
 {
-    "name": "mindcraft",
+    "name": "doombots",
+    "description": "Autonomous AI Minecraft Agent Platform with Multi-Version Cross-Play Engine & Local/Cloud LLM Support",
+    "version": "1.0.0",
     "type": "module",
     "dependencies": {
         "@anthropic-ai/sdk": "^0.17.1",
