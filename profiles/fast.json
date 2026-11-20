@@ -1,6 +1,6 @@
 {
     "name": "Doombot",
-    "model": "groq/llama-3.3-70b-versatile",
+    "model": "groq/openai/gpt-oss-120b",
     "cooldown": 0,
     "max_tokens": 2048,
     "params": {

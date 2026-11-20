@@ -132,7 +132,7 @@ For near-instant sub-second bot reactions on low-spec hardware (Chromebooks, lap
 | Provider | Model Flag / ID | Key Env Variable | Speed / Feature |
 | :--- | :--- | :--- | :--- |
 | **Ollama (Local)** | `ollama/qwen2.5:0.5b` | *None needed* | 100% offline, default, privacy-first |
-| **GroqCloud** | `groq/llama-3.3-70b-versatile` | `GROQCLOUD_API_KEY` | Ultra-fast (~0.3s responses, free tier) |
+| **GroqCloud** | `groq/openai/gpt-oss-120b` | `GROQCLOUD_API_KEY` | Ultra-fast (~0.3s responses, free tier) |
 | **Cerebras** | `cerebras/llama-3.3-70b` | `CEREBRAS_API_KEY` | World-record inference (1000+ tok/s) |
 | **SambaNova** | `sambanova/Meta-Llama-3.3-70B-Instruct` | `SAMBANOVA_API_KEY` | Blazing SN40L hardware speed |
 | **Together AI** | `together/meta-llama/Llama-3.3-70B-Instruct-Turbo` | `TOGETHER_API_KEY` | Fast open models & Turbo Llama |

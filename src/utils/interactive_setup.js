@@ -15,7 +15,7 @@ export const PROVIDERS = [
         name: 'GroqCloud',
         desc: 'Ultra-fast inference with free tier (Recommended)',
         keyName: 'GROQCLOUD_API_KEY',
-        defaultModel: 'groq/llama-3.3-70b-versatile'
+        defaultModel: 'groq/openai/gpt-oss-120b'
     },
     {
         name: 'Cerebras',

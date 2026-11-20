@@ -39,7 +39,7 @@ export class GroqCloudAPI {
             this.params.max_completion_tokens = 4000;
         }
 
-        const model = this.model_name || 'llama-3.3-70b-versatile';
+        const model = this.model_name || 'openai/gpt-oss-120b';
         const pack = {
             messages,
             model,
@@ -51,7 +51,7 @@ export class GroqCloudAPI {
         const maxRetries = getKeyCount('GROQCLOUD_API_KEY') > 1 ? 2 : 1;
         for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                console.log(`Awaiting Groq response (${model})...`);
+                console.log(`Awaiting Groq response (${pack.model})...`);
                 let completion = await this.groq.chat.completions.create(pack);
                 let res = completion.choices[0]?.message?.content || '';
                 res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
@@ -65,11 +65,26 @@ export class GroqCloudAPI {
                     continue;
                 }
                 const isNotFound = err?.status === 404 || err?.message?.includes('model_not_found') || err?.message?.includes('does not exist') || err?.message?.includes('decommissioned');
-                if (isNotFound && pack.model !== 'llama-3.1-8b-instant') {
-                    console.warn(`[Groq] Model ${pack.model} not available, falling back to llama-3.1-8b-instant...`);
-                    pack.model = 'llama-3.1-8b-instant';
-                    attempt--;
-                    continue;
+                if (isNotFound) {
+                    let nextModel = null;
+                    try {
+                        const modelList = await this.groq.models.list();
+                        const candidate = modelList?.data?.find(m => 
+                            (m.id.includes('gpt-oss') || m.id.includes('qwen') || m.id.includes('llama')) && m.id !== pack.model
+                        );
+                        if (candidate) nextModel = candidate.id;
+                    } catch {}
+                    if (!nextModel) {
+                        const fallbacks = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.8-27b'];
+                        nextModel = fallbacks.find(m => m !== pack.model);
+                    }
+                    if (nextModel && nextModel !== pack.model) {
+                        console.warn(`[Groq] Model ${pack.model} not available, switching to active model ${nextModel}...`);
+                        this.model_name = nextModel;
+                        pack.model = nextModel;
+                        attempt--;
+                        continue;
+                    }
                 }
                 if (err.message && err.message.includes('content must be a string')) {
                     return 'Vision is only supported by certain models.';
