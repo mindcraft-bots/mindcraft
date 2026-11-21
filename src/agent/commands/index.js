@@ -2,6 +2,7 @@ import { getBlockId, getItemId } from "../../utils/mcdata.js";
 import { actionsList } from './actions.js';
 import { queryList } from './queries.js';
 import { parseOptionalCoordinate } from '../../utils/schematic/paths.js';
+import settings from '../settings.js';
 
 let suppressNoDomainWarning = true;
 
@@ -53,7 +54,8 @@ export function containsCommand(message) {
 export function commandExists(commandName) {
     if (!commandName.startsWith("!"))
         commandName = "!" + commandName;
-    return commandMap[commandName] !== undefined;
+    return commandMap[commandName] !== undefined
+        && (commandName !== '!newAction' || settings.allow_insecure_coding === true);
 }
 
 /**
@@ -119,7 +121,7 @@ export function parseCommandMessage(message) {
     else args = [];
 
     const command = getCommand(commandName);
-    if(!command) return `${commandName} is not a command.`
+    if(!command || !commandExists(commandName)) return `${commandName} is not an available command.`
 
     const params = commandParams(command);
     const paramNames = commandParamNames(command);
@@ -255,6 +257,10 @@ export async function executeCommand(agent, message) {
     if (typeof parsed === 'string')
         return parsed; //The command was incorrectly formatted or an invalid input was given.
     else {
+        if (agent.blocked_actions?.includes(parsed.commandName)
+            && !['!stop', '!stats', '!inventory', '!goal'].includes(parsed.commandName)) {
+            return `${parsed.commandName} is blocked by this agent configuration.`;
+        }
         console.log('parsed command:', parsed);
         const command = getCommand(parsed.commandName);
         let numArgs = 0;
@@ -286,6 +292,9 @@ export function getCommandDocs(agent) {
     Use the commands with the syntax: !commandName or !commandName("arg1", 1.2, ...) if the command takes arguments.\n
     Do not use codeblocks. Use double quotes for strings. Only use one command in each response, trailing commands and comments will be ignored.\n`;
     for (let command of commandList) {
+        if (command.name === '!newAction' && settings.allow_insecure_coding !== true) {
+            continue;
+        }
         if (agent.blocked_actions.includes(command.name)) {
             continue;
         }

@@ -17,6 +17,7 @@ import settings from './settings.js';
 import { Task } from './tasks/tasks.js';
 import { speak } from './speak.js';
 import { log, validateNameFormat, handleDisconnection } from './connection_handler.js';
+import { dispatchAddressedSchematicRequest, parseChatAddress, parseAddressedChatCommand, redactCommandFragments } from './schematic_request.js';
 
 export class Agent {
     async start(load_mem=false, init_message=null, count_id=0) {
@@ -157,6 +158,8 @@ export class Agent {
         const respondFunc = async (username, message) => {
             if (message === "") return;
             if (username === this.name) return;
+            // This source label is reserved for internal prompts, not Minecraft players.
+            if (username === 'system') return;
             if (settings.only_chat_with.length > 0 && !settings.only_chat_with.includes(username)) return;
             try {
                 if (ignore_messages.some((m) => message.startsWith(m))) return;
@@ -166,12 +169,12 @@ export class Agent {
                 console.log(this.name, 'received message from', username, ':', message);
 
                 if (convoManager.isOtherAgent(username)) {
-                    console.warn('received whisper from other bot??')
+                    console.warn('Ignoring public chat from a configured bot peer.');
+                    return;
                 }
-                else {
-                    let translation = await handleEnglishTranslation(message);
-                    this.handleMessage(username, translation);
-                }
+
+                let translation = await handleEnglishTranslation(message);
+                await this.handleMessage(username, translation);
             } catch (error) {
                 console.error('Error handling message:', error);
             }
@@ -268,10 +271,40 @@ export class Agent {
 
         const self_prompt = source === 'system' || source === this.name;
         const from_other_bot = convoManager.isOtherAgent(source);
+        const commandSenders = settings.trusted_command_senders;
+        const trustedCommandSender = self_prompt || (!from_other_bot
+            && (Array.isArray(commandSenders) ? commandSenders.includes(source) : true));
+
+        if (!self_prompt) {
+            const addressPeers = [...(settings.known_bot_peers || []), ...convoManager.getInGameAgents()];
+            const address = parseChatAddress(message, this.name, addressPeers);
+            if (address && address.addressedTo !== this.name) return true;
+            const routedSchematic = await dispatchAddressedSchematicRequest(this, source, message, {
+                agentName: this.name,
+                knownBotPeers: addressPeers,
+                trusted: trustedCommandSender,
+            });
+            if (routedSchematic) return true;
+
+            const addressedCommand = parseAddressedChatCommand(message, this.name, addressPeers);
+            if (addressedCommand) {
+                if (addressedCommand.addressedTo !== this.name) return true;
+                message = addressedCommand.command;
+            }
+        }
 
         if (!self_prompt && !from_other_bot) { // from user, check for forced commands
             const user_command_name = containsCommand(message);
             if (user_command_name) {
+                if (!message.trimStart().startsWith(user_command_name)
+                    || truncCommandMessage(message).trimEnd() !== message.trimEnd()) {
+                    await this.routeResponse(source, 'Command fragments embedded in chat are not executed. Send only a complete command, optionally addressed to this bot.');
+                    return false;
+                }
+                if (!trustedCommandSender) {
+                    await this.routeResponse(source, 'Chat commands are restricted to configured trusted command senders.');
+                    return false;
+                }
                 if (!commandExists(user_command_name)) {
                     this.routeResponse(source, `Command '${user_command_name}' does not exist.`);
                     return false;
@@ -282,6 +315,7 @@ export class Agent {
                     // add the preceding message to the history to give context for newAction
                     this.history.add(source, message);
                 }
+                this.self_prompter.handleUserPromptedCmd(false, isAction(user_command_name));
                 let execute_res = await executeCommand(this, message);
                 if (execute_res) 
                     this.routeResponse(source, execute_res);
@@ -291,6 +325,11 @@ export class Agent {
 
         if (from_other_bot)
             this.last_sender = source;
+
+        // Do not pass executable command snippets from known bot peers into inference/history.
+        if (from_other_bot && containsCommand(message)) {
+            message = message.replace(/!(\w+)(?:\([^\r\n)]*(?:\)|$))?/g, '[command fragment omitted from peer message]');
+        }
 
         // Now translate the message
         message = await handleEnglishTranslation(message);
@@ -329,6 +368,15 @@ export class Agent {
             let command_name = containsCommand(res);
 
             if (command_name) { // contains query or command
+                if (!trustedCommandSender) {
+                    await this.routeResponse(source, 'Chat commands are restricted to configured trusted command senders.');
+                    break;
+                }
+                const completeCommand = truncCommandMessage(res);
+                if (res.slice(completeCommand.length).trimStart().startsWith('(')) {
+                    this.history.add('system', 'Incomplete or malformed command arguments were not executed.');
+                    break;
+                }
                 res = truncCommandMessage(res); // everything after the command is ignored
                 this.history.add(this.name, res);
                 
@@ -392,7 +440,7 @@ export class Agent {
 
         if (convoManager.isOtherAgent(to_player) && convoManager.inConversation(to_player)) {
             // if we're in an ongoing conversation with the other bot, send the response to it
-            convoManager.sendToBot(to_player, message);
+            convoManager.sendToBot(to_player, redactCommandFragments(message));
         }
         else {
             // otherwise, use open chat
@@ -402,6 +450,9 @@ export class Agent {
     }
 
     async openChat(message) {
+        if ((settings.known_bot_peers || []).length > 0) {
+            message = redactCommandFragments(message);
+        }
         let to_translate = message;
         let remaining = '';
         let command_name = containsCommand(message);

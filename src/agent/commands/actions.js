@@ -34,7 +34,7 @@ export const actionsList = [
         },
         perform: async function(agent, prompt) {
             // just ignore prompt - it is now in context in chat history
-            if (!settings.allow_insecure_coding) { 
+            if (settings.allow_insecure_coding !== true) {
                 agent.openChat('newAction is disabled. Enable with allow_insecure_coding=true in settings.js');
                 return "newAction not allowed! Code writing is disabled in settings. Notify the user.";
             }

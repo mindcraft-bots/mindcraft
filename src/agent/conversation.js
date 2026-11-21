@@ -202,7 +202,8 @@ class ConversationManager {
     }
 
     isOtherAgent(name) {
-        return agent_names.some((n) => n === name);
+        return agent_names.some((n) => n === name)
+            || (settings.known_bot_peers || []).some((n) => n === name);
     }
 
     otherAgentInGame(name) {

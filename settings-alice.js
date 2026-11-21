@@ -37,6 +37,8 @@ const settings = {
     "load_memory": false, // load memory from previous session
     "init_message": "Respond with hello world and your name", // sends to all on spawn
     "only_chat_with": [], // users that the bots listen to and send general messages to. if empty it will chat publicly
+    "known_bot_peers": ["Andy"], // usernames reserved for peer bots; they are not command issuers
+    "trusted_command_senders": ["Sunny26639"], // Sole observed human operator; explicitly add other trusted players. Offline names can be spoofed.
 
     // "speak": false,
     "speak": "system",
