@@ -1,5 +1,6 @@
 {
   "name": "Andy",
+  "skin": "viltrumite",
   "model": {
     "api": "ollama",
     "model": "sweaterdog/andy-4:micro-q8_0",
