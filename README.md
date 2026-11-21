@@ -166,6 +166,31 @@ When running in docker, if you want the bot to join your local minecraft server,
 
 To connect to an unsupported minecraft version, you can try to use [viaproxy](services/viaproxy/README.md)
 
+## Transfer reviewed updates to another Docker host
+
+Use Git to move reviewed project changes between clones rather than copying the whole working directory. Commit the intended changes, inspect the commit, then push the exact tracked branch to the intended repository/fork. On the destination, configure that clone's intended remote and branch as its Git upstream; [`scripts/update.sh`](scripts/update.sh) derives both from the current checkout and never assumes a remote name or branch. It does not push, switch branches, install dependencies, run `rsync`, or build/deploy Docker images.
+
+The script is not available in an old target clone until its first update. For that bootstrap, reconcile and back up the target manually first, review its remote/branch and all local tracked, untracked, and ignored runtime data, then use the target's normal reviewed Git procedure to obtain this script. Do not use the script to bypass that initial review. Before applying later updates, review the target host's configuration: clean tracked files can still be replaced by a fast-forward, and some tracked host-specific settings/profile files may differ from what the destination needs.
+
+From the repository root, after reviewing and backing up the destination state, the update/build/recreate chain for the two Compose bot services is:
+
+```sh
+scripts/update.sh --apply && docker compose build bot-andy bot-alice && docker compose up -d --force-recreate bot-andy bot-alice
+```
+
+Because the commands use `&&`, a blocked or failed update stops the chain before Docker build/deployment. Verify the services and inspect fresh startup logs locally:
+
+```sh
+docker compose ps bot-andy bot-alice
+docker compose logs --tail=100 bot-andy bot-alice
+```
+
+[`scripts/update.sh --check`](scripts/update.sh) is an offline check against the locally cached upstream-tracking ref; it does not contact the remote, refresh the index, or establish whether that ref is fresh. It is not an incoming-file/deployment safety preview. `--apply` fetches only the configured branch into its tracking ref, disables opportunistic ref mappings, tag updates, pruning, submodule recursion, and automatic maintenance, and only permits a clean, non-shallow, non-sparse, non-partial named checkout to fast-forward exactly to the fetched upstream commit. It refuses local changes, untracked files, ahead/diverged history, configured checkout filters, and unsafe Git states; it does not clean, reset, stash, rebase, force-push, merge-commit, or intentionally overwrite ignored files. Git's no-overwrite-ignore protection refuses ignored-path collisions, including parent directory/file/symlink collisions tested with Git 2.53.0. A general filesystem/I/O failure or interruption can still leave partial checkout changes: failure is not proof of rollback. Inspect HEAD, index, and files before retrying; do not automatically reset/clean. This is not an atomic transaction and cannot protect against unrelated processes writing to the checkout concurrently; the advisory lock coordinates only this updater in that worktree. Inspect the script's documented limitations in [`schematics/README.md`](schematics/README.md#safe-code-updates-and-docker-redeployment).
+
+Git transfers committed/tracked assets, including schematic indexes, binaries, blueprints, screenshots, source and tests. Verify intended assets are tracked (`git ls-files`) and handle Git LFS or submodules explicitly if introduced; this updater refuses submodules and LFS pointer content. Ignored files do not transfer: provision `keys.json` and other credentials securely, and intentionally migrate bot histories/state or dependencies only when needed. If using `rsync` for selected operational data, stop writers first, use a dry run, review each selected path, and never use `--delete` or blanket-copy `.git`, dependencies, credentials, or bot state. The ignored `package-lock.json` also means this workflow does not guarantee reproducible dependency resolution or image builds.
+
+The Dockerfile copies application source into the image; these two services do not bind-mount that source, so updating host source alone does not update a running container: rebuild and recreate it. The Compose file does bind-mount schematic assets, settings, profiles, credentials, and bot state from the destination host; mounted host contents take precedence over corresponding image contents at runtime. The current `.dockerignore` excludes `keys.json` but does not exclude `.git`, so Git metadata (potentially including credential-bearing remote configuration) can enter the build context/image. Review that separately before building; the updater does not change Docker-context policy. A successful Git update does not validate host configuration, secrets, bind-mounted data, or the resulting image, and it does not guarantee a safe/reproducible build. Never publish credentials or complete history/model logs when sharing status or logs.
+
 # Bot Profiles
 
 Bot profiles are json files (such as `andy.json`) that define:
