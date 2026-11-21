@@ -57,22 +57,69 @@ def file_meta(path: Path) -> dict:
             "sha256": sha256(path), "nonempty": path.stat().st_size > 0}
 
 
-def load_index(schems_dir: Path) -> dict[str, str]:
+def positive_safe_integer(raw: str, label: str, path: Path) -> int:
+    if not isinstance(raw, str) or not re.fullmatch(r"[0-9]+", raw):
+        raise ValueError(f"invalid {label} {raw!r} in {path}")
+    number = int(raw)
+    if number < 1 or number > 9007199254740991:
+        raise ValueError(f"{label} must be a positive safe integer in {path}: {raw!r}")
+    return number
+
+
+def reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key {key!r}")
+        result[key] = value
+    return result
+
+
+def load_index(schems_dir: Path) -> dict[str, tuple[int, int]]:
     path = schems_dir / "index.json"
-    if not path.is_file():
+    if not path.exists() and not path.is_symlink():
         return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
-    ids = data.get("ids", {})
-    if not isinstance(ids, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in ids.items()):
-        raise ValueError(f"invalid ids mapping in {path}")
-    for identifier, filename in ids.items():
-        if not re.fullmatch(r"[0-9]{2}-[0-9]{2}", identifier):
-            raise ValueError(f"invalid stable ID {identifier!r} in {path}; expected NN-MM")
-        if Path(filename).name != filename or Path(filename).suffix not in {".schem", ".schematic", ".litematic"}:
-            raise ValueError(f"invalid schematic filename {filename!r} in {path}")
-    if len(set(ids.values())) != len(ids):
-        raise ValueError(f"duplicate schematic filename in {path}")
-    return ids
+    packs_real = schems_dir.parent.resolve(strict=True)
+    pack_real = schems_dir.resolve(strict=True)
+    if packs_real not in pack_real.parents:
+        raise ValueError(f"pack directory resolves outside its schems directory: {schems_dir}")
+    index_real = path.resolve(strict=True)
+    if pack_real not in index_real.parents or not index_real.is_file():
+        raise ValueError(f"manifest must be a regular file contained by its pack directory: {path}")
+    data = json.loads(index_real.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicate_json_keys)
+    if not isinstance(data, dict) or set(data) != {"schemaVersion", "groups"} or data.get("schemaVersion") != 2:
+        raise ValueError(f"invalid versioned groups manifest in {path}")
+    groups = data.get("groups")
+    if not isinstance(groups, dict):
+        raise ValueError(f"groups must be an object in {path}")
+
+    mappings: dict[str, tuple[int, int]] = {}
+    normalized_groups: set[int] = set()
+    for raw_group, ids in groups.items():
+        group = positive_safe_integer(raw_group, "group", path)
+        if group in normalized_groups:
+            raise ValueError(f"duplicate normalized group {group} in {path}")
+        normalized_groups.add(group)
+        if not isinstance(ids, dict):
+            raise ValueError(f"group {raw_group!r} must map IDs to filenames in {path}")
+        normalized_ids: set[int] = set()
+        for raw_id, filename in ids.items():
+            identifier = positive_safe_integer(raw_id, "id", path)
+            if identifier in normalized_ids:
+                raise ValueError(f"duplicate normalized id {identifier} in group {group} in {path}")
+            normalized_ids.add(identifier)
+            if (not isinstance(filename, str) or not filename or filename in {".", ".."}
+                    or "\0" in filename or "/" in filename or "\\" in filename
+                    or Path(filename).name != filename
+                    or Path(filename).suffix.lower() not in {".schem", ".schematic", ".litematic"}):
+                raise ValueError(f"invalid schematic filename {filename!r} in {path}")
+            if filename in mappings:
+                raise ValueError(f"duplicate schematic filename {filename!r} in {path}")
+            candidate = (schems_dir / filename).resolve(strict=True)
+            if candidate == pack_real or pack_real not in candidate.parents or not candidate.is_file():
+                raise ValueError(f"unsafe or non-file schematic target {filename!r} in {path}")
+            mappings[filename] = (group, identifier)
+    return mappings
 
 
 def result_status(check: dict) -> str:
@@ -90,8 +137,9 @@ def make_rows(audit: dict, pack: str) -> list[str]:
         blueprint = Path(item["blueprint"]["path"])
         schematic = Path(item["schematic"]["path"])
         stem = blueprint.stem
-        identifier = item.get("stable_id")
-        selector = f"{pack}:{identifier}" if identifier else f"{pack}:{schematic.stem}"
+        group = item.get("group")
+        identifier = item.get("id")
+        selector = f"{pack}:{group}:{identifier}" if group is not None and identifier is not None else f"{pack}:{schematic.stem}"
         dimensions = item.get("dimensions")
         dim_text = "×".join(map(str, dimensions)) if dimensions else "—"
         reader = item["checks"]["production_reader"]
@@ -114,7 +162,7 @@ def make_rows(audit: dict, pack: str) -> list[str]:
         bp_link = f"[{{blueprint.name}}](../../blueprints/{pack}/{{blueprint.name}})"
         schem_link = f"[{{schematic.name}}]({{schematic.name}})"
         action_link = f"[`!buildSchematic(\"{selector}\")`](../../../src/agent/commands/actions.js:492)"
-        rows.append(f"| {item['folder']} | {title} | {bp_link} / {schem_link} | {dim_text} | {item.get('non_air_count', '—')} | {binary_text} / {determinism_text} | {reader_text} | {action_link} |".format(blueprint=blueprint, schematic=schematic))
+        rows.append(f"| {item.get('group', '—')} | {item.get('id', '—')} | {title} | {bp_link} / {schem_link} | {dim_text} | {item.get('non_air_count', '—')} | {binary_text} / {determinism_text} | {reader_text} | {action_link} |".format(blueprint=blueprint, schematic=schematic))
     return rows
 
 
@@ -129,8 +177,8 @@ def update_report(audit: dict, report: Path, pack: str) -> None:
         "",
         f"Audit timestamp: `{audit['checked_at_utc']}`. This run read canonical artifacts and regenerated only temporary schematics.",
         "",
-        "| Folder | Title | Blueprint / schematic | X×Y×Z | Non-air | Binary / deterministic | Production-reader result | Stable command |",
-        "| --- | --- | --- | --- | ---: | --- | --- | --- |",
+        "| Group | ID | Title | Blueprint / schematic | X×Y×Z | Non-air | Binary / deterministic | Production-reader result | Stable command |",
+        "| ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |",
         *rows,
         "",
         f"**Aggregate:** {summary['build_count']} blueprints inspected; binary validations {summary['binary_pass']} passed / {summary['binary_fail']} failed; deterministic regenerations {summary['deterministic_pass']} matched / {summary['deterministic_fail']} failed; production-reader comparisons {summary['reader_pass']} passed, {summary['reader_mismatch']} mismatched, {summary['reader_error']} errored/not run. Blueprint inventory coverage: {coverage['blueprint_count']} JSON; {coverage['schematic_count']} matching schematics; {coverage['notes_nonempty_count']} nonempty validation notes. Missing/empty artifacts: `{json.dumps(coverage['artifact_issues'], ensure_ascii=False)}`.",
@@ -183,7 +231,7 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
-    filenames_to_ids = {filename: identifier for identifier, filename in ids.items()}
+    filenames_to_tuples = ids
     build_logs = validation_dir / "build_logs"
     validation_dir.mkdir(parents=True, exist_ok=True)
 
@@ -217,7 +265,8 @@ def main() -> int:
         item = {
             "folder": stem[:2] if len(stem) >= 2 else "—",
             "title": blueprint.get("source_title", blueprint.get("title", stem)),
-            "stable_id": filenames_to_ids.get(schematic_path.name),
+            "group": filenames_to_tuples.get(schematic_path.name, (None, None))[0],
+            "id": filenames_to_tuples.get(schematic_path.name, (None, None))[1],
             "blueprint": file_meta(blueprint_path),
             "schematic": {"path": rel(schematic_path), "exists": schematic_path.is_file(), "bytes": schematic_path.stat().st_size if schematic_path.is_file() else 0,
                           "sha256": sha256(schematic_path) if schematic_path.is_file() else None, "nonempty": schematic_path.is_file() and schematic_path.stat().st_size > 0},
@@ -289,6 +338,7 @@ def main() -> int:
         "checked_at_utc": datetime.now(timezone.utc).isoformat(),
         "project": "github.com/mindcraft-bots/mindcraft",
         "pack": args.pack,
+        "pack_index_schema_version": 2 if (schems_dir / "index.json").is_file() else None,
         "requested_constraints": {"minecraft_version": args.minecraft_version, "data_version": args.data_version},
         "scope": f"All blueprint JSONs in schematics/blueprints/{args.pack} and same-stem canonical schematics in schematics/schems/{args.pack}; deterministic regeneration uses temporary output only.",
         "versions": version_lines,

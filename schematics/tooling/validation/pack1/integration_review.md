@@ -1,5 +1,7 @@
 # Focused pack1 integration review
 
+Identifier displays in this historical review were normalized later to separate group and ID fields; numerical meanings and recorded outcomes are unchanged.
+
 ## Preserved wardrobe byte-rebuild failure
 
 The [original wardrobe schematic](../../../schems/pack1/01_wardrobe_nether_portal.schem) remains 535 bytes, SHA-256 **8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383**. A temporary rebuild is 505 bytes, SHA-256 **a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886** on zlib 1.3.1. Binary validation and the production reader both match all 168 voxels, including 90 non-air cells. Exact byte reproducibility is nevertheless **FAIL**, and the [audit](batch_validation.json) must remain nonzero.
@@ -25,11 +27,11 @@ Available Git history confirms that the asset is byte-identical to the 535-byte 
 
 ## Runtime integration and remaining placement limitations
 
-The [real-pack integration tests](../../../../test/schematic/real_pack_integration.test.js) enumerate the real manifest and all 30 assets, check listing output, resolve every ID, stem and filename, and read each real binary. They execute the public command parser/action for the wardrobe ID 01-01, stem and exact filename through the real path resolver, source validator, binary reader and modern build-plan creation. Only the skill forwarding boundary and server-facing game-mode, inventory and placement operations are substituted. The simulated world contains the resulting plan's expected states; it is not evidence of actual Minecraft placement.
+The [real-pack integration tests](../../../../test/schematic/real_pack_integration.test.js) enumerate the real manifest and all 30 assets, check listing output, resolve every ID, stem and filename, and read each real binary. They execute the public command parser/action for the wardrobe, group 01 and ID 01, stem and exact filename through the real path resolver, source validator, binary reader and modern build-plan creation. Only the skill forwarding boundary and server-facing game-mode, inventory and placement operations are substituted. The simulated world contains the resulting plan's expected states; it is not evidence of actual Minecraft placement.
 
 This exposed missing inventory mappings for wall banners and cocoa. The narrow [adapter fix](../../../../src/utils/schematic/modern_build.js:9) maps wall banners to the corresponding colored banner item and cocoa to cocoa beans while preserving requested block states. The [adapter tests](../../../../test/schematic/modern_build.test.js) cover both mappings. Actual banner orientation, cocoa attachment/growth, and other server state transitions remain untested.
 
-Real build-plan preflight now accepts **28/30** assets. The pagoda, ID 04-01, still fails explicitly on potted oak saplings, and the giant grandfather clock, ID 18-02, on a potted fern. Potted plants require pot placement followed by planting, not a fake single inventory-item alias. No fallback or geometry change was added. These expected unsupported cases are logged with the PACK1_BUILD_PREFLIGHT marker in the [test log](npm_test.log); they are not claimed as build successes. The binary/reader audit does not measure live placeability.
+Real build-plan preflight now accepts **28/30** assets. The pagoda, group 04 and ID 01, still fails explicitly on potted oak saplings, and the giant grandfather clock, group 18 and ID 02, on a potted fern. Potted plants require pot placement followed by planting, not a fake single inventory-item alias. No fallback or geometry change was added. These expected unsupported cases are logged with the PACK1_BUILD_PREFLIGHT marker in the [test log](npm_test.log); they are not claimed as build successes. The binary/reader audit does not measure live placeability.
 
 The [tooling tests](../../../../test/schematic/tooling_paths.test.js) exercise repository-relative inputs from another working directory, another positive-numbered pack path, Minecraft 1.20.4 / DataVersion 3700, and rejection of explicit version mismatches, incorrect DataVersion, unavailable versions and outside-repository inputs. Version support is limited by the installed registry and reader; it is not arbitrary-version support. Tool executable paths still have to be reachable from the shell's working directory.
 

@@ -229,19 +229,25 @@ export const queryList = [
     }, 
     {
         name: '!listSchematics',
-        description: 'List supported schematic files. Pack entries show the pack, numeric screenshot-folder group, separate stable file ID/offset, and exact filename. Build an entry with !buildSchematic("packN:<group>:<file-ID>"), for example group 02 and file ID 01 use !buildSchematic("pack1:02:01").',
+        description: 'List supported schematic files. Pack entries show pack, screenshot-folder group, stable file ID, and exact file name in separate fields; file ID is an explicit index mapping, not sorted position. Build a file name with !buildSchematic("packN:<fileName>") or select a pack entry with !buildSchematic("packN:<group>:<fileId>").',
         perform: function () {
             return listSchematicEntries().then(entries => {
                 entries.sort((left, right) => {
                     const packOrder = left.pack.localeCompare(right.pack);
                     if (packOrder) return packOrder;
-                    const idOrder = left.id === right.id ? 0 : left.id === null ? 1 : right.id === null ? -1 : left.id.localeCompare(right.id);
-                    return idOrder || left.filename.localeCompare(right.filename);
+                    const groupOrder = left.group === right.group ? 0 : left.group === null ? 1 : right.group === null ? -1 : left.group - right.group;
+                    const leftFileId = left.fileId ?? left.id;
+                    const rightFileId = right.fileId ?? right.id;
+                    const leftFileName = left.fileName ?? left.filename;
+                    const rightFileName = right.fileName ?? right.filename;
+                    const fileIdOrder = leftFileId === rightFileId ? 0 : leftFileId === null ? 1 : rightFileId === null ? -1 : leftFileId - rightFileId;
+                    return groupOrder || fileIdOrder || leftFileName.localeCompare(rightFileName);
                 });
                 if (entries.length === 0) {
                     return pad('SCHEMATICS\nNo schematic files found. Add a .schem, .schematic, or .litematic file to the schematics folder, then run !listSchematics again.');
                 }
-                return pad(`SCHEMATICS\n${entries.map(({ pack, group, fileId, filename }) => `- ${pack} | group ${group ?? '—'} | file ID ${fileId ?? '—'} | ${filename}`).join('\n')}`);
+                return pad(`SCHEMATICS\n${entries.map(({ pack, group, fileId, fileName, id, filename }) =>
+                    `- ${pack} | group ${group ?? '—'} | file id ${fileId ?? id ?? '—'} | file name ${fileName ?? filename}`).join('\n')}`);
             }).catch(error => {
                 const message = error instanceof Error ? error.message : String(error);
                 return pad(`Unable to list schematics because of a filesystem error: ${message}`);

@@ -196,6 +196,14 @@ test("build success is verified and cleans supply, restores game mode and prior 
   assert.equal(alreadyPaused.calls.paused, true);
 });
 
+test("successful public build output names the resolved file rather than its numeric selector", async () => {
+  const { bot, calls, dependencies } = fixture({
+    resolvePath: () => '/schematics/schems/pack1/02_bee_hot_air_balloon.schem',
+  });
+  assert.equal(await buildSchematic(bot, 'pack1:2:1', null, null, null, dependencies), true);
+  assert.equal(calls.logs.at(-1), 'Successfully built and verified schematic 02_bee_hot_air_balloon.schem.');
+});
+
 test("reports rejected and interrupted builds as failures while cancelling and restoring", async () => {
   const rejected = fixture({ executeBuild: () => { throw new Error("placement rejected"); } });
   assert.equal(await buildSchematic(rejected.bot, "house.schem", null, null, null, rejected.dependencies), false);

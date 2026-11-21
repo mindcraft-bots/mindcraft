@@ -43,7 +43,7 @@ export function resolve(specifier, context, nextResolve) {
     const queryModules = {
       "../library/world.js": ``,
       "../tasks/construction_tasks.js": `export const checkLevelBlueprint = () => ''; export const checkBlueprint = () => '';`,
-        "../../utils/schematic/paths.js": `export async function listSchematicEntries() { return globalThis.__schematicListSchematicEntries?.() ?? (await globalThis.__schematicListSchematics()).map(filename => ({ pack: 'legacy', id: null, group: null, fileId: null, filename })); }`,
+        "../../utils/schematic/paths.js": `export async function listSchematicEntries() { return globalThis.__schematicListSchematicEntries?.() ?? (await globalThis.__schematicListSchematics()).map(filename => ({ pack: 'legacy', group: null, id: null, filename })); }`,
       "cheerio": `export const load = () => {};`,
     };
     if (Object.hasOwn(queryModules, specifier)) {

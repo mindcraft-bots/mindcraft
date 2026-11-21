@@ -58,4 +58,4 @@ Exact header/NBT/palette diagnosis, original-commit verification, and the action
 
 ## Build command
 
-The action accepts a pack-qualified stable ID or filename/stem and optionally all three placement coordinates together. Build near the bot without explicit placement coordinates using [`!buildSchematic("pack1:01-01")`](../../../src/agent/commands/actions.js:492). For explicit placement, use [`!buildSchematic("pack1:01-01", 100, 64, -20)`](../../../src/agent/commands/actions.js:496). The manifest mapping is in [`index.json`](../../schems/pack1/index.json); the `.schem` filename remains `01_wardrobe_nether_portal.schem`.
+The action accepts a pack-qualified stable ID or filename/stem and optionally all three placement coordinates together. Build near the bot without explicit placement coordinates using [`!buildSchematic("pack1:01:01")`](../../../src/agent/commands/actions.js:492). For explicit placement, use [`!buildSchematic("pack1:01:01", 100, 64, -20)`](../../../src/agent/commands/actions.js:496). The manifest mapping is in [`index.json`](../../schems/pack1/index.json); the `.schem` filename remains `01_wardrobe_nether_portal.schem`.

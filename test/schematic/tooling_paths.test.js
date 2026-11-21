@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -54,6 +54,92 @@ test("audit refuses an unknown pack instead of generating an empty successful re
   assert.equal(result.status, 2, result.stdout || result.stderr);
   assert.match(result.stderr, /no blueprint directory for pack987654/);
   assert.equal(existsSync(path.join(projectRoot, "schematics/schems/pack987654/batch_report.md")), false);
+});
+
+test("audit manifest reader validates separate numeric fields, normalized uniqueness, and safe targets", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "schematic-audit-manifest-"));
+  const pack = path.join(directory, "pack");
+  await mkdir(pack);
+  await writeFile(path.join(pack, "sparse-entry.schem"), "one");
+  await writeFile(path.join(pack, "wide-entry.schematic"), "two");
+  const runner = `
+import json, pathlib, sys
+sys.path.insert(0, sys.argv[1])
+import audit_batch
+pack = pathlib.Path(sys.argv[2])
+manifest = pack / 'index.json'
+
+def write(data):
+    manifest.write_text(json.dumps(data), encoding='utf-8')
+
+write({'schemaVersion': 2, 'groups': {'7': {'19': 'sparse-entry.schem'}, '9007199254740991': {'2': 'wide-entry.schematic'}}})
+assert audit_batch.load_index(pack) == {'sparse-entry.schem': (7, 19), 'wide-entry.schematic': (9007199254740991, 2)}
+
+for data, phrase in [
+    ({'schemaVersion': 1, 'groups': {}}, 'versioned groups'),
+    ({'schemaVersion': 2, 'groups': {'2': {'1': 'sparse-entry.schem'}, '02': {'2': 'wide-entry.schematic'}}}, 'duplicate normalized group'),
+    ({'schemaVersion': 2, 'groups': {'2': {'1': 'sparse-entry.schem', '01': 'wide-entry.schematic'}}}, 'duplicate normalized id'),
+    ({'schemaVersion': 2, 'groups': {'2': {'1': 'sparse-entry.schem'}, '3': {'1': 'sparse-entry.schem'}}}, 'duplicate schematic filename'),
+    ({'schemaVersion': 2, 'groups': {'2': {'1': '../outside.schem'}}}, 'invalid schematic filename'),
+    ({'schemaVersion': 2, 'groups': {'2': {'1': 'missing.schem'}}}, None),
+]:
+    write(data)
+    try:
+        audit_batch.load_index(pack)
+    except (ValueError, FileNotFoundError) as error:
+        if phrase:
+            assert phrase in str(error), str(error)
+    else:
+        raise AssertionError(f'accepted invalid manifest: {data!r}')
+
+outside = pack.parent / 'outside.schem'
+outside.write_text('outside', encoding='utf-8')
+(pack / 'linked.schem').symlink_to(outside)
+write({'schemaVersion': 2, 'groups': {'4': {'1': 'linked.schem'}}})
+try:
+    audit_batch.load_index(pack)
+except ValueError as error:
+    assert 'unsafe or non-file schematic target' in str(error)
+else:
+    raise AssertionError('accepted a target symlink that escapes its pack')
+
+schems = pack.parent / 'schems'
+schems.mkdir()
+outside_pack = pack.parent / 'outside-pack'
+outside_pack.mkdir()
+(outside_pack / 'index.json').write_text(json.dumps({'schemaVersion': 2, 'groups': {}}), encoding='utf-8')
+linked_pack = schems / 'pack2'
+linked_pack.symlink_to(outside_pack, target_is_directory=True)
+try:
+    audit_batch.load_index(linked_pack)
+except ValueError as error:
+    assert 'pack directory resolves outside' in str(error)
+else:
+    raise AssertionError('accepted a pack directory symlink that escapes its schems directory')
+
+manifest.unlink()
+manifest.mkdir()
+try:
+    audit_batch.load_index(pack)
+except ValueError as error:
+    assert 'manifest must be a regular file' in str(error)
+else:
+    raise AssertionError('silently ignored a directory manifest')
+manifest.rmdir()
+manifest.symlink_to(pack.parent / 'missing-index.json')
+try:
+    audit_batch.load_index(pack)
+except FileNotFoundError:
+    pass
+else:
+    raise AssertionError('silently ignored a dangling manifest symlink')
+`;
+  try {
+    const result = run("python3", ["-c", runner, path.join(projectRoot, "schematics/tooling"), pack]);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions", async () => {

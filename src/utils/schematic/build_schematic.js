@@ -91,7 +91,7 @@ function boundedCleanup(cleanup, timeoutMs) {
 }
 
 /** Build one supported schematic with bounded supply cleanup and guaranteed mode restoration. */
-export async function buildSchematic(bot, filename, x = null, y = null, z = null, dependencies = {}) {
+export async function buildSchematic(bot, fileName, x = null, y = null, z = null, dependencies = {}) {
   const {
     resolvePath = resolveSchematicPath,
     fsAccess = access,
@@ -112,11 +112,11 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
   let resolvedPath;
   let source;
   try {
-    resolvedPath = await resolvePath(filename);
+    resolvedPath = await resolvePath(fileName);
     await fsAccess(resolvedPath);
     source = await fsReadFile(resolvedPath);
   } catch (error) {
-    report(`Could not read schematic ${filename}: ${describeError(error)}`);
+    report(`Could not read schematic ${fileName}: ${describeError(error)}`);
     return false;
   }
 
@@ -137,7 +137,7 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
     // Preflight block support before changing the bot's game mode or inventory.
     build = makeBuild(schematic, bot, startPosition);
   } catch (error) {
-    report(`Could not parse or build schematic ${filename}: ${describeError(error)}. Supported formats are .schem and .schematic; .litematic must be converted first.`);
+    report(`Could not parse or build schematic ${fileName}: ${describeError(error)}. Supported formats are .schem and .schematic; .litematic must be converted first.`);
     return false;
   }
 
@@ -251,7 +251,7 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
   }
 
   if (success && !failed) {
-    report(`Successfully built and verified schematic ${filename}.`);
+    report(`Successfully built and verified schematic ${path.basename(resolvedPath)}.`);
     return true;
   }
   return false;

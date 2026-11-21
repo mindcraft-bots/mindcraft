@@ -1,3 +1,3 @@
-$ python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/12_scouting_tower.json /tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem
+$ python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/12_scouting_tower.json /tmp/schematic-audit-pack1-12_scouting_tower-7cix5_kf/12_scouting_tower.schem
 [exit code: 0]
-{"air": 3691, "block_data_bytes": 4563, "blueprint": "schematics/blueprints/pack1/12_scouting_tower.json", "bytes": 1106, "compiled": "/tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem", "dimensions": [13, 27, 13], "non_air": 872, "palette_entries": 36, "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961", "spot_checks": 25, "volume": 4563}
+{"air": 3691, "block_data_bytes": 4563, "blueprint": "schematics/blueprints/pack1/12_scouting_tower.json", "bytes": 1106, "compiled": "/tmp/schematic-audit-pack1-12_scouting_tower-7cix5_kf/12_scouting_tower.schem", "dimensions": [13, 27, 13], "non_air": 872, "palette_entries": 36, "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961", "spot_checks": 25, "volume": 4563}

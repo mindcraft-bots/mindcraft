@@ -12,11 +12,11 @@ export function log(bot, message) {
     bot.output += message + '\n';
 }
 
-export async function buildSchematic(bot, filename, x = null, y = null, z = null) {
+export async function buildSchematic(bot, fileName, x = null, y = null, z = null) {
     /**
      * Build and verify a .schem or .schematic file from the schematics directory.
      * @param {MinecraftBot} bot - the bot that will build the schematic.
-     * @param {string} filename - a safe legacy filename or pack selector such as "pack1:01:01" (pack:group:file-ID) or the literal filename/stem "pack1:01_wardrobe_nether_portal". Numeric dash-form selectors are unsupported as IDs.
+     * @param {string} fileName - a safe file name or pack selector such as "pack1:1:1" (pack:group:fileId; the stable fileId resolves through the pack index) or literal file name/stem "pack1:01_wardrobe_nether_portal".
      * @param {?number} x - optional integer/fractional world x coordinate.
      * @param {?number} y - optional integer/fractional world y coordinate.
      * @param {?number} z - optional integer/fractional world z coordinate.
@@ -24,7 +24,7 @@ export async function buildSchematic(bot, filename, x = null, y = null, z = null
      * @example
      * await skills.buildSchematic(bot, "pack1:01:01");
      **/
-    return await buildSchematicImplementation(bot, filename, x, y, z, {
+    return await buildSchematicImplementation(bot, fileName, x, y, z, {
         writeLog: (message) => log(bot, message),
     });
 }

@@ -13,23 +13,26 @@ import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
 
-test("every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename", async () => {
+test("every real pack1 asset is listed with separate group and id fields and resolves by tuple, stem, and filename", async () => {
   const directory = path.join(SCHEMATICS_DIR, "schems/pack1");
-  const { ids } = JSON.parse(await readFile(path.join(directory, "index.json"), "utf8"));
+  const { schemaVersion, groups } = JSON.parse(await readFile(path.join(directory, "index.json"), "utf8"));
+  assert.equal(schemaVersion, 2);
   const files = (await readdir(directory)).filter(name => name.endsWith(".schem")).sort();
   assert.equal(files.length, 30);
-  assert.deepEqual(Object.values(ids).sort(), files);
+  const mappings = Object.entries(groups).flatMap(([group, ids]) => Object.entries(ids).map(([id, filename]) => ({
+    group: Number(group), id: Number(id), filename,
+  })));
+  assert.deepEqual(mappings.map(({ filename }) => filename).sort(), files);
   const entries = (await listSchematicEntries()).filter(entry => entry.pack === "pack1");
   assert.equal(entries.length, files.length);
   const unsupported = [];
-  for (const [id, filename] of Object.entries(ids)) {
-    const [group, fileId] = id.split("-");
-    assert.deepEqual(entries.find(entry => entry.id === id), { pack: "pack1", id, group, fileId, filename });
+  for (const { group, id, filename } of mappings) {
+    const listed = entries.find(entry => entry.group === group && entry.fileId === id);
+    assert.deepEqual(listed, { pack: "pack1", group, fileId: id, fileName: filename, id, filename });
     const expected = path.join(directory, filename);
-    for (const selector of [`${group}:${fileId}`, filename, path.basename(filename, ".schem")]) {
+    for (const selector of [`${group}:${id}`, filename, path.basename(filename, ".schem")]) {
       assert.equal(await resolveSchematicPath(`pack1:${selector}`), expected);
     }
-    await assert.rejects(resolveSchematicPath(`pack1:${id}`), /Dash-form schematic IDs are unsupported/);
     const blueprint = JSON.parse(await readFile(path.join(SCHEMATICS_DIR, "blueprints/pack1", filename.replace(/\.schem$/, ".json")), "utf8"));
     const parsed = await readSchematic(await readFile(expected), blueprint.minecraft_version);
     assert.deepEqual([parsed.size.x, parsed.size.y, parsed.size.z], [blueprint.width_x, blueprint.height_y, blueprint.length_z]);
@@ -38,7 +41,7 @@ test("every real pack1 asset is listed with its manifest ID and resolves by ID, 
       build = createModernBuild(parsed, { version: blueprint.minecraft_version }, new Vec3(0, 64, 0));
     } catch (error) {
       assert.match(error.message, /no placeable item mapping for potted_(oak_sapling|fern)/);
-      unsupported.push({ id, filename, error: error.message });
+      unsupported.push({ group, id, filename, error: error.message });
       continue;
     }
     const nonAir = Object.entries(blueprint.expected_counts).reduce((sum, [state, count]) => sum + (state === "minecraft:air" ? 0 : count), 0);
@@ -54,8 +57,8 @@ test("real listing query and parsed README selectors reach the real wardrobe rea
     import { executeCommand, getCommand } from './src/agent/commands/index.js';
     import { buildSchematic } from './src/utils/schematic/build_schematic.js';
     const listing = await getCommand('!listSchematics').perform({});
-    assert.match(listing, /- pack1 \\| group 01 \\| file ID 01 \\| 01_wardrobe_nether_portal\\.schem/);
-    assert.match(listing, /- pack1 \\| group 02 \\| file ID 01 \\| 02_bee_hot_air_balloon\\.schem/);
+    assert.match(listing, /- pack1 \\| group 1 \\| file id 1 \\| file name 01_wardrobe_nether_portal\\.schem/);
+    assert.match(listing, /- pack1 \\| group 2 \\| file id 1 \\| file name 02_bee_hot_air_balloon\\.schem/);
     assert.equal(listing.split('\\n').filter(line => line.startsWith('- pack1 |')).length, 30);
     let completed = 0;
     globalThis.__schematicBuild = async (bot, selector, x, y, z) => {
@@ -77,6 +80,7 @@ test("real listing query and parsed README selectors reach the real wardrobe rea
         writeLog: message => logs.push(message),
       });
       assert.equal(success, true, logs.join('\\n'));
+      assert.equal(logs.at(-1), 'Successfully built and verified schematic 01_wardrobe_nether_portal.schem.');
       assert.deepEqual(modes, ['creative', 'survival']);
       completed++;
     };

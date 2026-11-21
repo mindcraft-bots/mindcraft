@@ -1,8 +1,9 @@
 {
   "schema_version": 2,
-  "checked_at_utc": "2026-11-16T01:51:40.904514+00:00",
+  "checked_at_utc": "2026-11-21T15:36:24.492460+00:00",
   "project": "github.com/mindcraft-bots/mindcraft",
   "pack": "pack1",
+  "pack_index_schema_version": 2,
   "requested_constraints": {
     "minecraft_version": null,
     "data_version": null
@@ -50,14 +51,15 @@
       "exit_code": 0,
       "result": "PASS",
       "log": "schematics/tooling/validation/pack1/npm_test.log",
-      "output": "\n> test:schematic\n> node --test --test-concurrency=1 test/schematic/*.test.js\n\nTAP version 13\n# Subtest: rejects missing and escaping paths before reading or changing game mode\nok 1 - rejects missing and escaping paths before reading or changing game mode\n  ---\n  duration_ms: 3.327812\n  type: 'test'\n  ...\n# Subtest: reports parse failures and explicitly rejects listed but unsupported litematic files\nok 2 - reports parse failures and explicitly rejects listed but unsupported litematic files\n  ---\n  duration_ms: 1.91964\n  type: 'test'\n  ...\n# Subtest: rejects unknown source palette blocks before parser, Creative mode, or supply changes\nok 3 - rejects unknown source palette blocks before parser, Creative mode, or supply changes\n  ---\n  duration_ms: 52.845113\n  type: 'test'\n  ...\n# Subtest: floors three finite coordinates and otherwise uses bot position offset and floor\nok 4 - floors three finite coordinates and otherwise uses bot position offset and floor\n  ---\n  duration_ms: 2.176327\n  type: 'test'\n  ...\n# Subtest: Creative permission denial aborts the build and still restores mode and unstuck state\nok 5 - Creative permission denial aborts the build and still restores mode and unstuck state\n  ---\n  duration_ms: 0.434604\n  type: 'test'\n  ...\n# Subtest: build success is verified and cleans supply, restores game mode and prior unstuck state\nok 6 - build success is verified and cleans supply, restores game mode and prior unstuck state\n  ---\n  duration_ms: 0.683166\n  type: 'test'\n  ...\n# Subtest: reports rejected and interrupted builds as failures while cancelling and restoring\nok 7 - reports rejected and interrupted builds as failures while cancelling and restoring\n  ---\n  duration_ms: 0.908343\n  type: 'test'\n  ...\n# Subtest: verification mismatch, cleanup rejection, and hanging cleanup never claim success\nok 8 - verification mismatch, cleanup rejection, and hanging cleanup never claim success\n  ---\n  duration_ms: 7.314282\n  type: 'test'\n  ...\n# Subtest: does not restore unchanged Creative mode and restores after a timed-out switch\nok 9 - does not restore unchanged Creative mode and restores after a timed-out switch\n  ---\n  duration_ms: 1.02313\n  type: 'test'\n  ...\n# Subtest: loads mineflayer-schem without retaining its global pathfinder movements\nok 10 - loads mineflayer-schem without retaining its global pathfinder movements\n  ---\n  duration_ms: 7.718398\n  type: 'test'\n  ...\n# Subtest: real pathfinder keeps unrestricted searchRadius and routes around a distant wall\nok 11 - real pathfinder keeps unrestricted searchRadius and routes around a distant wall\n  ---\n  duration_ms: 76.756161\n  type: 'test'\n  ...\n# Subtest: queues schematic compatibility after pathfinder with Mineflayer plugin loader\nok 12 - queues schematic compatibility after pathfinder with Mineflayer plugin loader\n  ---\n  duration_ms: 5.717904\n  type: 'test'\n  ...\n# Subtest: builder.stop cancels the builder and clears the current pathfinder goal\nok 13 - builder.stop cancels the builder and clears the current pathfinder goal\n  ---\n  duration_ms: 3.033664\n  type: 'test'\n  ...\n# Subtest: Creative supply reuses reserved slot 36 for sequential palette types and restores it\nok 14 - Creative supply reuses reserved slot 36 for sequential palette types and restores it\n  ---\n  duration_ms: 3.173599\n  type: 'test'\n  ...\n# Subtest: rejects cancelled and non-Creative supply without writing inventory\nok 15 - rejects cancelled and non-Creative supply without writing inventory\n  ---\n  duration_ms: 4.648686\n  type: 'test'\n  ...\n# Subtest: closing a session prevents queued equips from writing after cancellation\nok 16 - closing a session prevents queued equips from writing after cancellation\n  ---\n  duration_ms: 2.20907\n  type: 'test'\n  ...\n# Subtest: aborting a timed-out close prevents late equipment and slot restoration writes\nok 17 - aborting a timed-out close prevents late equipment and slot restoration writes\n  ---\n  duration_ms: 2.174845\n  type: 'test'\n  ...\n# Subtest: uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\nok 18 - uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\n  ---\n  duration_ms: 2.227204\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\nok 19 - stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\n  ---\n  duration_ms: 82.625252\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\nok 20 - interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\n  ---\n  duration_ms: 6235.821613\n  type: 'test'\n  ...\n# Subtest: already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\nok 21 - already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\n  ---\n  duration_ms: 1107.804783\n  type: 'test'\n  ...\n# Subtest: command parser preserves fixed arity and supports build schematic coordinates\nok 22 - command parser preserves fixed arity and supports build schematic coordinates\n  ---\n  duration_ms: 149.296658\n  type: 'test'\n  ...\n# Subtest: normalizeGameMode accepts supported modes and defaults invalid values to survival\nok 23 - normalizeGameMode accepts supported modes and defaults invalid values to survival\n  ---\n  duration_ms: 1.580067\n  type: 'test'\n  ...\n# Subtest: setGameMode returns immediately when the bot already has the target mode\nok 24 - setGameMode returns immediately when the bot already has the target mode\n  ---\n  duration_ms: 0.309097\n  type: 'test'\n  ...\n# Subtest: forced setGameMode sends restoration even when the client already reports the target mode\nok 25 - forced setGameMode sends restoration even when the client already reports the target mode\n  ---\n  duration_ms: 51.11396\n  type: 'test'\n  ...\n# Subtest: setGameMode registers before chat and resolves when the target mode is observed\nok 26 - setGameMode registers before chat and resolves when the target mode is observed\n  ---\n  duration_ms: 0.339344\n  type: 'test'\n  ...\n# Subtest: setGameMode continues waiting after unrelated game events\nok 27 - setGameMode continues waiting after unrelated game events\n  ---\n  duration_ms: 3.197795\n  type: 'test'\n  ...\n# Subtest: setGameMode resolves false on timeout when the mode never changes\nok 28 - setGameMode resolves false on timeout when the mode never changes\n  ---\n  duration_ms: 5.658982\n  type: 'test'\n  ...\n# Subtest: invalid requested modes safely target survival\nok 29 - invalid requested modes safely target survival\n  ---\n  duration_ms: 0.392043\n  type: 'test'\n  ...\n# Subtest: setGameMode handles synchronous chat errors and rejected chat promises\nok 30 - setGameMode handles synchronous chat errors and rejected chat promises\n  ---\n  duration_ms: 0.578116\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, -4)\n# 📐 Area: from (10, 20, -4) to (13, 21, -3)\n# 🎮 Server version: 1.20.4\n# Subtest: creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\nok 31 - creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\n  ---\n  duration_ms: 20.378589\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall torches, wall signs, and redstone wire to actual inventory items\nok 32 - maps wall torches, wall signs, and redstone wire to actual inventory items\n  ---\n  duration_ms: 3.910897\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall banners and cocoa to inventory items without changing requested states\nok 33 - maps wall banners and cocoa to inventory items without changing requested states\n  ---\n  duration_ms: 3.773356\n  type: 'test'\n  ...\n# 📦 Build initialized at (4, 5, 6)\n# 📐 Area: from (4, 5, 6) to (9, 6, 7)\n# 🎮 Server version: 1.20.4\n# Subtest: retains dependent door and bed blocks in the verification plan but only places their base halves\nok 34 - retains dependent door and bed blocks in the verification plan but only places their base halves\n  ---\n  duration_ms: 3.224596\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (1, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: reports unsupported states explicitly and attaches the inspectable adapter\nok 35 - reports unsupported states explicitly and attaches the inspectable adapter\n  ---\n  duration_ms: 3.571624\n  type: 'test'\n  ...\n# Subtest: rejects invalid and oversized dimensions before decoding block data\nok 36 - rejects invalid and oversized dimensions before decoding block data\n  ---\n  duration_ms: 1.775427\n  type: 'test'\n  ...\n# Subtest: pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions\nok 37 - pack1 explicit manifest maps the actual wardrobe asset, and filename selectors accept both extensions\n  ---\n  duration_ms: 34.913815\n  type: 'test'\n  ...\n# Subtest: IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs\nok 38 - IDs are stable per existing NN group and multiple same-group files use explicit alphabetical IDs\n  ---\n  duration_ms: 22.140941\n  type: 'test'\n  ...\n# Subtest: pack IDs and filename lookup work independently across arbitrary packs\nok 39 - pack IDs and filename lookup work independently across arbitrary packs\n  ---\n  duration_ms: 5.445658\n  type: 'test'\n  ...\n# Subtest: extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts\nok 40 - extensionless lookup rejects ambiguous same-stem supported files and reports ID conflicts\n  ---\n  duration_ms: 3.123844\n  type: 'test'\n  ...\n# Subtest: manifest targets cannot disagree with directly indexed filenames\nok 41 - manifest targets cannot disagree with directly indexed filenames\n  ---\n  duration_ms: 2.80505\n  type: 'test'\n  ...\n# Subtest: pack entries reject supported-looking directories instead of treating them as schematic files\nok 42 - pack entries reject supported-looking directories instead of treating them as schematic files\n  ---\n  duration_ms: 1.822236\n  type: 'test'\n  ...\n# Subtest: pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files\nok 43 - pack listing returns pack, stable ID, and actual filename for indexed and directly indexed files\n  ---\n  duration_ms: 3.364982\n  type: 'test'\n  ...\n# Subtest: pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors\nok 44 - pack lookup rejects absolute, traversal, backslash, NUL, and unsupported selectors\n  ---\n  duration_ms: 1.595797\n  type: 'test'\n  ...\n# Subtest: pack directories, manifest targets, and schematic files cannot escape via symlinks\nok 45 - pack directories, manifest targets, and schematic files cannot escape via symlinks\n  ---\n  duration_ms: 2.82623\n  type: 'test'\n  ...\n# Subtest: legacy root-relative paths continue to resolve as before\nok 46 - legacy root-relative paths continue to resolve as before\n  ---\n  duration_ms: 1.086882\n  type: 'test'\n  ...\n# Subtest: postinstall verifier accepts the patched installed package\nok 47 - postinstall verifier accepts the patched installed package\n  ---\n  duration_ms: 186.148059\n  type: 'test'\n  ...\n# Subtest: runtime loader accepts the patched plugin capability\nok 48 - runtime loader accepts the patched plugin capability\n  ---\n  duration_ms: 187.29851\n  type: 'test'\n  ...\n# Subtest: an unpatched package fails install verification and runtime loading before plugin registration\nok 49 - an unpatched package fails install verification and runtime loading before plugin registration\n  ---\n  duration_ms: 277.754514\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath accepts confined files and confined missing candidates\nok 50 - resolveSchematicPath accepts confined files and confined missing candidates\n  ---\n  duration_ms: 9.051407\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\nok 51 - resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\n  ---\n  duration_ms: 1.342336\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects symlinks and missing descendants that escape\nok 52 - resolveSchematicPath rejects symlinks and missing descendants that escape\n  ---\n  duration_ms: 2.595843\n  type: 'test'\n  ...\n# Subtest: listSchematics returns sorted supported regular files and ignores escaping symlinks\nok 53 - listSchematics returns sorted supported regular files and ignores escaping symlinks\n  ---\n  duration_ms: 10.321655\n  type: 'test'\n  ...\n# Subtest: listSchematics treats a missing directory as empty\nok 54 - listSchematics treats a missing directory as empty\n  ---\n  duration_ms: 0.953408\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate handles omitted values and finite numeric values/strings\nok 55 - parseOptionalCoordinate handles omitted values and finite numeric values/strings\n  ---\n  duration_ms: 0.324806\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate rejects invalid and non-finite values\nok 56 - parseOptionalCoordinate rejects invalid and non-finite values\n  ---\n  duration_ms: 0.275723\n  type: 'test'\n  ...\n# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic\nok 57 - reads a real serialized Sponge v2 buffer through prismarine-schematic\n  ---\n  duration_ms: 67.421728\n  type: 'test'\n  ...\n# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes\nok 58 - rejects unknown names and invalid properties or states from real Sponge palettes\n  ---\n  duration_ms: 3.962334\n  type: 'test'\n  ...\n# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs\nok 59 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs\n  ---\n  duration_ms: 4.388723\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.21.4\n# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning\nok 60 - preserves every candle count, foliage distance and snow layer through production reading and placement planning\n  ---\n  duration_ms: 45.624308\n  type: 'test'\n  ...\n# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\nok 61 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\n  ---\n  duration_ms: 0.445354\n  type: 'test'\n  ...\n# Subtest: zero-based integer states and omitted properties retain their existing interpretation\nok 62 - zero-based integer states and omitted properties retain their existing interpretation\n  ---\n  duration_ms: 5.615621\n  type: 'test'\n  ...\n# Subtest: legacy snow mapping also preserves its one-based layer value\nok 63 - legacy snow mapping also preserves its one-based layer value\n  ---\n  duration_ms: 2.116003\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (6, 71, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 81, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (18, 81, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 87, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 103, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 78, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 73, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 88, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 80, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 80, 22)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (14, 80, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 72, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (24, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 69, 3)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (11, 75, 7)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 67, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (12, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 91, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (20, 80, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 74, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (19, 77, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 81, 17)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 72, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 73, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 97, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 70, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (23, 72, 22)\n# 🎮 Server version: 1.21.4\n# PACK1_BUILD_PREFLIGHT {\"passed\":28,\"unsupported\":[{\"id\":\"04-01\",\"filename\":\"04_pagoda.schem\",\"error\":\"Schematic contains unsupported blocks: potted_oak_sapling at 10,68,6: no placeable item mapping for potted_oak_sapling; potted_oak_sapling at 7,73,4: no placeable item mapping for potted_oak_sapling\"},{\"id\":\"18-02\",\"filename\":\"18_giant_grandfather_clock.schem\",\"error\":\"Schematic contains unsupported blocks: potted_fern at 5,67,3: no placeable item mapping for potted_fern\"}]}\n# Subtest: every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename\nok 64 - every real pack1 asset is listed with its manifest ID and resolves by ID, stem, and filename\n  ---\n  duration_ms: 645.518515\n  type: 'test'\n  ...\n# Subtest: real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\nok 65 - real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\n  ---\n  duration_ms: 359.696672\n  type: 'test'\n  ...\n# Subtest: returns finished only after all build actions are consumed\nok 66 - returns finished only after all build actions are consumed\n  ---\n  duration_ms: 6.704836\n  type: 'test'\n  ...\n# Subtest: captures builder_error events even when the plugin resolves successfully\nok 67 - captures builder_error events even when the plugin resolves successfully\n  ---\n  duration_ms: 2.062382\n  type: 'test'\n  ...\n# Subtest: captures rejected builder promises\nok 68 - captures rejected builder promises\n  ---\n  duration_ms: 1.843967\n  type: 'test'\n  ...\n# Subtest: an already interrupted bot does not start the build and runs cancellation hooks\nok 69 - an already interrupted bot does not start the build and runs cancellation hooks\n  ---\n  duration_ms: 0.48477\n  type: 'test'\n  ...\n# Subtest: bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\nok 70 - bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\n  ---\n  duration_ms: 22.538545\n  type: 'test'\n  ...\n# Subtest: reports a stalled build when remaining actions stop decreasing\nok 71 - reports a stalled build when remaining actions stop decreasing\n  ---\n  duration_ms: 24.849759\n  type: 'test'\n  ...\n# Subtest: does not report finished if a resolved builder leaves actions behind\nok 72 - does not report finished if a resolved builder leaves actions behind\n  ---\n  duration_ms: 2.322886\n  type: 'test'\n  ...\n# Subtest: clears runner polling and grace timers and removes its event listener\nok 73 - clears runner polling and grace timers and removes its event listener\n  ---\n  duration_ms: 3.162948\n  type: 'test'\n  ...\n# Subtest: compiler and production validator resolve pack paths from a different cwd\nok 74 - compiler and production validator resolve pack paths from a different cwd\n  ---\n  duration_ms: 373.385594\n  type: 'test'\n  ...\n# Subtest: tooling rejects inputs that resolve outside the repository\nok 75 - tooling rejects inputs that resolve outside the repository\n  ---\n  duration_ms: 268.69377\n  type: 'test'\n  ...\n# Subtest: audit refuses an unknown pack instead of generating an empty successful report\nok 76 - audit refuses an unknown pack instead of generating an empty successful report\n  ---\n  duration_ms: 45.109713\n  type: 'test'\n  ...\n# Subtest: compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\nok 77 - compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\n  ---\n  duration_ms: 1032.786517\n  type: 'test'\n  ...\n# WARDROBE_REBUILD_DIAGNOSIS {\"zlib\":\"1.3.1\",\"canonical_sha256\":\"8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383\",\"rebuilt_sha256\":\"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\",\"canonical_bytes\":535,\"rebuilt_bytes\":505,\"canonical_header\":\"1f8b0808c1eef96a02ff\",\"rebuilt_header\":\"1f8b08000000000002ff\",\"canonical_trailer\":\"9c0881f6d4050000\",\"rebuilt_trailer\":\"16db9e95d4050000\",\"canonical_raw_sha256\":\"bb3ffe6c546bb32b5c535254db7980406f21d845ec67a75dac85e2c204dc8ade\",\"rebuilt_raw_sha256\":\"1c623daf9879dc4a0dc78fff9c2a470f1fa1b5e482d8ccfbde5d969f3cf2c309\",\"canonical_gzip_filename\":\"wardrobe_nether_portal.schem\",\"canonical_gzip_mtime\":1794764481,\"canonical_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"Palette\",\"PaletteMax\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"rebuilt_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"PaletteMax\",\"Palette\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"canonical_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_planks\":1,\"minecraft:obsidian\":2,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":3,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":4,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":5,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":6,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":7,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":8,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":9,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"rebuilt_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":1,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":2,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":3,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":4,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":5,\"minecraft:dark_oak_planks\":6,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":7,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":8,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":9,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:obsidian\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"byte_match\":false,\"repeated_rebuild_match\":true,\"decoded_voxels_match\":true,\"compared_voxels\":168,\"legacy_raw_reconstructed_exactly\":true,\"legacy_gzip_reconstructed_exactly\":true,\"canonical_unchanged\":true}\n# Subtest: wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\nok 78 - wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\n  ---\n  duration_ms: 77.084153\n  type: 'test'\n  ...\n1..78\n# tests 78\n# suites 0\n# pass 78\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 17851.905189\n"
+      "output": "\n> test:schematic\n> node --test --test-concurrency=1 test/schematic/*.test.js\n\nTAP version 13\n# Subtest: rejects missing and escaping paths before reading or changing game mode\nok 1 - rejects missing and escaping paths before reading or changing game mode\n  ---\n  duration_ms: 3.296624\n  type: 'test'\n  ...\n# Subtest: reports parse failures and explicitly rejects listed but unsupported litematic files\nok 2 - reports parse failures and explicitly rejects listed but unsupported litematic files\n  ---\n  duration_ms: 1.90766\n  type: 'test'\n  ...\n# Subtest: rejects unknown source palette blocks before parser, Creative mode, or supply changes\nok 3 - rejects unknown source palette blocks before parser, Creative mode, or supply changes\n  ---\n  duration_ms: 50.372817\n  type: 'test'\n  ...\n# Subtest: floors three finite coordinates and otherwise uses bot position offset and floor\nok 4 - floors three finite coordinates and otherwise uses bot position offset and floor\n  ---\n  duration_ms: 2.159147\n  type: 'test'\n  ...\n# Subtest: Creative permission denial aborts the build and still restores mode and unstuck state\nok 5 - Creative permission denial aborts the build and still restores mode and unstuck state\n  ---\n  duration_ms: 0.426049\n  type: 'test'\n  ...\n# Subtest: build success is verified and cleans supply, restores game mode and prior unstuck state\nok 6 - build success is verified and cleans supply, restores game mode and prior unstuck state\n  ---\n  duration_ms: 0.673518\n  type: 'test'\n  ...\n# Subtest: reports rejected and interrupted builds as failures while cancelling and restoring\nok 7 - reports rejected and interrupted builds as failures while cancelling and restoring\n  ---\n  duration_ms: 0.908594\n  type: 'test'\n  ...\n# Subtest: verification mismatch, cleanup rejection, and hanging cleanup never claim success\nok 8 - verification mismatch, cleanup rejection, and hanging cleanup never claim success\n  ---\n  duration_ms: 7.383279\n  type: 'test'\n  ...\n# Subtest: does not restore unchanged Creative mode and restores after a timed-out switch\nok 9 - does not restore unchanged Creative mode and restores after a timed-out switch\n  ---\n  duration_ms: 1.070592\n  type: 'test'\n  ...\n# Subtest: loads mineflayer-schem without retaining its global pathfinder movements\nok 10 - loads mineflayer-schem without retaining its global pathfinder movements\n  ---\n  duration_ms: 7.509198\n  type: 'test'\n  ...\n# Subtest: real pathfinder keeps unrestricted searchRadius and routes around a distant wall\nok 11 - real pathfinder keeps unrestricted searchRadius and routes around a distant wall\n  ---\n  duration_ms: 76.375193\n  type: 'test'\n  ...\n# Subtest: queues schematic compatibility after pathfinder with Mineflayer plugin loader\nok 12 - queues schematic compatibility after pathfinder with Mineflayer plugin loader\n  ---\n  duration_ms: 5.542366\n  type: 'test'\n  ...\n# Subtest: builder.stop cancels the builder and clears the current pathfinder goal\nok 13 - builder.stop cancels the builder and clears the current pathfinder goal\n  ---\n  duration_ms: 3.08358\n  type: 'test'\n  ...\n# Subtest: Creative supply reuses reserved slot 36 for sequential palette types and restores it\nok 14 - Creative supply reuses reserved slot 36 for sequential palette types and restores it\n  ---\n  duration_ms: 3.208127\n  type: 'test'\n  ...\n# Subtest: rejects cancelled and non-Creative supply without writing inventory\nok 15 - rejects cancelled and non-Creative supply without writing inventory\n  ---\n  duration_ms: 4.256677\n  type: 'test'\n  ...\n# Subtest: closing a session prevents queued equips from writing after cancellation\nok 16 - closing a session prevents queued equips from writing after cancellation\n  ---\n  duration_ms: 2.154128\n  type: 'test'\n  ...\n# Subtest: aborting a timed-out close prevents late equipment and slot restoration writes\nok 17 - aborting a timed-out close prevents late equipment and slot restoration writes\n  ---\n  duration_ms: 2.177622\n  type: 'test'\n  ...\n# Subtest: uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\nok 18 - uses mineflayer-schem equipItem item-id contract and never invokes clear or chest logic\n  ---\n  duration_ms: 2.215964\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\nok 19 - stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations\n  ---\n  duration_ms: 82.441704\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (1, 65, 1)\n# 🎮 Server version: 1.20.4\n# 🏗️  Starting build of 1 blocks...\n# ⚡ Speed: 1 blocks/second\n# Subtest: interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\nok 20 - interrupted Creative supply forces reserved-slot restore despite delayed real-handler acknowledgement\n  ---\n  duration_ms: 6234.515765\n  type: 'test'\n  ...\n# Subtest: already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\nok 21 - already-Creative build succeeds without a redundant mode command and restores slot and unstuck state\n  ---\n  duration_ms: 1113.681366\n  type: 'test'\n  ...\n# Subtest: command parser preserves fixed arity and supports build schematic coordinates\nok 22 - command parser preserves fixed arity and supports build schematic coordinates\n  ---\n  duration_ms: 147.96104\n  type: 'test'\n  ...\n# Subtest: normalizeGameMode accepts supported modes and defaults invalid values to survival\nok 23 - normalizeGameMode accepts supported modes and defaults invalid values to survival\n  ---\n  duration_ms: 1.56517\n  type: 'test'\n  ...\n# Subtest: setGameMode returns immediately when the bot already has the target mode\nok 24 - setGameMode returns immediately when the bot already has the target mode\n  ---\n  duration_ms: 0.315809\n  type: 'test'\n  ...\n# Subtest: forced setGameMode sends restoration even when the client already reports the target mode\nok 25 - forced setGameMode sends restoration even when the client already reports the target mode\n  ---\n  duration_ms: 51.085379\n  type: 'test'\n  ...\n# Subtest: setGameMode registers before chat and resolves when the target mode is observed\nok 26 - setGameMode registers before chat and resolves when the target mode is observed\n  ---\n  duration_ms: 0.350315\n  type: 'test'\n  ...\n# Subtest: setGameMode continues waiting after unrelated game events\nok 27 - setGameMode continues waiting after unrelated game events\n  ---\n  duration_ms: 3.231011\n  type: 'test'\n  ...\n# Subtest: setGameMode resolves false on timeout when the mode never changes\nok 28 - setGameMode resolves false on timeout when the mode never changes\n  ---\n  duration_ms: 4.697633\n  type: 'test'\n  ...\n# Subtest: invalid requested modes safely target survival\nok 29 - invalid requested modes safely target survival\n  ---\n  duration_ms: 0.393617\n  type: 'test'\n  ...\n# Subtest: setGameMode handles synchronous chat errors and rejected chat promises\nok 30 - setGameMode handles synchronous chat errors and rejected chat promises\n  ---\n  duration_ms: 0.573218\n  type: 'test'\n  ...\n# Subtest: actual Andy/Alice settings authorize only the observed human, preserving security values and blacklist\nok 31 - actual Andy/Alice settings authorize only the observed human, preserving security values and blacklist\n  ---\n  duration_ms: 3.715069\n  type: 'test'\n  ...\n# Subtest: all explicitly peer-addressed chat is ignored before command extraction or inference\nok 32 - all explicitly peer-addressed chat is ignored before command extraction or inference\n  ---\n  duration_ms: 473.35093\n  type: 'test'\n  ...\n# Subtest: real Andy/Alice settings permit the observed human and deny peers and other players in the handler\nok 33 - real Andy/Alice settings permit the observed human and deny peers and other players in the handler\n  ---\n  duration_ms: 500.055058\n  type: 'test'\n  ...\n# Subtest: malformed, contradictory, and additional schematic input fails closed rather than partially matching\nok 34 - malformed, contradictory, and additional schematic input fails closed rather than partially matching\n  ---\n  duration_ms: 481.321935\n  type: 'test'\n  ...\n# Subtest: complete own-addressed schematic request dispatches exactly once, including polite forms\nok 35 - complete own-addressed schematic request dispatches exactly once, including polite forms\n  ---\n  duration_ms: 509.335557\n  type: 'test'\n  ...\n# Subtest: known/dynamic peers and unknown senders cannot obtain model-generated commands\nok 36 - known/dynamic peers and unknown senders cannot obtain model-generated commands\n  ---\n  duration_ms: 474.145518\n  type: 'test'\n  ...\n# Subtest: direct command quotations and incomplete fragments never execute or reach inference\nok 37 - direct command quotations and incomplete fragments never execute or reach inference\n  ---\n  duration_ms: 474.325519\n  type: 'test'\n  ...\n# Subtest: agent-specific blacklist is enforced at dispatch, including model output\nok 38 - agent-specific blacklist is enforced at dispatch, including model output\n  ---\n  duration_ms: 467.20543\n  type: 'test'\n  ...\n# Subtest: disabled insecure coding is absent from docs and examples and cannot be dispatched\nok 39 - disabled insecure coding is absent from docs and examples and cannot be dispatched\n  ---\n  duration_ms: 478.084692\n  type: 'test'\n  ...\n# Subtest: model-generated incomplete zero-argument command does not cancel an action\nok 40 - model-generated incomplete zero-argument command does not cancel an action\n  ---\n  duration_ms: 465.820322\n  type: 'test'\n  ...\n# Subtest: real event handlers preserve public-chat suppression, whisper delivery, and peer/user filters\nok 41 - real event handlers preserve public-chat suppression, whisper delivery, and peer/user filters\n  ---\n  duration_ms: 531.437434\n  type: 'test'\n  ...\n# Subtest: direct and routed builds use the real ActionManager and trusted stop cleans up without duplicate dispatch\nok 42 - direct and routed builds use the real ActionManager and trusted stop cleans up without duplicate dispatch\n  ---\n  duration_ms: 1097.891846\n  type: 'test'\n  ...\n# Subtest: public and private output redact complete and incomplete command tokens\nok 43 - public and private output redact complete and incomplete command tokens\n  ---\n  duration_ms: 463.593828\n  type: 'test'\n  ...\n# Subtest: Docker copies the mandatory postinstall verifier before dependency installation\nok 44 - Docker copies the mandatory postinstall verifier before dependency installation\n  ---\n  duration_ms: 0.47955\n  type: 'test'\n  ...\n# Subtest: schematic incident routes deterministically and keeps peer/user commands separated\nok 45 - schematic incident routes deterministically and keeps peer/user commands separated\n  ---\n  duration_ms: 649.636393\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, -4)\n# 📐 Area: from (10, 20, -4) to (13, 21, -3)\n# 🎮 Server version: 1.20.4\n# Subtest: creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\nok 46 - creates real mineflayer-schem Build actions from modern block states without legacy stone fallback\n  ---\n  duration_ms: 17.619742\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall torches, wall signs, and redstone wire to actual inventory items\nok 47 - maps wall torches, wall signs, and redstone wire to actual inventory items\n  ---\n  duration_ms: 3.901763\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (3, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: maps wall banners and cocoa to inventory items without changing requested states\nok 48 - maps wall banners and cocoa to inventory items without changing requested states\n  ---\n  duration_ms: 3.761116\n  type: 'test'\n  ...\n# 📦 Build initialized at (4, 5, 6)\n# 📐 Area: from (4, 5, 6) to (9, 6, 7)\n# 🎮 Server version: 1.20.4\n# Subtest: retains dependent door and bed blocks in the verification plan but only places their base halves\nok 49 - retains dependent door and bed blocks in the verification plan but only places their base halves\n  ---\n  duration_ms: 3.198589\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 0, 0)\n# 📐 Area: from (0, 0, 0) to (1, 1, 1)\n# 🎮 Server version: 1.20.4\n# Subtest: reports unsupported states explicitly and attaches the inspectable adapter\nok 50 - reports unsupported states explicitly and attaches the inspectable adapter\n  ---\n  duration_ms: 3.495452\n  type: 'test'\n  ...\n# Subtest: rejects invalid and oversized dimensions before decoding block data\nok 51 - rejects invalid and oversized dimensions before decoding block data\n  ---\n  duration_ms: 1.755231\n  type: 'test'\n  ...\n# Subtest: versioned manifest preserves real pack mappings and literal filename selection\nok 52 - versioned manifest preserves real pack mappings and literal filename selection\n  ---\n  duration_ms: 46.863148\n  type: 'test'\n  ...\n# Subtest: numeric keys resolve independently, including sparse and wide values\nok 53 - numeric keys resolve independently, including sparse and wide values\n  ---\n  duration_ms: 10.745798\n  type: 'test'\n  ...\n# Subtest: manifest mappings do not depend on filename prefixes or directory ordering\nok 54 - manifest mappings do not depend on filename prefixes or directory ordering\n  ---\n  duration_ms: 4.108235\n  type: 'test'\n  ...\n# Subtest: literal hyphenated filenames remain filenames and ambiguous stems fail closed\nok 55 - literal hyphenated filenames remain filenames and ambiguous stems fail closed\n  ---\n  duration_ms: 5.507249\n  type: 'test'\n  ...\n# Subtest: malformed manifest versions and invalid group/id values are rejected\nok 56 - malformed manifest versions and invalid group/id values are rejected\n  ---\n  duration_ms: 6.049038\n  type: 'test'\n  ...\n# Subtest: numeric normalization collisions and duplicate filenames are rejected\nok 57 - numeric normalization collisions and duplicate filenames are rejected\n  ---\n  duration_ms: 4.630516\n  type: 'test'\n  ...\n# Subtest: duplicate JSON keys and missing manifest targets are rejected\nok 58 - duplicate JSON keys and missing manifest targets are rejected\n  ---\n  duration_ms: 2.939096\n  type: 'test'\n  ...\n# Subtest: manifest targets and pack directories cannot escape through symlinks\nok 59 - manifest targets and pack directories cannot escape through symlinks\n  ---\n  duration_ms: 3.055227\n  type: 'test'\n  ...\n# Subtest: selectors reject malformed numeric tuples and unsafe paths\nok 60 - selectors reject malformed numeric tuples and unsafe paths\n  ---\n  duration_ms: 3.392517\n  type: 'test'\n  ...\n# Subtest: supported-looking directories are not treated as schematic files\nok 61 - supported-looking directories are not treated as schematic files\n  ---\n  duration_ms: 2.001036\n  type: 'test'\n  ...\n# Subtest: root-relative filename paths continue to resolve within the schematics root\nok 62 - root-relative filename paths continue to resolve within the schematics root\n  ---\n  duration_ms: 0.955673\n  type: 'test'\n  ...\n# Subtest: postinstall verifier accepts the patched installed package\nok 63 - postinstall verifier accepts the patched installed package\n  ---\n  duration_ms: 177.005448\n  type: 'test'\n  ...\n# Subtest: runtime loader accepts the patched plugin capability\nok 64 - runtime loader accepts the patched plugin capability\n  ---\n  duration_ms: 186.911073\n  type: 'test'\n  ...\n# Subtest: an unpatched package fails install verification and runtime loading before plugin registration\nok 65 - an unpatched package fails install verification and runtime loading before plugin registration\n  ---\n  duration_ms: 272.909776\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath accepts confined files and confined missing candidates\nok 66 - resolveSchematicPath accepts confined files and confined missing candidates\n  ---\n  duration_ms: 8.488676\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\nok 67 - resolveSchematicPath rejects absolute, empty, NUL, and traversal paths\n  ---\n  duration_ms: 1.332388\n  type: 'test'\n  ...\n# Subtest: resolveSchematicPath rejects symlinks and missing descendants that escape\nok 68 - resolveSchematicPath rejects symlinks and missing descendants that escape\n  ---\n  duration_ms: 2.475177\n  type: 'test'\n  ...\n# Subtest: listSchematics returns sorted supported regular files and ignores escaping symlinks\nok 69 - listSchematics returns sorted supported regular files and ignores escaping symlinks\n  ---\n  duration_ms: 10.390555\n  type: 'test'\n  ...\n# Subtest: listSchematics treats a missing directory as empty\nok 70 - listSchematics treats a missing directory as empty\n  ---\n  duration_ms: 0.979829\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate handles omitted values and finite numeric values/strings\nok 71 - parseOptionalCoordinate handles omitted values and finite numeric values/strings\n  ---\n  duration_ms: 0.319727\n  type: 'test'\n  ...\n# Subtest: parseOptionalCoordinate rejects invalid and non-finite values\nok 72 - parseOptionalCoordinate rejects invalid and non-finite values\n  ---\n  duration_ms: 0.274711\n  type: 'test'\n  ...\n# Subtest: reads a real serialized Sponge v2 buffer through prismarine-schematic\nok 73 - reads a real serialized Sponge v2 buffer through prismarine-schematic\n  ---\n  duration_ms: 67.155079\n  type: 'test'\n  ...\n# Subtest: rejects unknown names and invalid properties or states from real Sponge palettes\nok 74 - rejects unknown names and invalid properties or states from real Sponge palettes\n  ---\n  duration_ms: 3.976094\n  type: 'test'\n  ...\n# Subtest: parses a real legacy .schematic fixture and rejects unmapped legacy IDs\nok 75 - parses a real legacy .schematic fixture and rejects unmapped legacy IDs\n  ---\n  duration_ms: 4.407733\n  type: 'test'\n  ...\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.20.4\n# 📦 Build initialized at (10, 20, 30)\n# 📐 Area: from (10, 20, 30) to (47, 21, 31)\n# 🎮 Server version: 1.21.4\n# Subtest: preserves every candle count, foliage distance and snow layer through production reading and placement planning\nok 76 - preserves every candle count, foliage distance and snow layer through production reading and placement planning\n  ---\n  duration_ms: 43.759027\n  type: 'test'\n  ...\n# Subtest: integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\nok 77 - integer state encoding uses declared order while preserving old numeric, enum and boolean behavior\n  ---\n  duration_ms: 0.44813\n  type: 'test'\n  ...\n# Subtest: zero-based integer states and omitted properties retain their existing interpretation\nok 78 - zero-based integer states and omitted properties retain their existing interpretation\n  ---\n  duration_ms: 5.756964\n  type: 'test'\n  ...\n# Subtest: legacy snow mapping also preserves its one-based layer value\nok 79 - legacy snow mapping also preserves its one-based layer value\n  ---\n  duration_ms: 2.216045\n  type: 'test'\n  ...\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (6, 71, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 81, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 79, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (18, 81, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 87, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 103, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 78, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 73, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 88, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (15, 80, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 80, 22)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (14, 80, 6)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 72, 9)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (24, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 69, 3)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (11, 75, 7)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 67, 19)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (12, 66, 12)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 91, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (20, 80, 16)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (8, 74, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (19, 77, 15)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 79, 8)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (17, 81, 17)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (9, 72, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (5, 73, 4)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (13, 97, 11)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (10, 70, 13)\n# 🎮 Server version: 1.21.4\n# 📦 Build initialized at (0, 64, 0)\n# 📐 Area: from (0, 64, 0) to (23, 72, 22)\n# 🎮 Server version: 1.21.4\n# PACK1_BUILD_PREFLIGHT {\"passed\":28,\"unsupported\":[{\"group\":4,\"id\":1,\"filename\":\"04_pagoda.schem\",\"error\":\"Schematic contains unsupported blocks: potted_oak_sapling at 10,68,6: no placeable item mapping for potted_oak_sapling; potted_oak_sapling at 7,73,4: no placeable item mapping for potted_oak_sapling\"},{\"group\":18,\"id\":2,\"filename\":\"18_giant_grandfather_clock.schem\",\"error\":\"Schematic contains unsupported blocks: potted_fern at 5,67,3: no placeable item mapping for potted_fern\"}]}\n# Subtest: every real pack1 asset is listed with separate group and id fields and resolves by tuple, stem, and filename\nok 80 - every real pack1 asset is listed with separate group and id fields and resolves by tuple, stem, and filename\n  ---\n  duration_ms: 667.146305\n  type: 'test'\n  ...\n# Subtest: real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\nok 81 - real listing query and parsed README selectors reach the real wardrobe reader/build plan (simulated world only)\n  ---\n  duration_ms: 364.226819\n  type: 'test'\n  ...\n# Subtest: returns finished only after all build actions are consumed\nok 82 - returns finished only after all build actions are consumed\n  ---\n  duration_ms: 6.719269\n  type: 'test'\n  ...\n# Subtest: captures builder_error events even when the plugin resolves successfully\nok 83 - captures builder_error events even when the plugin resolves successfully\n  ---\n  duration_ms: 2.106426\n  type: 'test'\n  ...\n# Subtest: captures rejected builder promises\nok 84 - captures rejected builder promises\n  ---\n  duration_ms: 3.045839\n  type: 'test'\n  ...\n# Subtest: an already interrupted bot does not start the build and runs cancellation hooks\nok 85 - an already interrupted bot does not start the build and runs cancellation hooks\n  ---\n  duration_ms: 0.563539\n  type: 'test'\n  ...\n# Subtest: bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\nok 86 - bounds cancellation of a hung build, cleans listeners, and quarantines it until settlement\n  ---\n  duration_ms: 22.875674\n  type: 'test'\n  ...\n# Subtest: reports a stalled build when remaining actions stop decreasing\nok 87 - reports a stalled build when remaining actions stop decreasing\n  ---\n  duration_ms: 24.120596\n  type: 'test'\n  ...\n# Subtest: does not report finished if a resolved builder leaves actions behind\nok 88 - does not report finished if a resolved builder leaves actions behind\n  ---\n  duration_ms: 1.41785\n  type: 'test'\n  ...\n# Subtest: clears runner polling and grace timers and removes its event listener\nok 89 - clears runner polling and grace timers and removes its event listener\n  ---\n  duration_ms: 2.117829\n  type: 'test'\n  ...\n# Subtest: documented human and script selectors resolve through the real parsers\nok 90 - documented human and script selectors resolve through the real parsers\n  ---\n  duration_ms: 205.367051\n  type: 'test'\n  ...\n# Subtest: schematic guide links and generated per-build selectors agree with structured mappings\nok 91 - schematic guide links and generated per-build selectors agree with structured mappings\n  ---\n  duration_ms: 45.776325\n  type: 'test'\n  ...\n# Subtest: compiler and production validator resolve pack paths from a different cwd\nok 92 - compiler and production validator resolve pack paths from a different cwd\n  ---\n  duration_ms: 364.202643\n  type: 'test'\n  ...\n# Subtest: tooling rejects inputs that resolve outside the repository\nok 93 - tooling rejects inputs that resolve outside the repository\n  ---\n  duration_ms: 270.156402\n  type: 'test'\n  ...\n# Subtest: audit refuses an unknown pack instead of generating an empty successful report\nok 94 - audit refuses an unknown pack instead of generating an empty successful report\n  ---\n  duration_ms: 44.302078\n  type: 'test'\n  ...\n# Subtest: audit manifest reader validates separate numeric fields, normalized uniqueness, and safe targets\nok 95 - audit manifest reader validates separate numeric fields, normalized uniqueness, and safe targets\n  ---\n  duration_ms: 36.317608\n  type: 'test'\n  ...\n# Subtest: compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\nok 96 - compiler and production validator accept another pack and registry version, but reject mismatched or unavailable versions\n  ---\n  duration_ms: 999.359413\n  type: 'test'\n  ...\n# WARDROBE_REBUILD_DIAGNOSIS {\"zlib\":\"1.3.1\",\"canonical_sha256\":\"8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383\",\"rebuilt_sha256\":\"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\",\"canonical_bytes\":535,\"rebuilt_bytes\":505,\"canonical_header\":\"1f8b0808c1eef96a02ff\",\"rebuilt_header\":\"1f8b08000000000002ff\",\"canonical_trailer\":\"9c0881f6d4050000\",\"rebuilt_trailer\":\"16db9e95d4050000\",\"canonical_raw_sha256\":\"bb3ffe6c546bb32b5c535254db7980406f21d845ec67a75dac85e2c204dc8ade\",\"rebuilt_raw_sha256\":\"1c623daf9879dc4a0dc78fff9c2a470f1fa1b5e482d8ccfbde5d969f3cf2c309\",\"canonical_gzip_filename\":\"wardrobe_nether_portal.schem\",\"canonical_gzip_mtime\":1794764481,\"canonical_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"Palette\",\"PaletteMax\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"rebuilt_tag_order\":[\"Version\",\"DataVersion\",\"Width\",\"Height\",\"Length\",\"Offset\",\"PaletteMax\",\"Palette\",\"BlockData\",\"BlockEntities\",\"Entities\"],\"canonical_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_planks\":1,\"minecraft:obsidian\":2,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":3,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":4,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":5,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":6,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":7,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":8,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":9,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"rebuilt_palette\":{\"minecraft:air\":0,\"minecraft:dark_oak_button[face=wall,facing=north,powered=false]\":1,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]\":2,\"minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]\":3,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]\":4,\"minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]\":5,\"minecraft:dark_oak_planks\":6,\"minecraft:dark_oak_slab[type=bottom,waterlogged=false]\":7,\"minecraft:dark_oak_stairs[facing=south,half=top,shape=straight,waterlogged=false]\":8,\"minecraft:dark_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]\":9,\"minecraft:oak_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]\":10,\"minecraft:oak_trapdoor[facing=south,half=bottom,open=false,powered=false,waterlogged=false]\":11,\"minecraft:oak_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]\":12,\"minecraft:obsidian\":13,\"minecraft:white_wall_banner[facing=east]\":14,\"minecraft:white_wall_banner[facing=west]\":15},\"byte_match\":false,\"repeated_rebuild_match\":true,\"decoded_voxels_match\":true,\"compared_voxels\":168,\"legacy_raw_reconstructed_exactly\":true,\"legacy_gzip_reconstructed_exactly\":true,\"canonical_unchanged\":true}\n# Subtest: wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\nok 97 - wardrobe byte mismatch remains real and is fully explained by legacy serialization, not voxel changes\n  ---\n  duration_ms: 77.044764\n  type: 'test'\n  ...\n1..97\n# tests 97\n# suites 0\n# pass 97\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 25486.675971\n"
     }
   },
   "builds": [
     {
       "folder": "01",
       "title": "Портал у шафі (Portal in a Wardrobe)",
-      "stable_id": "01-01",
+      "group": 1,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
         "bytes": 8632,
@@ -159,7 +161,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
-            "/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-51r0cjww/01_wardrobe_nether_portal.schem"
+            "/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-fojsl2_1/01_wardrobe_nether_portal.schem"
           ],
           "exit_code": 0,
           "result": "FAIL",
@@ -167,7 +169,7 @@
           "canonical_sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
           "regenerated_sha256": "a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886",
           "log": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.determinism.log",
-          "output": "{\"air\": 78, \"block_data_bytes\": 168, \"blueprint\": \"schematics/blueprints/pack1/01_wardrobe_nether_portal.json\", \"bytes\": 505, \"compiled\": \"/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-51r0cjww/01_wardrobe_nether_portal.schem\", \"dimensions\": [6, 7, 4], \"non_air\": 90, \"palette_entries\": 16, \"sha256\": \"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\", \"spot_checks\": 21, \"volume\": 168}\n"
+          "output": "{\"air\": 78, \"block_data_bytes\": 168, \"blueprint\": \"schematics/blueprints/pack1/01_wardrobe_nether_portal.json\", \"bytes\": 505, \"compiled\": \"/tmp/schematic-audit-pack1-01_wardrobe_nether_portal-fojsl2_1/01_wardrobe_nether_portal.schem\", \"dimensions\": [6, 7, 4], \"non_air\": 90, \"palette_entries\": 16, \"sha256\": \"a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886\", \"spot_checks\": 21, \"volume\": 168}\n"
         }
       },
       "air_count": 78,
@@ -191,7 +193,8 @@
     {
       "folder": "02",
       "title": "Свиноповітряна куля / Pig hot-air balloon - illustrated bee variant",
-      "stable_id": "02-01",
+      "group": 2,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
         "bytes": 12906,
@@ -294,7 +297,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
-            "/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-rokcc1bw/02_bee_hot_air_balloon.schem"
+            "/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-ra131dxq/02_bee_hot_air_balloon.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -302,7 +305,7 @@
           "canonical_sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
           "regenerated_sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
           "log": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.determinism.log",
-          "output": "{\"air\": 1090, \"block_data_bytes\": 1530, \"blueprint\": \"schematics/blueprints/pack1/02_bee_hot_air_balloon.json\", \"bytes\": 761, \"compiled\": \"/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-rokcc1bw/02_bee_hot_air_balloon.schem\", \"dimensions\": [10, 17, 9], \"non_air\": 440, \"palette_entries\": 25, \"sha256\": \"1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119\", \"spot_checks\": 18, \"volume\": 1530}\n"
+          "output": "{\"air\": 1090, \"block_data_bytes\": 1530, \"blueprint\": \"schematics/blueprints/pack1/02_bee_hot_air_balloon.json\", \"bytes\": 761, \"compiled\": \"/tmp/schematic-audit-pack1-02_bee_hot_air_balloon-ra131dxq/02_bee_hot_air_balloon.schem\", \"dimensions\": [10, 17, 9], \"non_air\": 440, \"palette_entries\": 25, \"sha256\": \"1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119\", \"spot_checks\": 18, \"volume\": 1530}\n"
         }
       },
       "air_count": 1090,
@@ -326,7 +329,8 @@
     {
       "folder": "02",
       "title": "Свиноповітряна куля / Pig hot-air balloon - illustrated enderman variant",
-      "stable_id": "02-02",
+      "group": 2,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
         "bytes": 11485,
@@ -429,7 +433,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
-            "/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-fes01y_g/02_enderman_hot_air_balloon.schem"
+            "/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-ctfhz3jy/02_enderman_hot_air_balloon.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -437,7 +441,7 @@
           "canonical_sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
           "regenerated_sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
           "log": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.determinism.log",
-          "output": "{\"air\": 544, \"block_data_bytes\": 960, \"blueprint\": \"schematics/blueprints/pack1/02_enderman_hot_air_balloon.json\", \"bytes\": 680, \"compiled\": \"/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-fes01y_g/02_enderman_hot_air_balloon.schem\", \"dimensions\": [8, 15, 8], \"non_air\": 416, \"palette_entries\": 23, \"sha256\": \"73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75\", \"spot_checks\": 16, \"volume\": 960}\n"
+          "output": "{\"air\": 544, \"block_data_bytes\": 960, \"blueprint\": \"schematics/blueprints/pack1/02_enderman_hot_air_balloon.json\", \"bytes\": 680, \"compiled\": \"/tmp/schematic-audit-pack1-02_enderman_hot_air_balloon-ctfhz3jy/02_enderman_hot_air_balloon.schem\", \"dimensions\": [8, 15, 8], \"non_air\": 416, \"palette_entries\": 23, \"sha256\": \"73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75\", \"spot_checks\": 16, \"volume\": 960}\n"
         }
       },
       "air_count": 544,
@@ -461,7 +465,8 @@
     {
       "folder": "02",
       "title": "Свиноповітряна куля / Pig hot-air balloon",
-      "stable_id": "02-03",
+      "group": 2,
+      "id": 3,
       "blueprint": {
         "path": "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
         "bytes": 11893,
@@ -564,7 +569,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
-            "/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-mt39t8t3/02_pig_hot_air_balloon.schem"
+            "/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-87aq29tl/02_pig_hot_air_balloon.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -572,7 +577,7 @@
           "canonical_sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
           "regenerated_sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
           "log": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.determinism.log",
-          "output": "{\"air\": 652, \"block_data_bytes\": 1080, \"blueprint\": \"schematics/blueprints/pack1/02_pig_hot_air_balloon.json\", \"bytes\": 713, \"compiled\": \"/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-mt39t8t3/02_pig_hot_air_balloon.schem\", \"dimensions\": [8, 15, 9], \"non_air\": 428, \"palette_entries\": 24, \"sha256\": \"0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4\", \"spot_checks\": 17, \"volume\": 1080}\n"
+          "output": "{\"air\": 652, \"block_data_bytes\": 1080, \"blueprint\": \"schematics/blueprints/pack1/02_pig_hot_air_balloon.json\", \"bytes\": 713, \"compiled\": \"/tmp/schematic-audit-pack1-02_pig_hot_air_balloon-87aq29tl/02_pig_hot_air_balloon.schem\", \"dimensions\": [8, 15, 9], \"non_air\": 428, \"palette_entries\": 24, \"sha256\": \"0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4\", \"spot_checks\": 17, \"volume\": 1080}\n"
         }
       },
       "air_count": 652,
@@ -596,7 +601,8 @@
     {
       "folder": "03",
       "title": "Великий червоний хлів / Big red barn",
-      "stable_id": "03-01",
+      "group": 3,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/03_big_red_barn.json",
         "bytes": 22404,
@@ -699,7 +705,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/03_big_red_barn.json",
-            "/tmp/schematic-audit-pack1-03_big_red_barn-5igaetqe/03_big_red_barn.schem"
+            "/tmp/schematic-audit-pack1-03_big_red_barn-tquheryr/03_big_red_barn.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -707,7 +713,7 @@
           "canonical_sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
           "regenerated_sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
           "log": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.determinism.log",
-          "output": "{\"air\": 4712, \"block_data_bytes\": 5814, \"blueprint\": \"schematics/blueprints/pack1/03_big_red_barn.json\", \"bytes\": 946, \"compiled\": \"/tmp/schematic-audit-pack1-03_big_red_barn-5igaetqe/03_big_red_barn.schem\", \"dimensions\": [18, 17, 19], \"non_air\": 1102, \"palette_entries\": 26, \"sha256\": \"68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813\", \"spot_checks\": 16, \"volume\": 5814}\n"
+          "output": "{\"air\": 4712, \"block_data_bytes\": 5814, \"blueprint\": \"schematics/blueprints/pack1/03_big_red_barn.json\", \"bytes\": 946, \"compiled\": \"/tmp/schematic-audit-pack1-03_big_red_barn-tquheryr/03_big_red_barn.schem\", \"dimensions\": [18, 17, 19], \"non_air\": 1102, \"palette_entries\": 26, \"sha256\": \"68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813\", \"spot_checks\": 16, \"volume\": 5814}\n"
         }
       },
       "air_count": 4712,
@@ -731,7 +737,8 @@
     {
       "folder": "03",
       "title": "Силосна вежа / Storage silo",
-      "stable_id": "03-02",
+      "group": 3,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/03_storage_silo.json",
         "bytes": 12301,
@@ -834,7 +841,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/03_storage_silo.json",
-            "/tmp/schematic-audit-pack1-03_storage_silo-58wt7g9s/03_storage_silo.schem"
+            "/tmp/schematic-audit-pack1-03_storage_silo-qa8lxl4e/03_storage_silo.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -842,7 +849,7 @@
           "canonical_sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
           "regenerated_sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
           "log": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.determinism.log",
-          "output": "{\"air\": 1247, \"block_data_bytes\": 1863, \"blueprint\": \"schematics/blueprints/pack1/03_storage_silo.json\", \"bytes\": 497, \"compiled\": \"/tmp/schematic-audit-pack1-03_storage_silo-58wt7g9s/03_storage_silo.schem\", \"dimensions\": [9, 23, 9], \"non_air\": 616, \"palette_entries\": 14, \"sha256\": \"cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0\", \"spot_checks\": 14, \"volume\": 1863}\n"
+          "output": "{\"air\": 1247, \"block_data_bytes\": 1863, \"blueprint\": \"schematics/blueprints/pack1/03_storage_silo.json\", \"bytes\": 497, \"compiled\": \"/tmp/schematic-audit-pack1-03_storage_silo-qa8lxl4e/03_storage_silo.schem\", \"dimensions\": [9, 23, 9], \"non_air\": 616, \"palette_entries\": 14, \"sha256\": \"cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0\", \"spot_checks\": 14, \"volume\": 1863}\n"
         }
       },
       "air_count": 1247,
@@ -866,7 +873,8 @@
     {
       "folder": "04",
       "title": "Пагода / Pagoda",
-      "stable_id": "04-01",
+      "group": 4,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/04_pagoda.json",
         "bytes": 31539,
@@ -969,7 +977,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/04_pagoda.json",
-            "/tmp/schematic-audit-pack1-04_pagoda-wa8t1n95/04_pagoda.schem"
+            "/tmp/schematic-audit-pack1-04_pagoda-ghtr1waz/04_pagoda.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -977,7 +985,7 @@
           "canonical_sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
           "regenerated_sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
           "log": "schematics/tooling/validation/pack1/build_logs/04_pagoda.determinism.log",
-          "output": "{\"air\": 6892, \"block_data_bytes\": 9360, \"blueprint\": \"schematics/blueprints/pack1/04_pagoda.json\", \"bytes\": 1413, \"compiled\": \"/tmp/schematic-audit-pack1-04_pagoda-wa8t1n95/04_pagoda.schem\", \"dimensions\": [15, 39, 16], \"non_air\": 2468, \"palette_entries\": 41, \"sha256\": \"42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44\", \"spot_checks\": 19, \"volume\": 9360}\n"
+          "output": "{\"air\": 6892, \"block_data_bytes\": 9360, \"blueprint\": \"schematics/blueprints/pack1/04_pagoda.json\", \"bytes\": 1413, \"compiled\": \"/tmp/schematic-audit-pack1-04_pagoda-ghtr1waz/04_pagoda.schem\", \"dimensions\": [15, 39, 16], \"non_air\": 2468, \"palette_entries\": 41, \"sha256\": \"42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44\", \"spot_checks\": 19, \"volume\": 9360}\n"
         }
       },
       "air_count": 6892,
@@ -1001,7 +1009,8 @@
     {
       "folder": "05",
       "title": "Статуя збирача / Allay statue",
-      "stable_id": "05-01",
+      "group": 5,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/05_allay_statue.json",
         "bytes": 13504,
@@ -1104,7 +1113,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/05_allay_statue.json",
-            "/tmp/schematic-audit-pack1-05_allay_statue-0ha3kovk/05_allay_statue.schem"
+            "/tmp/schematic-audit-pack1-05_allay_statue-23eaat8g/05_allay_statue.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1112,7 +1121,7 @@
           "canonical_sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
           "regenerated_sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
           "log": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.determinism.log",
-          "output": "{\"air\": 1144, \"block_data_bytes\": 1428, \"blueprint\": \"schematics/blueprints/pack1/05_allay_statue.json\", \"bytes\": 509, \"compiled\": \"/tmp/schematic-audit-pack1-05_allay_statue-0ha3kovk/05_allay_statue.schem\", \"dimensions\": [17, 14, 6], \"non_air\": 284, \"palette_entries\": 13, \"sha256\": \"b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb\", \"spot_checks\": 23, \"volume\": 1428}\n"
+          "output": "{\"air\": 1144, \"block_data_bytes\": 1428, \"blueprint\": \"schematics/blueprints/pack1/05_allay_statue.json\", \"bytes\": 509, \"compiled\": \"/tmp/schematic-audit-pack1-05_allay_statue-23eaat8g/05_allay_statue.schem\", \"dimensions\": [17, 14, 6], \"non_air\": 284, \"palette_entries\": 13, \"sha256\": \"b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb\", \"spot_checks\": 23, \"volume\": 1428}\n"
         }
       },
       "air_count": 1144,
@@ -1136,7 +1145,8 @@
     {
       "folder": "06",
       "title": "06_wild_west_jail",
-      "stable_id": "06-01",
+      "group": 6,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/06_wild_west_jail.json",
         "bytes": 19959,
@@ -1239,7 +1249,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/06_wild_west_jail.json",
-            "/tmp/schematic-audit-pack1-06_wild_west_jail-kiivmb6z/06_wild_west_jail.schem"
+            "/tmp/schematic-audit-pack1-06_wild_west_jail-i_vhft5r/06_wild_west_jail.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1247,7 +1257,7 @@
           "canonical_sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
           "regenerated_sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
           "log": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.determinism.log",
-          "output": "{\"air\": 607, \"block_data_bytes\": 1053, \"blueprint\": \"schematics/blueprints/pack1/06_wild_west_jail.json\", \"bytes\": 1019, \"compiled\": \"/tmp/schematic-audit-pack1-06_wild_west_jail-kiivmb6z/06_wild_west_jail.schem\", \"dimensions\": [13, 9, 9], \"non_air\": 446, \"palette_entries\": 42, \"sha256\": \"fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965\", \"spot_checks\": 24, \"volume\": 1053}\n"
+          "output": "{\"air\": 607, \"block_data_bytes\": 1053, \"blueprint\": \"schematics/blueprints/pack1/06_wild_west_jail.json\", \"bytes\": 1019, \"compiled\": \"/tmp/schematic-audit-pack1-06_wild_west_jail-i_vhft5r/06_wild_west_jail.schem\", \"dimensions\": [13, 9, 9], \"non_air\": 446, \"palette_entries\": 42, \"sha256\": \"fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965\", \"spot_checks\": 24, \"volume\": 1053}\n"
         }
       },
       "air_count": 607,
@@ -1271,7 +1281,8 @@
     {
       "folder": "07",
       "title": "07_secret_island_base",
-      "stable_id": "07-01",
+      "group": 7,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/07_secret_island_base.json",
         "bytes": 21360,
@@ -1374,7 +1385,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/07_secret_island_base.json",
-            "/tmp/schematic-audit-pack1-07_secret_island_base-htd4tfhd/07_secret_island_base.schem"
+            "/tmp/schematic-audit-pack1-07_secret_island_base-yk0_rb_j/07_secret_island_base.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1382,7 +1393,7 @@
           "canonical_sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
           "regenerated_sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
           "log": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.determinism.log",
-          "output": "{\"air\": 2834, \"block_data_bytes\": 4056, \"blueprint\": \"schematics/blueprints/pack1/07_secret_island_base.json\", \"bytes\": 965, \"compiled\": \"/tmp/schematic-audit-pack1-07_secret_island_base-htd4tfhd/07_secret_island_base.schem\", \"dimensions\": [13, 24, 13], \"non_air\": 1222, \"palette_entries\": 32, \"sha256\": \"38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015\", \"spot_checks\": 29, \"volume\": 4056}\n"
+          "output": "{\"air\": 2834, \"block_data_bytes\": 4056, \"blueprint\": \"schematics/blueprints/pack1/07_secret_island_base.json\", \"bytes\": 965, \"compiled\": \"/tmp/schematic-audit-pack1-07_secret_island_base-yk0_rb_j/07_secret_island_base.schem\", \"dimensions\": [13, 24, 13], \"non_air\": 1222, \"palette_entries\": 32, \"sha256\": \"38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015\", \"spot_checks\": 29, \"volume\": 4056}\n"
         }
       },
       "air_count": 2834,
@@ -1406,7 +1417,8 @@
     {
       "folder": "08",
       "title": "08_greenhouse",
-      "stable_id": "08-01",
+      "group": 8,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/08_greenhouse.json",
         "bytes": 22689,
@@ -1509,7 +1521,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/08_greenhouse.json",
-            "/tmp/schematic-audit-pack1-08_greenhouse-umx1n8y3/08_greenhouse.schem"
+            "/tmp/schematic-audit-pack1-08_greenhouse-n47gpsiu/08_greenhouse.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1517,7 +1529,7 @@
           "canonical_sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
           "regenerated_sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
           "log": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.determinism.log",
-          "output": "{\"air\": 3441, \"block_data_bytes\": 4560, \"blueprint\": \"schematics/blueprints/pack1/08_greenhouse.json\", \"bytes\": 1263, \"compiled\": \"/tmp/schematic-audit-pack1-08_greenhouse-umx1n8y3/08_greenhouse.schem\", \"dimensions\": [15, 16, 19], \"non_air\": 1119, \"palette_entries\": 38, \"sha256\": \"6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1\", \"spot_checks\": 25, \"volume\": 4560}\n"
+          "output": "{\"air\": 3441, \"block_data_bytes\": 4560, \"blueprint\": \"schematics/blueprints/pack1/08_greenhouse.json\", \"bytes\": 1263, \"compiled\": \"/tmp/schematic-audit-pack1-08_greenhouse-n47gpsiu/08_greenhouse.schem\", \"dimensions\": [15, 16, 19], \"non_air\": 1119, \"palette_entries\": 38, \"sha256\": \"6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1\", \"spot_checks\": 25, \"volume\": 4560}\n"
         }
       },
       "air_count": 3441,
@@ -1541,7 +1553,8 @@
     {
       "folder": "09",
       "title": "09_river_steamboat",
-      "stable_id": "09-01",
+      "group": 9,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/09_river_steamboat.json",
         "bytes": 23994,
@@ -1643,7 +1656,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/09_river_steamboat.json",
-            "/tmp/schematic-audit-pack1-09_river_steamboat-kgcdk170/09_river_steamboat.schem"
+            "/tmp/schematic-audit-pack1-09_river_steamboat-4b0qspq4/09_river_steamboat.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1651,7 +1664,7 @@
           "canonical_sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
           "regenerated_sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
           "log": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.determinism.log",
-          "output": "{\"air\": 3383, \"block_data_bytes\": 4576, \"blueprint\": \"schematics/blueprints/pack1/09_river_steamboat.json\", \"bytes\": 1210, \"compiled\": \"/tmp/schematic-audit-pack1-09_river_steamboat-kgcdk170/09_river_steamboat.schem\", \"dimensions\": [13, 16, 22], \"non_air\": 1193, \"palette_entries\": 34, \"sha256\": \"dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7\", \"spot_checks\": 29, \"volume\": 4576}\n"
+          "output": "{\"air\": 3383, \"block_data_bytes\": 4576, \"blueprint\": \"schematics/blueprints/pack1/09_river_steamboat.json\", \"bytes\": 1210, \"compiled\": \"/tmp/schematic-audit-pack1-09_river_steamboat-4b0qspq4/09_river_steamboat.schem\", \"dimensions\": [13, 16, 22], \"non_air\": 1193, \"palette_entries\": 34, \"sha256\": \"dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7\", \"spot_checks\": 29, \"volume\": 4576}\n"
         }
       },
       "air_count": 3383,
@@ -1675,7 +1688,8 @@
     {
       "folder": "10",
       "title": "10_pachinko_parkour",
-      "stable_id": "10-01",
+      "group": 10,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/10_pachinko_parkour.json",
         "bytes": 16345,
@@ -1778,7 +1792,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/10_pachinko_parkour.json",
-            "/tmp/schematic-audit-pack1-10_pachinko_parkour-lld7xpsq/10_pachinko_parkour.schem"
+            "/tmp/schematic-audit-pack1-10_pachinko_parkour-bd7xitby/10_pachinko_parkour.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1786,7 +1800,7 @@
           "canonical_sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
           "regenerated_sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
           "log": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.determinism.log",
-          "output": "{\"air\": 688, \"block_data_bytes\": 1344, \"blueprint\": \"schematics/blueprints/pack1/10_pachinko_parkour.json\", \"bytes\": 751, \"compiled\": \"/tmp/schematic-audit-pack1-10_pachinko_parkour-lld7xpsq/10_pachinko_parkour.schem\", \"dimensions\": [14, 16, 6], \"non_air\": 656, \"palette_entries\": 20, \"sha256\": \"c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903\", \"spot_checks\": 30, \"volume\": 1344}\n"
+          "output": "{\"air\": 688, \"block_data_bytes\": 1344, \"blueprint\": \"schematics/blueprints/pack1/10_pachinko_parkour.json\", \"bytes\": 751, \"compiled\": \"/tmp/schematic-audit-pack1-10_pachinko_parkour-bd7xitby/10_pachinko_parkour.schem\", \"dimensions\": [14, 16, 6], \"non_air\": 656, \"palette_entries\": 20, \"sha256\": \"c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903\", \"spot_checks\": 30, \"volume\": 1344}\n"
         }
       },
       "air_count": 688,
@@ -1810,7 +1824,8 @@
     {
       "folder": "11",
       "title": "11_grandstand",
-      "stable_id": "11-01",
+      "group": 11,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_grandstand.json",
         "bytes": 9986,
@@ -1913,7 +1928,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_grandstand.json",
-            "/tmp/schematic-audit-pack1-11_grandstand-_ruk2awq/11_grandstand.schem"
+            "/tmp/schematic-audit-pack1-11_grandstand-rxqe8dtv/11_grandstand.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -1921,7 +1936,7 @@
           "canonical_sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
           "regenerated_sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
           "log": "schematics/tooling/validation/pack1/build_logs/11_grandstand.determinism.log",
-          "output": "{\"air\": 567, \"block_data_bytes\": 936, \"blueprint\": \"schematics/blueprints/pack1/11_grandstand.json\", \"bytes\": 430, \"compiled\": \"/tmp/schematic-audit-pack1-11_grandstand-_ruk2awq/11_grandstand.schem\", \"dimensions\": [13, 8, 9], \"non_air\": 369, \"palette_entries\": 9, \"sha256\": \"bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801\", \"spot_checks\": 14, \"volume\": 936}\n"
+          "output": "{\"air\": 567, \"block_data_bytes\": 936, \"blueprint\": \"schematics/blueprints/pack1/11_grandstand.json\", \"bytes\": 430, \"compiled\": \"/tmp/schematic-audit-pack1-11_grandstand-rxqe8dtv/11_grandstand.schem\", \"dimensions\": [13, 8, 9], \"non_air\": 369, \"palette_entries\": 9, \"sha256\": \"bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801\", \"spot_checks\": 14, \"volume\": 936}\n"
         }
       },
       "air_count": 567,
@@ -1945,7 +1960,8 @@
     {
       "folder": "11",
       "title": "11_hairpin",
-      "stable_id": "11-02",
+      "group": 11,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_hairpin.json",
         "bytes": 5327,
@@ -2048,7 +2064,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_hairpin.json",
-            "/tmp/schematic-audit-pack1-11_hairpin-8p_7v383/11_hairpin.schem"
+            "/tmp/schematic-audit-pack1-11_hairpin-016xsu7v/11_hairpin.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2056,7 +2072,7 @@
           "canonical_sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
           "regenerated_sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
           "log": "schematics/tooling/validation/pack1/build_logs/11_hairpin.determinism.log",
-          "output": "{\"air\": 0, \"block_data_bytes\": 576, \"blueprint\": \"schematics/blueprints/pack1/11_hairpin.json\", \"bytes\": 303, \"compiled\": \"/tmp/schematic-audit-pack1-11_hairpin-8p_7v383/11_hairpin.schem\", \"dimensions\": [24, 2, 12], \"non_air\": 576, \"palette_entries\": 6, \"sha256\": \"9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2\", \"spot_checks\": 7, \"volume\": 576}\n"
+          "output": "{\"air\": 0, \"block_data_bytes\": 576, \"blueprint\": \"schematics/blueprints/pack1/11_hairpin.json\", \"bytes\": 303, \"compiled\": \"/tmp/schematic-audit-pack1-11_hairpin-016xsu7v/11_hairpin.schem\", \"dimensions\": [24, 2, 12], \"non_air\": 576, \"palette_entries\": 6, \"sha256\": \"9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2\", \"spot_checks\": 7, \"volume\": 576}\n"
         }
       },
       "air_count": 0,
@@ -2080,7 +2096,8 @@
     {
       "folder": "11",
       "title": "11_safety_fence",
-      "stable_id": "11-03",
+      "group": 11,
+      "id": 3,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_safety_fence.json",
         "bytes": 5678,
@@ -2183,7 +2200,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_safety_fence.json",
-            "/tmp/schematic-audit-pack1-11_safety_fence-bd6c7tv6/11_safety_fence.schem"
+            "/tmp/schematic-audit-pack1-11_safety_fence-9aaawwj2/11_safety_fence.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2191,7 +2208,7 @@
           "canonical_sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
           "regenerated_sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
           "log": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.determinism.log",
-          "output": "{\"air\": 60, \"block_data_bytes\": 135, \"blueprint\": \"schematics/blueprints/pack1/11_safety_fence.json\", \"bytes\": 299, \"compiled\": \"/tmp/schematic-audit-pack1-11_safety_fence-bd6c7tv6/11_safety_fence.schem\", \"dimensions\": [9, 5, 3], \"non_air\": 75, \"palette_entries\": 7, \"sha256\": \"4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6\", \"spot_checks\": 7, \"volume\": 135}\n"
+          "output": "{\"air\": 60, \"block_data_bytes\": 135, \"blueprint\": \"schematics/blueprints/pack1/11_safety_fence.json\", \"bytes\": 299, \"compiled\": \"/tmp/schematic-audit-pack1-11_safety_fence-9aaawwj2/11_safety_fence.schem\", \"dimensions\": [9, 5, 3], \"non_air\": 75, \"palette_entries\": 7, \"sha256\": \"4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6\", \"spot_checks\": 7, \"volume\": 135}\n"
         }
       },
       "air_count": 60,
@@ -2215,7 +2232,8 @@
     {
       "folder": "11",
       "title": "11_starting_gate",
-      "stable_id": "11-04",
+      "group": 11,
+      "id": 4,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_starting_gate.json",
         "bytes": 11364,
@@ -2318,7 +2336,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_starting_gate.json",
-            "/tmp/schematic-audit-pack1-11_starting_gate-bjszpzde/11_starting_gate.schem"
+            "/tmp/schematic-audit-pack1-11_starting_gate-u5m0z0dg/11_starting_gate.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2326,7 +2344,7 @@
           "canonical_sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
           "regenerated_sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
           "log": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.determinism.log",
-          "output": "{\"air\": 663, \"block_data_bytes\": 847, \"blueprint\": \"schematics/blueprints/pack1/11_starting_gate.json\", \"bytes\": 587, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_gate-bjszpzde/11_starting_gate.schem\", \"dimensions\": [11, 11, 7], \"non_air\": 184, \"palette_entries\": 18, \"sha256\": \"87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d\", \"spot_checks\": 13, \"volume\": 847}\n"
+          "output": "{\"air\": 663, \"block_data_bytes\": 847, \"blueprint\": \"schematics/blueprints/pack1/11_starting_gate.json\", \"bytes\": 587, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_gate-u5m0z0dg/11_starting_gate.schem\", \"dimensions\": [11, 11, 7], \"non_air\": 184, \"palette_entries\": 18, \"sha256\": \"87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d\", \"spot_checks\": 13, \"volume\": 847}\n"
         }
       },
       "air_count": 663,
@@ -2350,7 +2368,8 @@
     {
       "folder": "11",
       "title": "11_starting_grid",
-      "stable_id": "11-05",
+      "group": 11,
+      "id": 5,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_starting_grid.json",
         "bytes": 6093,
@@ -2453,7 +2472,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_starting_grid.json",
-            "/tmp/schematic-audit-pack1-11_starting_grid-w41uy5gd/11_starting_grid.schem"
+            "/tmp/schematic-audit-pack1-11_starting_grid-suuvex34/11_starting_grid.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2461,7 +2480,7 @@
           "canonical_sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
           "regenerated_sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
           "log": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.determinism.log",
-          "output": "{\"air\": 165, \"block_data_bytes\": 513, \"blueprint\": \"schematics/blueprints/pack1/11_starting_grid.json\", \"bytes\": 312, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_grid-w41uy5gd/11_starting_grid.schem\", \"dimensions\": [9, 3, 19], \"non_air\": 348, \"palette_entries\": 6, \"sha256\": \"37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f\", \"spot_checks\": 8, \"volume\": 513}\n"
+          "output": "{\"air\": 165, \"block_data_bytes\": 513, \"blueprint\": \"schematics/blueprints/pack1/11_starting_grid.json\", \"bytes\": 312, \"compiled\": \"/tmp/schematic-audit-pack1-11_starting_grid-suuvex34/11_starting_grid.schem\", \"dimensions\": [9, 3, 19], \"non_air\": 348, \"palette_entries\": 6, \"sha256\": \"37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f\", \"spot_checks\": 8, \"volume\": 513}\n"
         }
       },
       "air_count": 165,
@@ -2485,7 +2504,8 @@
     {
       "folder": "11",
       "title": "11_turn",
-      "stable_id": "11-06",
+      "group": 11,
+      "id": 6,
       "blueprint": {
         "path": "schematics/blueprints/pack1/11_turn.json",
         "bytes": 4809,
@@ -2588,7 +2608,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/11_turn.json",
-            "/tmp/schematic-audit-pack1-11_turn-i1kd_w2a/11_turn.schem"
+            "/tmp/schematic-audit-pack1-11_turn-ke7qa04f/11_turn.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2596,7 +2616,7 @@
           "canonical_sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
           "regenerated_sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
           "log": "schematics/tooling/validation/pack1/build_logs/11_turn.determinism.log",
-          "output": "{\"air\": 0, \"block_data_bytes\": 288, \"blueprint\": \"schematics/blueprints/pack1/11_turn.json\", \"bytes\": 275, \"compiled\": \"/tmp/schematic-audit-pack1-11_turn-i1kd_w2a/11_turn.schem\", \"dimensions\": [12, 2, 12], \"non_air\": 288, \"palette_entries\": 6, \"sha256\": \"1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11\", \"spot_checks\": 6, \"volume\": 288}\n"
+          "output": "{\"air\": 0, \"block_data_bytes\": 288, \"blueprint\": \"schematics/blueprints/pack1/11_turn.json\", \"bytes\": 275, \"compiled\": \"/tmp/schematic-audit-pack1-11_turn-ke7qa04f/11_turn.schem\", \"dimensions\": [12, 2, 12], \"non_air\": 288, \"palette_entries\": 6, \"sha256\": \"1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11\", \"spot_checks\": 6, \"volume\": 288}\n"
         }
       },
       "air_count": 0,
@@ -2620,7 +2640,8 @@
     {
       "folder": "12",
       "title": "12_scouting_tower",
-      "stable_id": "12-01",
+      "group": 12,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/12_scouting_tower.json",
         "bytes": 27560,
@@ -2723,7 +2744,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/12_scouting_tower.json",
-            "/tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem"
+            "/tmp/schematic-audit-pack1-12_scouting_tower-7cix5_kf/12_scouting_tower.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2731,7 +2752,7 @@
           "canonical_sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
           "regenerated_sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
           "log": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.determinism.log",
-          "output": "{\"air\": 3691, \"block_data_bytes\": 4563, \"blueprint\": \"schematics/blueprints/pack1/12_scouting_tower.json\", \"bytes\": 1106, \"compiled\": \"/tmp/schematic-audit-pack1-12_scouting_tower-8jvhxrf3/12_scouting_tower.schem\", \"dimensions\": [13, 27, 13], \"non_air\": 872, \"palette_entries\": 36, \"sha256\": \"774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961\", \"spot_checks\": 25, \"volume\": 4563}\n"
+          "output": "{\"air\": 3691, \"block_data_bytes\": 4563, \"blueprint\": \"schematics/blueprints/pack1/12_scouting_tower.json\", \"bytes\": 1106, \"compiled\": \"/tmp/schematic-audit-pack1-12_scouting_tower-7cix5_kf/12_scouting_tower.schem\", \"dimensions\": [13, 27, 13], \"non_air\": 872, \"palette_entries\": 36, \"sha256\": \"774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961\", \"spot_checks\": 25, \"volume\": 4563}\n"
         }
       },
       "air_count": 3691,
@@ -2755,7 +2776,8 @@
     {
       "folder": "13",
       "title": "13_skull_cave",
-      "stable_id": "13-01",
+      "group": 13,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/13_skull_cave.json",
         "bytes": 24703,
@@ -2858,7 +2880,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/13_skull_cave.json",
-            "/tmp/schematic-audit-pack1-13_skull_cave-hgvn5vfw/13_skull_cave.schem"
+            "/tmp/schematic-audit-pack1-13_skull_cave-h7vanr_u/13_skull_cave.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -2866,7 +2888,7 @@
           "canonical_sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
           "regenerated_sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
           "log": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.determinism.log",
-          "output": "{\"air\": 2481, \"block_data_bytes\": 5120, \"blueprint\": \"schematics/blueprints/pack1/13_skull_cave.json\", \"bytes\": 915, \"compiled\": \"/tmp/schematic-audit-pack1-13_skull_cave-hgvn5vfw/13_skull_cave.schem\", \"dimensions\": [20, 16, 16], \"non_air\": 2639, \"palette_entries\": 23, \"sha256\": \"2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1\", \"spot_checks\": 32, \"volume\": 5120}\n"
+          "output": "{\"air\": 2481, \"block_data_bytes\": 5120, \"blueprint\": \"schematics/blueprints/pack1/13_skull_cave.json\", \"bytes\": 915, \"compiled\": \"/tmp/schematic-audit-pack1-13_skull_cave-h7vanr_u/13_skull_cave.schem\", \"dimensions\": [20, 16, 16], \"non_air\": 2639, \"palette_entries\": 23, \"sha256\": \"2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1\", \"spot_checks\": 32, \"volume\": 5120}\n"
         }
       },
       "air_count": 2481,
@@ -2890,7 +2912,8 @@
     {
       "folder": "14",
       "title": "14_school_monster_bus",
-      "stable_id": "14-01",
+      "group": 14,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/14_school_monster_bus.json",
         "bytes": 23945,
@@ -2993,7 +3016,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/14_school_monster_bus.json",
-            "/tmp/schematic-audit-pack1-14_school_monster_bus-6sqz_r_y/14_school_monster_bus.schem"
+            "/tmp/schematic-audit-pack1-14_school_monster_bus-hlhcpkxq/14_school_monster_bus.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3001,7 +3024,7 @@
           "canonical_sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
           "regenerated_sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
           "log": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.determinism.log",
-          "output": "{\"air\": 737, \"block_data_bytes\": 1200, \"blueprint\": \"schematics/blueprints/pack1/14_school_monster_bus.json\", \"bytes\": 920, \"compiled\": \"/tmp/schematic-audit-pack1-14_school_monster_bus-6sqz_r_y/14_school_monster_bus.schem\", \"dimensions\": [8, 10, 15], \"non_air\": 463, \"palette_entries\": 35, \"sha256\": \"dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9\", \"spot_checks\": 37, \"volume\": 1200}\n"
+          "output": "{\"air\": 737, \"block_data_bytes\": 1200, \"blueprint\": \"schematics/blueprints/pack1/14_school_monster_bus.json\", \"bytes\": 920, \"compiled\": \"/tmp/schematic-audit-pack1-14_school_monster_bus-hlhcpkxq/14_school_monster_bus.schem\", \"dimensions\": [8, 10, 15], \"non_air\": 463, \"palette_entries\": 35, \"sha256\": \"dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9\", \"spot_checks\": 37, \"volume\": 1200}\n"
         }
       },
       "air_count": 737,
@@ -3025,7 +3048,8 @@
     {
       "folder": "15",
       "title": "15_potion_factory",
-      "stable_id": "15-01",
+      "group": 15,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/15_potion_factory.json",
         "bytes": 25422,
@@ -3128,7 +3152,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/15_potion_factory.json",
-            "/tmp/schematic-audit-pack1-15_potion_factory-l9jj8fpa/15_potion_factory.schem"
+            "/tmp/schematic-audit-pack1-15_potion_factory-osbp6fz5/15_potion_factory.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3136,7 +3160,7 @@
           "canonical_sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
           "regenerated_sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
           "log": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.determinism.log",
-          "output": "{\"air\": 2761, \"block_data_bytes\": 3705, \"blueprint\": \"schematics/blueprints/pack1/15_potion_factory.json\", \"bytes\": 1255, \"compiled\": \"/tmp/schematic-audit-pack1-15_potion_factory-l9jj8fpa/15_potion_factory.schem\", \"dimensions\": [19, 13, 15], \"non_air\": 944, \"palette_entries\": 44, \"sha256\": \"6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb\", \"spot_checks\": 38, \"volume\": 3705}\n"
+          "output": "{\"air\": 2761, \"block_data_bytes\": 3705, \"blueprint\": \"schematics/blueprints/pack1/15_potion_factory.json\", \"bytes\": 1255, \"compiled\": \"/tmp/schematic-audit-pack1-15_potion_factory-osbp6fz5/15_potion_factory.schem\", \"dimensions\": [19, 13, 15], \"non_air\": 944, \"palette_entries\": 44, \"sha256\": \"6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb\", \"spot_checks\": 38, \"volume\": 3705}\n"
         }
       },
       "air_count": 2761,
@@ -3160,7 +3184,8 @@
     {
       "folder": "16",
       "title": "16_wishing_well",
-      "stable_id": "16-01",
+      "group": 16,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/16_wishing_well.json",
         "bytes": 14837,
@@ -3262,7 +3287,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/16_wishing_well.json",
-            "/tmp/schematic-audit-pack1-16_wishing_well-q1ioenxv/16_wishing_well.schem"
+            "/tmp/schematic-audit-pack1-16_wishing_well-deph8ni6/16_wishing_well.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3270,7 +3295,7 @@
           "canonical_sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
           "regenerated_sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
           "log": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.determinism.log",
-          "output": "{\"air\": 245, \"block_data_bytes\": 600, \"blueprint\": \"schematics/blueprints/pack1/16_wishing_well.json\", \"bytes\": 728, \"compiled\": \"/tmp/schematic-audit-pack1-16_wishing_well-q1ioenxv/16_wishing_well.schem\", \"dimensions\": [5, 15, 8], \"non_air\": 355, \"palette_entries\": 21, \"sha256\": \"0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8\", \"spot_checks\": 30, \"volume\": 600}\n"
+          "output": "{\"air\": 245, \"block_data_bytes\": 600, \"blueprint\": \"schematics/blueprints/pack1/16_wishing_well.json\", \"bytes\": 728, \"compiled\": \"/tmp/schematic-audit-pack1-16_wishing_well-deph8ni6/16_wishing_well.schem\", \"dimensions\": [5, 15, 8], \"non_air\": 355, \"palette_entries\": 21, \"sha256\": \"0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8\", \"spot_checks\": 30, \"volume\": 600}\n"
         }
       },
       "air_count": 245,
@@ -3294,7 +3319,8 @@
     {
       "folder": "17",
       "title": "17_carousel",
-      "stable_id": "17-01",
+      "group": 17,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/17_carousel.json",
         "bytes": 29331,
@@ -3397,7 +3423,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/17_carousel.json",
-            "/tmp/schematic-audit-pack1-17_carousel-f6zxbbha/17_carousel.schem"
+            "/tmp/schematic-audit-pack1-17_carousel-l874d95j/17_carousel.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3405,7 +3431,7 @@
           "canonical_sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
           "regenerated_sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
           "log": "schematics/tooling/validation/pack1/build_logs/17_carousel.determinism.log",
-          "output": "{\"air\": 3630, \"block_data_bytes\": 4913, \"blueprint\": \"schematics/blueprints/pack1/17_carousel.json\", \"bytes\": 1250, \"compiled\": \"/tmp/schematic-audit-pack1-17_carousel-f6zxbbha/17_carousel.schem\", \"dimensions\": [17, 17, 17], \"non_air\": 1283, \"palette_entries\": 41, \"sha256\": \"028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2\", \"spot_checks\": 28, \"volume\": 4913}\n"
+          "output": "{\"air\": 3630, \"block_data_bytes\": 4913, \"blueprint\": \"schematics/blueprints/pack1/17_carousel.json\", \"bytes\": 1250, \"compiled\": \"/tmp/schematic-audit-pack1-17_carousel-l874d95j/17_carousel.schem\", \"dimensions\": [17, 17, 17], \"non_air\": 1283, \"palette_entries\": 41, \"sha256\": \"028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2\", \"spot_checks\": 28, \"volume\": 4913}\n"
         }
       },
       "air_count": 3630,
@@ -3429,7 +3455,8 @@
     {
       "folder": "17",
       "title": "17_strider_bath",
-      "stable_id": "17-02",
+      "group": 17,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/17_strider_bath.json",
         "bytes": 9535,
@@ -3532,7 +3559,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/17_strider_bath.json",
-            "/tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem"
+            "/tmp/schematic-audit-pack1-17_strider_bath-jl4vedfl/17_strider_bath.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3540,7 +3567,7 @@
           "canonical_sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
           "regenerated_sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
           "log": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.determinism.log",
-          "output": "{\"air\": 560, \"block_data_bytes\": 792, \"blueprint\": \"schematics/blueprints/pack1/17_strider_bath.json\", \"bytes\": 441, \"compiled\": \"/tmp/schematic-audit-pack1-17_strider_bath-2pl0m75j/17_strider_bath.schem\", \"dimensions\": [9, 8, 11], \"non_air\": 232, \"palette_entries\": 10, \"sha256\": \"88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da\", \"spot_checks\": 17, \"volume\": 792}\n"
+          "output": "{\"air\": 560, \"block_data_bytes\": 792, \"blueprint\": \"schematics/blueprints/pack1/17_strider_bath.json\", \"bytes\": 441, \"compiled\": \"/tmp/schematic-audit-pack1-17_strider_bath-jl4vedfl/17_strider_bath.schem\", \"dimensions\": [9, 8, 11], \"non_air\": 232, \"palette_entries\": 10, \"sha256\": \"88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da\", \"spot_checks\": 17, \"volume\": 792}\n"
         }
       },
       "air_count": 560,
@@ -3564,7 +3591,8 @@
     {
       "folder": "18",
       "title": "Island of giant heads / Easter Island stone head",
-      "stable_id": "18-01",
+      "group": 18,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/18_easter_island_head.json",
         "bytes": 5289,
@@ -3667,7 +3695,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/18_easter_island_head.json",
-            "/tmp/schematic-audit-pack1-18_easter_island_head-ibd6pby1/18_easter_island_head.schem"
+            "/tmp/schematic-audit-pack1-18_easter_island_head-qatj5mt_/18_easter_island_head.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3675,7 +3703,7 @@
           "canonical_sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
           "regenerated_sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
           "log": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.determinism.log",
-          "output": "{\"air\": 94, \"block_data_bytes\": 180, \"blueprint\": \"schematics/blueprints/pack1/18_easter_island_head.json\", \"bytes\": 324, \"compiled\": \"/tmp/schematic-audit-pack1-18_easter_island_head-ibd6pby1/18_easter_island_head.schem\", \"dimensions\": [5, 9, 4], \"non_air\": 86, \"palette_entries\": 6, \"sha256\": \"dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d\", \"spot_checks\": 7, \"volume\": 180}\n"
+          "output": "{\"air\": 94, \"block_data_bytes\": 180, \"blueprint\": \"schematics/blueprints/pack1/18_easter_island_head.json\", \"bytes\": 324, \"compiled\": \"/tmp/schematic-audit-pack1-18_easter_island_head-qatj5mt_/18_easter_island_head.schem\", \"dimensions\": [5, 9, 4], \"non_air\": 86, \"palette_entries\": 6, \"sha256\": \"dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d\", \"spot_checks\": 7, \"volume\": 180}\n"
         }
       },
       "air_count": 94,
@@ -3699,7 +3727,8 @@
     {
       "folder": "18",
       "title": "Giant grandfather clock / cuckoo clock tower",
-      "stable_id": "18-02",
+      "group": 18,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
         "bytes": 26429,
@@ -3802,7 +3831,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
-            "/tmp/schematic-audit-pack1-18_giant_grandfather_clock-173s3vl2/18_giant_grandfather_clock.schem"
+            "/tmp/schematic-audit-pack1-18_giant_grandfather_clock-yuw1v11p/18_giant_grandfather_clock.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3810,7 +3839,7 @@
           "canonical_sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
           "regenerated_sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
           "log": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.determinism.log",
-          "output": "{\"air\": 3410, \"block_data_bytes\": 4719, \"blueprint\": \"schematics/blueprints/pack1/18_giant_grandfather_clock.json\", \"bytes\": 1438, \"compiled\": \"/tmp/schematic-audit-pack1-18_giant_grandfather_clock-173s3vl2/18_giant_grandfather_clock.schem\", \"dimensions\": [13, 33, 11], \"non_air\": 1309, \"palette_entries\": 52, \"sha256\": \"87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6\", \"spot_checks\": 19, \"volume\": 4719}\n"
+          "output": "{\"air\": 3410, \"block_data_bytes\": 4719, \"blueprint\": \"schematics/blueprints/pack1/18_giant_grandfather_clock.json\", \"bytes\": 1438, \"compiled\": \"/tmp/schematic-audit-pack1-18_giant_grandfather_clock-yuw1v11p/18_giant_grandfather_clock.schem\", \"dimensions\": [13, 33, 11], \"non_air\": 1309, \"palette_entries\": 52, \"sha256\": \"87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6\", \"spot_checks\": 19, \"volume\": 4719}\n"
         }
       },
       "air_count": 3410,
@@ -3834,7 +3863,8 @@
     {
       "folder": "19",
       "title": "Hot-spring chalet / open birch pavilion",
-      "stable_id": "19-01",
+      "group": 19,
+      "id": 1,
       "blueprint": {
         "path": "schematics/blueprints/pack1/19_hot_spring_chalet.json",
         "bytes": 9731,
@@ -3937,7 +3967,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/19_hot_spring_chalet.json",
-            "/tmp/schematic-audit-pack1-19_hot_spring_chalet-3nlr_x66/19_hot_spring_chalet.schem"
+            "/tmp/schematic-audit-pack1-19_hot_spring_chalet-s2nhdsmp/19_hot_spring_chalet.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -3945,7 +3975,7 @@
           "canonical_sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
           "regenerated_sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
           "log": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.determinism.log",
-          "output": "{\"air\": 541, \"block_data_bytes\": 780, \"blueprint\": \"schematics/blueprints/pack1/19_hot_spring_chalet.json\", \"bytes\": 473, \"compiled\": \"/tmp/schematic-audit-pack1-19_hot_spring_chalet-3nlr_x66/19_hot_spring_chalet.schem\", \"dimensions\": [10, 6, 13], \"non_air\": 239, \"palette_entries\": 13, \"sha256\": \"5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c\", \"spot_checks\": 14, \"volume\": 780}\n"
+          "output": "{\"air\": 541, \"block_data_bytes\": 780, \"blueprint\": \"schematics/blueprints/pack1/19_hot_spring_chalet.json\", \"bytes\": 473, \"compiled\": \"/tmp/schematic-audit-pack1-19_hot_spring_chalet-s2nhdsmp/19_hot_spring_chalet.schem\", \"dimensions\": [10, 6, 13], \"non_air\": 239, \"palette_entries\": 13, \"sha256\": \"5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c\", \"spot_checks\": 14, \"volume\": 780}\n"
         }
       },
       "air_count": 541,
@@ -3969,7 +3999,8 @@
     {
       "folder": "19",
       "title": "Thermal springs / terraced hot-spring landscape (dry block-only reconstruction)",
-      "stable_id": "19-02",
+      "group": 19,
+      "id": 2,
       "blueprint": {
         "path": "schematics/blueprints/pack1/19_thermal_springs.json",
         "bytes": 18411,
@@ -4072,7 +4103,7 @@
             "schematics/tooling/compile_blueprint.py",
             "compile",
             "schematics/blueprints/pack1/19_thermal_springs.json",
-            "/tmp/schematic-audit-pack1-19_thermal_springs-0795p6ye/19_thermal_springs.schem"
+            "/tmp/schematic-audit-pack1-19_thermal_springs-4zvn01dn/19_thermal_springs.schem"
           ],
           "exit_code": 0,
           "result": "PASS",
@@ -4080,7 +4111,7 @@
           "canonical_sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
           "regenerated_sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
           "log": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.determinism.log",
-          "output": "{\"air\": 2878, \"block_data_bytes\": 4048, \"blueprint\": \"schematics/blueprints/pack1/19_thermal_springs.json\", \"bytes\": 1025, \"compiled\": \"/tmp/schematic-audit-pack1-19_thermal_springs-0795p6ye/19_thermal_springs.schem\", \"dimensions\": [23, 8, 22], \"non_air\": 1170, \"palette_entries\": 23, \"sha256\": \"985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e\", \"spot_checks\": 20, \"volume\": 4048}\n"
+          "output": "{\"air\": 2878, \"block_data_bytes\": 4048, \"blueprint\": \"schematics/blueprints/pack1/19_thermal_springs.json\", \"bytes\": 1025, \"compiled\": \"/tmp/schematic-audit-pack1-19_thermal_springs-4zvn01dn/19_thermal_springs.schem\", \"dimensions\": [23, 8, 22], \"non_air\": 1170, \"palette_entries\": 23, \"sha256\": \"985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e\", \"spot_checks\": 20, \"volume\": 4048}\n"
         }
       },
       "air_count": 2878,

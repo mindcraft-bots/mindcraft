@@ -9,31 +9,80 @@ export const SCHEMATIC_PACKS_DIR = path.join(SCHEMATICS_DIR, "schems");
 
 const SCHEMATIC_EXTENSIONS = new Set([".schem", ".schematic", ".litematic"]);
 const PACK_NAME = /^pack[1-9]\d*$/;
-const PACK_ID = /^(\d+)-(\d+)$/;
-const GROUP_OFFSET_ID = /^(\d+):(\d+)$/;
-const DIRECT_ID_FILENAME = /^(\d+-\d+)_[\w.-]+\.(?:schem|schematic|litematic)$/i;
+const GROUP_AND_FILE_ID_SELECTOR = /^(\d+):(\d+)$/;
 
-function normalizeIdPart(value, label) {
-  if (!/^\d+$/.test(value)) throw new TypeError(`Schematic ${label} must be a positive whole number`);
+function normalizePositivePart(value, label) {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) {
+    throw new TypeError(`Schematic ${label} must be a positive whole number`);
+  }
   const number = Number(value);
   if (!Number.isSafeInteger(number) || number < 1) {
     throw new TypeError(`Schematic ${label} must be between 1 and ${Number.MAX_SAFE_INTEGER}`);
   }
-  return String(number).padStart(2, "0");
+  return number;
 }
 
-function normalizePackId(group, fileId) {
-  return `${normalizeIdPart(group, "group")}-${normalizeIdPart(fileId, "file ID")}`;
-}
-
-function splitPackId(id) {
-  const match = PACK_ID.exec(id);
-  if (!match) throw new Error(`Invalid schematic pack ID: ${id}`);
-  return {
-    id: normalizePackId(match[1], match[2]),
-    group: normalizeIdPart(match[1], "group"),
-    fileId: normalizeIdPart(match[2], "file ID"),
+function parseUniqueJson(source) {
+  let cursor = 0;
+  const skipWhitespace = () => {
+    while (/[ \t\r\n]/.test(source[cursor] ?? "")) cursor++;
   };
+  const parseString = () => {
+    const start = cursor++;
+    while (cursor < source.length) {
+      if (source[cursor] === "\\") {
+        cursor += 2;
+      } else if (source[cursor++] === '"') {
+        return JSON.parse(source.slice(start, cursor));
+      }
+    }
+    throw new SyntaxError("Unterminated JSON string");
+  };
+  const parseValue = () => {
+    skipWhitespace();
+    if (source[cursor] === '"') return parseString();
+    if (source[cursor] === "{") {
+      cursor++;
+      skipWhitespace();
+      const value = Object.create(null);
+      if (source[cursor] === "}") { cursor++; return value; }
+      while (true) {
+        skipWhitespace();
+        if (source[cursor] !== '"') throw new SyntaxError("Expected a JSON object key");
+        const key = parseString();
+        if (Object.hasOwn(value, key)) throw new SyntaxError(`Duplicate JSON object key ${key}`);
+        skipWhitespace();
+        if (source[cursor++] !== ":") throw new SyntaxError("Expected a colon after a JSON object key");
+        value[key] = parseValue();
+        skipWhitespace();
+        const separator = source[cursor++];
+        if (separator === "}") return value;
+        if (separator !== ",") throw new SyntaxError("Expected a comma or closing brace");
+      }
+    }
+    if (source[cursor] === "[") {
+      cursor++;
+      skipWhitespace();
+      const value = [];
+      if (source[cursor] === "]") { cursor++; return value; }
+      while (true) {
+        value.push(parseValue());
+        skipWhitespace();
+        const separator = source[cursor++];
+        if (separator === "]") return value;
+        if (separator !== ",") throw new SyntaxError("Expected a comma or closing bracket");
+      }
+    }
+    const start = cursor;
+    while (cursor < source.length && !/[\s,}\]]/.test(source[cursor])) cursor++;
+    if (start === cursor) throw new SyntaxError("Expected a JSON value");
+    return JSON.parse(source.slice(start, cursor));
+  };
+
+  const parsed = parseValue();
+  skipWhitespace();
+  if (cursor !== source.length) throw new SyntaxError("Unexpected trailing JSON content");
+  return parsed;
 }
 
 function isWithinDirectory(directory, candidate) {
@@ -41,22 +90,22 @@ function isWithinDirectory(directory, candidate) {
   return relativePath === "" || (!relativePath.startsWith(`..${path.sep}`) && relativePath !== ".." && !path.isAbsolute(relativePath));
 }
 
-function validateFilename(filename) {
-  if (typeof filename !== "string" || filename.length === 0 || filename.includes("\0") || filename.includes("\\")) {
+function validateFileName(fileName) {
+  if (typeof fileName !== "string" || fileName.length === 0 || fileName.includes("\0") || fileName.includes("\\")) {
     throw new TypeError("Schematic filename must be a non-empty path without NUL or backslash characters");
   }
 
-  if (path.isAbsolute(filename) || path.win32.isAbsolute(filename)) {
+  if (path.isAbsolute(fileName) || path.win32.isAbsolute(fileName)) {
     throw new TypeError("Absolute schematic paths are not allowed");
   }
 }
 
-function validatePackFileName(filename) {
-  if (typeof filename !== "string" || filename.length === 0 || filename.includes("\0") || filename.includes("\\")
-    || filename === "." || filename === ".." || filename.includes("/") || path.isAbsolute(filename) || path.win32.isAbsolute(filename)) {
+function validatePackFileName(fileName) {
+  if (typeof fileName !== "string" || fileName.length === 0 || fileName.includes("\0") || fileName.includes("\\")
+    || fileName === "." || fileName === ".." || fileName.includes("/") || path.isAbsolute(fileName) || path.win32.isAbsolute(fileName)) {
     throw new TypeError("Pack schematic must be a filename without absolute paths, traversal, NUL, or backslashes");
   }
-  if (!SCHEMATIC_EXTENSIONS.has(path.extname(filename).toLowerCase())) {
+  if (!SCHEMATIC_EXTENSIONS.has(path.extname(fileName).toLowerCase())) {
     throw new TypeError("Pack target must use a supported .schem, .schematic, or .litematic extension");
   }
 }
@@ -91,10 +140,10 @@ async function assertExistingAncestorsStayWithin(root, candidate) {
 }
 
 /** Resolve a schematic filename while keeping both lexical and real paths inside the directory. */
-export async function resolveSchematicPath(filename, directory = SCHEMATICS_DIR) {
-  validateFilename(filename);
+export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR) {
+  validateFileName(fileName);
 
-  const packMatch = /^(pack[^:]*):(.*)$/.exec(filename);
+  const packMatch = /^(pack[^:]*):(.*)$/.exec(fileName);
   if (packMatch) {
     const [, packName, selector] = packMatch;
     if (!PACK_NAME.test(packName)) throw new TypeError(`Invalid schematic pack name: ${packName}`);
@@ -102,7 +151,7 @@ export async function resolveSchematicPath(filename, directory = SCHEMATICS_DIR)
   }
 
   const root = path.resolve(directory);
-  const candidate = path.resolve(root, filename);
+  const candidate = path.resolve(root, fileName);
   if (!isWithinDirectory(root, candidate)) {
     throw new Error("Schematic path escapes the schematics directory");
   }
@@ -127,14 +176,14 @@ async function getPackDirectory(packName, directory) {
   return { packsRoot, realPacksRoot, packDirectory, realPackDirectory };
 }
 
-async function assertPackFile(packDirectory, realPackDirectory, filename) {
-  validatePackFileName(filename);
-  const candidate = path.join(packDirectory, filename);
+async function assertPackFile(packDirectory, realPackDirectory, fileName) {
+  validatePackFileName(fileName);
+  const candidate = path.join(packDirectory, fileName);
   const realCandidate = await realpath(candidate);
   if (!isWithinDirectory(realPackDirectory, realCandidate)) {
-    throw new Error(`Schematic pack file ${filename} resolves outside its pack directory`);
+    throw new Error(`Schematic pack file ${fileName} resolves outside its pack directory`);
   }
-  if (!(await stat(realCandidate)).isFile()) throw new Error(`Schematic pack target ${filename} is not a regular file`);
+  if (!(await stat(realCandidate)).isFile()) throw new Error(`Schematic pack target ${fileName} is not a regular file`);
   return candidate;
 }
 
@@ -147,53 +196,69 @@ async function readPackIndex(packDirectory, realPackDirectory) {
     if (!(await stat(realIndex)).isFile()) throw new Error("Schematic pack index is not a regular file");
     source = await readFile(realIndex, "utf8");
   } catch (error) {
-    if (error.code === "ENOENT") return new Map();
+    if (error.code === "ENOENT") return { mappings: new Map(), fileNamesToTuple: new Map() };
     throw error;
   }
 
   let parsed;
   try {
-    parsed = JSON.parse(source);
+    parsed = parseUniqueJson(source);
   } catch (error) {
     throw new Error(`Invalid schematic pack index.json: ${error.message}`);
   }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || !parsed.ids || typeof parsed.ids !== "object" || Array.isArray(parsed.ids)) {
-    throw new Error('Invalid schematic pack index.json: expected an object with an "ids" filename mapping');
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)
+    || Object.keys(parsed).length !== 2 || parsed.schemaVersion !== 2
+    || !parsed.groups || typeof parsed.groups !== "object" || Array.isArray(parsed.groups)) {
+    throw new Error('Invalid schematic pack index.json: expected schemaVersion 2 and a groups object');
   }
 
-  const ids = new Map();
-  const idsByFilename = new Map();
-  for (const [rawId, filename] of Object.entries(parsed.ids)) {
-    let id;
+  const mappings = new Map();
+  const fileNamesToTuple = new Map();
+  const normalizedGroups = new Set();
+  for (const [rawGroup, rawFileIds] of Object.entries(parsed.groups)) {
+    let group;
     try {
-      id = splitPackId(rawId).id;
+      group = normalizePositivePart(rawGroup, "group");
     } catch (error) {
-      throw new Error(`Invalid schematic pack ID in index: ${rawId}: ${error.message}`);
+      throw new Error(`Invalid schematic group in index: ${rawGroup}: ${error.message}`);
     }
-    if (ids.has(id)) throw new Error(`Schematic pack index contains duplicate numeric ID ${id}`);
-    validatePackFileName(filename);
-    const direct = DIRECT_ID_FILENAME.exec(filename);
-    if (direct && splitPackId(direct[1]).id !== id) {
-      throw new Error(`Schematic pack index conflict: ID ${id} points to ${filename}, whose filename declares ${splitPackId(direct[1]).id}`);
+    if (normalizedGroups.has(group)) throw new Error(`Schematic pack index contains duplicate normalized group ${group}`);
+    normalizedGroups.add(group);
+    if (!rawFileIds || typeof rawFileIds !== "object" || Array.isArray(rawFileIds)) {
+      throw new Error(`Invalid schematic pack index group ${rawGroup}: expected a file-ID-to-file-name object`);
     }
-    await assertPackFile(packDirectory, realPackDirectory, filename);
-    const priorId = idsByFilename.get(filename);
-    if (priorId) throw new Error(`Schematic pack index maps ${filename} to multiple IDs (${priorId} and ${id})`);
-    ids.set(id, filename);
-    idsByFilename.set(filename, id);
+    const fileIds = new Map();
+    const normalizedFileIds = new Set();
+    for (const [rawFileId, fileName] of Object.entries(rawFileIds)) {
+      let fileId;
+      try {
+        fileId = normalizePositivePart(rawFileId, "file id");
+      } catch (error) {
+        throw new Error(`Invalid schematic file id in index group ${rawGroup}: ${rawFileId}: ${error.message}`);
+      }
+      if (normalizedFileIds.has(fileId)) throw new Error(`Schematic pack index contains duplicate normalized file id ${fileId} in group ${group}`);
+      normalizedFileIds.add(fileId);
+      validatePackFileName(fileName);
+      await assertPackFile(packDirectory, realPackDirectory, fileName);
+      const priorTuple = fileNamesToTuple.get(fileName);
+      if (priorTuple) throw new Error(`Schematic pack index maps ${fileName} to multiple tuples (${priorTuple.group}:${priorTuple.fileId} and ${group}:${fileId})`);
+      fileIds.set(fileId, fileName);
+      fileNamesToTuple.set(fileName, { group, fileId });
+    }
+    mappings.set(group, fileIds);
   }
-  return ids;
+  return { mappings, fileNamesToTuple };
 }
 
 async function scanPack(packName, directory) {
   const { packDirectory, realPackDirectory } = await getPackDirectory(packName, directory);
   const entries = await readdir(packDirectory, { withFileTypes: true });
-  const filenames = [];
+  const fileNames = [];
   for (const entry of entries) {
     if (!SCHEMATIC_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
     try {
       await assertPackFile(packDirectory, realPackDirectory, entry.name);
-      filenames.push(entry.name);
+      fileNames.push(entry.name);
     } catch (error) {
       if (error.code === "ENOENT" || error.code === "ENOTDIR") continue;
       if (error.message.includes("resolves outside")) continue;
@@ -201,45 +266,33 @@ async function scanPack(packName, directory) {
     }
   }
 
-  const ids = await readPackIndex(packDirectory, realPackDirectory);
-  for (const filename of filenames) {
-    const direct = DIRECT_ID_FILENAME.exec(filename);
-    if (!direct) continue;
-    const id = splitPackId(direct[1]).id;
-    const indexedFilename = ids.get(id);
-    if (indexedFilename && indexedFilename !== filename) {
-      throw new Error(`Schematic pack ID conflict: index maps ${id} to ${indexedFilename}, but ${filename} declares the same ID`);
-    }
-    ids.set(id, filename);
-  }
-  return { packDirectory, filenames: filenames.sort((a, b) => a.localeCompare(b)), ids };
+  const { mappings, fileNamesToTuple } = await readPackIndex(packDirectory, realPackDirectory);
+  return { packDirectory, fileNames: fileNames.sort((a, b) => a.localeCompare(b)), mappings, fileNamesToTuple };
 }
 
 async function resolvePackSchematic(packName, selector, directory) {
-  if (!selector) throw new TypeError("A pack-qualified filename or both numeric group and file ID are required");
-  const { packDirectory, filenames, ids } = await scanPack(packName, directory);
+  if (!selector) throw new TypeError("A pack-qualified file name or both numeric group and file ID are required");
+  const { packDirectory, fileNames, mappings } = await scanPack(packName, directory);
   let matches;
-  const groupOffset = GROUP_OFFSET_ID.exec(selector);
-  if (selector.includes(":") && !groupOffset) {
-    throw new TypeError("Pack schematic IDs must be packN:<numeric-group>:<numeric-file-ID>");
+  const indexedSelector = GROUP_AND_FILE_ID_SELECTOR.exec(selector);
+  if (selector.includes(":") && !indexedSelector) {
+    throw new TypeError("Pack schematic selector must be packN:<group>:<fileId>");
   }
   if (/^\d+$/.test(selector)) {
-    throw new TypeError("A numeric schematic selector needs both group and file ID: packN:<group>:<file-ID>");
+    throw new TypeError("A numeric schematic selector needs both group and fileId: packN:<group>:<fileId>");
   }
-  if (groupOffset) {
-    const id = normalizePackId(groupOffset[1], groupOffset[2]);
-    const filename = ids.get(id);
-    if (!filename) throw new Error(`No schematic with group ${id.split("-")[0]} and file ID ${id.split("-")[1]} was found in ${packName}`);
-    matches = [filename];
+  if (indexedSelector) {
+    const group = normalizePositivePart(indexedSelector[1], "group");
+    const fileId = normalizePositivePart(indexedSelector[2], "file id");
+    const fileName = mappings.get(group)?.get(fileId);
+    if (!fileName) throw new Error(`No schematic with group ${group} and file id ${fileId} was found in ${packName}`);
+    matches = [fileName];
   } else {
     const selectorHasExtension = SCHEMATIC_EXTENSIONS.has(path.extname(selector).toLowerCase());
     validatePackFileName(selectorHasExtension ? selector : `${selector}.schem`);
-    matches = filenames.filter((filename) => selectorHasExtension
-      ? filename === selector
-      : path.basename(filename, path.extname(filename)) === selector);
-    if (matches.length === 0 && PACK_ID.test(selector)) {
-      throw new TypeError(`Dash-form schematic IDs are unsupported; use ${packName}:<group>:<file-ID> or a literal filename/stem`);
-    }
+    matches = fileNames.filter((fileName) => selectorHasExtension
+      ? fileName === selector
+      : path.basename(fileName, path.extname(fileName)) === selector);
     if (matches.length === 0) throw new Error(`No schematic named ${selector} was found in ${packName}`);
     if (matches.length > 1) throw new Error(`Ambiguous schematic name ${selector} in ${packName}: ${matches.join(", ")}`);
   }
@@ -260,13 +313,13 @@ export async function listSchematics(directory = SCHEMATICS_DIR) {
     throw error;
   }
 
-  const filenames = [];
+  const fileNames = [];
   for (const entry of entries) {
     if (!SCHEMATIC_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
 
     const candidate = path.join(root, entry.name);
     if (entry.isFile()) {
-      filenames.push(entry.name);
+      fileNames.push(entry.name);
       continue;
     }
     if (!entry.isSymbolicLink()) continue;
@@ -274,45 +327,61 @@ export async function listSchematics(directory = SCHEMATICS_DIR) {
     try {
       const realCandidate = await realpath(candidate);
       if (!isWithinDirectory(realRoot, realCandidate)) continue;
-      if ((await stat(candidate)).isFile()) filenames.push(entry.name);
+      if ((await stat(candidate)).isFile()) fileNames.push(entry.name);
     } catch (error) {
       if (error.code === "ENOENT" || error.code === "ENOTDIR") continue;
       throw error;
     }
   }
 
-  return filenames.sort((left, right) => left.localeCompare(right));
+  return fileNames.sort((left, right) => left.localeCompare(right));
 }
 
-/** List pack schematics with stable group/file IDs, pack name, and exact filename. */
+/** List pack schematics with explicit group, fileId, and fileName fields plus legacy aliases. */
 export async function listSchematicEntries(directory = SCHEMATICS_DIR) {
-  const legacyFilenames = await listSchematics(directory);
+  const legacyFileNames = await listSchematics(directory);
   const packsRoot = path.resolve(directory, "schems");
-  const legacyEntry = (filename) => ({ pack: "legacy", id: null, group: null, fileId: null, filename });
+  const entryWithAliases = (pack, group, fileId, fileName) => ({
+    pack,
+    group,
+    fileId,
+    fileName,
+    // Keep the original listing shape for existing callers while new code uses unambiguous names.
+    id: fileId,
+    filename: fileName,
+  });
+  const legacyEntry = (fileName) => entryWithAliases("legacy", null, null, fileName);
   let entries;
   try {
     entries = await readdir(packsRoot, { withFileTypes: true });
   } catch (error) {
-    if (error.code === "ENOENT") return legacyFilenames.map(legacyEntry);
+    if (error.code === "ENOENT") return legacyFileNames.map(legacyEntry);
     throw error;
   }
 
-  const results = legacyFilenames.map(legacyEntry);
+  const results = legacyFileNames.map(legacyEntry);
   for (const entry of entries) {
     if (!PACK_NAME.test(entry.name) || !entry.isDirectory()) continue;
     const pack = await scanPack(entry.name, directory);
-    const idByFilename = new Map([...pack.ids].map(([id, filename]) => [filename, id]));
-    for (const filename of pack.filenames) {
-      const id = idByFilename.get(filename) ?? null;
-      const [group, fileId] = id ? id.split("-") : [null, null];
-      results.push({ pack: entry.name, id, group, fileId, filename });
+    for (const fileName of pack.fileNames) {
+      const tuple = pack.fileNamesToTuple.get(fileName);
+      results.push(entryWithAliases(entry.name, tuple?.group ?? null, tuple?.fileId ?? null, fileName));
     }
   }
   return results.sort((left, right) => {
     const packOrder = left.pack.localeCompare(right.pack);
     if (packOrder) return packOrder;
-    const idOrder = left.id === right.id ? 0 : left.id === null ? 1 : right.id === null ? -1 : left.id.localeCompare(right.id);
-    return idOrder || left.filename.localeCompare(right.filename);
+    if (left.group !== right.group) {
+      if (left.group === null) return 1;
+      if (right.group === null) return -1;
+      return left.group - right.group;
+    }
+    if (left.fileId !== right.fileId) {
+      if (left.fileId === null) return 1;
+      if (right.fileId === null) return -1;
+      return left.fileId - right.fileId;
+    }
+    return left.fileName.localeCompare(right.fileName);
   });
 }
 
