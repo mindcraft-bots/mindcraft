@@ -9,6 +9,7 @@ import hashlib
 import io
 import json
 import re
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -19,6 +20,7 @@ from nbtlib import tag
 
 STATE_RE = re.compile(r"^([a-z0-9_.-]+):([a-z0-9_./-]+)(?:\[(.*)\])?$")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+REGISTRY_VALIDATOR = PROJECT_ROOT / "schematics" / "tooling" / "validate_registry.mjs"
 
 
 def repo_input(path: Path) -> Path:
@@ -44,6 +46,24 @@ def blueprint_data_version(blueprint: dict) -> int:
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise ValueError(message)
+
+
+def validate_target(blueprint_path: Path, blueprint: dict, target_version: str | None) -> None:
+    """Require exact blueprint metadata and registry-valid states for an explicit target."""
+    if target_version is None:
+        return
+    require(isinstance(target_version, str) and bool(target_version.strip()), "target Minecraft version must be nonempty")
+    require(blueprint.get("minecraft_version") == target_version,
+            f"target Minecraft version {target_version} does not match blueprint minecraft_version {blueprint.get('minecraft_version')!r}")
+    try:
+        result = subprocess.run(
+            ["node", str(REGISTRY_VALIDATOR), str(blueprint_path), target_version],
+            cwd=PROJECT_ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
+        )
+    except OSError as error:
+        raise ValueError(f"cannot run Minecraft registry validator for target {target_version}: {error}") from error
+    require(result.returncode == 0,
+            f"Minecraft {target_version} registry validation failed: {result.stdout.strip() or 'no diagnostic'}")
 
 
 def read_blueprint(path: Path) -> tuple[dict, list[str]]:
@@ -140,8 +160,9 @@ def gzip_nbt(root: nbtlib.File) -> bytes:
     return compressed.getvalue()
 
 
-def compile_blueprint(blueprint_path: Path, output_path: Path) -> tuple[dict, bytes]:
+def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: str | None = None) -> tuple[dict, bytes]:
     blueprint, voxels = read_blueprint(blueprint_path)
+    validate_target(blueprint_path, blueprint, target_version)
     data_version = blueprint_data_version(blueprint)
     palette, _ = state_palette(blueprint)
     block_data = b"".join(encode_varint(palette[state]) for state in voxels)
@@ -166,8 +187,9 @@ def compile_blueprint(blueprint_path: Path, output_path: Path) -> tuple[dict, by
     return blueprint, packed
 
 
-def validate_schematic(blueprint_path: Path, schematic_path: Path) -> dict:
+def validate_schematic(blueprint_path: Path, schematic_path: Path, target_version: str | None = None) -> dict:
     blueprint, voxels = read_blueprint(blueprint_path)
+    validate_target(blueprint_path, blueprint, target_version)
     packed = schematic_path.read_bytes()
     require(bool(packed), f"empty schematic: {schematic_path}")
     raw = gzip.decompress(packed)
@@ -232,9 +254,11 @@ def main() -> int:
     compile_parser = subparsers.add_parser("compile", help="compile blueprint JSON to deterministic gzip Sponge v2")
     compile_parser.add_argument("blueprint", type=Path)
     compile_parser.add_argument("output", type=Path)
+    compile_parser.add_argument("--target-version", help="require matching blueprint metadata and validate its palette against minecraft-data")
     validate_parser = subparsers.add_parser("validate", help="reload gzip NBT and validate every voxel")
     validate_parser.add_argument("blueprint", type=Path)
     validate_parser.add_argument("schematic", type=Path)
+    validate_parser.add_argument("--target-version", help="require matching blueprint metadata and validate its palette against minecraft-data")
     subparsers.add_parser("test-varints", help="exercise canonical multibyte VarInt boundaries")
     args = parser.parse_args()
     try:
@@ -242,13 +266,13 @@ def main() -> int:
         if args.command == "compile":
             blueprint_path = repo_input(args.blueprint)
             output_path = cli_output(args.output)
-            blueprint, packed = compile_blueprint(blueprint_path, output_path)
-            result = validate_schematic(blueprint_path, output_path)
+            blueprint, packed = compile_blueprint(blueprint_path, output_path, args.target_version)
+            result = validate_schematic(blueprint_path, output_path, args.target_version)
             print(json.dumps({"compiled": str(args.output), "blueprint": str(args.blueprint), **result}, sort_keys=True))
         elif args.command == "validate":
             blueprint_path = repo_input(args.blueprint)
             schematic_path = repo_input(args.schematic)
-            print(json.dumps(validate_schematic(blueprint_path, schematic_path), sort_keys=True))
+            print(json.dumps(validate_schematic(blueprint_path, schematic_path, args.target_version), sort_keys=True))
         else:
             print("canonical VarInt boundaries passed (including 1-, 2-, 3-, 4-, and 5-byte values; overlong encoding rejected)")
         return 0

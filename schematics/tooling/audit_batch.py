@@ -291,7 +291,10 @@ def main() -> int:
 
         if item["schematic"]["nonempty"] and item["blueprint"]["nonempty"]:
             bp_arg, schem_arg = rel(blueprint_path), rel(schematic_path)
-            binary = run_logged(["python3", rel(COMPILER), "validate", bp_arg, schem_arg], build_logs / f"{stem}.binary.log")
+            binary_command = ["python3", rel(COMPILER), "validate", bp_arg, schem_arg]
+            if version:
+                binary_command.extend(["--target-version", version])
+            binary = run_logged(binary_command, build_logs / f"{stem}.binary.log")
             binary_json = parse_json_output(binary)
             item["checks"]["binary"] = {"command": binary["command"], "exit_code": binary["exit_code"], "result": "PASS" if binary["exit_code"] == 0 else "FAIL",
                                            "log": binary["log"], "output": binary_json or binary["output"]}
@@ -319,7 +322,10 @@ def main() -> int:
             }
             with tempfile.TemporaryDirectory(prefix=f"schematic-audit-{args.pack}-{stem}-") as temp_dir:
                 temp_output = Path(temp_dir) / f"{stem}.schem"
-                regenerate = run_logged(["python3", rel(COMPILER), "compile", bp_arg, str(temp_output)], build_logs / f"{stem}.determinism.log")
+                regenerate_command = ["python3", rel(COMPILER), "compile", bp_arg, str(temp_output)]
+                if version:
+                    regenerate_command.extend(["--target-version", version])
+                regenerate = run_logged(regenerate_command, build_logs / f"{stem}.determinism.log")
                 regenerated_sha = sha256(temp_output) if temp_output.is_file() else None
                 deterministic = regenerate["exit_code"] == 0 and regenerated_sha == item["schematic"]["sha256"]
                 item["checks"]["deterministic_regeneration"] = {
@@ -343,9 +349,9 @@ def main() -> int:
         "scope": f"All blueprint JSONs in schematics/blueprints/{args.pack} and same-stem canonical schematics in schematics/schems/{args.pack}; deterministic regeneration uses temporary output only.",
         "versions": version_lines,
         "commands": {
-            "binary": "python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem",
+            "binary": "python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem [--target-version <MC_VERSION>]",
             "production_reader": "node schematics/tooling/validate_blueprint.mjs schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem [<MC_VERSION>]",
-            "deterministic": "python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> <temporary.schem>",
+            "deterministic": "python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> <temporary.schem> [--target-version <MC_VERSION>]",
             "varint": "python3 schematics/tooling/compile_blueprint.py test-varints",
             "npm_test": "npm run test:schematic",
         },

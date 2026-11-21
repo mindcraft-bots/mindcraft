@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(testDir, "../..");
 const pythonCompiler = path.join(projectRoot, "schematics/tooling/compile_blueprint.py");
+const registryValidator = path.join(projectRoot, "schematics/tooling/validate_registry.mjs");
 const nodeValidator = path.join(projectRoot, "schematics/tooling/validate_blueprint.mjs");
 const blueprint = "schematics/blueprints/pack1/03_big_red_barn.json";
 const schematic = "schematics/schems/pack1/03_big_red_barn.schem";
@@ -29,6 +30,197 @@ test("compiler and production validator resolve pack paths from a different cwd"
   const reader = run("node", [nodeValidator, blueprint, schematic, "1.21.4"]);
   assert.equal(reader.status, 0, reader.stderr || reader.stdout);
   assert.match(reader.stdout, /"fullVoxelAndStateComparison": "PASS"/);
+});
+
+test("explicit compiler target enforces Minecraft 1.21.4 metadata and registry-valid palette states", async () => {
+  const directory = path.join(projectRoot, "schematics/blueprints", `target${Date.now()}${process.pid}`);
+  await mkdir(directory);
+  const blueprintPath = path.join(directory, "fixture.json");
+  const outputPath = path.join(directory, "fixture.schem");
+  const source = path.relative(projectRoot, blueprintPath);
+  const output = path.relative(projectRoot, outputPath);
+  const fixture = {
+    minecraft_version: "1.21.4", data_version: 4189,
+    width_x: 1, height_y: 1, length_z: 1,
+    legend: { S: "minecraft:stone" }, layers: [["S"]],
+    expected_counts: { "minecraft:stone": 1 }, non_air_count: 1,
+    spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
+  };
+  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4"]);
+  try {
+    await writeFile(blueprintPath, JSON.stringify(fixture));
+    const valid = compile();
+    assert.equal(valid.status, 0, valid.stderr || valid.stdout);
+    assert.ok(existsSync(outputPath));
+    const validOutput = await readFile(outputPath);
+    const checked = run("python3", [pythonCompiler, "validate", source, output, "--target-version", "1.21.4"]);
+    assert.equal(checked.status, 0, checked.stderr || checked.stdout);
+
+    await writeFile(blueprintPath, JSON.stringify({ ...fixture, minecraft_version: "1.21.5" }));
+    const wrongVersion = compile();
+    assert.notEqual(wrongVersion.status, 0);
+    assert.match(wrongVersion.stderr, /does not match blueprint minecraft_version/);
+    assert.deepEqual(await readFile(outputPath), validOutput, "failed target validation must preserve existing output bytes");
+
+    await writeFile(blueprintPath, JSON.stringify({ ...fixture, data_version: 3700 }));
+    const wrongDataVersion = compile();
+    assert.notEqual(wrongDataVersion.status, 0);
+    assert.match(wrongDataVersion.stderr, /does not match minecraft-data 1\.21\.4 DataVersion 4189/);
+    assert.deepEqual(await readFile(outputPath), validOutput, "failed DataVersion validation must preserve existing output bytes");
+
+    await writeFile(blueprintPath, JSON.stringify({ ...fixture, legend: { S: "minecraft:stone[not_a_property=true]" }, expected_counts: { "minecraft:stone[not_a_property=true]": 1 } }));
+    const invalidPalette = compile();
+    assert.notEqual(invalidPalette.status, 0);
+    assert.match(invalidPalette.stderr, /complete canonical property set/);
+    assert.equal(existsSync(outputPath), true, "failed validation must not replace an existing output");
+    assert.deepEqual(await readFile(outputPath), validOutput, "failed palette validation must preserve existing output bytes");
+
+    for (const state of [
+      "minecraft:constructor",
+      "minecraft:__proto__",
+      "minecraft:stone[__proto__=bogus]",
+      "minecraft:stone[x=1,x=2]",
+    ]) {
+      await writeFile(blueprintPath, JSON.stringify({
+        ...fixture, legend: { S: state }, expected_counts: { [state]: 1 },
+      }));
+      const invalid = compile();
+      assert.notEqual(invalid.status, 0, `accepted unsafe/invalid state ${state}`);
+      assert.deepEqual(await readFile(outputPath), validOutput, `invalid state ${state} replaced existing output bytes`);
+    }
+
+    await rm(outputPath);
+    await writeFile(blueprintPath, JSON.stringify({ ...fixture, legend: { S: "minecraft:oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=maybe]" }, expected_counts: { "minecraft:oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=maybe]": 1 } }));
+    const illegalValue = compile();
+    assert.notEqual(illegalValue.status, 0);
+    assert.match(illegalValue.stderr, /illegal waterlogged=maybe/);
+    assert.equal(existsSync(outputPath), false, "invalid palette states must not create an output");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("registry validation accepts shared 1.21.10 data at DataVersion 4556 and rejects mismatches", async () => {
+  const directory = path.join(projectRoot, "schematics/blueprints", `release${Date.now()}${process.pid}`);
+  await mkdir(directory);
+  const blueprintPath = path.join(directory, "fixture.json");
+  const outputPath = path.join(directory, "fixture.schem");
+  const source = path.relative(projectRoot, blueprintPath);
+  const output = path.relative(projectRoot, outputPath);
+  const fixture = {
+    minecraft_version: "1.21.10", data_version: 4556,
+    width_x: 1, height_y: 1, length_z: 1,
+    legend: { S: "minecraft:stone" }, layers: [["S"]],
+    expected_counts: { "minecraft:stone": 1 }, non_air_count: 1,
+    spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
+  };
+  const compile = (target = "1.21.10") => run("python3", [
+    pythonCompiler, "compile", source, output, "--target-version", target,
+  ]);
+  try {
+    await writeFile(blueprintPath, JSON.stringify(fixture));
+    const valid = compile();
+    assert.equal(valid.status, 0, valid.stderr || valid.stdout);
+    const registry = run("node", [registryValidator, blueprintPath, "1.21.10"]);
+    assert.equal(registry.status, 0, registry.stderr || registry.stdout);
+    assert.match(registry.stdout, /"dataVersion":4556/);
+    const validOutput = await readFile(outputPath);
+
+    const wrongTarget = compile("1.21.9");
+    assert.notEqual(wrongTarget.status, 0);
+    assert.match(wrongTarget.stderr, /does not match blueprint minecraft_version/);
+    assert.deepEqual(await readFile(outputPath), validOutput, "wrong target must preserve existing output bytes");
+
+    await writeFile(blueprintPath, JSON.stringify({ ...fixture, data_version: 4554 }));
+    const wrongDataVersion = compile();
+    assert.notEqual(wrongDataVersion.status, 0);
+    assert.match(wrongDataVersion.stderr, /does not match minecraft-data 1\.21\.10 DataVersion 4556/);
+    assert.deepEqual(await readFile(outputPath), validOutput, "wrong DataVersion must preserve existing output bytes");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("legacy integer state domains use registry cardinality and canonical values", async () => {
+  const directory = path.join(projectRoot, "schematics/blueprints", `legacy${Date.now()}${process.pid}`);
+  await mkdir(directory);
+  const blueprintPath = path.join(directory, "fixture.json");
+  const outputPath = path.join(directory, "fixture.schem");
+  const source = path.relative(projectRoot, blueprintPath);
+  const output = path.relative(projectRoot, outputPath);
+  const makeFixture = (state) => ({
+    minecraft_version: "1.13", data_version: 1519,
+    width_x: 1, height_y: 1, length_z: 1,
+    legend: { S: state }, layers: [["S"]],
+    expected_counts: { [state]: 1 }, non_air_count: 1,
+    spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
+  });
+  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.13"]);
+  try {
+    for (const legal of ["minecraft:oak_sapling[stage=0]", "minecraft:oak_sapling[stage=1]"]) {
+      await writeFile(blueprintPath, JSON.stringify(makeFixture(legal)));
+      const valid = compile();
+      assert.equal(valid.status, 0, valid.stderr || valid.stdout);
+    }
+    const validOutput = await readFile(outputPath);
+
+    for (const invalidState of [
+      "minecraft:oak_sapling[stage=2]",
+      "minecraft:oak_sapling[stage=999]",
+      "minecraft:oak_sapling[stage=-1]",
+      "minecraft:oak_sapling[stage=01]",
+      "minecraft:oak_sapling[stage=+1]",
+    ]) {
+      await writeFile(blueprintPath, JSON.stringify(makeFixture(invalidState)));
+      const invalid = compile();
+      assert.notEqual(invalid.status, 0, `accepted out-of-domain/noncanonical state ${invalidState}`);
+      assert.match(invalid.stderr, /illegal stage=/);
+      assert.deepEqual(await readFile(outputPath), validOutput, `${invalidState} replaced existing output bytes`);
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("explicit nonzero integer state values accept snow and leaf domain maxima", async () => {
+  const directory = path.join(projectRoot, "schematics/blueprints", `integer${Date.now()}${process.pid}`);
+  await mkdir(directory);
+  const blueprintPath = path.join(directory, "fixture.json");
+  const outputPath = path.join(directory, "fixture.schem");
+  const source = path.relative(projectRoot, blueprintPath);
+  const output = path.relative(projectRoot, outputPath);
+  const makeFixture = (state) => ({
+    minecraft_version: "1.21.4", data_version: 4189,
+    width_x: 1, height_y: 1, length_z: 1,
+    legend: { S: state }, layers: [["S"]],
+    expected_counts: { [state]: 1 }, non_air_count: 1,
+    spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
+  });
+  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4"]);
+  try {
+    for (const legal of [
+      "minecraft:snow[layers=8]",
+      "minecraft:oak_leaves[distance=7,persistent=false,waterlogged=false]",
+    ]) {
+      await writeFile(blueprintPath, JSON.stringify(makeFixture(legal)));
+      const valid = compile();
+      assert.equal(valid.status, 0, valid.stderr || valid.stdout);
+    }
+    const validOutput = await readFile(outputPath);
+
+    for (const invalidState of [
+      "minecraft:snow[layers=0]",
+      "minecraft:oak_leaves[distance=0,persistent=false,waterlogged=false]",
+    ]) {
+      await writeFile(blueprintPath, JSON.stringify(makeFixture(invalidState)));
+      const invalid = compile();
+      assert.notEqual(invalid.status, 0, `accepted out-of-domain state ${invalidState}`);
+      assert.match(invalid.stderr, /illegal (?:layers|distance)=/);
+      assert.deepEqual(await readFile(outputPath), validOutput, `${invalidState} replaced existing output bytes`);
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("tooling rejects inputs that resolve outside the repository", async () => {
