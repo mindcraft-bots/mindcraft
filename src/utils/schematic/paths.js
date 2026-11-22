@@ -1,6 +1,8 @@
 import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import minecraftData from "minecraft-data";
+import nbt from "prismarine-nbt";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -10,6 +12,59 @@ export const SCHEMATIC_PACKS_DIR = path.join(SCHEMATICS_DIR, "schems");
 const SCHEMATIC_EXTENSIONS = new Set([".schem", ".schematic", ".litematic"]);
 const PACK_NAME = /^pack[1-9]\d*$/;
 const GROUP_AND_FILE_ID_SELECTOR = /^(\d+):(\d+)$/;
+const VARIANT = /^(.*)\.mc(\d+(?:\.\d+)+)\.schem$/;
+// Older minecraft-data entries omit releaseType; numeric labels identify those releases.
+const releases = minecraftData.versions.pc.filter((version) => /^\d+(?:\.\d+)+$/.test(version.minecraftVersion)
+  && (version.releaseType === "release" || version.releaseType === undefined)
+  && Number.isInteger(version.dataVersion) && version.dataVersion > 0);
+const releasesByName = new Map(releases.map((version) => [version.minecraftVersion, version]));
+const releasesByDataVersion = new Map(releases.map((version) => [version.dataVersion, version]));
+
+function releaseFor(name) {
+  return typeof name === "string" ? releasesByName.get(name) : undefined;
+}
+
+async function baseRelease(candidate) {
+  try {
+    const { parsed } = await nbt.parse(await readFile(candidate));
+    const root = nbt.simplify(parsed);
+    const version = root?.DataVersion ?? root?.Schematic?.DataVersion;
+    return Number.isInteger(version) ? releasesByDataVersion.get(version) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// Variant labels are the compiler's target release, not the registry's possibly aliased label.
+async function selectFamily(baseName, fileNames, directory, targetVersion, owned = () => true) {
+  if (!baseName.endsWith(".schem")) {
+    throw new Error(`No compatible known-version schematic for case-sensitive filename ${baseName}`);
+  }
+  const target = releaseFor(targetVersion);
+  if (!target) throw new Error(`Unknown Minecraft engine release ${String(targetVersion)}; cannot select a schematic version`);
+  const stem = baseName.slice(0, -".schem".length);
+  const candidates = [];
+  for (const name of fileNames) {
+    if (!owned(name)) continue;
+    const match = VARIANT.exec(name);
+    if (match && match[1] === stem) {
+      const release = releaseFor(match[2]);
+      if (release) candidates.push({ name, release, variant: true });
+    } else if (name === baseName) {
+      const release = await baseRelease(path.join(directory, name));
+      if (release) candidates.push({ name, release, variant: false });
+    }
+  }
+  const seen = new Map();
+  for (const candidate of candidates.filter((item) => item.variant)) {
+    const previous = seen.get(candidate.release.dataVersion);
+    if (previous) throw new Error(`Ambiguous schematic variants ${previous} and ${candidate.name} share a DataVersion`);
+    seen.set(candidate.release.dataVersion, candidate.name);
+  }
+  const compatible = candidates.filter(({ release }) => release.dataVersion <= target.dataVersion)
+    .sort((a, b) => b.release.dataVersion - a.release.dataVersion || Number(b.variant) - Number(a.variant));
+  return { candidates, selected: compatible[0] ?? null, target };
+}
 
 function normalizePositivePart(value, label) {
   if (typeof value !== "string" || !/^\d+$/.test(value)) {
@@ -140,14 +195,14 @@ async function assertExistingAncestorsStayWithin(root, candidate) {
 }
 
 /** Resolve a schematic filename while keeping both lexical and real paths inside the directory. */
-export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR) {
+export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR, options = undefined) {
   validateFileName(fileName);
 
   const packMatch = /^(pack[^:]*):(.*)$/.exec(fileName);
   if (packMatch) {
     const [, packName, selector] = packMatch;
     if (!PACK_NAME.test(packName)) throw new TypeError(`Invalid schematic pack name: ${packName}`);
-    return resolvePackSchematic(packName, selector, directory);
+    return resolvePackSchematic(packName, selector, directory, options);
   }
 
   const root = path.resolve(directory);
@@ -157,6 +212,30 @@ export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR)
   }
 
   await assertExistingAncestorsStayWithin(root, candidate);
+  if (options && path.extname(candidate).toLowerCase() === ".schem") {
+    const parent = path.dirname(candidate);
+    const names = await readdir(parent);
+    const safeNames = [];
+    for (const name of names) {
+      if (path.extname(name).toLowerCase() !== ".schem") continue;
+      try {
+        const real = await realpath(path.join(parent, name));
+        if (isWithinDirectory(await getRealRoot(root), real) && (await stat(real)).isFile()) safeNames.push(name);
+      } catch (error) {
+        if (error.code !== "ENOENT" && error.code !== "ENOTDIR") throw error;
+      }
+    }
+    const name = path.basename(candidate);
+    const explicit = VARIANT.exec(name);
+    const base = explicit ? `${explicit[1]}.schem` : name;
+    const family = await selectFamily(base, safeNames, parent, options.version);
+    const selected = explicit ? family.candidates.find((item) => item.name === name
+      && item.release.dataVersion <= family.target.dataVersion) : family.selected;
+    if (!selected) throw new Error(`No compatible known-version schematic for ${fileName} on Minecraft ${String(options.version)}`);
+    const result = path.join(parent, selected.name);
+    await assertExistingAncestorsStayWithin(root, result);
+    return result;
+  }
   return candidate;
 }
 
@@ -270,9 +349,9 @@ async function scanPack(packName, directory) {
   return { packDirectory, fileNames: fileNames.sort((a, b) => a.localeCompare(b)), mappings, fileNamesToTuple };
 }
 
-async function resolvePackSchematic(packName, selector, directory) {
+async function resolvePackSchematic(packName, selector, directory, options) {
   if (!selector) throw new TypeError("A pack-qualified file name or both numeric group and file ID are required");
-  const { packDirectory, fileNames, mappings } = await scanPack(packName, directory);
+  const { packDirectory, fileNames, mappings, fileNamesToTuple } = await scanPack(packName, directory);
   let matches;
   const indexedSelector = GROUP_AND_FILE_ID_SELECTOR.exec(selector);
   if (selector.includes(":") && !indexedSelector) {
@@ -293,10 +372,30 @@ async function resolvePackSchematic(packName, selector, directory) {
     matches = fileNames.filter((fileName) => selectorHasExtension
       ? fileName === selector
       : path.basename(fileName, path.extname(fileName)) === selector);
+    if (options && !VARIANT.test(selector)) {
+      const base = selectorHasExtension ? selector : `${selector}.schem`;
+      if (base.endsWith(".schem") && !matches.includes(base)
+        && fileNames.some((name) => VARIANT.exec(name)?.[1] === base.slice(0, -6))) matches.push(base);
+    }
     if (matches.length === 0) throw new Error(`No schematic named ${selector} was found in ${packName}`);
     if (matches.length > 1) throw new Error(`Ambiguous schematic name ${selector} in ${packName}: ${matches.join(", ")}`);
   }
   const { realPackDirectory } = await getPackDirectory(packName, directory);
+  if (options && matches[0].toLowerCase().endsWith(".schem")) {
+    const name = matches[0];
+    const explicit = VARIANT.exec(name);
+    const base = explicit ? `${explicit[1]}.schem` : name;
+    const owner = fileNamesToTuple.get(name);
+    const owned = (candidate) => {
+      const tuple = fileNamesToTuple.get(candidate);
+      return !tuple || (owner && tuple.group === owner.group && tuple.fileId === owner.fileId);
+    };
+    const family = await selectFamily(base, fileNames, packDirectory, options.version, owned);
+    const selected = explicit ? family.candidates.find((item) => item.name === name
+      && item.release.dataVersion <= family.target.dataVersion) : family.selected;
+    if (!selected) throw new Error(`No compatible known-version schematic for ${packName}:${selector} on Minecraft ${String(options.version)}`);
+    return assertPackFile(packDirectory, realPackDirectory, selected.name);
+  }
   return assertPackFile(packDirectory, realPackDirectory, matches[0]);
 }
 
@@ -338,7 +437,7 @@ export async function listSchematics(directory = SCHEMATICS_DIR) {
 }
 
 /** List pack schematics with explicit group, fileId, and fileName fields plus legacy aliases. */
-export async function listSchematicEntries(directory = SCHEMATICS_DIR) {
+export async function listSchematicEntries(directory = SCHEMATICS_DIR, options = undefined) {
   const legacyFileNames = await listSchematics(directory);
   const packsRoot = path.resolve(directory, "schems");
   const entryWithAliases = (pack, group, fileId, fileName) => ({
@@ -351,21 +450,49 @@ export async function listSchematicEntries(directory = SCHEMATICS_DIR) {
     filename: fileName,
   });
   const legacyEntry = (fileName) => entryWithAliases("legacy", null, null, fileName);
+  async function annotate(result, name, names, folder, owned, selector, exact = false) {
+    if (!options || !name.toLowerCase().endsWith(".schem")) return result;
+    const match = VARIANT.exec(name);
+    const base = match ? `${match[1]}.schem` : name;
+    try {
+      const family = await selectFamily(base, names, folder, options.version, owned);
+      const item = family.candidates.find((candidate) => candidate.name === name);
+      return { ...result, selector, version: item?.release.minecraftVersion ?? null,
+        compatible: item ? item.release.dataVersion <= family.target.dataVersion : false,
+        selected: exact ? Boolean(item && item.release.dataVersion <= family.target.dataVersion) : family.selected?.name === name };
+    } catch (error) {
+      const version = match?.[2] ?? (await baseRelease(path.join(folder, name)))?.minecraftVersion ?? null;
+      return { ...result, selector, version, compatible: false, selected: false, selectionError: error.message };
+    }
+  }
+  const legacyResults = [];
+  for (const name of legacyFileNames) {
+    const base = VARIANT.exec(name)?.[1];
+    legacyResults.push(await annotate(legacyEntry(name), name, legacyFileNames, path.resolve(directory), () => true, base ? `${base}.schem` : name));
+  }
   let entries;
   try {
     entries = await readdir(packsRoot, { withFileTypes: true });
   } catch (error) {
-    if (error.code === "ENOENT") return legacyFileNames.map(legacyEntry);
+    if (error.code === "ENOENT") return legacyResults;
     throw error;
   }
 
-  const results = legacyFileNames.map(legacyEntry);
+  const results = legacyResults;
   for (const entry of entries) {
     if (!PACK_NAME.test(entry.name) || !entry.isDirectory()) continue;
     const pack = await scanPack(entry.name, directory);
     for (const fileName of pack.fileNames) {
-      const tuple = pack.fileNamesToTuple.get(fileName);
-      results.push(entryWithAliases(entry.name, tuple?.group ?? null, tuple?.fileId ?? null, fileName));
+      const match = VARIANT.exec(fileName);
+      const base = match ? `${match[1]}.schem` : fileName;
+      const tuple = pack.fileNamesToTuple.get(fileName) ?? pack.fileNamesToTuple.get(base);
+      const owned = (name) => {
+        const other = pack.fileNamesToTuple.get(name);
+        return !other || (tuple && other.group === tuple.group && other.fileId === tuple.fileId);
+      };
+      const selector = tuple ? `${entry.name}:${tuple.group}:${tuple.fileId}` : `${entry.name}:${base}`;
+      results.push(await annotate(entryWithAliases(entry.name, tuple?.group ?? null, tuple?.fileId ?? null, fileName),
+        fileName, pack.fileNames, pack.packDirectory, owned, selector, Boolean(match && pack.fileNamesToTuple.has(fileName))));
     }
   }
   return results.sort((left, right) => {

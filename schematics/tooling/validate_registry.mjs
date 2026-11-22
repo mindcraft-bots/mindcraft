@@ -2,6 +2,7 @@
 /** Validate blueprint metadata and complete block states using minecraft-data. */
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
 const minecraftData = require("minecraft-data");
@@ -10,7 +11,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function parseState(raw, version, registry) {
+export function parseState(raw, version, registry) {
   const match = /^([a-z0-9_.-]+):([a-z0-9_./-]+)(?:\[(.*)\])?$/.exec(raw);
   assert(match, `malformed block state ${JSON.stringify(raw)}`);
   const [, namespace, name, rawProperties = ""] = match;
@@ -79,7 +80,9 @@ async function main() {
     paletteEntriesValidated: Object.keys(blueprint.legend).length, result: "PASS" }));
 }
 
-main().catch((error) => {
-  console.error(`REGISTRY VALIDATION FAILED: ${error.stack ?? error.message}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(`REGISTRY VALIDATION FAILED: ${error.stack ?? error.message}`);
+    process.exitCode = 1;
+  });
+}

@@ -229,9 +229,9 @@ export const queryList = [
     }, 
     {
         name: '!listSchematics',
-        description: 'List supported schematic files. Pack entries show pack, screenshot-folder group, stable file ID, and exact file name in separate fields; file ID is an explicit index mapping, not sorted position. Build a file name with !buildSchematic("packN:<fileName>") or select a pack entry with !buildSchematic("packN:<group>:<fileId>").',
-        perform: function () {
-            return listSchematicEntries().then(entries => {
+        description: 'List supported schematic files, release compatibility, and selector picks for this bot. Pack file IDs are explicit index mappings, not sorted positions. Use !buildSchematic("packN:<group>:<fileId>") or a pack-qualified filename.',
+        perform: function (agent) {
+            return listSchematicEntries(undefined, { version: agent?.bot?.version }).then(entries => {
                 entries.sort((left, right) => {
                     const packOrder = left.pack.localeCompare(right.pack);
                     if (packOrder) return packOrder;
@@ -246,8 +246,8 @@ export const queryList = [
                 if (entries.length === 0) {
                     return pad('SCHEMATICS\nNo schematic files found. Add a .schem, .schematic, or .litematic file to the schematics folder, then run !listSchematics again.');
                 }
-                return pad(`SCHEMATICS\n${entries.map(({ pack, group, fileId, fileName, id, filename }) =>
-                    `- ${pack} | group ${group ?? '—'} | file id ${fileId ?? id ?? '—'} | file name ${fileName ?? filename}`).join('\n')}`);
+                return pad(`SCHEMATICS (Minecraft ${agent?.bot?.version ?? 'unknown'})\n${entries.map(({ pack, group, fileId, fileName, id, filename, selector, version, compatible, selected, selectionError }) =>
+                    `- ${pack} | group ${group ?? '—'} | file id ${fileId ?? id ?? '—'} | file name ${fileName ?? filename}${selector ? ` | selector ${selector} | version ${version ?? 'unknown'} | ${selectionError ?? (compatible ? (selected ? 'compatible, selected' : 'compatible') : 'not known compatible')}` : ''}`).join('\n')}`);
             }).catch(error => {
                 const message = error instanceof Error ? error.message : String(error);
                 return pad(`Unable to list schematics because of a filesystem error: ${message}`);

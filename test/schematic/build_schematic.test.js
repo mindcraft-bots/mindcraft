@@ -1,13 +1,19 @@
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { createRequire } from "node:module";
+import { EventEmitter } from "node:events";
 import test from "node:test";
 import { gzipSync } from "node:zlib";
 
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
+import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
+const minecraftData = require("minecraft-data");
+const mineflayerHealth = require("mineflayer/lib/plugins/health.js");
+const { Schematic } = require("prismarine-schematic");
+const Block = require("prismarine-block")("1.20.4");
 
 function spongeBuffer(palette, blockData) {
   const entries = Object.fromEntries(Object.entries(palette).map(([name, id]) => [name, { type: "int", value: id }]));
@@ -42,14 +48,22 @@ class FakeVec3 {
   floored() {
     return new FakeVec3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
   }
+
+  distanceTo(other) {
+    return Math.hypot(this.x - other.x, this.y - other.y, this.z - other.z);
+  }
 }
 
 function fixture(overrides = {}) {
   const calls = { logs: [], modes: [], positions: [], paused: false, cancelled: 0, cleaned: 0, aborted: 0 };
-  const bot = {
+  const bot = Object.assign(new EventEmitter(), {
     version: "1.20.4",
-    game: { gameMode: "survival" },
+    registry: minecraftData("1.20.4"),
+    game: { gameMode: "survival", dimension: "overworld" },
     position: new FakeVec3(1.2, 64.9, -3.2),
+    entity: { position: new FakeVec3(1.2, 64.9, -3.2) },
+    world: {},
+    _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
     interrupt_code: false,
     modes: {
       exists: (name) => name === "unstuck",
@@ -61,9 +75,19 @@ function fixture(overrides = {}) {
       calls.positions.push(position);
       return { name: "stone", getProperties: () => ({ axis: "y" }) };
     },
-  };
+    dig: async () => {},
+    placeBlock: async () => {},
+    builder: { clearArea: async () => {} },
+    pathfinder: {
+      movements: { canDig: true, allow1by1towers: true, scafoldingBlocks: [1] },
+      setMovements(movements) { this.movements = movements; },
+      goto: async () => {},
+    },
+  });
   const build = {
+    dimensions: { width: 1, height: 1, length: 1 },
     plan: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: { axis: "y" } }],
+    cells: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: { axis: "y" } }],
   };
   const dependencies = {
     resolvePath: (filename) => `/schematics/${filename}`,
@@ -154,6 +178,45 @@ test("rejects unknown source palette blocks before parser, Creative mode, or sup
   assert.match(mixed.calls.logs.join(" "), /minecraft:future_block/);
 });
 
+test("production schematic builder rejects boundary-crossing door, bed, and double-plant footprints before mutation", async () => {
+  const cases = [
+    {
+      state: "minecraft:oak_door[facing=west,half=lower,hinge=left,open=false,powered=false]",
+      secondary: "3,65,5",
+    },
+    {
+      state: "minecraft:red_bed[facing=south,part=foot,occupied=false]",
+      secondary: "3,64,6",
+    },
+    {
+      state: "minecraft:sunflower[half=lower]",
+      secondary: "3,65,5",
+    },
+  ];
+
+  for (const { state, secondary } of cases) {
+    const world = new Map([[secondary, { name: "poppy" }]]);
+    let mutations = 0;
+    const candidate = fixture({
+      fsReadFile: () => spongeBuffer({ [state]: 0 }, [0]),
+      SchematicClass: Schematic,
+      makeBuild: createModernBuild,
+      startSupply: () => { throw new Error("supply must not start for unsupported footprints"); },
+      executeBuild: () => { throw new Error("production builder must reject before execution"); },
+    });
+    candidate.bot.blockAt = (position) => world.get(`${position.x},${position.y},${position.z}`)
+      ?? { name: "air", getProperties: () => ({}) };
+    candidate.bot.dig = async () => { mutations++; };
+    candidate.bot.placeBlock = async () => { mutations++; };
+
+    assert.equal(await buildSchematic(candidate.bot, "boundary.schem", 3, 64, 5, candidate.dependencies), false, state);
+    assert.deepEqual(candidate.calls.modes, [], `${state} must fail before Creative mode`);
+    assert.equal(mutations, 0, `${state} must not invoke any mutation`);
+    assert.equal(world.get(secondary).name, "poppy", `${state} must preserve the modeled outside flower`);
+    assert.match(candidate.calls.logs.join(" "), /unsupported blocks.*(?:door|bed|plant)/i);
+  }
+});
+
 test("floors three finite coordinates and otherwise uses bot position offset and floor", async () => {
   const explicit = fixture();
   assert.equal(await buildSchematic(explicit.bot, "house.schem", 10.9, -4.2, 7, explicit.dependencies), true);
@@ -184,7 +247,7 @@ test("build success is verified and cleans supply, restores game mode and prior 
   assert.equal(await buildSchematic(bot, "house.schem", null, null, null, dependencies), true);
   assert.equal(calls.cleaned, 1);
   assert.equal(calls.cancelled, 1);
-  assert.equal(calls.positions.length, 1);
+  assert.equal(calls.positions.length, 2, "the in-volume safety preflight and final verification both inspect the planned target");
   assert.deepEqual(calls.modes.map(({ mode }) => mode), ["creative", "survival"]);
   assert.equal(calls.modes[1].force, true);
   assert.equal(calls.paused, false);
@@ -225,13 +288,12 @@ test("verification mismatch, cleanup rejection, and hanging cleanup never claim 
   const mismatch = fixture();
   mismatch.bot.blockAt = () => ({ name: "dirt", getProperties: () => ({}) });
   assert.equal(await buildSchematic(mismatch.bot, "house.schem", null, null, null, mismatch.dependencies), false);
-  assert.match(mismatch.calls.logs.join(" "), /expected stone, found dirt/);
+  assert.match(mismatch.calls.logs.join(" "), /Refusing obstruction dirt.*allowlist/);
 
   const wrongProperty = fixture();
   wrongProperty.bot.blockAt = () => ({ name: "stone", getProperties: () => ({ axis: "x" }) });
   assert.equal(await buildSchematic(wrongProperty.bot, "house.schem", null, null, null, wrongProperty.dependencies), false);
-  assert.match(wrongProperty.calls.logs.join(" "), /expected stone axis=y, found x/);
-  assert.match(wrongProperty.calls.logs.join(" "), /limited orientation metadata/);
+  assert.match(wrongProperty.calls.logs.join(" "), /Refusing obstruction stone.*protected/);
 
   const cleanupError = fixture({ startSupply: () => {
     const cleanup = () => { throw new Error("slot restore failed"); };
@@ -255,6 +317,56 @@ test("verification mismatch, cleanup rejection, and hanging cleanup never claim 
   assert.equal(hanging.calls.modes.at(-1).force, true);
 });
 
+test("clears foliage only inside the transformed volume and verifies intended-air cells", async () => {
+  const { bot, calls, dependencies, build } = fixture();
+  const airPosition = { x: 4, y: 64, z: 5 };
+  build.cells = [
+    ...build.plan,
+    { position: airPosition, name: "air", properties: {} },
+  ];
+  build.dimensions.width = 2;
+  const world = new Map([
+    ["3,64,5", { name: "poppy", diggable: true, getProperties: () => ({}) }],
+    ["4,64,5", { name: "allium", diggable: true, getProperties: () => ({}) }],
+    ["5,64,5", { name: "poppy", diggable: true, getProperties: () => ({}) }],
+  ]);
+  bot.blockAt = (position) => {
+    const found = world.get(`${position.x},${position.y},${position.z}`);
+    return found ? { ...found, position } : { name: "air", diggable: false, position, getProperties: () => ({}) };
+  };
+  bot.dig = async (target) => {
+    calls.positions.push(target.position);
+    world.set(`${target.position.x},${target.position.y},${target.position.z}`, { name: "air", getProperties: () => ({}) });
+  };
+  dependencies.executeBuild = async () => {
+    world.set("3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) });
+    return { status: "finished", errors: [] };
+  };
+
+  assert.equal(await buildSchematic(bot, "foliage.schem", null, null, null, dependencies), true);
+  assert.deepEqual(calls.positions.map(({ x, y, z }) => `${x},${y},${z}`), ["3,64,5", "4,64,5"]);
+  assert.equal(world.get("5,64,5").name, "poppy");
+  assert.match(calls.logs.join(" "), /Cleared 2 allowlisted natural obstruction/);
+
+  const obstructedAir = fixture();
+  obstructedAir.build.cells = [
+    ...obstructedAir.build.plan,
+    { position: airPosition, name: "air", properties: {} },
+  ];
+  obstructedAir.build.dimensions.width = 2;
+  const verifyWorld = new Map([
+    ["3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) }],
+    ["4,64,5", { name: "air", getProperties: () => ({}) }],
+  ]);
+  obstructedAir.bot.blockAt = (position) => verifyWorld.get(`${position.x},${position.y},${position.z}`);
+  obstructedAir.dependencies.executeBuild = async () => {
+    verifyWorld.set("4,64,5", { name: "dirt", getProperties: () => ({}) });
+    return { status: "finished", errors: [] };
+  };
+  assert.equal(await buildSchematic(obstructedAir.bot, "air-cell.schem", null, null, null, obstructedAir.dependencies), false);
+  assert.match(obstructedAir.calls.logs.join(" "), /expected air, found dirt/);
+});
+
 test("does not restore unchanged Creative mode and restores after a timed-out switch", async () => {
   const creative = fixture();
   creative.bot.game.gameMode = "creative";
@@ -273,4 +385,218 @@ test("does not restore unchanged Creative mode and restores after a timed-out sw
   assert.equal(await buildSchematic(lateTimeout.bot, "house.schem", null, null, null, lateTimeout.dependencies), false);
   assert.equal(lateTimeout.calls.modes[1].mode, "survival");
   assert.equal(lateTimeout.calls.modes[1].force, true);
+});
+
+test("combat interruption resumes with the captured source and origin after the bot moves", async () => {
+  const { bot, calls, dependencies } = fixture();
+  const session = { cancelled: false };
+  let reads = 0;
+  let attempts = 0;
+  dependencies.fsReadFile = () => { reads++; return Buffer.from("original schematic bytes"); };
+  dependencies.executeBuild = (_bot, _build, options) => {
+    attempts++;
+    if (attempts === 1) {
+      options.onCancel();
+      return { status: "interrupted", errors: [] };
+    }
+    return { status: "finished", errors: [] };
+  };
+
+  assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(session.context.origin, { x: 3, y: 64, z: -2 });
+  const firstSchematic = session.context.schematic;
+  bot.position = new FakeVec3(100.7, 80.2, 200.9);
+  bot.entity.position = bot.position;
+
+  assert.equal(await buildSchematic(bot, "different-name-is-ignored.schem", null, null, null, { ...dependencies, resumeSession: session }), true);
+  assert.equal(reads, 1);
+  assert.equal(attempts, 2);
+  assert.equal(session.context, null);
+  assert.equal(session.cancelled, true);
+  assert.deepEqual(calls.startPosition, new FakeVec3(3, 64, -2));
+  assert.equal(session.schematic, undefined);
+  assert.equal(firstSchematic.parsed, true);
+});
+
+test("real Mineflayer respawn to a same-dimension named world cancels recovery with stable object references", async () => {
+  const { bot, dependencies } = fixture();
+  const session = { cancelled: false };
+  let attempts = 0;
+  dependencies.executeBuild = (_bot, _build, options) => {
+    attempts++;
+    options.onCancel();
+    return { status: "interrupted", errors: [] };
+  };
+  mineflayerHealth(bot, { respawn: false });
+  const world = bot.world;
+  const entity = bot.entity;
+
+  assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(session.resumeEligible, true);
+  assert.equal(session.context.worldIdentity.worldGeneration, 0);
+
+  // This is the real Mineflayer health plugin's client-respawn handler path.
+  // Keep dimension, world, entity and client references unchanged, while the
+  // packet names a different overworld.
+  bot._client.emit("respawn", {
+    worldState: { dimension: "minecraft:overworld", name: "minecraft:overworld_copy" },
+    copyMetadata: true,
+  });
+  assert.equal(bot.game.dimension, "overworld");
+  assert.equal(bot.world, world);
+  assert.equal(bot.entity, entity);
+
+  dependencies.executeBuild = () => { attempts++; return { status: "finished", errors: [] }; };
+  assert.equal(await buildSchematic(bot, "ignored-on-resume.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(attempts, 1, "a prior session is rejected before the builder is registered again");
+  assert.equal(session.cancelled, true);
+  assert.equal(session.context, null);
+});
+
+test("interrupted recovery accepts only already-cleared natural cells and preserves the original volume snapshot", async () => {
+  const { bot, dependencies, build } = fixture();
+  const foliagePosition = { x: 4, y: 64, z: 5 };
+  build.cells = [
+    ...build.plan,
+    { position: foliagePosition, name: "air", properties: {} },
+  ];
+  build.dimensions.width = 2;
+  const world = new Map([
+    ["3,64,5", { name: "poppy", diggable: true, getProperties: () => ({}) }],
+    ["4,64,5", { name: "poppy", diggable: true, getProperties: () => ({}) }],
+  ]);
+  bot.blockAt = (position) => {
+    const found = world.get(`${position.x},${position.y},${position.z}`);
+    return found ? { ...found, position } : { name: "air", position, getProperties: () => ({}) };
+  };
+  bot.dig = async (target) => world.set(`${target.position.x},${target.position.y},${target.position.z}`, {
+    name: "air", getProperties: () => ({}),
+  });
+  const session = { cancelled: false };
+  let attempts = 0;
+  dependencies.executeBuild = async () => {
+    attempts++;
+    if (attempts === 1) return { status: "interrupted", errors: [] };
+    world.set("3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) });
+    return { status: "finished", errors: [] };
+  };
+
+  assert.equal(await buildSchematic(bot, "foliage.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(session.context.originalStates.map(({ name }) => name), ["poppy", "poppy"]);
+  assert.equal(world.get("3,64,5").name, "air");
+  assert.equal(world.get("4,64,5").name, "air");
+  assert.equal(await buildSchematic(bot, "ignored-on-resume.schem", null, null, null, { ...dependencies, resumeSession: session }), true);
+  assert.equal(attempts, 2);
+  assert.equal(session.context, null);
+});
+
+test("recovery rejects an unsafe fluid-bearing obstruction in the saved world snapshot", async () => {
+  const { bot, dependencies } = fixture();
+  const session = { cancelled: false };
+  let executions = 0;
+  dependencies.executeBuild = (_bot, _build, options) => {
+    executions++;
+    options.onCancel();
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(session.resumeEligible, true);
+
+  const waterlogged = Block.fromProperties("mangrove_propagule", {
+    age: 0, hanging: false, stage: 0, waterlogged: true,
+  }).getProperties();
+  session.context.originalStates[0] = {
+    position: { x: 3, y: 64, z: 5 },
+    name: "mangrove_propagule",
+    properties: waterlogged,
+  };
+  bot.blockAt = (position) => ({
+    name: "mangrove_propagule",
+    position,
+    getProperties: () => waterlogged,
+  });
+  dependencies.executeBuild = () => { executions++; return { status: "finished", errors: [] }; };
+
+  assert.equal(await buildSchematic(bot, "ignored-on-resume.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+  assert.equal(executions, 1, "unsafe snapshot fails before another build or dig");
+  assert.equal(session.context, null);
+  assert.equal(session.cancelled, true);
+});
+
+test("repeated combat interruptions remain resumable but block changes fail closed", async () => {
+  const repeated = fixture();
+  const session = { cancelled: false };
+  let attempts = 0;
+  repeated.dependencies.executeBuild = (_bot, _build, options) => {
+    attempts++;
+    if (attempts < 3) {
+      options.onCancel();
+      return { status: "interrupted", errors: [] };
+    }
+    return { status: "finished", errors: [] };
+  };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    assert.equal(await buildSchematic(repeated.bot, "house.schem", null, null, null, { ...repeated.dependencies, resumeSession: session }), false);
+    assert.equal(session.resumeEligible, true);
+  }
+  assert.equal(await buildSchematic(repeated.bot, "house.schem", null, null, null, { ...repeated.dependencies, resumeSession: session }), true);
+  assert.equal(attempts, 3);
+
+  const changed = fixture();
+  const changedSession = { cancelled: false };
+  changed.dependencies.executeBuild = (_bot, _build, options) => {
+    options.onCancel();
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await buildSchematic(changed.bot, "house.schem", null, null, null, { ...changed.dependencies, resumeSession: changedSession }), false);
+  changed.bot.blockAt = () => ({ name: "dirt", getProperties: () => ({}) });
+  let resumedRuns = 0;
+  changed.dependencies.executeBuild = () => { resumedRuns++; return { status: "finished", errors: [] }; };
+  assert.equal(await buildSchematic(changed.bot, "house.schem", null, null, null, { ...changed.dependencies, resumeSession: changedSession }), false);
+  assert.equal(resumedRuns, 0);
+  assert.equal(changedSession.context, null);
+  assert.match(changed.calls.logs.join(" "), /World blocks no longer match/);
+});
+
+test("death, dimension changes, disconnects, failures, and unsettled cleanup prohibit resume", async () => {
+  for (const boundary of ["death", "dimension", "disconnect"]) {
+    const { bot, dependencies } = fixture();
+    const session = { cancelled: false };
+    dependencies.executeBuild = (_bot, _build, options) => {
+      options.onCancel();
+      return { status: "interrupted", errors: [] };
+    };
+    assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+    if (boundary === "death") bot.health = 0;
+    if (boundary === "dimension") bot.game.dimension = "nether";
+    if (boundary === "disconnect") bot._client = { ended: true };
+    let resumedRuns = 0;
+    dependencies.executeBuild = () => { resumedRuns++; return { status: "finished", errors: [] }; };
+    assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
+    assert.equal(resumedRuns, 0, boundary);
+    assert.equal(session.context, null, boundary);
+  }
+
+  const failed = fixture();
+  const failedSession = { cancelled: false };
+  failed.dependencies.executeBuild = () => ({ status: "error", errors: [new Error("placement failed")] });
+  assert.equal(await buildSchematic(failed.bot, "house.schem", null, null, null, { ...failed.dependencies, resumeSession: failedSession }), false);
+  assert.equal(failedSession.context, null);
+
+  const cleanup = fixture({ startSupply: () => {
+    const cancel = () => new Promise(() => {});
+    cancel.cancel = () => {};
+    cancel.abort = () => {};
+    return cancel;
+  }, cleanupTimeoutMs: 5 });
+  const cleanupSession = { cancelled: false };
+  cleanup.dependencies.executeBuild = (_bot, _build, options) => {
+    options.onCancel();
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await buildSchematic(cleanup.bot, "house.schem", null, null, null, { ...cleanup.dependencies, resumeSession: cleanupSession }), false);
+  assert.equal(cleanupSession.context, null);
+  assert.match(cleanup.calls.logs.join(" "), /cleanup timed out/);
 });

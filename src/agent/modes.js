@@ -407,7 +407,21 @@ class ModeController {
         for (let mode of modes_list) {
             let interruptible = mode.interrupts.some(i => i === 'all') || mode.interrupts.some(i => i === _agent.actions.currentActionLabel);
             if (mode.on && !mode.paused && !mode.active && (_agent.isIdle() || interruptible)) {
-                await mode.update(_agent);
+                // A mode may spend time checking whether it can act (for example,
+                // checking line of sight) before it calls execute(). Keep a retry
+                // from claiming idle during that handoff; the mode action itself
+                // takes a second reservation once it starts.
+                const pendingSchematicRecovery = _agent.actions.hasPendingManagedResumeFor?.('action:buildSchematic');
+                const canInterruptSchematicRecovery = mode.interrupts.some(i => i === 'all' || i === 'action:buildSchematic');
+                const releaseTransition = ( (!_agent.isIdle() && interruptible)
+                    || (pendingSchematicRecovery && canInterruptSchematicRecovery) )
+                    ? _agent.actions.reserveTransition?.()
+                    : null;
+                try {
+                    await mode.update(_agent);
+                } finally {
+                    releaseTransition?.();
+                }
             }
             if (mode.active) break;
         }

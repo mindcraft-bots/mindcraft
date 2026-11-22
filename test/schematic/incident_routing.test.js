@@ -23,7 +23,7 @@ function runChecks() {
     const agent = Object.create(Agent.prototype);
     agent.name = 'Andy';
     agent.blocked_actions = [];
-    agent.bot = { output: '', interrupt_code: false, emit() {}, modes: { flushBehaviorLog: () => '' } };
+    agent.bot = { version: '1.21.4', output: '', interrupt_code: false, emit() {}, modes: { flushBehaviorLog: () => '' } };
     agent.actions = { runAction: async (_name, fn) => { await fn(); return { message: 'build complete', interrupted: false, timedout: false }; } };
     const historyMessages = [];
     agent.history = { add: (...args) => historyMessages.push(args), save() {}, getHistory: () => [] };

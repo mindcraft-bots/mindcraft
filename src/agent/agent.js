@@ -315,6 +315,7 @@ export class Agent {
                     // add the preceding message to the history to give context for newAction
                     this.history.add(source, message);
                 }
+                this.actions.cancelManagedResumeForUserCommand?.();
                 this.self_prompter.handleUserPromptedCmd(false, isAction(user_command_name));
                 let execute_res = await executeCommand(this, message);
                 if (execute_res) 

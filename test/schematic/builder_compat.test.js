@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 
 import { beginCreativeSupply, loadSchematicBuilder } from '../../src/utils/schematic/builder_compat.js';
+import { serializeCreativeSlotWrite } from '../../src/utils/creative_slot.js';
 
 const require = createRequire(import.meta.url);
 const schematicPlugin = require('mineflayer-schem').builder;
@@ -11,6 +12,7 @@ const { pathfinder: pathfinderPlugin, goals } = require('mineflayer-pathfinder')
 const injectPluginLoader = require('mineflayer/lib/plugin_loader');
 const minecraftData = require('minecraft-data');
 const prismarineItem = require('prismarine-item');
+const realCreativePlugin = require('mineflayer/lib/plugins/creative');
 const { Vec3 } = require('vec3');
 const VERSION = '1.20.4';
 const registry = minecraftData(VERSION);
@@ -263,7 +265,7 @@ test('closing a session prevents queued equips from writing after cancellation',
     assert.equal(calls.supply[1].item, null);
 });
 
-test('aborting a timed-out close prevents late equipment and slot restoration writes', async () => {
+test('aborting while a write is unsettled waits for it before restoring the slot', async () => {
     const { bot, calls } = fakeBot();
     loadSchematicBuilder(bot);
     const cleanup = beginCreativeSupply(bot);
@@ -286,7 +288,8 @@ test('aborting a timed-out close prevents late equipment and slot restoration wr
     await assert.rejects(pendingEquip, /cancelled or closed/);
     await closing;
 
-    assert.equal(calls.supply.length, 1);
+    assert.equal(calls.supply.length, 2);
+    assert.equal(calls.supply[1].item, null);
     assert.equal(calls.equip.length, 0);
 });
 
@@ -301,4 +304,199 @@ test('uses mineflayer-schem equipItem item-id contract and never invokes clear o
     assert.equal(calls.chat.length, 0);
     assert.equal(calls.supply.some(({ item }) => item?.type === registry.itemsByName.stone.id), true);
     await cleanup();
+});
+
+function installRealCreativePlugin(bot, version, { noAck = false, ackDelayMs = 0 } = {}) {
+    const data = minecraftData(version);
+    const VersionItem = prismarineItem(data);
+    const writes = [];
+    bot.version = version;
+    bot.registry = data;
+    bot.inventory = Object.assign(new EventEmitter(), {
+        slots: Array(46).fill(null),
+        items() { return this.slots.filter(Boolean); },
+        findInventoryItem(name) { return this.slots.find((item) => item?.name === name) ?? null; },
+    });
+    bot.supportFeature = (feature) => feature === 'noAckOnCreateSetSlotPacket' && noAck;
+    bot._setSlot = (slot, item) => {
+        const oldItem = bot.inventory.slots[slot];
+        bot.inventory.slots[slot] = item;
+        bot.inventory.emit(`updateSlot:${slot}`, oldItem, item);
+    };
+    bot._client = {
+        write(packetName, packet) {
+            assert.equal(packetName, 'set_creative_slot');
+            const item = packet.item == null ? null : VersionItem.fromNotch(packet.item);
+            writes.push({ slot: packet.slot, item });
+            if (!noAck) {
+                const delay = typeof ackDelayMs === 'function'
+                    ? ackDelayMs({ slot: packet.slot, item, writes })
+                    : ackDelayMs;
+                setTimeout(() => bot._setSlot(packet.slot, item), delay);
+            }
+        },
+    };
+    realCreativePlugin(bot);
+    return { data, Item: VersionItem, writes };
+}
+
+test('real Mineflayer creative plugin rejects overlapping same-slot calls; shared lease serializes builder and skill writers', async () => {
+    const direct = fakeBot();
+    const directPlugin = installRealCreativePlugin(direct.bot, VERSION, { ackDelayMs: 15 });
+    const first = direct.bot.creative.setInventorySlot(36, new directPlugin.Item(registry.itemsByName.stone.id, 1, 0));
+    await assert.rejects(
+        direct.bot.creative.setInventorySlot(36, new directPlugin.Item(registry.itemsByName.dirt.id, 1, 0)),
+        /Setting slot 36 cancelled due to calling/,
+    );
+    await first;
+
+    const { bot } = fakeBot();
+    const plugin = installRealCreativePlugin(bot, VERSION, { ackDelayMs: 15 });
+    bot.inventory.slots[36] = new plugin.Item(registry.itemsByName.dirt.id, 2, 0);
+    bot.output = '';
+    loadSchematicBuilder(bot);
+    const cleanup = beginCreativeSupply(bot);
+    const equipped = await bot.builder.equipItem(plugin.data.itemsByName.stone.id);
+    assert.equal(equipped.type, plugin.data.itemsByName.stone.id);
+
+    const skillWrite = serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(
+        36,
+        new plugin.Item(plugin.data.itemsByName.oak_planks.id, 1, 0),
+    ));
+    await cleanup();
+    await skillWrite;
+    assert.deepEqual(plugin.writes.map(({ item }) => item?.name ?? null), ['stone', 'dirt', 'oak_planks']);
+});
+
+test('no-ack Creative cleanup restores through Mineflayer without waiting for nonexistent packet updates on 1.21.4 and 26.1', async () => {
+    for (const version of ['1.21.4', '26.1']) {
+        const data = minecraftData(version);
+        const VersionItem = prismarineItem(data);
+        const { bot } = fakeBot();
+        const plugin = installRealCreativePlugin(bot, version, { noAck: true });
+        bot.inventory.slots[36] = new VersionItem(data.itemsByName.dirt.id, 3, 0);
+        loadSchematicBuilder(bot);
+        const cleanup = beginCreativeSupply(bot);
+        const equip = bot.builder.equipItem(data.itemsByName.stone.id);
+        await equip;
+        await Promise.race([
+            cleanup(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`${version} no-ack cleanup timed out`)), 1_500)),
+        ]);
+        assert.equal(bot.inventory.slots[36].name, 'dirt', version);
+        assert.deepEqual(plugin.writes.map(({ item }) => item?.name ?? null), ['stone', 'dirt'], version);
+        const nextCleanup = beginCreativeSupply(bot);
+        await nextCleanup();
+    }
+});
+
+test('failed serialized creative writes do not poison the slot queue', async () => {
+    const { bot } = fakeBot();
+    const order = [];
+    await assert.rejects(serializeCreativeSlotWrite(bot, 36, async () => {
+        order.push('failed');
+        throw new Error('simulated creative write failure');
+    }), /simulated creative write failure/);
+    await serializeCreativeSlotWrite(bot, 36, async () => { order.push('next'); });
+    assert.deepEqual(order, ['failed', 'next']);
+});
+
+test('no-ack Mineflayer writes settle locally and release the shared queue for the next write', async () => {
+    const { bot } = fakeBot();
+    const plugin = installRealCreativePlugin(bot, '1.21.4', { noAck: true });
+    await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(
+        36,
+        new plugin.Item(plugin.data.itemsByName.stone.id, 1, 0),
+    ));
+    await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(
+        36,
+        new plugin.Item(plugin.data.itemsByName.oak_planks.id, 1, 0),
+    ));
+    assert.deepEqual(plugin.writes.map(({ item }) => item?.name), ['stone', 'oak_planks']);
+    assert.equal(bot.inventory.slots[36].name, 'oak_planks');
+});
+
+test('settled aborted no-ack cleanup restores, releases queued writers, and permits a new supply', async () => {
+    const { bot } = fakeBot();
+    const plugin = installRealCreativePlugin(bot, '26.1', { noAck: true });
+    loadSchematicBuilder(bot);
+    const cleanup = beginCreativeSupply(bot);
+    const equipped = await bot.builder.equipItem(plugin.data.itemsByName.stone.id);
+    assert.equal(equipped.name, 'stone');
+    cleanup.abort();
+    const ordinaryWrite = serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(
+        36,
+        new plugin.Item(plugin.data.itemsByName.oak_planks.id, 1, 0),
+    ));
+
+    await cleanup();
+    await ordinaryWrite;
+    assert.equal(bot.inventory.slots[36].name, 'oak_planks');
+
+    const nextCleanup = beginCreativeSupply(bot);
+    await bot.builder.equipItem(plugin.data.itemsByName.stone.id);
+    await nextCleanup();
+    assert.equal(bot.inventory.slots[36].name, 'oak_planks');
+    assert.deepEqual(plugin.writes.map(({ item }) => item?.name ?? null), ['stone', null, 'oak_planks', 'stone', 'oak_planks']);
+});
+
+test('real creative plugin timeout followed by late acknowledgement restores before ordinary and new owners', async () => {
+    const { bot } = fakeBot();
+    const plugin = installRealCreativePlugin(bot, VERSION, {
+        ackDelayMs: ({ item, writes }) => item?.name === 'stone'
+            && writes.filter((write) => write.item?.name === 'stone').length === 1
+            ? 5_050
+            : 0,
+    });
+    const original = new plugin.Item(plugin.data.itemsByName.dirt.id, 2, 0);
+    bot.inventory.slots[36] = original;
+    loadSchematicBuilder(bot);
+    const cleanup = beginCreativeSupply(bot);
+
+    await assert.rejects(
+        bot.builder.equipItem(plugin.data.itemsByName.stone.id),
+        /Timed out|timeout/i,
+    );
+    const ordinaryWrite = serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(
+        36,
+        new plugin.Item(plugin.data.itemsByName.oak_planks.id, 1, 0),
+    ));
+    await cleanup();
+    await ordinaryWrite;
+    assert.equal(bot.inventory.slots[36].name, 'oak_planks');
+
+    const nextCleanup = beginCreativeSupply(bot);
+    await bot.builder.equipItem(plugin.data.itemsByName.stone.id);
+    await nextCleanup();
+    assert.equal(bot.inventory.slots[36].name, 'oak_planks');
+});
+
+test('never-settling real-plugin supply is quarantined and queued writers fail explicitly after cancellation', async () => {
+    const { bot } = fakeBot();
+    const plugin = installRealCreativePlugin(bot, '26.1', { noAck: true });
+    const pluginWrite = bot.creative.setInventorySlot;
+    let intercepted = false;
+    bot.creative.setInventorySlot = (...args) => {
+        if (!intercepted) {
+            intercepted = true;
+            void pluginWrite.apply(bot.creative, args);
+            return new Promise(() => {});
+        }
+        return pluginWrite.apply(bot.creative, args);
+    };
+    loadSchematicBuilder(bot);
+    const cleanup = beginCreativeSupply(bot);
+    const pendingEquip = bot.builder.equipItem(plugin.data.itemsByName.stone.id);
+    const queuedWriter = serializeCreativeSlotWrite(bot, 36, () => {
+        throw new Error('quarantined writer must not run');
+    });
+    while (plugin.writes.length === 0) await new Promise((resolve) => setTimeout(resolve, 0));
+    cleanup.abort();
+
+    await assert.rejects(pendingEquip, /did not settle/i);
+    await assert.rejects(cleanup(), /remains quarantined/i);
+    await assert.rejects(queuedWriter, /remains quarantined/i);
+    const nextCleanup = beginCreativeSupply(bot);
+    await assert.rejects(bot.builder.equipItem(plugin.data.itemsByName.stone.id), /remains quarantined/i);
+    await assert.rejects(nextCleanup(), /remains quarantined/i);
 });

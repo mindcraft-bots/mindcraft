@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "blocks": {
+    "minecraft:chain": { "introduced": { "release": "1.16", "dataVersion": 2566 } },
+    "minecraft:iron_chain": { "introduced": { "release": "1.21.9", "dataVersion": 4554 } }
+  },
+  "alternatives": [
+    {
+      "from": "minecraft:chain", "to": "minecraft:iron_chain",
+      "target": { "min": { "release": "1.21.9", "dataVersion": 4554 } },
+      "properties": { "rename": {}, "values": {} }
+    },
+    {
+      "from": "minecraft:iron_chain", "to": "minecraft:chain",
+      "target": { "min": { "release": "1.16", "dataVersion": 2566 }, "max": { "release": "1.21.8", "dataVersion": 4440 } },
+      "properties": { "rename": {}, "values": {} }
+    }
+  ]
+}

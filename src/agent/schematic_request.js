@@ -243,7 +243,7 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
 
     try {
-        await resolveSchematicPath(request.selector);
+        await resolveSchematicPath(request.selector, undefined, { version: agent.bot?.version });
     } catch (error) {
         await agent.routeResponse(source, `Schematic selector ${request.selector} could not be resolved: ${error.message}`);
         return true;

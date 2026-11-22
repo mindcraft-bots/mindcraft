@@ -19,6 +19,9 @@ const DOUBLE_PLANT_NAMES = new Set([
   "rose_bush",
   "sunflower",
   "tall_grass",
+  "tall_seagrass",
+  "small_dripleaf",
+  "pitcher_plant",
 ]);
 
 function isFiniteInteger(value) {
@@ -81,6 +84,13 @@ function dependentReason(name, properties) {
   return null;
 }
 
+function multiBlockPlacementReason(name) {
+  if (name.endsWith("_door")) return "door placement creates a second block half";
+  if (name.endsWith("_bed")) return "bed placement creates a second block half";
+  if (DOUBLE_PLANT_NAMES.has(name)) return "plant placement creates a second block half";
+  return null;
+}
+
 function validateSchematic(schematic, startPos) {
   const size = schematic?.size;
   const dimensions = [size?.x, size?.y, size?.z];
@@ -122,6 +132,7 @@ export function createModernBuild(schematic, bot, startPos) {
   build.items = Object.create(null);
   build.blockData = Object.create(null);
   build.plan = [];
+  build.cells = [];
   build.unsupported = [];
   build.skippedDependencies = [];
 
@@ -162,19 +173,33 @@ export function createModernBuild(schematic, bot, startPos) {
       });
       continue;
     }
-    if (name === "air" || name === "cave_air" || name === "void_air") continue;
-
     const properties = copyProperties(decoded?.getProperties?.() ?? {});
     const position = Object.freeze({ x: startPos.x + x, y: startPos.y + y, z: startPos.z + z });
     const entry = Object.freeze({ position, name, properties, stateId });
+    build.cells.push(entry);
+    if (name === "air" || name === "cave_air" || name === "void_air") continue;
     plan.push(entry);
 
     const dependency = dependentReason(name, properties);
+    const multiBlockReason = multiBlockPlacementReason(name);
     const mappedItemName = itemNameForBlock(name, registry.itemsByName);
     const item = mappedItemName ? registry.itemsByName[mappedItemName] : null;
     build.blocks[index] = { id: stateId, name };
     build.items[index] = item ?? null;
     build.blockData[index] = orientationMetadata(name, properties);
+
+    if (multiBlockReason) {
+      unsupported.push({
+        index,
+        position,
+        name,
+        properties,
+        stateId,
+        reason: `${multiBlockReason}; placement is refused because the full physics footprint cannot be safely proven in-volume`,
+      });
+      if (dependency) skippedDependencies.push({ ...entry, reason: dependency });
+      continue;
+    }
 
     if (dependency) {
       skippedDependencies.push({ ...entry, reason: dependency });
@@ -205,6 +230,7 @@ export function createModernBuild(schematic, bot, startPos) {
   }
 
   build.plan = Object.freeze(plan);
+  build.cells = Object.freeze(build.cells);
   build.unsupported = Object.freeze(unsupported);
   build.skippedDependencies = Object.freeze(skippedDependencies);
   build.actions = actions;

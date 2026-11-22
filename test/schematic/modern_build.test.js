@@ -60,7 +60,10 @@ test("creates real mineflayer-schem Build actions from modern block states witho
     ["mangrove_planks", stateId("mangrove_planks")],
     ["oak_stairs", stateId("oak_stairs", { facing: "north", half: "top", shape: "straight", waterlogged: false })],
   ]);
+  assert.deepEqual(build.cells.map(({ name }) => name), ["mangrove_planks", "oak_stairs", "air"]);
+  assert.equal(build.cells[2].position.x, 12);
   assert.equal(Object.isFrozen(build.plan), true);
+  assert.equal(Object.isFrozen(build.cells), true);
   assert.equal(Object.isFrozen(build.plan[0].position), true);
 });
 
@@ -88,23 +91,28 @@ test("maps wall banners and cocoa to inventory items without changing requested 
   assert.deepEqual(build.plan[2].properties, schematic.getBlock(new Vec3(2, 0, 0)).getProperties());
 });
 
-test("retains dependent door and bed blocks in the verification plan but only places their base halves", async () => {
-  const schematic = await parsedSchematic([
+test("rejects multi-block door, bed, and plant placements before they can cross the schematic boundary", async () => {
+  for (const entry of [
     { name: "oak_door", properties: { facing: "west", half: "lower", hinge: "left", open: false, powered: false } },
-    { name: "oak_door", properties: { facing: "west", half: "upper", hinge: "left", open: false, powered: false } },
     { name: "red_bed", properties: { facing: "south", part: "foot", occupied: false } },
-    { name: "red_bed", properties: { facing: "south", part: "head", occupied: false } },
+    { name: "sunflower", properties: { half: "lower" } },
+    { name: "tall_grass", properties: { half: "lower" } },
+    { name: "tall_seagrass", properties: { half: "lower", waterlogged: true } },
+  ]) {
+    const schematic = await parsedSchematic([entry]);
+    assert.throws(() => createModernBuild(schematic, bot(), new Vec3(4, 5, 6)), (error) => {
+      assert.match(error.message, /unsupported blocks.*(?:door|bed|plant).*second block half/i);
+      assert.equal(error.unsupported[0].position.x, 4);
+      assert.match(error.unsupported[0].reason, /full physics footprint cannot be safely proven in-volume/);
+      return true;
+    }, entry.name);
+  }
+
+  const safe = await parsedSchematic([
     { name: "oak_trapdoor", properties: { facing: "east", half: "top", open: true, powered: false, waterlogged: false } },
   ]);
-  const build = createModernBuild(schematic, bot(), new Vec3(4, 5, 6));
-
-  assert.equal(build.plan.length, 5);
-  assert.equal(build.actions.length, 3);
-  assert.equal(build.actions[0].metadata, 2);
-  assert.equal(build.actions[2].metadata, 15);
-  assert.equal(build.skippedDependencies.length, 2);
-  assert.equal(build.skippedDependencies[0].reason.includes("upper door"), true);
-  assert.equal(build.skippedDependencies[1].reason.includes("bed head"), true);
+  const safeBuild = createModernBuild(safe, bot(), new Vec3(4, 5, 6));
+  assert.equal(safeBuild.actions.length, 1, "single-cell trapdoors remain supported");
 });
 
 test("reports unsupported states explicitly and attaches the inspectable adapter", async () => {

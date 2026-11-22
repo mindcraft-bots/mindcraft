@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const updater = path.join(projectRoot, 'scripts', 'update.sh');
+const updater = path.join(projectRoot, 'scripts', 'update_project.sh');
 
 function command(commandName, args, cwd, extraEnv = {}) {
     const result = spawnSync(commandName, args, {
@@ -210,11 +210,11 @@ test('offline --check uses cached upstream, does not fetch or update, and works 
 
 test('default target is the checkout containing the script, not the caller CWD', (t) => {
     const fx = fixture(t);
-    const localScript = path.join(fx.checkout, 'scripts', 'update.sh');
+    const localScript = path.join(fx.checkout, 'scripts', 'update_project.sh');
     mkdirSync(path.dirname(localScript), { recursive: true });
     writeFileSync(localScript, readFileSync(updater));
     chmodSync(localScript, 0o755);
-    git(fx.checkout, 'add', 'scripts/update.sh');
+    git(fx.checkout, 'add', 'scripts/update_project.sh');
     git(fx.checkout, 'commit', '-m', 'add updater');
     git(fx.checkout, 'push', 'origin', 'main');
     git(fx.checkout, 'fetch', 'origin', 'main');
@@ -693,17 +693,37 @@ test('missing required scanner is diagnosed before invoking Git', (t) => {
 
 test('default-target self update runs the current reviewed script from unrelated cwd', (t) => {
     const fx = fixture(t);
-    write(fx.maintainer, 'scripts/update.sh', readFileSync(updater));
-    chmodSync(path.join(fx.maintainer, 'scripts/update.sh'), 0o755);
-    git(fx.maintainer, 'add', 'scripts/update.sh');
+    write(fx.maintainer, 'scripts/update_project.sh', readFileSync(updater));
+    chmodSync(path.join(fx.maintainer, 'scripts/update_project.sh'), 0o755);
+    git(fx.maintainer, 'add', 'scripts/update_project.sh');
     git(fx.maintainer, 'commit', '-m', 'bootstrap updater');
     git(fx.maintainer, 'push', 'origin', 'main');
     git(fx.checkout, 'pull', '--ff-only');
-    const expected = advanceRemote(fx, 'scripts/update.sh', `${readFileSync(updater, 'utf8')}\n# reviewed next version\n`);
-    const result = command(path.join(fx.checkout, 'scripts/update.sh'), ['--apply'], fx.root);
+    const expected = advanceRemote(fx, 'scripts/update_project.sh', `${readFileSync(updater, 'utf8')}\n# reviewed next version\n`);
+    const result = command(path.join(fx.checkout, 'scripts/update_project.sh'), ['--apply'], fx.root);
     assert.equal(result.status, 0, result.stderr);
     assert.equal(git(fx.checkout, 'rev-parse', 'HEAD'), expected);
-    assert.match(readFileSync(path.join(fx.checkout, 'scripts/update.sh'), 'utf8'), /reviewed next version/);
+    assert.match(readFileSync(path.join(fx.checkout, 'scripts/update_project.sh'), 'utf8'), /reviewed next version/);
+});
+
+test('old updater can fast-forward through its own rename and the new path works', (t) => {
+    const fx = fixture(t);
+    write(fx.maintainer, 'scripts/update.sh', readFileSync(updater));
+    chmodSync(path.join(fx.maintainer, 'scripts/update.sh'), 0o755);
+    git(fx.maintainer, 'add', 'scripts/update.sh');
+    git(fx.maintainer, 'commit', '-m', 'install old updater');
+    git(fx.maintainer, 'push', 'origin', 'main');
+    git(fx.checkout, 'pull', '--ff-only');
+    git(fx.maintainer, 'mv', 'scripts/update.sh', 'scripts/update_project.sh');
+    git(fx.maintainer, 'commit', '-m', 'rename updater');
+    git(fx.maintainer, 'push', 'origin', 'main');
+
+    const result = command(path.join(fx.checkout, 'scripts/update.sh'), ['--apply'], fx.root);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Updated branch main by fast-forward/);
+    assert.equal(existsSync(path.join(fx.checkout, 'scripts/update.sh')), false);
+    const check = command(path.join(fx.checkout, 'scripts/update_project.sh'), ['--check'], fx.root);
+    assert.equal(check.status, 0, check.stderr);
 });
 
 test('LFS signature mentions in source are allowed but CRLF pointer lines are blocked', (t) => {

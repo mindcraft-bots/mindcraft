@@ -21,6 +21,7 @@ from nbtlib import tag
 STATE_RE = re.compile(r"^([a-z0-9_.-]+):([a-z0-9_./-]+)(?:\[(.*)\])?$")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_VALIDATOR = PROJECT_ROOT / "schematics" / "tooling" / "validate_registry.mjs"
+HISTORY_CONVERTER = PROJECT_ROOT / "schematics" / "tooling" / "convert_history.mjs"
 
 
 def repo_input(path: Path) -> Path:
@@ -64,6 +65,35 @@ def validate_target(blueprint_path: Path, blueprint: dict, target_version: str |
         raise ValueError(f"cannot run Minecraft registry validator for target {target_version}: {error}") from error
     require(result.returncode == 0,
             f"Minecraft {target_version} registry validation failed: {result.stdout.strip() or 'no diagnostic'}")
+
+
+def prepare_blueprint(blueprint_path: Path, target_version: str | None, convert_to: str | None):
+    blueprint, voxels = read_blueprint(blueprint_path)
+    require(not (target_version and convert_to), "--target-version and --convert-to are mutually exclusive")
+    validate_target(blueprint_path, blueprint, target_version)
+    if convert_to is None:
+        return blueprint, voxels, None
+    try:
+        result = subprocess.run(
+            ["node", str(HISTORY_CONVERTER), str(blueprint_path), convert_to], cwd=PROJECT_ROOT,
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+    except OSError as error:
+        raise ValueError(f"cannot run history converter: {error}") from error
+    require(result.returncode == 0, f"Minecraft {convert_to} conversion failed: {result.stderr.strip()}")
+    report = json.loads(result.stdout)
+    blueprint = {**blueprint, "legend": report["legend"], "minecraft_version": convert_to,
+                 "data_version": report["targetDataVersion"]}
+    voxels = [blueprint["legend"][ch] for layer in blueprint["layers"] for row in layer for ch in row]
+    return blueprint, voxels, report
+
+
+def variant_path(output_path: Path, version: str) -> Path:
+    require(re.fullmatch(r"\d+(?:\.\d+)+", version) is not None, "invalid target Minecraft version")
+    require(output_path.suffix == ".schem", "conversion output base must end in .schem")
+    require(re.search(r"\.mc\d+(?:\.\d+)+$", output_path.stem) is None,
+            "conversion output must be an unsuffixed base name")
+    return output_path.with_name(f"{output_path.stem}.mc{version}.schem")
 
 
 def read_blueprint(path: Path) -> tuple[dict, list[str]]:
@@ -160,9 +190,9 @@ def gzip_nbt(root: nbtlib.File) -> bytes:
     return compressed.getvalue()
 
 
-def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: str | None = None) -> tuple[dict, bytes]:
-    blueprint, voxels = read_blueprint(blueprint_path)
-    validate_target(blueprint_path, blueprint, target_version)
+def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: str | None = None,
+                      convert_to: str | None = None) -> tuple[dict, bytes]:
+    blueprint, voxels, _ = prepare_blueprint(blueprint_path, target_version, convert_to)
     data_version = blueprint_data_version(blueprint)
     palette, _ = state_palette(blueprint)
     block_data = b"".join(encode_varint(palette[state]) for state in voxels)
@@ -183,13 +213,17 @@ def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: s
     }, root_name="Schematic")
     packed = gzip_nbt(root)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(packed)
+    if convert_to:
+        with output_path.open("xb") as stream:
+            stream.write(packed)
+    else:
+        output_path.write_bytes(packed)
     return blueprint, packed
 
 
-def validate_schematic(blueprint_path: Path, schematic_path: Path, target_version: str | None = None) -> dict:
-    blueprint, voxels = read_blueprint(blueprint_path)
-    validate_target(blueprint_path, blueprint, target_version)
+def validate_schematic(blueprint_path: Path, schematic_path: Path, target_version: str | None = None,
+                       convert_to: str | None = None) -> dict:
+    blueprint, voxels, conversion = prepare_blueprint(blueprint_path, target_version, convert_to)
     packed = schematic_path.read_bytes()
     require(bool(packed), f"empty schematic: {schematic_path}")
     raw = gzip.decompress(packed)
@@ -245,6 +279,7 @@ def validate_schematic(blueprint_path: Path, schematic_path: Path, target_versio
         "sha256": hashlib.sha256(packed).hexdigest(),
         "bytes": len(packed),
         "spot_checks": len(blueprint["spot_checks"]),
+        **({"conversion": conversion} if conversion else {}),
     }
 
 
@@ -254,11 +289,15 @@ def main() -> int:
     compile_parser = subparsers.add_parser("compile", help="compile blueprint JSON to deterministic gzip Sponge v2")
     compile_parser.add_argument("blueprint", type=Path)
     compile_parser.add_argument("output", type=Path)
-    compile_parser.add_argument("--target-version", help="require matching blueprint metadata and validate its palette against minecraft-data")
+    compile_versions = compile_parser.add_mutually_exclusive_group()
+    compile_versions.add_argument("--target-version", help="require matching blueprint metadata and registry-valid states")
+    compile_versions.add_argument("--convert-to", help="convert to a verified target release, writing a new .mc<VERSION>.schem variant")
     validate_parser = subparsers.add_parser("validate", help="reload gzip NBT and validate every voxel")
     validate_parser.add_argument("blueprint", type=Path)
     validate_parser.add_argument("schematic", type=Path)
-    validate_parser.add_argument("--target-version", help="require matching blueprint metadata and validate its palette against minecraft-data")
+    validate_versions = validate_parser.add_mutually_exclusive_group()
+    validate_versions.add_argument("--target-version", help="require matching blueprint metadata and registry-valid states")
+    validate_versions.add_argument("--convert-to", help="validate against the converted target palette")
     subparsers.add_parser("test-varints", help="exercise canonical multibyte VarInt boundaries")
     args = parser.parse_args()
     try:
@@ -266,13 +305,16 @@ def main() -> int:
         if args.command == "compile":
             blueprint_path = repo_input(args.blueprint)
             output_path = cli_output(args.output)
-            blueprint, packed = compile_blueprint(blueprint_path, output_path, args.target_version)
-            result = validate_schematic(blueprint_path, output_path, args.target_version)
-            print(json.dumps({"compiled": str(args.output), "blueprint": str(args.blueprint), **result}, sort_keys=True))
+            if args.convert_to:
+                output_path = variant_path(output_path, args.convert_to)
+            blueprint, packed = compile_blueprint(blueprint_path, output_path, args.target_version, args.convert_to)
+            result = validate_schematic(blueprint_path, output_path, args.target_version, args.convert_to)
+            output_name = variant_path(args.output, args.convert_to) if args.convert_to else args.output
+            print(json.dumps({"compiled": str(output_name), "blueprint": str(args.blueprint), **result}, sort_keys=True))
         elif args.command == "validate":
             blueprint_path = repo_input(args.blueprint)
             schematic_path = repo_input(args.schematic)
-            print(json.dumps(validate_schematic(blueprint_path, schematic_path, args.target_version), sort_keys=True))
+            print(json.dumps(validate_schematic(blueprint_path, schematic_path, args.target_version, args.convert_to), sort_keys=True))
         else:
             print("canonical VarInt boundaries passed (including 1-, 2-, 3-, 4-, and 5-byte values; overlong encoding rejected)")
         return 0

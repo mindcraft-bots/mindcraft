@@ -41,7 +41,9 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
   Object.assign(bot, {
     version: VERSION,
     registry,
-    game: { gameMode },
+    game: { gameMode, dimension: "overworld" },
+    world: {},
+    _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
     entity: { position: new Vec3(0, 64, 2) },
     position: new Vec3(0, 64, 2),
     interrupt_code: false,
@@ -92,7 +94,7 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
 
   if (realCreative) {
     bot.supportFeature = () => false;
-    bot._client = {
+    bot._client = Object.assign(new EventEmitter(), {
       write(packetName, packet) {
         assert.equal(packetName, "set_creative_slot");
         const appliedItem = packet.item == null ? null : Item.fromNotch(packet.item);
@@ -107,7 +109,7 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
           calls.events.push({ type: "ack", item: appliedItem, serverSlot: calls.serverSlot });
         }, delayMs);
       },
-    };
+    });
     realCreativePlugin(bot);
   } else {
     bot.creative = {

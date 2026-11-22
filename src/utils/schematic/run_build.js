@@ -36,6 +36,9 @@ export function acquireBuildLifecycle(bot) {
     }
   };
   const lease = {
+    isCurrent() {
+      return !owner.releaseRequested && !owner.released && buildLifecycles.get(bot) === owner;
+    },
     hold(promise) {
       if (owner.released) return;
       owner.holds++;
@@ -96,6 +99,7 @@ export async function runBuild(bot, build, {
   stallMs = DEFAULT_STALL_MS,
   graceMs = 4_000,
   onCancel,
+  onPendingSettlement,
   lifecycle,
 } = {}) {
   const active = activeBuilds.get(bot);
@@ -154,6 +158,7 @@ export async function runBuild(bot, build, {
       rejectBuild = reject;
     });
     lifecycle?.hold?.(settledPromise);
+    onPendingSettlement?.(settledPromise);
     // Both outcomes are observed immediately so a promise that outlives this
     // call cannot later create an unhandled rejection.
     Promise.resolve()

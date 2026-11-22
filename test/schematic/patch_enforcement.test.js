@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const verifier = join(projectRoot, 'scripts/verify-schematic-patch.js');
+const verifier = join(projectRoot, 'scripts/verify_patch.js');
 
 function runNode(args, { cwd = projectRoot, env = process.env } = {}) {
     return spawnSync(process.execPath, args, { cwd, env, encoding: 'utf8' });
@@ -17,6 +17,12 @@ function runNode(args, { cwd = projectRoot, env = process.env } = {}) {
 test('postinstall verifier accepts the patched installed package', () => {
     const result = runNode([verifier]);
     assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.match(result.stdout, /Verified mineflayer-schem cancellation-safety patch/);
+});
+
+test('patch verifier is directly executable', () => {
+    const result = spawnSync(verifier, [], { cwd: projectRoot, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.error || result.stderr || result.stdout);
     assert.match(result.stdout, /Verified mineflayer-schem cancellation-safety patch/);
 });
 

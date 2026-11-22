@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { acquireCreativeSlotLease } from '../creative_slot.js';
 
 const require = createRequire(import.meta.url);
 const { builder: schematicBuilder } = require('mineflayer-schem');
@@ -7,10 +8,16 @@ const prismarineItem = require('prismarine-item');
 
 const CANCELLATION_SAFETY_VERSION = 'mindcraft-cancellation-v1';
 const CREATIVE_SUPPLY_SLOT = 36;
+const WRITE_SETTLEMENT_TIMEOUT_MS = 6_000;
+const RESTORE_ACK_TIMEOUT_MS = 10_000;
 const supplySessions = new WeakMap();
 
 function isCreative(bot) {
     return bot.game?.gameMode === 'creative';
+}
+
+function creativeSlotWritesHaveNoAck(bot) {
+    return bot.supportFeature?.('noAckOnCreateSetSlotPacket') === true;
 }
 
 function assertSupplyAvailable(bot, session) {
@@ -41,9 +48,39 @@ function forceCreativeSlotWrite(bot, slot, item) {
 function finishSupplySession(bot, session) {
     if (session.closed || session.pendingWrites.length > 0 || !session.restoreAcknowledged) return;
     session.closed = true;
-    session.inventory.off?.(`updateSlot:${CREATIVE_SUPPLY_SLOT}`, session.onSlotUpdate);
+    if (session.onSlotUpdate) {
+        session.inventory.off?.(`updateSlot:${CREATIVE_SUPPLY_SLOT}`, session.onSlotUpdate);
+    }
     if (supplySessions.get(bot) === session) supplySessions.delete(bot);
+    session.releaseLease?.();
     session.resolveSafe?.();
+}
+
+function withTimeout(promise, timeoutMs, message) {
+    let timer;
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+        }),
+    ]).finally(() => clearTimeout(timer));
+}
+
+function quarantineSupplySession(bot, session, lease, cause) {
+    const error = new Error(
+        `Creative slot ${CREATIVE_SUPPLY_SLOT} remains quarantined because its final state is uncertain; `
+        + 'queued slot writers and later schematic supplies will fail instead of waiting indefinitely.',
+        { cause },
+    );
+    session.closed = true;
+    session.quarantineError = error;
+    if (session.onSlotUpdate) {
+        session.inventory.off?.(`updateSlot:${CREATIVE_SUPPLY_SLOT}`, session.onSlotUpdate);
+        session.onSlotUpdate = null;
+    }
+    if (supplySessions.get(bot) === session) supplySessions.delete(bot);
+    lease.quarantine(error);
+    return error;
 }
 
 function observeRestoration(bot, session, _oldItem, newItem) {
@@ -68,29 +105,39 @@ function observeRestoration(bot, session, _oldItem, newItem) {
 
 function trackSupplyWrite(bot, session, item) {
     const Item = prismarineItem(bot.version);
-    const pending = !itemsEqual(Item, getInventorySlot(bot, CREATIVE_SUPPLY_SLOT), item);
-    const write = { item };
-    if (pending) session.pendingWrites.push(write);
+    const write = { item, pending: false };
     let operation;
     try {
-        operation = bot.creative.setInventorySlot(CREATIVE_SUPPLY_SLOT, item);
+        operation = session.leaseReady.then((lease) => lease.write(() => {
+            assertSupplyAvailable(bot, session);
+            write.pending = !itemsEqual(Item, getInventorySlot(bot, CREATIVE_SUPPLY_SLOT), item);
+            if (write.pending) session.pendingWrites.push(write);
+            return bot.creative.setInventorySlot(CREATIVE_SUPPLY_SLOT, item);
+        }));
     } catch (error) {
-        if (pending && /cancelled due to calling/.test(String(error?.message))) {
+        if (write.pending && /cancelled due to calling/.test(String(error?.message))) {
             const index = session.pendingWrites.indexOf(write);
             if (index !== -1) session.pendingWrites.splice(index, 1);
         }
         throw error;
     }
     const forgetWrite = () => {
-        if (pending) {
+        if (write.pending) {
             const index = session.pendingWrites.indexOf(write);
             if (index !== -1) session.pendingWrites.splice(index, 1);
         }
     };
-    return Promise.resolve(operation).then(() => {
+    return withTimeout(
+        Promise.resolve(operation),
+        WRITE_SETTLEMENT_TIMEOUT_MS,
+        `Creative slot ${CREATIVE_SUPPLY_SLOT} supply write did not settle`,
+    ).then(() => {
         forgetWrite();
     }, (error) => {
-        if (/cancelled due to calling/.test(String(error?.message))) forgetWrite();
+        const message = String(error?.message ?? error);
+        if (/cancelled due to calling|server rejected/i.test(message)) {
+            forgetWrite();
+        }
         throw error;
     });
 }
@@ -207,7 +254,7 @@ export function beginCreativeSupply(bot) {
 
     const session = {
         inventory: bot.inventory,
-        originalSlot: getInventorySlot(bot, CREATIVE_SUPPLY_SLOT),
+        originalSlot: null,
         cancelled: false,
         closed: false,
         restorationRequested: false,
@@ -216,18 +263,51 @@ export function beginCreativeSupply(bot) {
         aborted: false,
         pendingWrites: [],
         queue: Promise.resolve(),
+        leaseReady: null,
         cancel() {
             session.cancelled = true;
         },
         close() {
-            if (session.closed) return;
             if (session.closePromise) return session.closePromise;
+            if (session.closed) return Promise.resolve();
             session.cancel();
             session.restorationRequested = true;
             session.closePromise = (async () => {
-                if (typeof bot._client?.write === 'function'
-                    && typeof bot.inventory?.on === 'function'
-                    && typeof bot.inventory?.off === 'function') {
+                let lease;
+                try {
+                    lease = await session.leaseReady;
+                } catch (error) {
+                    session.closed = true;
+                    if (supplySessions.get(bot) === session) supplySessions.delete(bot);
+                    throw error;
+                }
+                session.releaseLease = () => lease.release();
+                try {
+                    if (typeof bot._client?.write === 'function'
+                        && typeof bot.inventory?.on === 'function'
+                        && typeof bot.inventory?.off === 'function') {
+                        if (creativeSlotWritesHaveNoAck(bot)) {
+                            // No-ack calls update the local slot synchronously,
+                            // but may still be inside Mineflayer's rejection window.
+                            await withTimeout(
+                                session.queue,
+                                WRITE_SETTLEMENT_TIMEOUT_MS,
+                                `Creative slot ${CREATIVE_SUPPLY_SLOT} write did not settle before cleanup`,
+                            );
+                            await withTimeout(
+                                lease.write(() => bot.creative.setInventorySlot(CREATIVE_SUPPLY_SLOT, session.originalSlot)),
+                                WRITE_SETTLEMENT_TIMEOUT_MS,
+                                `Creative slot ${CREATIVE_SUPPLY_SLOT} restoration did not settle`,
+                            );
+                            session.inventory.slots[CREATIVE_SUPPLY_SLOT] = session.originalSlot;
+                            // The serialized restoration ran after every lease
+                            // write settled, so stale no-ack markers are terminal.
+                            session.pendingWrites.length = 0;
+                            session.restoreAcknowledged = true;
+                            finishSupplySession(bot, session);
+                            await lease.release();
+                            return;
+                        }
                     let resolveSafe;
                     const safe = new Promise((resolve) => { resolveSafe = resolve; });
                     session.resolveSafe = resolveSafe;
@@ -236,27 +316,55 @@ export function beginCreativeSupply(bot) {
                     session.inventory.slots[CREATIVE_SUPPLY_SLOT] = session.originalSlot;
                     try {
                         // Bypass Mineflayer's equal-item fast path: local inventory may
-                        // still show the snapshot while the server already applied a supply write.
+                        // still show the snapshot while a supply acknowledgement is
+                        // outstanding. The restore packet follows it on the same client
+                        // connection; keep the lease held until late writes reconcile.
                         forceCreativeSlotWrite(bot, CREATIVE_SUPPLY_SLOT, session.originalSlot);
                     } catch (error) {
                         session.restoreError = error;
                         throw error;
                     }
-                    await session.queue;
                     if (session.restoreError) throw session.restoreError;
-                    await safe;
+                    await withTimeout(
+                        safe,
+                        RESTORE_ACK_TIMEOUT_MS,
+                        `Creative slot ${CREATIVE_SUPPLY_SLOT} restoration was not acknowledged`,
+                    );
+                    await lease.release();
                     return;
-                }
+                    }
 
-                await session.queue;
-                if (session.aborted) return;
-                if (isCreative(bot)) await bot.creative.setInventorySlot(CREATIVE_SUPPLY_SLOT, session.originalSlot);
+                await withTimeout(
+                    session.queue,
+                    WRITE_SETTLEMENT_TIMEOUT_MS,
+                    `Creative slot ${CREATIVE_SUPPLY_SLOT} write did not settle before cleanup`,
+                );
+                if (isCreative(bot)) {
+                    await withTimeout(
+                        lease.write(() => bot.creative.setInventorySlot(CREATIVE_SUPPLY_SLOT, session.originalSlot)),
+                        WRITE_SETTLEMENT_TIMEOUT_MS,
+                        `Creative slot ${CREATIVE_SUPPLY_SLOT} restoration did not settle`,
+                    );
+                }
                 session.restoreAcknowledged = true;
                 finishSupplySession(bot, session);
+                await lease.release();
+                } catch (cause) {
+                    throw quarantineSupplySession(bot, session, lease, cause);
+                }
             })();
             return session.closePromise;
         },
     };
+    session.leaseReady = acquireCreativeSlotLease(bot, CREATIVE_SUPPLY_SLOT).then((lease) => {
+        // Capture after any writer that was already queued has settled, so cleanup
+        // restores the slot state this session actually took ownership of.
+        session.originalSlot = getInventorySlot(bot, CREATIVE_SUPPLY_SLOT);
+        return lease;
+    });
+    // Keep a failed acquisition observable through equip/close without allowing
+    // an unobserved quarantine rejection to become a process-level warning.
+    session.leaseReady.catch(() => {});
 
     // The cleanup function is convenient for `finally`, while properties expose
     // cancellation and explicit close to build lifecycle handlers.

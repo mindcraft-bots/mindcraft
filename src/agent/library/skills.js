@@ -4,12 +4,20 @@ import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
 import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
+import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
 const useDelay = blockPlaceDelay > 0;
+const schematicResumeSessions = new WeakMap();
 
 export function log(bot, message) {
     bot.output += message + '\n';
+}
+
+export function setSchematicResumeSession(bot, session) {
+    if (!bot || (typeof bot !== 'object' && typeof bot !== 'function')) return;
+    if (session) schematicResumeSessions.set(bot, session);
+    else schematicResumeSessions.delete(bot);
 }
 
 export async function buildSchematic(bot, fileName, x = null, y = null, z = null) {
@@ -24,9 +32,21 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
      * @example
      * await skills.buildSchematic(bot, "pack1:01:01");
      **/
-    return await buildSchematicImplementation(bot, fileName, x, y, z, {
+    const resumeSession = schematicResumeSessions.get(bot) ?? null;
+    const result = await buildSchematicImplementation(bot, fileName, x, y, z, {
+        resumeSession,
         writeLog: (message) => log(bot, message),
     });
+    const sessionStillValid = resumeSession?.context != null
+        && resumeSession.resumeEligible === true
+        && !resumeSession.cancelled
+        && resumeSession.isWorldValid?.(bot) === true;
+    if (resumeSession && !sessionStillValid) {
+        resumeSession.cancelled = true;
+        resumeSession.context = null;
+        schematicResumeSessions.delete(bot);
+    }
+    return result;
 }
 
 async function autoLight(bot) {
@@ -708,7 +728,7 @@ export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dont
     }
     let block_item = bot.inventory.findInventoryItem(item_name);
     if (!block_item && bot.game.gameMode === 'creative' && !bot.restrict_to_inventory) {
-        await bot.creative.setInventorySlot(36, mc.makeItem(item_name, 1)); // 36 is first hotbar slot
+        await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(36, mc.makeItem(item_name, 1))); // 36 is first hotbar slot
         block_item = bot.inventory.findInventoryItem(item_name);
     }
     if (!block_item) {
@@ -823,7 +843,7 @@ export async function equip(bot, itemName) {
     let item = bot.inventory.slots.find(slot => slot && slot.name === itemName);
     if (!item) {
         if (bot.game.gameMode === "creative") {
-            await bot.creative.setInventorySlot(36, mc.makeItem(itemName, 1));
+            await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(36, mc.makeItem(itemName, 1)));
             item = bot.inventory.findInventoryItem(itemName);
         }
         else {

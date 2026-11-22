@@ -1,10 +1,19 @@
 import { createRequire } from "node:module";
+import { gzipSync } from "node:zlib";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
 const minecraftData = require("minecraft-data");
 const { Schematic } = require("prismarine-schematic");
 const legacyBlocks = minecraftData.legacy.pc.blocks;
+const CHAIN_MIGRATION = Object.freeze({
+  sourceMinecraftVersion: "1.21.4",
+  sourceDataVersion: 4189,
+  targetMinecraftVersion: "26.1",
+  targetDataVersion: 4786,
+  sourceName: "chain",
+  targetName: "iron_chain",
+});
 
 function parseNbt(buffer) {
   return new Promise((resolve, reject) => {
@@ -54,7 +63,7 @@ function checkBlock(registry, name, properties, sourceDescription, displayName =
   }
 }
 
-function parseSpongeBlockName(rawName, registry, sourceDescription) {
+function parseSpongeState(rawName, sourceDescription) {
   if (typeof rawName !== "string") {
     throw new Error(`${sourceDescription} contains a non-string Sponge palette entry`);
   }
@@ -85,7 +94,13 @@ function parseSpongeBlockName(rawName, registry, sourceDescription) {
     }
   }
 
+  return { name, properties };
+}
+
+function parseSpongeBlockName(rawName, registry, sourceDescription) {
+  const { name, properties } = parseSpongeState(rawName, sourceDescription);
   checkBlock(registry, name, properties, sourceDescription, rawName);
+  return { name, properties };
 }
 
 function validateSpongePalette(root, registry) {
@@ -95,6 +110,73 @@ function validateSpongePalette(root, registry) {
   for (const rawName of Object.keys(palette)) {
     parseSpongeBlockName(rawName, registry, "Sponge v2 schematic");
   }
+  return true;
+}
+
+function registryMinecraftVersion(registry) {
+  return registry?.version?.minecraftVersion
+    ?? (typeof registry?.version === "string" ? registry.version : null);
+}
+
+function targetChainState(rawName, registry) {
+  const { name, properties } = parseSpongeState(rawName, "Sponge v2 schematic");
+  if (name !== CHAIN_MIGRATION.sourceName) return null;
+
+  const propertyNames = Object.keys(properties).sort();
+  if (propertyNames.join(",") !== "axis,waterlogged"
+      || !["x", "y", "z"].includes(properties.axis)
+      || !["true", "false"].includes(properties.waterlogged)) {
+    throw new Error(`Cannot migrate ${rawName}: expected explicit axis and waterlogged properties; no state may be discarded`);
+  }
+
+  const migratedName = `minecraft:${CHAIN_MIGRATION.targetName}[${Object.entries(properties)
+    .map(([key, value]) => `${key}=${value}`).join(",")}]`;
+  checkBlock(registry, CHAIN_MIGRATION.targetName, properties, "Sponge v2 migrated palette", migratedName);
+  return migratedName;
+}
+
+function migrateSpongePalette(parsed, root, targetVersion, targetRegistry) {
+  const palette = root.Palette;
+  if (!palette || typeof palette !== "object" || Array.isArray(palette)) return null;
+  const sourceEntries = Object.keys(palette);
+  const chainEntries = sourceEntries.filter((rawName) => parseSpongeState(rawName, "Sponge v2 schematic").name === CHAIN_MIGRATION.sourceName);
+  if (chainEntries.length === 0 || targetRegistry.blocksByName[CHAIN_MIGRATION.sourceName]) return null;
+
+  const targetRegistryVersion = registryMinecraftVersion(targetRegistry);
+  const targetDataVersion = targetRegistry.version?.dataVersion;
+  if (targetVersion !== CHAIN_MIGRATION.targetMinecraftVersion
+      || targetRegistryVersion !== CHAIN_MIGRATION.targetMinecraftVersion
+      || targetDataVersion !== CHAIN_MIGRATION.targetDataVersion) {
+    throw new Error(`Cannot migrate minecraft:chain: this mapping requires the verified Minecraft ${CHAIN_MIGRATION.targetMinecraftVersion} / DataVersion ${CHAIN_MIGRATION.targetDataVersion} target registry`);
+  }
+  if (root.Version !== 2 || root.DataVersion !== CHAIN_MIGRATION.sourceDataVersion) {
+    throw new Error(`Cannot migrate minecraft:chain for Minecraft ${CHAIN_MIGRATION.targetMinecraftVersion}: Sponge v2 source must declare DataVersion ${CHAIN_MIGRATION.sourceDataVersion}; found Version ${root.Version ?? "missing"}, DataVersion ${root.DataVersion ?? "missing"}`);
+  }
+
+  const sourceRegistry = minecraftData(CHAIN_MIGRATION.sourceMinecraftVersion);
+  if (!sourceRegistry?.blocksByName
+      || sourceRegistry.version?.minecraftVersion !== CHAIN_MIGRATION.sourceMinecraftVersion
+      || sourceRegistry.version?.dataVersion !== CHAIN_MIGRATION.sourceDataVersion) {
+    throw new Error(`Cannot verify the Minecraft ${CHAIN_MIGRATION.sourceMinecraftVersion} / DataVersion ${CHAIN_MIGRATION.sourceDataVersion} source registry for minecraft:chain migration`);
+  }
+  // Validate the complete source palette first; the declared DataVersion alone is not a conversion.
+  validateSpongePalette(root, sourceRegistry);
+
+  const typedPalette = parsed.value?.Palette?.value;
+  if (!typedPalette || typeof typedPalette !== "object") {
+    throw new Error("Cannot migrate minecraft:chain: Sponge v2 palette metadata is inconsistent");
+  }
+  for (const rawName of chainEntries) {
+    const migratedName = targetChainState(rawName, targetRegistry);
+    if (Object.hasOwn(palette, migratedName) || Object.hasOwn(typedPalette, migratedName)) {
+      throw new Error(`Cannot migrate ${rawName}: target palette name ${migratedName} already exists and would make palette indices ambiguous`);
+    }
+    typedPalette[migratedName] = typedPalette[rawName];
+    delete typedPalette[rawName];
+    palette[migratedName] = palette[rawName];
+    delete palette[rawName];
+  }
+  validateSpongePalette(root, targetRegistry);
   return true;
 }
 
@@ -142,35 +224,47 @@ function validateLegacyBlocks(root, registry) {
   return true;
 }
 
-/** Reject lossy block-name/state conversions before prismarine-schematic parses the source. */
-export async function validateSchematicSource(buffer, version, registry) {
+async function prepareSchematicSource(buffer, version, registry) {
+  const sourceBuffer = Buffer.isBuffer(buffer) ? Buffer.from(buffer) : buffer;
   let parsed;
   try {
-    parsed = await parseNbt(buffer);
+    parsed = await parseNbt(sourceBuffer);
   } catch {
     // Let Schematic.read produce the authoritative parse error for malformed or unsupported NBT.
-    return;
+    return sourceBuffer;
   }
 
   let root;
   try {
     root = nbt.simplify(parsed);
   } catch {
-    return;
+    return sourceBuffer;
   }
-  if (!root || typeof root !== "object") return;
+  if (!root || typeof root !== "object") return sourceBuffer;
 
   const hasSpongePalette = root.Palette && typeof root.Palette === "object";
   const hasLegacyBlocks = Array.isArray(root.Blocks);
-  if (!hasSpongePalette && !hasLegacyBlocks) return;
+  if (!hasSpongePalette && !hasLegacyBlocks) return sourceBuffer;
 
   const data = registryFor(version, registry);
-  if (hasSpongePalette) validateSpongePalette(root, data);
-  else validateLegacyBlocks(root, data);
+  if (hasSpongePalette) {
+    const migrated = migrateSpongePalette(parsed, root, version, data);
+    if (!migrated) validateSpongePalette(root, data);
+    if (migrated) {
+      const serialized = nbt.writeUncompressed(parsed);
+      return sourceBuffer[0] === 0x1f && sourceBuffer[1] === 0x8b ? gzipSync(serialized) : serialized;
+    }
+  } else validateLegacyBlocks(root, data);
+  return sourceBuffer;
+}
+
+/** Reject lossy block-name/state conversions before prismarine-schematic parses the source. */
+export async function validateSchematicSource(buffer, version, registry) {
+  await prepareSchematicSource(buffer, version, registry);
 }
 
 /** Validate source NBT before delegating actual schematic parsing to prismarine-schematic. */
 export async function readSchematic(buffer, version, SchematicClass = Schematic, registry) {
-  await validateSchematicSource(buffer, version, registry);
-  return SchematicClass.read(buffer, version);
+  const prepared = await prepareSchematicSource(buffer, version, registry);
+  return SchematicClass.read(prepared, version);
 }

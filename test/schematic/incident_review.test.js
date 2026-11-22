@@ -26,7 +26,7 @@ function check(body) {
         const agent = Object.create(Agent.prototype);
         Object.assign(agent, {
             name: 'Andy', blocked_actions: [], shut_up: false, task: { data: null },
-            bot: { output: '', interrupt_code: false, emit() {}, on() {}, autoEat: {},
+            bot: { version: '1.21.4', output: '', interrupt_code: false, emit() {}, on() {}, autoEat: {},
                 modes: { flushBehaviorLog: () => '' },
                 chat: text => calls.chat.push(text), whisper: (...args) => calls.whisper.push(args) },
             actions: { runAction: async (_name, fn) => { await fn(); return { message: 'done' }; } },
@@ -109,6 +109,15 @@ test('complete own-addressed schematic request dispatches exactly once, includin
     assert.equal(calls.prompts, 0);
     assert.equal(calls.lifecycle.length, 4);
     assert.equal(globalThis.__buildSchematicArgs[1], 'pack1:2:1');
+`));
+
+test('addressed requests reject unknown or too-old engines before dispatch', () => check(`
+    for (const version of [undefined, 'unknown-release', '1.20.6']) {
+        agent.bot.version = version;
+        await agent.handleMessage('Sunny26639', 'Andy build id 01 from group 02 of pack1');
+        assert.match(calls.routes.at(-1), /could not be resolved/i);
+    }
+    assert.equal(calls.builds, 0);
 `));
 
 test('known/dynamic peers and unknown senders cannot obtain model-generated commands', () => check(`
@@ -244,8 +253,8 @@ test('public and private output redact complete and incomplete command tokens', 
 
 test('Docker copies the mandatory postinstall verifier before dependency installation', () => {
     const dockerfile = readFileSync(new URL('Dockerfile', root), 'utf8');
-    assert.ok(dockerfile.indexOf('COPY scripts/verify-schematic-patch.js ./scripts/') >= 0);
-    assert.ok(dockerfile.indexOf('COPY scripts/verify-schematic-patch.js ./scripts/') < dockerfile.indexOf('RUN npm install'));
+    assert.ok(dockerfile.indexOf('COPY scripts/verify_patch.js ./scripts/') >= 0);
+    assert.ok(dockerfile.indexOf('COPY scripts/verify_patch.js ./scripts/') < dockerfile.indexOf('RUN npm install'));
 });
 
 test('every schematic alias composes with full/short labels, filename layouts, and inert descriptions in the real handler', () => check(`

@@ -45,7 +45,7 @@
       "gl": "^8.1.6"
     },
     "scripts": {
-        "postinstall": "patch-package && node scripts/verify-schematic-patch.js",
+        "postinstall": "patch-package && node scripts/verify_patch.js",
         "start": "node main.js",
         "reinstall": "npm run clean:modules && npm install",
         "clean:modules": "node -e \"const fs=require('fs');const p=require('path');['node_modules','package-lock.json'].forEach(f=>{if(fs.existsSync(f)){if(fs.lstatSync(f).isDirectory()){fs.rmSync(f,{recursive:true,force:true});}else{fs.unlinkSync(f);}}});\"",

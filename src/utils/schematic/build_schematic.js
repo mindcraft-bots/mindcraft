@@ -5,8 +5,18 @@ import path from "node:path";
 import { beginCreativeSupply } from "./builder_compat.js";
 import { normalizeGameMode, setGameMode } from "./game_mode.js";
 import { createModernBuild } from "./modern_build.js";
+import {
+  clearSchematicObstructions,
+  captureSchematicAttemptIdentity,
+  isSchematicAttemptIdentityCurrent,
+  isSafeNaturalObstruction,
+  isKnownNaturalObstructionName,
+  isSchematicAirName,
+  withSchematicDestructionGuards,
+} from "./obstruction_policy.js";
 import { resolveSchematicPath } from "./paths.js";
-import { validateSchematicSource } from "./reader.js";
+import { getBotWorldGeneration, trackBotWorldLifecycle } from "./world_lifecycle.js";
+import { readSchematic as readProductionSchematic, validateSchematicSource } from "./reader.js";
 import { acquireBuildLifecycle, runBuild } from "./run_build.js";
 
 const require = createRequire(import.meta.url);
@@ -49,9 +59,89 @@ function propertiesFor(block) {
   }
 }
 
+function sameProperties(left, right) {
+  const leftKeys = Object.keys(left ?? {}).sort();
+  const rightKeys = Object.keys(right ?? {}).sort();
+  return leftKeys.length === rightKeys.length
+    && leftKeys.every((key, index) => key === rightKeys[index] && left[key] === right[key]);
+}
+
+function inspectBuildWorld(bot, build, Vec3Class) {
+  const states = [];
+  for (const expected of build.cells ?? build.plan ?? []) {
+    const { x, y, z } = expected.position;
+    let block;
+    try {
+      block = bot.blockAt(new Vec3Class(x, y, z));
+    } catch {
+      return null;
+    }
+    if (!block) return null;
+    states.push({ position: expected.position, name: block.name, properties: { ...propertiesFor(block) } });
+  }
+  return states;
+}
+
+function worldIdentity(bot) {
+  trackBotWorldLifecycle(bot);
+  return {
+    dimension: bot.game?.dimension,
+    world: bot.world,
+    client: bot._client,
+    version: bot.version,
+    registry: bot.registry,
+    worldGeneration: getBotWorldGeneration(bot),
+  };
+}
+
+function isSameWorld(bot, identity) {
+  if (!bot || bot.game?.dimension !== identity.dimension) return false;
+  if (identity.worldGeneration == null || getBotWorldGeneration(bot) !== identity.worldGeneration) return false;
+  if (identity.world != null && bot.world !== identity.world) return false;
+  if (identity.client != null && bot._client !== identity.client) return false;
+  if (bot.version !== identity.version || bot.registry !== identity.registry) return false;
+  if (bot._client?.ended || bot._client?.socket?.destroyed) return false;
+  if (!bot.entity || (typeof bot.health === "number" && bot.health <= 0)) return false;
+  return true;
+}
+
+function canContinuePlan(bot, build, originalStates, Vec3Class) {
+  if (!originalStates) return false;
+  const originalByPosition = new Map(originalStates.map((state) => [
+    `${state.position.x},${state.position.y},${state.position.z}`,
+    state,
+  ]));
+  for (const expected of build.cells ?? build.plan ?? []) {
+    const { x, y, z } = expected.position;
+    let actual;
+    try {
+      actual = bot.blockAt(new Vec3Class(x, y, z));
+    } catch {
+      return false;
+    }
+    if (!actual) return false;
+    const properties = propertiesFor(actual);
+    const expectedAir = isSchematicAirName(expected.name);
+    const alreadyPlaced = expectedAir
+      ? isSchematicAirName(actual.name)
+      : actual.name === expected.name
+      && Object.entries(expected.properties ?? {}).every(([key, value]) => properties[key] === value);
+    const original = originalByPosition.get(`${x},${y},${z}`);
+    if (original && isKnownNaturalObstructionName(original.name, bot.version)
+        && !isSafeNaturalObstruction({ name: original.name, properties: original.properties }, bot.version)) {
+      return false;
+    }
+    const unchanged = original && actual.name === original.name && sameProperties(properties, original.properties);
+    const naturallyCleared = isSchematicAirName(actual.name)
+      && isSafeNaturalObstruction({ name: original?.name, properties: original?.properties }, bot.version);
+    if (!alreadyPlaced && !unchanged && !naturallyCleared) return false;
+  }
+  return true;
+}
+
 function verifyBuild(bot, build, Vec3Class) {
   const mismatches = [];
-  for (const expected of build.plan ?? []) {
+  for (const expected of build.cells ?? build.plan ?? []) {
     const { x, y, z } = expected.position;
     let actual;
     try {
@@ -61,8 +151,9 @@ function verifyBuild(bot, build, Vec3Class) {
       continue;
     }
 
-    if (!actual || actual.name !== expected.name) {
-      mismatches.push(`${x},${y},${z}: expected ${expected.name}, found ${actual?.name ?? "unavailable"}`);
+    const expectedAir = isSchematicAirName(expected.name);
+    if (!actual || (expectedAir ? !isSchematicAirName(actual.name) : actual.name !== expected.name)) {
+      mismatches.push(`${x},${y},${z}: expected ${expectedAir ? "air" : expected.name}, found ${actual?.name ?? "unavailable"}`);
       continue;
     }
 
@@ -103,47 +194,117 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
     makeBuild = createModernBuild,
     startSupply = beginCreativeSupply,
     executeBuild = runBuild,
+    clearObstructions = clearSchematicObstructions,
+    guardDestruction = withSchematicDestructionGuards,
     changeGameMode = setGameMode,
     writeLog,
     cleanupTimeoutMs = CLEANUP_TIMEOUT_MS,
+    resumeSession,
   } = dependencies;
   const report = (message) => logSafely(writeLog, message);
 
+  // Bind the full asynchronous read/parse/preflight path to the world's event
+  // generation, not merely the identity observed after those awaits complete.
+  const invocationIdentity = captureSchematicAttemptIdentity(bot);
+
   let resolvedPath;
   let source;
+  let schematic;
+  let build;
+  let startPosition;
+  const saved = resumeSession?.context;
+  const isResume = Boolean(saved && !resumeSession?.cancelled);
+  if (isResume) resumeSession.resumeEligible = false;
   try {
-    resolvedPath = await resolvePath(fileName);
-    await fsAccess(resolvedPath);
-    source = await fsReadFile(resolvedPath);
+    if (isResume) {
+      resolvedPath = saved.resolvedPath;
+      source = saved.source;
+      schematic = saved.schematic;
+      startPosition = new Vec3Class(saved.origin.x, saved.origin.y, saved.origin.z);
+      if (!isSameWorld(bot, saved.worldIdentity)) {
+        throw new Error("Cannot resume schematic build after death, disconnect, or dimension/world change");
+      }
+    } else {
+      resolvedPath = await resolvePath(fileName, undefined, { version: bot.version });
+      await fsAccess(resolvedPath);
+      source = await fsReadFile(resolvedPath);
+    }
   } catch (error) {
     report(`Could not read schematic ${fileName}: ${describeError(error)}`);
+    if (resumeSession && isResume) {
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+    }
     return false;
   }
 
   if (path.extname(resolvedPath).toLowerCase() === ".litematic") {
     report(".litematic files can be listed but are not supported by the schematic reader. Convert this file to .schem or .schematic first.");
+    if (resumeSession && isResume) {
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+    }
     return false;
   }
 
-  let schematic;
-  let build;
-  let startPosition;
   try {
-    await validateSource(source, bot.version, bot.registry);
-    schematic = readSchematic
-      ? await readSchematic(source, bot.version)
-      : await SchematicClass.read(source, bot.version);
-    startPosition = createPosition(bot, x, y, z, Vec3Class);
+    if (!isResume) {
+      await validateSource(source, bot.version, bot.registry);
+      schematic = readSchematic
+        ? await readSchematic(source, bot.version, undefined, bot.registry)
+        : SchematicClass === Schematic
+          ? await readProductionSchematic(source, bot.version, SchematicClass, bot.registry)
+          : await SchematicClass.read(source, bot.version);
+      startPosition = createPosition(bot, x, y, z, Vec3Class);
+    }
     // Preflight block support before changing the bot's game mode or inventory.
     build = makeBuild(schematic, bot, startPosition);
+    if (isResume && !canContinuePlan(bot, build, saved.originalStates, Vec3Class)) {
+      throw new Error("World blocks no longer match the interrupted schematic build; refusing unsafe resume");
+    }
   } catch (error) {
     report(`Could not parse or build schematic ${fileName}: ${describeError(error)}. Supported formats are .schem and .schematic; .litematic must be converted first.`);
+    if (resumeSession) {
+      resumeSession.cancelled = true;
+      resumeSession.context = null;
+    }
     return false;
+  }
+
+  if (!isResume && resumeSession) {
+    const originalStates = inspectBuildWorld(bot, build, Vec3Class);
+    resumeSession.context = {
+      resolvedPath,
+      source: Buffer.isBuffer(source) ? Buffer.from(source) : source,
+      schematic,
+      origin: { x: startPosition.x, y: startPosition.y, z: startPosition.z },
+      originalStates,
+      worldIdentity: worldIdentity(bot),
+    };
+    resumeSession.isWorldValid = (candidateBot) => isSameWorld(candidateBot, resumeSession.context?.worldIdentity);
+    resumeSession.resumeEligible = false;
   }
 
   const lifecycle = acquireBuildLifecycle(bot);
   if (!lifecycle) {
     report("Schematic build is busy: a previous build is still settling for this bot.");
+    if (isResume && resumeSession && !resumeSession.cancelled
+        && isSameWorld(bot, resumeSession.context?.worldIdentity)) {
+      resumeSession.resumeEligible = true;
+    }
+    return false;
+  }
+  const attemptIdentity = captureSchematicAttemptIdentity(bot, lifecycle);
+  if (!isSchematicAttemptIdentityCurrent(bot, invocationIdentity)) {
+    lifecycle.release();
+    report("Schematic build stopped because the bot world changed during preflight.");
+    if (resumeSession) {
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+    }
     return false;
   }
 
@@ -159,6 +320,7 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
   let modeSwitchAttempted = false;
   let success = false;
   let failed = false;
+  let interruptedBuild = false;
 
   try {
     if (canManageUnstuck) modes.pause("unstuck");
@@ -177,22 +339,40 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
       report("Schematic build requires Creative mode and permission to run /gamemode creative. Grant the bot operator permission (/op) or configure Creative mode.");
       failed = true;
     } else {
-      supplyCleanup = startSupply(bot);
-      const result = await executeBuild(bot, build, {
-        lifecycle,
-        onCancel: () => supplyCleanup?.cancel?.(),
-      });
-      if (result?.status !== "finished") {
-        const details = result?.errors?.map(describeError).join("; ");
-        report(`Schematic build ${result?.status ?? "failed"}${details ? `: ${details}` : "."}`);
-        failed = true;
-      } else {
-        const mismatches = verifyBuild(bot, build, Vec3Class);
-        if (mismatches.length > 0) {
-          report(`Schematic verification failed: ${mismatches.join("; ")}. Mineflayer-schem has limited orientation metadata; unsupported orientations are reported as state mismatches.`);
-          failed = true;
+      try {
+        const clearing = await guardDestruction(bot, build, Vec3Class, () => clearObstructions(bot, build, {
+          Vec3Class,
+          isInterrupted: () => Boolean(bot.interrupt_code),
+          attemptIdentity,
+        }), undefined, attemptIdentity);
+        if (clearing.cleared > 0) report(`Cleared ${clearing.cleared} allowlisted natural obstruction(s) inside the schematic volume.`);
+      } catch (error) {
+        report(`Schematic obstruction preflight/clearing failed: ${describeError(error)}`);
+        if (bot.interrupt_code || error?.code === "SCHEMATIC_CLEAR_CANCELLED") interruptedBuild = true;
+        else failed = true;
+      }
+
+      if (!failed && !interruptedBuild) {
+        supplyCleanup = startSupply(bot);
+        let builderSettlement = null;
+        const result = await guardDestruction(bot, build, Vec3Class, () => executeBuild(bot, build, {
+          lifecycle,
+          onCancel: () => supplyCleanup?.cancel?.(),
+          onPendingSettlement: (pending) => { builderSettlement = pending; },
+        }), () => builderSettlement, attemptIdentity);
+        interruptedBuild ||= result?.status === "interrupted";
+        if (result?.status !== "finished") {
+          const details = result?.errors?.map(describeError).join("; ");
+          report(`Schematic build ${result?.status ?? "failed"}${details ? `: ${details}` : "."}`);
+          if (!interruptedBuild || details) failed = true;
         } else {
-          success = true;
+          const mismatches = verifyBuild(bot, build, Vec3Class);
+          if (mismatches.length > 0) {
+            report(`Schematic verification failed: ${mismatches.join("; ")}. Mineflayer-schem has limited orientation metadata; unsupported orientations are reported as state mismatches.`);
+            failed = true;
+          } else {
+            success = true;
+          }
         }
       }
     }
@@ -251,8 +431,23 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
   }
 
   if (success && !failed) {
+    if (resumeSession) {
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+    }
     report(`Successfully built and verified schematic ${path.basename(resolvedPath)}.`);
     return true;
+  }
+  if (resumeSession) {
+    if (interruptedBuild && !failed && resumeSession.context?.originalStates != null && !resumeSession.cancelled
+        && isSameWorld(bot, resumeSession.context?.worldIdentity)) {
+      resumeSession.resumeEligible = true;
+    } else if (!resumeSession.cancelled) {
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+    }
   }
   return false;
 }

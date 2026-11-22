@@ -1,5 +1,7 @@
 > **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
 
+> **Subsequent blueprint-only repair:** The four door-half hinge properties were changed to put both hinges on the outside, as already described in the blueprint. The preserved schematic still contains the previous four states and was not rebuilt. The historical 168/168 comparisons and pass statements below predate this repair; comparisons of the edited blueprint against that original schematic should now report those four state differences. See the [symmetry diagnostic notes](../../tooling/SYMMETRY.md). Do not overwrite the original schematic to eliminate this expected difference.
+
 
 > **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. The compilation example writes to a fresh temporary file, never to the preserved original.
 >

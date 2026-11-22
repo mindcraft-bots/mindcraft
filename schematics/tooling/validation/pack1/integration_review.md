@@ -4,7 +4,7 @@ Identifier displays in this historical review were normalized later to separate 
 
 ## Preserved wardrobe byte-rebuild failure
 
-The [original wardrobe schematic](../../../schems/pack1/01_wardrobe_nether_portal.schem) remains 535 bytes, SHA-256 **8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383**. A temporary rebuild is 505 bytes, SHA-256 **a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886** on zlib 1.3.1. Binary validation and the production reader both match all 168 voxels, including 90 non-air cells. Exact byte reproducibility is nevertheless **FAIL**, and the [audit](batch_validation.json) must remain nonzero.
+The [original wardrobe schematic](../../../schems/pack1/01_wardrobe_nether_portal.schem) remains 535 bytes, SHA-256 **8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383**. A temporary rebuild of the HEAD legacy blueprint is 505 bytes, SHA-256 **a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886** on zlib 1.3.1. The original matches all 168 legacy voxels, including 90 non-air cells. The current repaired blueprint intentionally changes four door hinge voxels; the 1.21.4 variant matches that repaired blueprint voxel-for-voxel. Exact legacy byte reproducibility remains **FAIL**; the historical [audit](batch_validation.json) is not a current validation run.
 
 The [diagnostic regression test](../../../../test/schematic/wardrobe_reproducibility.test.js) compiles twice into temporary files, compares headers, decompressed NBT, palette mappings and decoded states, and logs structured evidence with the WARDROBE_REBUILD_DIAGNOSIS marker in the [full test log](npm_test.log). It also proves that changing only the following encoding choices reconstructs all 535 original bytes in memory:
 
@@ -27,17 +27,21 @@ Available Git history confirms that the asset is byte-identical to the 535-byte 
 
 ## Runtime integration and remaining placement limitations
 
-The [real-pack integration tests](../../../../test/schematic/real_pack_integration.test.js) enumerate the real manifest and all 30 assets, check listing output, resolve every ID, stem and filename, and read each real binary. They execute the public command parser/action for the wardrobe, group 01 and ID 01, stem and exact filename through the real path resolver, source validator, binary reader and modern build-plan creation. Only the skill forwarding boundary and server-facing game-mode, inventory and placement operations are substituted. The simulated world contains the resulting plan's expected states; it is not evidence of actual Minecraft placement.
+The [real-pack integration tests](../../../../test/schematic/real_pack_integration.test.js) enumerate 30 manifest entries and 90 physical files, check version selection, resolve every ID, stem and filename, and read all 60 explicit variants. Public wardrobe selectors reach the real reader and planner but are refused before world mutation because door placement has an unproven multi-block physics footprint. A simulated bee build tests reader and planner integration; it is not evidence of actual Minecraft placement.
 
 This exposed missing inventory mappings for wall banners and cocoa. The narrow [adapter fix](../../../../src/utils/schematic/modern_build.js:9) maps wall banners to the corresponding colored banner item and cocoa to cocoa beans while preserving requested block states. The [adapter tests](../../../../test/schematic/modern_build.test.js) cover both mappings. Actual banner orientation, cocoa attachment/growth, and other server state transitions remain untested.
 
-Real build-plan preflight now accepts **28/30** assets. The pagoda, group 04 and ID 01, still fails explicitly on potted oak saplings, and the giant grandfather clock, group 18 and ID 02, on a potted fern. Potted plants require pot placement followed by planting, not a fake single inventory-item alias. No fallback or geometry change was added. These expected unsupported cases are logged with the PACK1_BUILD_PREFLIGHT marker in the [test log](npm_test.log); they are not claimed as build successes. The binary/reader audit does not measure live placeability.
+Current canonical build-plan preflight accepts **22/30** assets on both tested engines. Six containing multi-block placements are refused for safety, including the wardrobe; the pagoda and giant grandfather clock fail on potted plant mappings. Potted plants require pot placement followed by planting, not a fake single inventory-item alias. No fallback or geometry change was added. The binary/reader audit does not measure live placeability.
 
 The [tooling tests](../../../../test/schematic/tooling_paths.test.js) exercise repository-relative inputs from another working directory, another positive-numbered pack path, Minecraft 1.20.4 / DataVersion 3700, and rejection of explicit version mismatches, incorrect DataVersion, unavailable versions and outside-repository inputs. Version support is limited by the installed registry and reader; it is not arbitrary-version support. Tool executable paths still have to be reachable from the shell's working directory.
 
 No live server, Minecraft whisper delivery, server permission provider, or LLM natural-language request was tested. Private-message routing was inspected in source only. Image fidelity and actual world placement were not tested.
 
-## Actual audit and test results
+## Historical audit and test results
+
+The following records an earlier validation, not the current suite or current repaired blueprint. The later reported full-suite result was 163 passed, 9 failed and 3 cancelled; see current focused test output for the fixes, not these historical counts.
+
+The subsequent focused run of 16 related test files passed 127 tests with zero failures or cancellations. The full suite was not rerun, and no live server placement was tested.
 
 | Check | Result |
 | --- | --- |
