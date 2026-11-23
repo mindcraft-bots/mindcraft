@@ -1,0 +1,34 @@
+# Pack mechanics snapshot diagnostic
+
+This read-only diagnostic is separate from symmetry and is applicable to any selected source pack. The [pack1 review](validation/pack1/mechanics_review.md) and its [report](validation/pack1/mechanics_audit.json) contain pack-specific findings.
+
+From the repository root, with locked dependencies installed, pack1 is an example:
+
+```sh
+node schematics/tooling/audit_pack_mechanics.mjs --pack pack1
+node --test test/schematic/pack_mechanics.test.js test/schematic/pack1/mechanics.test.js
+```
+
+Replace `pack1` with the exact pack identifier to audit another pack. Selection is required: only `--pack packN` is accepted, where N is a positive decimal integer without leading zeroes. Extra, repeated, unknown or malformed arguments are errors. The CLI always uses the repository root; the exported `auditPack(pack, {root})` accepts an absolute, existing, canonical, non-symlink project root for programmatic use and rejects unknown configuration keys. Source directory components and source JSON files must not be symlinks. These checks prevent ordinary symlink escapes; the filesystem must not be modified concurrently by an adversary during the audit.
+
+For example, `node schematics/tooling/audit_pack_mechanics.mjs --pack pack2` applies only once a pack2 source directory exists; it is not required by this repository's documentation or tests.
+
+The auditor scans the selected `schematics/blueprints/packN` directory, in sorted filename order, for JSON source blueprints. Objects with a layer, legend, dimension field or supported explicit-matrix schema are candidates, including incomplete ones. Conventional `.provenance.json`, `.validation.json`, `.manifest.json`, `.metadata.json`, `.config.json`, `.report.json`, `.refs.json` and `.references.json` sidecars are ignored, as are other valid JSON objects without blueprint indicators. Invalid JSON is an error rather than silently ignored. Store other sidecars without blueprint fields or with one of those suffixes; a JSON document lacking all blueprint indicators cannot be identified as a source. Nested directories are not searched. A missing or empty source pack is an error. Screenshots, reference inventories, compiled schematics and archives are neither required nor read.
+
+The tool writes JSON to stdout only, never modifying sources or reports. The pack1 test compares the result with its recorded report; do not redirect over existing files. If retaining a new report, choose a fresh path and use shell noclobber, then review it separately. Each build records a stable project-relative path, raw source SHA-256, declared Minecraft and data versions, and modeled or skipped results. The report also identifies the pack, model, implementation and model source hashes, lockfile hash, evidence and summary counts. `with_unknowns` counts modeled blueprints with at least one unknown cell or modeled outcome; individual evidence gives coordinates `[x,y,z]` and the consulted state. Skipped sources make the pack `incomplete` and the CLI exits nonzero after emitting the report. Unknowns are disclosed as `modeled_with_unknowns`, not certified clean, but do not themselves make the CLI fail. A malformed input, unsafe path or selection error exits nonzero without a report.
+
+## Model and limitations
+
+The reusable model supports **only Java 1.21.4, data version 4189**, with a supported explicit layer matrix and complete dimensions, rows and legend. Unlabeled legacy explicit matrices are accepted after the same structural checks. Other source versions or data versions are skipped as unsupported, not treated as successful; in particular, no 26.1 mechanics rules have been tested or inferred. Versioned binary compilation metadata does not change the source version used for this analysis. Complete block states are checked against the installed 1.21.4 registry. Unknown, modded or incomplete states are not assumed to be air or non-stairs.
+
+The model recalculates registered vanilla stair shapes using snapshot neighbors and checks the non-air-below predicate for the 16 wool carpets. Other support and survival rules are not modeled, including rails, torches and non-wool carpets. A needed outside-volume or unrecognized neighbor yields unknown. Authored stair shapes may be intentional and may persist until updated. This is not a placement simulator, live-server test, update-timing prediction, schematic certification or symmetry audit. No general stability conclusion follows from an absent finding.
+
+## Vanilla evidence and verification
+
+The implementation was also checked against the actual Mojang 1.21.4 server bytecode and official mappings, not a live placement test:
+
+* Mojang's [release metadata](https://piston-meta.mojang.com/v1/packages/c88775961e316f2be09859c54e13017660ee7770/1.21.4.json) identifies the [server bundle](https://piston-data.mojang.com/v1/objects/4707d00eb834b446575d89a61a11b5d548d8c001/server.jar) (SHA-1 `4707d00eb834b446575d89a61a11b5d548d8c001`) and [official server mappings](https://piston-data.mojang.com/v1/objects/0b1e60cc509cfb0172573ae56b436c29febbc187/server.txt) (SHA-1 `0b1e60cc509cfb0172573ae56b436c29febbc187`). The nested 1.21.4 server jar has SHA-256 `de9538d2497c8f4174805f3fcedb8ade3060446aa203f351b820ea5bd04adbf4`.
+* Mappings identify `StairBlock` as `drm`, `getStairsShape` as `e` (mapped source lines 143–166), `canTakeShape` as `c` (170–171), and `isStairs` as `o` (175). In the bytecode of `drm.e(Ldwy;Ldfo;Lji;)Ldyg;`, offsets 11–114 read the forward neighbor and return outer-left/right when same-half, perpendicular and unblocked; offsets 115–218 read the opposite neighbor and return inner-left/right under corresponding checks; offset 219 returns straight. `drm.c` checks a side stair with the current facing and half, regardless of stair material. The front-side check uses the opposite of the neighbor facing; the back-side check uses the neighbor facing. Mappings identify `jn.g` as opposite, `jn.i` as counterclockwise and `dyg.a` through `dyg.e` as straight, inner-left, inner-right, outer-left and outer-right respectively.
+* Mappings identify `CarpetBlock` as `dkf`, `canSurvive` as `a` (line 44), `BlockPos.below` as `ji.e`, and `LevelReader.isEmptyBlock` as `dgm.u`. The method `dkf.a(Ldwy;Ldgm;Lji;)Z` calls `isEmptyBlock` on `below()` and returns its negation. `WoolCarpetBlock` extends `CarpetBlock`. Its update method also consults survival; neither observation proves a particular paste or placement sequence.
+
+For independent inspection, extract `META-INF/versions/1.21.4/server-1.21.4.jar` from the server bundle, verify these hashes, consult the mappings, and disassemble `drm` and `dkf` with a Java class-file disassembler (for example, `javap -c -p`). The focused tests exercise front priority, both handednesses, half/axis filtering, side blockers, cross-material stairs, unknowns, all reviewed locations and read-only reproducibility.

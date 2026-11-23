@@ -7,34 +7,29 @@ import { gzipSync } from "node:zlib";
 import { copyFile, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import process from "node:process";
 import test from "node:test";
 import minecraftData from "minecraft-data";
 import nbt from "prismarine-nbt";
-import { SCHEMATICS_DIR, listSchematicEntries, resolveSchematicPath } from "../../src/utils/schematic/paths.js";
+import { SCHEMATICS_DIR, listSchematicEntries, listSchematics, resolveSchematicPath, conservativeBotVersion } from "../../src/utils/schematic/paths.js";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { readSchematic } from "../../src/utils/schematic/reader.js";
 
-const source = path.join(SCHEMATICS_DIR, "schems/pack1/02_bee_hot_air_balloon.schem");
+import { syntheticSponge } from "./synthetic_sponge.js";
+import { fixtureBlueprint, writeFixtureProvenance } from "./provenance_fixture.js";
 const opts = (version) => ({ version, allowNonvalidatedSchematic: true });
-const blueprint = path.join(SCHEMATICS_DIR, "blueprints/pack1/02_bee_hot_air_balloon.json");
 const sha = data => createHash("sha256").update(data).digest("hex");
 
 // Exercise the real provenance gate for synthetic version-selection fixtures.
 async function syntheticArtifact(file, version = null) {
-  const { parsed } = await nbt.parse(await readFile(source));
-  if (version) parsed.value.DataVersion.value = minecraftData.versions.pc.find(v => v.minecraftVersion === version).dataVersion;
-  const bytes = gzipSync(nbt.writeUncompressed(parsed));
+  const bytes = syntheticSponge(version || "1.21.4");
   await writeFile(file, bytes);
-  const report = JSON.stringify({ schemaVersion: 1, artifact: path.basename(file), sha256: sha(bytes),
-    validation: "NONVALIDATED", blueprint: "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
-    blueprintSha256: sha(await readFile(blueprint)), targetVersion: null, convertTo: null, packReport: null, packReportSha256: null });
-  await writeFile(`${file}.provenance.json`, report);
-  await writeFile(`${file}.provenance.sha256`, `${sha(Buffer.from(report))}\n`);
+  writeFixtureProvenance(file, bytes);
 }
 
 async function fixture(run) {
   const root = await mkdtemp(path.join(os.tmpdir(), "schematic-versions-"));
-  const pack = path.join(root, "schems/pack1");
+  const pack = path.join(root, "schems/pack3");
   await mkdir(pack, { recursive: true });
   try { await run(root, pack); } finally { await rm(root, { recursive: true, force: true }); }
 }
@@ -43,157 +38,137 @@ async function manifest(pack, groups) {
   await writeFile(path.join(pack, "index.json"), JSON.stringify({ schemaVersion: 2, groups }));
 }
 
-test("selects by release DataVersion, including gaps and registry aliases, and lists picks", async () => {
+test("synthetic pack3 builds selected 1.21.4 and 26.1 chain derivatives", async () => {
   await fixture(async (root, pack) => {
-    await syntheticArtifact(path.join(pack, "balloon.schem"));
-    for (const version of ["1.21.4", "1.21.9", "1.21.10", "26.1"]) {
-      await syntheticArtifact(path.join(pack, `balloon.mc${version}.schem`), version);
-    }
-    await manifest(pack, { 2: { 1: "balloon.schem" } });
-    const resolve = (selector, version) => resolveSchematicPath(selector, root, opts(version));
-    for (const [engine, expected] of [["1.21.4", "1.21.4"], ["1.21.8", "1.21.4"], ["1.21.9", "1.21.9"], ["1.21.10", "1.21.10"], ["26.1.1", "26.1"], ["26.3", "26.1"]]) {
-      assert.equal(await resolve("pack1:2:1", engine), path.join(pack, `balloon.mc${expected}.schem`));
-    }
-    assert.equal(minecraftData("1.21.10").version.minecraftVersion, "1.21.9");
-    assert.equal(minecraftData("26.1.1").version.minecraftVersion, "26.1");
-    for (const selector of ["pack1:balloon", "pack1:balloon.schem", "schems/pack1/balloon.schem"]) {
-      assert.equal(await resolve(selector, "26.1"), path.join(pack, "balloon.schem"));
-    }
-    await assert.rejects(resolve("pack1:balloon.SCHEM", "26.1"), /No schematic named/);
-    await writeFile(path.join(pack, "balloon.SCHEM"), "unrelated uppercase asset");
-    await assert.rejects(resolve("pack1:balloon.SCHEM", "26.1"), /No compatible/);
-    await assert.rejects(resolve("schems/pack1/balloon.SCHEM", "26.1"), /No compatible/);
-    assert.equal(await resolve("pack1:balloon.mc1.21.4.schem", "26.1"), path.join(pack, "balloon.mc1.21.4.schem"));
-    await assert.rejects(resolve("pack1:balloon.mc26.1.schem", "1.21.4"), /No compatible/);
-    await assert.rejects(resolve("pack1:2:1", "1.20.6"), /No compatible/);
-    await assert.rejects(resolve("pack1:2:1", "1.16.5"), /No compatible/);
-    await assert.rejects(resolve("pack1:2:1", "not-a-release"), /Unknown Minecraft engine/);
-    const entries = (await listSchematicEntries(root, opts("1.21.10"))).filter(x => x.fileId === 1);
-    assert.equal(entries.length, 5);
-    assert.equal(entries.find(x => x.selected).fileName, "balloon.mc1.21.10.schem");
-    assert.equal(entries.find(x => x.fileName.endsWith("mc26.1.schem")).compatible, false);
-    assert.ok(entries.every(x => x.selector === "pack1:2:1"));
-  });
-});
-
-test("unversioned bases require a known embedded release and arbitrary selectors remain usable", async () => {
-  await fixture(async (root, pack) => {
-    await syntheticArtifact(path.join(pack, "custom.schem"));
-    await writeFile(path.join(pack, "unknown.schem"), "not nbt");
-    await writeFile(path.join(pack, "unknown.SCHEM"), "not nbt");
-    await syntheticArtifact(path.join(pack, "other.schematic"));
-    await manifest(pack, {});
-    assert.equal(await resolveSchematicPath("pack1:custom", root, opts("26.1")), path.join(pack, "custom.schem"));
-    await assert.rejects(resolveSchematicPath("pack1:custom", root, opts("1.20.6")), /No compatible/);
-    await assert.rejects(resolveSchematicPath("pack1:unknown.schem", root, opts("26.1")), /No compatible/);
-    await assert.rejects(resolveSchematicPath("pack1:unknown.SCHEM", root, opts("26.1")), /No compatible/);
-    assert.equal(await resolveSchematicPath("pack1:other", root, opts("26.1")), path.join(pack, "other.schematic"));
-    await writeFile(path.join(pack, "custom.schematic"), "other");
-    await assert.rejects(resolveSchematicPath("pack1:custom", root, opts("26.1")), /Ambiguous/);
-    assert.equal(await resolveSchematicPath("pack1:custom.schem", root, opts("26.1")), path.join(pack, "custom.schem"));
-    await syntheticArtifact(path.join(pack, "variant-only.mc26.1.schem"), "26.1");
-    assert.equal(await resolveSchematicPath("pack1:variant-only", root, opts("26.1")), path.join(pack, "variant-only.mc26.1.schem"));
-    await assert.rejects(resolveSchematicPath("pack1:variant-only", root, opts("1.21.4")), /No compatible/);
-    await syntheticArtifact(path.join(pack, "old.mc1.16.5.schem"), "1.16.5");
-    assert.equal(await resolveSchematicPath("pack1:old", root, opts("1.16.5")), path.join(pack, "old.mc1.16.5.schem"));
-    await writeFile(path.join(pack, "variant-only.schematic"), "other format");
-    await assert.rejects(resolveSchematicPath("pack1:variant-only", root, opts("26.1")), /Ambiguous/);
-  });
-});
-
-test("manifest ownership, extension matching, duplicate mappings, and traversal fail safely", async () => {
-  await fixture(async (root, pack) => {
-    await syntheticArtifact(path.join(pack, "one.schem"));
-    await syntheticArtifact(path.join(pack, "two.schem"));
-    await syntheticArtifact(path.join(pack, "one.mc26.1.schem"), "26.1");
-    await writeFile(path.join(pack, "one-extra.mc26.1.schem"), "different stem");
-    await writeFile(path.join(pack, "one.mc26.1.schematic"), "different extension");
-    await manifest(pack, { 1: { 1: "one.schem", 2: "one.mc26.1.schem", 3: "two.schem" } });
-    assert.equal(await resolveSchematicPath("pack1:1:1", root, opts("26.1")), path.join(pack, "one.schem"));
-    assert.equal(await resolveSchematicPath("pack1:1:2", root, opts("26.1")), path.join(pack, "one.mc26.1.schem"));
-    const entries = await listSchematicEntries(root, opts("26.1"));
-    assert.equal(entries.find(x => x.fileId === 1).fileName, "one.schem");
-    assert.equal(entries.find(x => x.fileId === 1).selected, true);
-    assert.equal(entries.find(x => x.fileId === 2).selected, true);
-    for (const selector of ["pack1:../one.schem", "../outside.schem", "pack1:..\\outside.schem"]) {
-      await assert.rejects(resolveSchematicPath(selector, root, opts("26.1")));
-    }
-    await manifest(pack, { 1: { 1: "one.schem", 2: "one.schem" } });
-    await assert.rejects(resolveSchematicPath("pack1:1:1", root, opts("26.1")), /multiple tuples/);
-    await manifest(pack, { 1: { 1: "one.schem" } });
-    await rm(path.join(pack, "one.mc26.1.schem"));
-    await symlink(source, path.join(pack, "one.mc26.1.schem"));
-    assert.equal(await resolveSchematicPath("pack1:1:1", root, opts("26.1")), path.join(pack, "one.schem"));
-  });
-});
-
-test("real listing command reports engine, version, selector, and selected file", () => {
-  const projectRoot = path.dirname(SCHEMATICS_DIR);
-  const loader = path.join(projectRoot, "test/schematic/commands-loader.js");
-  const script = `
-    import assert from 'node:assert/strict';
-    const { getCommand } = await import('./src/agent/commands/index.js');
-    for (const [version, expected] of [
-      ['1.21.4', /group 2 \\| file id 1 \\| file name 02_bee_hot_air_balloon\\.mc1\\.21\\.4\\.schem \\| selector pack1:2:1 \\| version 1\\.21\\.4 \\| compatible, selected/],
-      ['26.1', /group 2 \\| file id 1 \\| file name 02_bee_hot_air_balloon\\.mc26\\.1\\.schem \\| selector pack1:2:1 \\| version 26\\.1 \\| compatible, selected/],
-    ]) {
-      const text = await getCommand('!listSchematics').perform({ bot: { version } });
-      assert.ok(text.includes('SCHEMATICS (Minecraft ' + version + ')'));
-      assert.match(text, expected);
-    }
-  `;
-  const result = spawnSync(process.execPath, ["--experimental-loader", loader, "--input-type=module", "-e", script],
-    { cwd: projectRoot, encoding: "utf8", env: { ...process.env, MINDCRAFT_REAL_SCHEMATIC_PATHS: "1" } });
-  assert.equal(result.status, 0, result.stderr);
-});
-
-test("real pack selects and reads the native bee variant for each engine", async () => {
-  for (const version of ["1.21.4", "26.1"]) {
-    const selected = await resolveSchematicPath("pack1:2:1", SCHEMATICS_DIR, opts(version));
-    assert.equal(path.basename(selected), `02_bee_hot_air_balloon.mc${version}.schem`);
-    const parsed = await readSchematic(await readFile(selected), version);
-    assert.ok(parsed.size.x > 0 && parsed.size.y > 0 && parsed.size.z > 0);
-  }
-});
-
-test("real bee blueprint mock-builds explicitly selected nonvalidated variants", async () => {
-  await fixture(async (root, pack) => {
-    const base = path.join(pack, "02_bee_hot_air_balloon.schem");
-    await copyFile(source, base);
-    await manifest(pack, { 2: { 1: path.basename(base) } });
+    await manifest(pack, { 8: { 13: "observatory.schem" } });
+    const base = path.join(pack, "observatory.schem");
     const compiler = path.join(SCHEMATICS_DIR, "tooling/compile_blueprint.py");
-    const blueprint = path.join(SCHEMATICS_DIR, "blueprints/pack1/02_bee_hot_air_balloon.json");
-    for (const version of ["1.21.4", "26.1"]) {
-      const result = spawnSync("python3", [compiler, "compile", blueprint, base, "--convert-to", version, "--allow-unverified"], { encoding: "utf8" });
-      assert.equal(result.status, 0, result.stderr);
-    }
-    const canonical = await readFile(source);
     for (const [version, chain] of [["1.21.4", "chain"], ["26.1", "iron_chain"]]) {
+      const result = spawnSync(process.env.HISTORY_TEST_PYTHON || "python3", [compiler, "compile",
+        path.join(path.dirname(SCHEMATICS_DIR), fixtureBlueprint), base, "--convert-to", version, "--allow-unverified"], { encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr);
       const world = new Map();
       const key = p => `${p.x},${p.y},${p.z}`;
       const bot = Object.assign(new EventEmitter(), { version, registry: minecraftData(version),
         game: { gameMode: "survival", dimension: "overworld" }, entity: {}, world: {}, _client: new EventEmitter(),
         blockAt: p => world.get(key(p)) ?? { name: "air", getProperties: () => ({}) } });
       const logs = [];
-      let selected;
-      const success = await buildSchematic(bot, "pack1:2:1", 100, 64, -20, {
+      const success = await buildSchematic(bot, "pack3:8:13", 0, 64, 0, {
         allowNonvalidatedSchematic: true,
-        resolvePath: async (_selector, _directory, options) => (selected = await resolveSchematicPath(
-          `pack1:02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`, root, options)),
-        changeGameMode: async (_bot, mode) => { bot.game.gameMode = mode; return true; },
-        clearObstructions: async () => ({ cleared: 0 }),
-        guardDestruction: async (_bot, _build, _Vec3, run) => run(),
+        resolvePath: (_selector, _directory, options) => resolveSchematicPath(`pack3:observatory.mc${version}.nonvalidated.schem`, root, options),
+        changeGameMode: (_bot, mode) => { bot.game.gameMode = mode; return true; },
+        clearObstructions: () => ({ cleared: 0 }),
+        guardDestruction: (_bot, _build, _Vec3, run) => run(),
         startSupply: () => async () => {},
-        executeBuild: async (_bot, build) => {
-          assert.equal(build.plan.filter(entry => entry.name === chain).length, 24);
+        executeBuild: (_bot, build) => {
+          assert.equal(build.plan.filter(entry => entry.name === chain).length, 1);
           for (const entry of build.plan) world.set(key(entry.position), { name: entry.name, getProperties: () => entry.properties });
           return { status: "finished", errors: [] };
         },
         writeLog: message => logs.push(message),
       });
       assert.equal(success, true, logs.join("\n"));
-      assert.equal(selected, path.join(pack, `02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`));
     }
-    assert.deepEqual(await readFile(base), canonical);
+  });
+});
+
+test("family aliases select exact or highest lower version without an original", async () => {
+  await fixture(async (root, pack) => {
+    for (const version of ["1.21.4", "1.21.9", "1.21.10", "26.1"]) await syntheticArtifact(path.join(pack, `balloon.mc${version}.schem`), version);
+    await manifest(pack, { 2: { 1: "balloon.schem", 2: "missing.schem" } });
+    const resolve = (selector, version) => resolveSchematicPath(selector, root, opts(version));
+    for (const [engine, expected] of [["1.21.4", "1.21.4"], ["1.21.8", "1.21.4"], ["1.21.9", "1.21.9"], ["1.21.10", "1.21.10"], ["26.1.1", "26.1"]]) {
+      for (const selector of ["pack3:2:1", "pack3:balloon", "pack3:balloon.schem", "schems/pack3/balloon.schem"]) {
+        assert.equal(await resolve(selector, engine), path.join(pack, `balloon.mc${expected}.schem`));
+      }
+    }
+    assert.equal(await resolve("pack3:balloon.mc1.21.4.schem", "26.1"), path.join(pack, "balloon.mc1.21.4.schem"));
+    await assert.rejects(resolve("pack3:balloon.mc26.1.schem", "1.21.4"), /No compatible/);
+    for (const engine of ["1.20.6", "unknown", "24w14a", undefined]) await assert.rejects(resolve("pack3:2:1", engine));
+    await assert.rejects(resolve("pack3:2:2", "26.1"), /No compatible/);
+    const entries = await listSchematicEntries(root, opts("1.21.10"));
+    assert.equal(entries.length, 4);
+    assert.equal(entries.find(x => x.selected).fileName, "balloon.mc1.21.10.schem");
+    assert.ok(entries.every(x => x.selector === "pack3:2:1"));
+  });
+});
+
+test("original-only, bad metadata, unknown engines, absent options and other formats never select", async () => {
+  await fixture(async (root, pack) => {
+    await syntheticArtifact(path.join(pack, "only.schem"), "1.21.4");
+    await syntheticArtifact(path.join(pack, "bad.mc1.21.4.schem"), "1.21.9");
+    await syntheticArtifact(path.join(pack, "future.mc26.1.schem"), "26.1");
+    await syntheticArtifact(path.join(pack, "other.schematic"), "1.21.4");
+    await manifest(pack, { 1: { 1: "only.schem", 2: "bad.schem", 3: "future.schem" } });
+    for (const selector of ["pack3:1:1", "pack3:only", "pack3:only.schem", "schems/pack3/only.schem", "pack3:bad", "pack3:bad.mc1.21.4.schem", "pack3:future", "pack3:other.schematic", "schems/pack3/other.schematic"]) {
+      await assert.rejects(resolveSchematicPath(selector, root, opts("1.21.4")), undefined, selector);
+    }
+    for (const selector of ["pack3:1:1", "schems/pack3/only.schem"]) await assert.rejects(resolveSchematicPath(selector, root), /Unknown Minecraft engine/);
+    await assert.rejects(listSchematicEntries(root), /Unknown Minecraft engine/);
+    await assert.rejects(listSchematics(root), /Unknown Minecraft engine/);
+    assert.equal((await listSchematicEntries(root, opts("1.21.4"))).some(x => x.selected), false);
+    assert.equal(conservativeBotVersion({ version: "1.21.10" }), "1.21.9");
+    assert.equal(conservativeBotVersion({ version: "26.1.2" }), "26.1");
+    assert.equal(conservativeBotVersion({ version: "24w14a" }), undefined);
+    assert.equal(conservativeBotVersion({ version: "1.21.4", _client: { version: "24w14a" } }), undefined);
+  });
+});
+
+test("provenance policy, exact ownership, symlinks and traversal fail closed", async () => {
+  await fixture(async (root, pack) => {
+    await syntheticArtifact(path.join(pack, "one.mc1.21.4.schem"), "1.21.4");
+    await syntheticArtifact(path.join(pack, "one.mc26.1.schem"), "26.1");
+    await manifest(pack, { 1: { 1: "one.schem", 2: "one.mc26.1.schem" } });
+    assert.equal(await resolveSchematicPath("pack3:1:1", root, opts("26.1")), path.join(pack, "one.mc1.21.4.schem"));
+    assert.equal(await resolveSchematicPath("pack3:1:2", root, opts("26.1")), path.join(pack, "one.mc26.1.schem"));
+    await assert.rejects(resolveSchematicPath("pack3:one", root, { version: "26.1" }), /No compatible/);
+    await assert.rejects(resolveSchematicPath("pack3:one", root, { ...opts("26.1"), requireStrictSchematicValidation: true }), /No compatible/);
+    await assert.rejects(resolveSchematicPath("schems/pack3/one.mc26.1.schem", root, { version: "26.1" }), /No compatible/);
+    for (const selector of ["pack3:../one.schem", "../outside.schem", "schems/pack3/../pack3/one.schem", "pack3:..\\outside.schem"]) await assert.rejects(resolveSchematicPath(selector, root, opts("26.1")));
+    await manifest(pack, { 1: { 1: "one.schem" } });
+    await rm(path.join(pack, "one.mc26.1.schem"));
+    await symlink(path.join(pack, "one.mc1.21.4.schem"), path.join(pack, "one.mc26.1.schem"));
+    assert.equal(await resolveSchematicPath("pack3:1:1", root, opts("26.1")), path.join(pack, "one.mc1.21.4.schem"));
+    await rm(path.join(pack, "one.mc1.21.4.schem"));
+    await assert.rejects(resolveSchematicPath("pack3:1:1", root, opts("26.1")), /No compatible/);
+    await symlink(pack, path.join(root, "schems/pack4"));
+    await assert.rejects(resolveSchematicPath("pack4:1:1", root, opts("26.1")), /Symlinked schematic pack/);
+    await rm(path.join(pack, "index.json"));
+    await writeFile(path.join(pack, "other-index.json"), JSON.stringify({ schemaVersion: 2, groups: {} }));
+    await symlink(path.join(pack, "other-index.json"), path.join(pack, "index.json"));
+    await assert.rejects(resolveSchematicPath("pack3:one", root, opts("26.1")), /Symlinked schematic pack index/);
+  });
+});
+
+test("recovery cancels legacy sessions, changed assets, changed family picks and revoked consent", async () => {
+  await fixture(async (root, pack) => {
+    const older = path.join(pack, "recover.mc1.21.4.schem");
+    const newer = path.join(pack, "recover.mc1.21.9.schem");
+    await syntheticArtifact(older, "1.21.4");
+    await manifest(pack, { 1: { 1: "recover.schem" } });
+    const bot = Object.assign(new EventEmitter(), { version: "1.21.9", registry: minecraftData("1.21.9"),
+      game: { dimension: "overworld" }, world: {}, entity: {}, _client: new EventEmitter() });
+    const logs = [];
+    const dependencies = { allowNonvalidatedSchematic: true, writeLog: message => logs.push(message),
+      resolvePath: (selector, _dir, options) => resolveSchematicPath(selector, root, options) };
+    const makeSession = async (resolvedPath = older) => ({ cancelled: false, resumeEligible: true, context: {
+      selector: "pack3:1:1", resolvedPath, source: await readFile(older), schematic: {}, origin: { x: 0, y: 0, z: 0 },
+    } });
+    const legacy = await makeSession(path.join(pack, "recover.schem"));
+    assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: legacy }), false);
+    assert.equal(legacy.cancelled, true);
+    assert.match(logs.at(-1), /unversioned/);
+    const revoked = await makeSession();
+    assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, allowNonvalidatedSchematic: false, resumeSession: revoked }), false);
+    assert.equal(revoked.cancelled, true);
+    const modified = await makeSession();
+    modified.context.source = Buffer.from("outdated bytes");
+    assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: modified }), false);
+    assert.match(logs.at(-1), /asset changed/);
+    const changed = await makeSession();
+    await syntheticArtifact(newer, "1.21.9");
+    assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: changed }), false);
+    assert.equal(changed.cancelled, true);
+    assert.match(logs.at(-1), /selection changed/);
   });
 });

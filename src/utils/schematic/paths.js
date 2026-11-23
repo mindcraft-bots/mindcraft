@@ -21,19 +21,44 @@ const releases = minecraftData.versions.pc.filter((version) => /^\d+(?:\.\d+)+$/
 const releasesByName = new Map(releases.map((version) => [version.minecraftVersion, version]));
 const releasesByDataVersion = new Map(releases.map((version) => [version.dataVersion, version]));
 
+// Mineflayer normalizes server versions through a registry/protocol alias. Treat
+// that label as no more precise than the oldest release sharing its protocol.
+export function conservativeBotVersion(bot) {
+  const release = releaseFor(bot?.version);
+  const clientRelease = bot?._client?.version == null ? release : releaseFor(bot._client.version);
+  if (!release || !clientRelease || clientRelease.version !== release.version) return undefined;
+  return releases.filter(item => item.version === release.version)
+    .sort((a, b) => a.dataVersion - b.dataVersion)[0]?.minecraftVersion;
+}
+
+function requireTarget(options) {
+  const target = releaseFor(options?.version);
+  if (!target) throw new Error(`Unknown Minecraft engine release ${String(options?.version)}; cannot select a schematic version`);
+  return target;
+}
+
+function releaseAtMost(a, b) {
+  const left = a.minecraftVersion.split('.').map(Number);
+  const right = b.minecraftVersion.split('.').map(Number);
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    if ((left[i] ?? 0) !== (right[i] ?? 0)) return (left[i] ?? 0) < (right[i] ?? 0);
+  }
+  return true;
+}
+
 function releaseFor(name) {
   return typeof name === "string" ? releasesByName.get(name) : undefined;
 }
 
 function validationDiagnostic(provenance, options) {
   const status = provenance?.validationStatus ?? 'UNKNOWN';
-  return `validation status ${status}${status === 'NONVALIDATED' && !options.requireStrictSchematicValidation
-    ? '; operator consent requires allow_nonvalidated_schematic_builds=true' : ''}`;
+  return `validation status ${status}${provenance?.reason ? `: ${provenance.reason}` : ''}${status === 'NONVALIDATED'
+    ? (options.requireStrictSchematicValidation ? '; strict validation is required' : '; operator consent requires allow_nonvalidated_schematic_builds=true') : ''}`;
 }
 
-async function baseRelease(candidate) {
+async function baseRelease(candidate, bytes) {
   try {
-    const { parsed } = await nbt.parse(await readFile(candidate));
+    const { parsed } = await nbt.parse(bytes ?? await readFile(candidate));
     const root = nbt.simplify(parsed);
     const version = root?.DataVersion ?? root?.Schematic?.DataVersion;
     return Number.isInteger(version) ? releasesByDataVersion.get(version) : undefined;
@@ -43,34 +68,38 @@ async function baseRelease(candidate) {
 }
 
 // Variant labels are the compiler's target release, not the registry's possibly aliased label.
-async function selectFamily(baseName, fileNames, directory, targetVersion, owned = () => true, options = {}, cache = new Map()) {
+async function selectFamily(baseName, fileNames, directory, targetVersion, owned = () => true, options = {}, exactName = null) {
   if (!baseName.endsWith(".schem")) {
     throw new Error(`No compatible known-version schematic for case-sensitive filename ${baseName}`);
   }
-  const target = releaseFor(targetVersion);
-  if (!target) throw new Error(`Unknown Minecraft engine release ${String(targetVersion)}; cannot select a schematic version`);
+  const target = requireTarget({ version: targetVersion });
   const stem = baseName.slice(0, -".schem".length);
   if (/(?:^|\.)mc\d/i.test(stem)) throw new Error(`Invalid schematic variant pattern ${baseName}`);
   const candidates = [];
   for (const name of fileNames) {
-    if (!owned(name)) continue;
+    if (!owned(name) || (exactName && name !== exactName)) continue;
     const match = VARIANT.exec(name);
     if (match && match[1] === stem) {
       const release = releaseFor(match[2]);
-      const embedded = await baseRelease(path.join(directory, name));
-      if (release && embedded?.dataVersion === release.dataVersion) candidates.push({ name, release, variant: true, nonvalidatedVariant: Boolean(match[3]) });
-    } else if (name === baseName) {
-      const release = await baseRelease(path.join(directory, name));
-      if (release) candidates.push({ name, release, variant: false });
+      if (!release) continue;
+      const filename = path.join(directory, name);
+      let source;
+      try { source = await readFile(filename); } catch { continue; }
+      const embedded = await baseRelease(filename, source);
+      if (embedded?.dataVersion !== release.dataVersion) continue;
+      // Bind provenance to the exact snapshot, never a path-only lookup.
+      const provenance = await schematicProvenance(filename, source);
+      candidates.push({ name, release, source, provenance, variant: true, nonvalidatedVariant: Boolean(match[3]) });
     }
   }
   for (const candidate of candidates) {
-    const filename = path.join(directory, candidate.name);
-    if (!cache.has(filename)) cache.set(filename, schematicProvenance(filename));
-    candidate.provenance = await cache.get(filename);
+    if (candidate.nonvalidatedVariant && candidate.provenance.validationStatus !== "NONVALIDATED") candidate.provenance = { validationStatus: "INVALID", reason: "NONVALIDATED suffix requires matching provenance" };
   }
+  const compatible = candidates.filter(({ release, provenance }) => release.dataVersion <= target.dataVersion && releaseAtMost(release, target) && provenanceAllowed(provenance, options))
+    .sort((a, b) => b.release.dataVersion - a.release.dataVersion || Number(b.variant) - Number(a.variant)
+      || Number(b.nonvalidatedVariant) - Number(a.nonvalidatedVariant));
   const seen = new Map();
-  for (const candidate of candidates.filter((item) => item.variant)) {
+  for (const candidate of compatible) {
     const group = seen.get(candidate.release.dataVersion) ?? [];
     for (const previous of group) {
       if (!(previous.nonvalidatedVariant !== candidate.nonvalidatedVariant
@@ -82,10 +111,17 @@ async function selectFamily(baseName, fileNames, directory, targetVersion, owned
     group.push(candidate);
     seen.set(candidate.release.dataVersion, group);
   }
-  const compatible = candidates.filter(({ release, provenance }) => release.dataVersion <= target.dataVersion && provenanceAllowed(provenance, options))
-    .sort((a, b) => b.release.dataVersion - a.release.dataVersion || Number(b.variant) - Number(a.variant)
-      || Number(b.nonvalidatedVariant) - Number(a.nonvalidatedVariant));
   return { candidates, selected: compatible[0] ?? null, target };
+}
+
+function rejectedProvenance(family, exactName) {
+  return family.candidates.filter(item => (!exactName || item.name === exactName)
+    && item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target))
+    .sort((a, b) => b.release.dataVersion - a.release.dataVersion)[0]?.provenance;
+}
+
+function selectionResult(filename, selected, options) {
+  return options.returnSnapshot ? { path: filename, source: Buffer.from(selected.source), provenance: selected.provenance } : filename;
 }
 
 function normalizePositivePart(value, label) {
@@ -172,6 +208,7 @@ function validateFileName(fileName) {
     throw new TypeError("Schematic filename must be a non-empty path without NUL or backslash characters");
   }
 
+  if (fileName.split("/").some(part => part === ".." || part === ".")) throw new TypeError("Schematic path traversal is not allowed");
   if (path.isAbsolute(fileName) || path.win32.isAbsolute(fileName)) {
     throw new TypeError("Absolute schematic paths are not allowed");
   }
@@ -227,44 +264,35 @@ export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR,
     return resolvePackSchematic(packName, selector, directory, options);
   }
 
+  requireTarget(options);
   const root = path.resolve(directory);
   const candidate = path.resolve(root, fileName);
-  if (!isWithinDirectory(root, candidate)) {
-    throw new Error("Schematic path escapes the schematics directory");
+  if (!isWithinDirectory(root, candidate)) throw new Error("Schematic path escapes the schematics directory");
+  const parts = fileName.split("/");
+  if (parts[0] === "schems" && PACK_NAME.test(parts[1] ?? "") && parts.length === 3) {
+    return resolvePackSchematic(parts[1], parts[2], directory, options);
   }
-
+  // Do not allow alternate paths or symlinked directories to bypass pack ownership.
   await assertExistingAncestorsStayWithin(root, candidate);
-  if (options && path.extname(candidate).toLowerCase() === ".schem") {
-    const parent = path.dirname(candidate);
-    const names = await readdir(parent);
-    const safeNames = [];
-    for (const name of names) {
-      if (path.extname(name).toLowerCase() !== ".schem") continue;
-      try {
-        const real = await realpath(path.join(parent, name));
-        if (isWithinDirectory(await getRealRoot(root), real) && (await stat(real)).isFile()) safeNames.push(name);
-      } catch (error) {
-        if (error.code !== "ENOENT" && error.code !== "ENOTDIR") throw error;
-      }
-    }
-    const name = path.basename(candidate);
-    const variant = VARIANT.exec(name);
-    const exactUntrusted = safeNames.includes(name) && !['HISTORICAL_UNKNOWN', 'STRICT_VALIDATED'].includes((await schematicProvenance(candidate)).validationStatus);
-    const explicit = variant || exactUntrusted;
-    const base = variant ? `${variant[1]}.schem` : name;
-    const family = await selectFamily(base, safeNames, parent, options.version, () => true, options);
-    const selected = explicit ? family.candidates.find((item) => item.name === name
-      && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(item.provenance, options)) : family.selected;
-    if (!selected) throw new Error(`No compatible known-version schematic for ${fileName} on Minecraft ${String(options.version)}; ${validationDiagnostic(family.candidates.find(item => item.name === name)?.provenance, options)}`);
-    const result = path.join(parent, selected.name);
-    await assertExistingAncestorsStayWithin(root, result);
-    return result;
+  const parent = path.dirname(candidate);
+  const realRoot = await getRealRoot(root);
+  const realParent = await realpath(parent);
+  if (realParent !== path.join(realRoot, path.relative(root, parent))) throw new Error("Symlinked schematic directories are not allowed");
+  if (isWithinDirectory(path.join(realRoot, "schems"), realParent)) throw new Error("Use a direct pack-qualified schematic selector");
+  const name = path.basename(candidate);
+  if (!name.endsWith(".schem")) throw new Error("Only version-suffixed .schem files are supported");
+  const names = [];
+  for (const entry of await readdir(parent, { withFileTypes: true })) {
+    if (entry.isFile() && VARIANT.test(entry.name)) names.push(entry.name);
   }
-  if (options) {
-    const provenance = await schematicProvenance(candidate);
-    if (!provenanceAllowed(provenance, options)) throw new Error(`Schematic validation status ${provenance.validationStatus}: ${provenance.reason ?? 'consent or strict policy prevents selection'}`);
-  }
-  return candidate;
+  const variant = VARIANT.exec(name);
+  const base = variant ? `${variant[1]}.schem` : name;
+  const family = await selectFamily(base, names, parent, options.version, () => true, options, variant ? name : null);
+  const selected = variant ? family.candidates.find(item => item.name === name
+    && item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target)
+    && provenanceAllowed(item.provenance, options)) : family.selected;
+  if (!selected) throw new Error(`No compatible known-version schematic for ${fileName} on Minecraft ${String(options.version)}; ${validationDiagnostic(rejectedProvenance(family, variant ? name : null), options)}`);
+  return selectionResult(path.join(parent, selected.name), selected, options);
 }
 
 async function getPackDirectory(packName, directory) {
@@ -274,11 +302,13 @@ async function getPackDirectory(packName, directory) {
   if (!isWithinDirectory(realDirectory, realPacksRoot)) {
     throw new Error("Schematic packs directory resolves outside the configured schematics root");
   }
+  if (realPacksRoot !== path.join(realDirectory, "schems")) throw new Error("Symlinked schematic packs directories are not allowed");
   const packDirectory = path.join(packsRoot, packName);
   const realPackDirectory = await realpath(packDirectory);
   if (!isWithinDirectory(realPacksRoot, realPackDirectory)) {
     throw new Error(`Schematic pack ${packName} resolves outside the schems directory`);
   }
+  if (realPackDirectory !== path.join(realPacksRoot, packName)) throw new Error(`Symlinked schematic pack ${packName} is not allowed`);
   if (!(await stat(realPackDirectory)).isDirectory()) throw new Error(`Schematic pack ${packName} is not a directory`);
   return { packsRoot, realPacksRoot, packDirectory, realPackDirectory };
 }
@@ -290,6 +320,7 @@ async function assertPackFile(packDirectory, realPackDirectory, fileName) {
   if (!isWithinDirectory(realPackDirectory, realCandidate)) {
     throw new Error(`Schematic pack file ${fileName} resolves outside its pack directory`);
   }
+  if (realCandidate !== path.join(realPackDirectory, fileName)) throw new Error(`Symlinked schematic pack file ${fileName} is not allowed`);
   if (!(await stat(realCandidate)).isFile()) throw new Error(`Schematic pack target ${fileName} is not a regular file`);
   return candidate;
 }
@@ -300,6 +331,7 @@ async function readPackIndex(packDirectory, realPackDirectory) {
   try {
     const realIndex = await realpath(indexPath);
     if (!isWithinDirectory(realPackDirectory, realIndex)) throw new Error("Schematic pack index resolves outside its pack directory");
+    if (realIndex !== path.join(realPackDirectory, "index.json")) throw new Error("Symlinked schematic pack index is not allowed");
     if (!(await stat(realIndex)).isFile()) throw new Error("Schematic pack index is not a regular file");
     source = await readFile(realIndex, "utf8");
   } catch (error) {
@@ -346,7 +378,7 @@ async function readPackIndex(packDirectory, realPackDirectory) {
       if (normalizedFileIds.has(fileId)) throw new Error(`Schematic pack index contains duplicate normalized file id ${fileId} in group ${group}`);
       normalizedFileIds.add(fileId);
       validatePackFileName(fileName);
-      await assertPackFile(packDirectory, realPackDirectory, fileName);
+      if (!fileName.endsWith(".schem")) throw new Error("Schematic index family keys must use .schem");
       const priorTuple = fileNamesToTuple.get(fileName);
       if (priorTuple) throw new Error(`Schematic pack index maps ${fileName} to multiple tuples (${priorTuple.group}:${priorTuple.fileId} and ${group}:${fileId})`);
       fileIds.set(fileId, fileName);
@@ -362,7 +394,7 @@ async function scanPack(packName, directory) {
   const entries = await readdir(packDirectory, { withFileTypes: true });
   const fileNames = [];
   for (const entry of entries) {
-    if (!SCHEMATIC_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
+    if (!entry.isFile() || !VARIANT.test(entry.name)) continue;
     try {
       await assertPackFile(packDirectory, realPackDirectory, entry.name);
       fileNames.push(entry.name);
@@ -380,64 +412,41 @@ async function scanPack(packName, directory) {
 async function resolvePackSchematic(packName, selector, directory, options) {
   if (!selector) throw new TypeError("A pack-qualified file name or both numeric group and file ID are required");
   const { packDirectory, fileNames, mappings, fileNamesToTuple } = await scanPack(packName, directory);
-  let matches;
+  requireTarget(options);
   const indexedSelector = GROUP_AND_FILE_ID_SELECTOR.exec(selector);
-  if (selector.includes(":") && !indexedSelector) {
-    throw new TypeError("Pack schematic selector must be packN:<group>:<fileId>");
-  }
-  if (/^\d+$/.test(selector)) {
-    throw new TypeError("A numeric schematic selector needs both group and fileId: packN:<group>:<fileId>");
-  }
+  if (selector.includes(":") && !indexedSelector) throw new TypeError("Pack schematic selector must be packN:<group>:<fileId>");
+  if (/^\d+$/.test(selector)) throw new TypeError("A numeric schematic selector needs both group and fileId: packN:<group>:<fileId>");
+  let name;
   if (indexedSelector) {
     const group = normalizePositivePart(indexedSelector[1], "group");
     const fileId = normalizePositivePart(indexedSelector[2], "file id");
-    const fileName = mappings.get(group)?.get(fileId);
-    if (!fileName) throw new Error(`No schematic with group ${group} and file id ${fileId} was found in ${packName}`);
-    matches = [fileName];
+    name = mappings.get(group)?.get(fileId);
+    if (!name) throw new Error(`No schematic with group ${group} and file id ${fileId} was found in ${packName}`);
   } else {
-    const selectorHasExtension = SCHEMATIC_EXTENSIONS.has(path.extname(selector).toLowerCase());
-    validatePackFileName(selectorHasExtension ? selector : `${selector}.schem`);
-    matches = fileNames.filter((fileName) => selectorHasExtension
-      ? fileName === selector
-      : path.basename(fileName, path.extname(fileName)) === selector);
-    if (options && !VARIANT.test(selector)) {
-      const base = selectorHasExtension ? selector : `${selector}.schem`;
-      if (base.endsWith(".schem") && !matches.includes(base)
-        && fileNames.some((name) => VARIANT.exec(name)?.[1] === base.slice(0, -6))) matches.push(base);
-    }
-    if (matches.length === 0) throw new Error(`No schematic named ${selector} was found in ${packName}`);
-    if (matches.length > 1) throw new Error(`Ambiguous schematic name ${selector} in ${packName}: ${matches.join(", ")}`);
+    name = selector.endsWith(".schem") ? selector : `${selector}.schem`;
+    validatePackFileName(name);
+    if (!name.endsWith(".schem") || /\.(?:schematic|litematic)(?:\.schem)?$/i.test(name)) throw new Error("Only version-suffixed .schem files are supported");
   }
+  const variant = VARIANT.exec(name);
+  const base = variant ? `${variant[1]}.schem` : name;
+  const owner = fileNamesToTuple.get(name) ?? fileNamesToTuple.get(base);
+  const owned = candidate => {
+    const tuple = fileNamesToTuple.get(candidate);
+    return !tuple || (owner && tuple.group === owner.group && tuple.fileId === owner.fileId);
+  };
+  const family = await selectFamily(base, fileNames, packDirectory, options.version, owned, options, variant ? name : null);
+  const selected = variant ? family.candidates.find(item => item.name === name
+    && item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target)
+    && provenanceAllowed(item.provenance, options)) : family.selected;
+  if (!selected) throw new Error(`No compatible known-version schematic for ${packName}:${selector} on Minecraft ${String(options.version)}; ${validationDiagnostic(rejectedProvenance(family, variant ? name : null), options)}`);
   const { realPackDirectory } = await getPackDirectory(packName, directory);
-  if (options && matches[0].toLowerCase().endsWith(".schem")) {
-    const name = matches[0];
-    const variant = VARIANT.exec(name);
-    const exactUntrusted = !indexedSelector && fileNames.includes(name) && !['HISTORICAL_UNKNOWN', 'STRICT_VALIDATED'].includes((await schematicProvenance(path.join(packDirectory, name))).validationStatus);
-    const explicit = variant || exactUntrusted;
-    const base = variant ? `${variant[1]}.schem` : name;
-    const owner = fileNamesToTuple.get(name) ?? fileNamesToTuple.get(base);
-    const owned = (candidate) => {
-      const tuple = fileNamesToTuple.get(candidate);
-      return !tuple || (owner && tuple.group === owner.group && tuple.fileId === owner.fileId);
-    };
-    const family = await selectFamily(base, fileNames, packDirectory, options.version, owned, options);
-    const selected = explicit ? family.candidates.find((item) => item.name === name
-      && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(item.provenance, options)) : family.selected;
-    if (!selected) throw new Error(`No compatible known-version schematic for ${packName}:${selector} on Minecraft ${String(options.version)}; ${validationDiagnostic(family.candidates.find(item => item.name === name)?.provenance, options)}`);
-    return assertPackFile(packDirectory, realPackDirectory, selected.name);
-  }
-  const result = await assertPackFile(packDirectory, realPackDirectory, matches[0]);
-  if (options) {
-    const provenance = await schematicProvenance(result);
-    if (!provenanceAllowed(provenance, options)) throw new Error(`Schematic validation status ${provenance.validationStatus}: ${provenance.reason ?? 'consent or strict policy prevents selection'}`);
-  }
-  return result;
+  return selectionResult(await assertPackFile(packDirectory, realPackDirectory, selected.name), selected, options);
 }
 
-/** List supported schematic filenames, sorted lexically; escaping symlinks are ignored. */
-export async function listSchematics(directory = SCHEMATICS_DIR) {
+/** List eligible root-level variants; symbolic links are never candidates. */
+export async function listSchematics(directory = SCHEMATICS_DIR, options = undefined) {
+  requireTarget(options);
   const root = path.resolve(directory);
-  const realRoot = await getRealRoot(root);
   let entries;
 
   try {
@@ -447,25 +456,19 @@ export async function listSchematics(directory = SCHEMATICS_DIR) {
     throw error;
   }
 
+  const names = entries.filter(entry => entry.isFile() && VARIANT.test(entry.name)).map(entry => entry.name);
   const fileNames = [];
-  for (const entry of entries) {
-    if (!SCHEMATIC_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
-
-    const candidate = path.join(root, entry.name);
-    if (entry.isFile()) {
-      fileNames.push(entry.name);
-      continue;
+  const families = new Map();
+  for (const name of names) {
+    const base = `${VARIANT.exec(name)[1]}.schem`;
+    if (!families.has(base)) {
+      try { families.set(base, await selectFamily(base, names, root, options.version, () => true, options)); }
+      catch { families.set(base, null); }
     }
-    if (!entry.isSymbolicLink()) continue;
-
-    try {
-      const realCandidate = await realpath(candidate);
-      if (!isWithinDirectory(realRoot, realCandidate)) continue;
-      if ((await stat(candidate)).isFile()) fileNames.push(entry.name);
-    } catch (error) {
-      if (error.code === "ENOENT" || error.code === "ENOTDIR") continue;
-      throw error;
-    }
+    const family = families.get(base);
+    const item = family?.candidates.find(candidate => candidate.name === name);
+    if (item && item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target)
+        && provenanceAllowed(item.provenance, options)) fileNames.push(name);
   }
 
   return fileNames.sort((left, right) => left.localeCompare(right));
@@ -473,7 +476,11 @@ export async function listSchematics(directory = SCHEMATICS_DIR) {
 
 /** List pack schematics with explicit group, fileId, and fileName fields plus legacy aliases. */
 export async function listSchematicEntries(directory = SCHEMATICS_DIR, options = undefined) {
-  const legacyFileNames = await listSchematics(directory);
+  requireTarget(options);
+  let rootEntries;
+  try { rootEntries = await readdir(path.resolve(directory), { withFileTypes: true }); }
+  catch (error) { if (error.code !== "ENOENT") throw error; rootEntries = []; }
+  const legacyFileNames = rootEntries.filter(entry => entry.isFile() && VARIANT.test(entry.name)).map(entry => entry.name);
   const packsRoot = path.resolve(directory, "schems");
   const entryWithAliases = (pack, group, fileId, fileName) => ({
     pack,
@@ -495,11 +502,11 @@ export async function listSchematicEntries(directory = SCHEMATICS_DIR, options =
     const match = VARIANT.exec(name);
     const base = match ? `${match[1]}.schem` : name;
     try {
-      const family = await selectFamily(base, names, folder, options.version, owned, options, provenanceCache);
+      const family = await selectFamily(base, names, folder, options.version, owned, options, exact ? name : null);
       const item = family.candidates.find((candidate) => candidate.name === name);
       return { ...result, selector, version: item?.release.minecraftVersion ?? null,
-        compatible: item ? item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(provenance, options) : false,
-        selected: exact ? Boolean(item && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(provenance, options)) : family.selected?.name === name };
+        compatible: item ? item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target) && provenanceAllowed(item.provenance, options) : false,
+        selected: exact ? Boolean(item && item.release.dataVersion <= family.target.dataVersion && releaseAtMost(item.release, family.target) && provenanceAllowed(item.provenance, options)) : family.selected?.name === name };
     } catch (error) {
       const version = match?.[2] ?? (await baseRelease(path.join(folder, name)))?.minecraftVersion ?? null;
       return { ...result, selector, version, compatible: false, selected: false, selectionError: error.message };

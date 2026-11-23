@@ -222,32 +222,3 @@ test('compiled semantic rename report carries attribution and registry evidence'
     assert.match(change.evidence[0].registry, /sources.lock.json/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
-
-test('1.21.4 domain-checked compilation preserves an existing versioned binary', () => {
-  const dir = mkdtempSync(join(tmpdir(),'history-preserved-'));
-  try {
-    const source = resolve('schematics/blueprints/pack1/03_big_red_barn.json');
-    const expected = readFileSync('schematics/schems/pack1/03_big_red_barn.mc1.21.4.schem');
-    const output = join(dir,'barn.nonvalidated.schem');
-    const result = runPython(compileCode,source,output,'1.21.4','yes'); assert.equal(result.status,0,result.stderr);
-    assert.deepEqual(readFileSync(output), expected);
-  } finally { rmSync(dir,{recursive:true,force:true}); }
-});
-
-test('pack1 barn compiles for exact 1.20.2 without an unreviewed state conversion', () => {
-  const dir = mkdtempSync(join(tmpdir(),'history-1202-pack-'));
-  try {
-    const source = resolve('schematics/blueprints/pack1/03_big_red_barn.json');
-    const output = join(dir,'barn.mc1.20.2.nonvalidated.schem');
-    const strict = join(dir,'barn.mc1.20.2.schem');
-    let result = runPython(compileCode,source,strict,'1.20.2','no');
-    assert.equal(result.status,0,result.stderr); assert.equal(JSON.parse(result.stdout).validation,'STRICT_VALIDATED');
-    result = runPython(compileCode,source,output,'1.20.2','yes'); assert.equal(result.status,0,result.stderr);
-    const report = JSON.parse(result.stdout), original = JSON.parse(readFileSync(source));
-    assert.equal(report.validation,'NONVALIDATED'); assert.equal(report.conversion.targetDataVersion,3578);
-    assert.deepEqual(report.conversion.changes,[]); assert.deepEqual(report.conversion.legend,original.legend);
-    for (const state of Object.values(report.conversion.legend)) validateState(state,loadRelease('1.20.2'));
-    const inspect = runPython("import nbtlib,sys; n=nbtlib.load(sys.argv[1]); print(int(n['DataVersion']), int(n['Width']), int(n['Height']), int(n['Length']))",output);
-    assert.equal(inspect.status,0,inspect.stderr); assert.match(inspect.stdout,/3578 18 17 19/);
-  } finally { rmSync(dir,{recursive:true,force:true}); }
-});

@@ -23,7 +23,7 @@ export function setSchematicResumeSession(bot, session) {
 
 export async function buildSchematic(bot, fileName, x = null, y = null, z = null) {
     /**
-     * Build and verify a .schem or .schematic file from the schematics directory.
+     * Build and verify a compatible version-suffixed .schem variant from the schematics directory.
      * @param {MinecraftBot} bot - the bot that will build the schematic.
      * @param {string} fileName - a safe file name or pack selector such as "pack1:1:1" (pack:group:fileId; the stable fileId resolves through the pack index) or literal file name/stem "pack1:01_wardrobe_nether_portal".
      * @param {?number} x - optional integer/fractional world x coordinate.

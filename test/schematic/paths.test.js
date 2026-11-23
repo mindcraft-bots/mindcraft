@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import {
+  SCHEMATICS_DIR,
   listSchematics,
   parseOptionalCoordinate,
   resolveSchematicPath,
 } from "../../src/utils/schematic/paths.js";
+import { syntheticSponge } from "./synthetic_sponge.js";
+import { writeFixtureProvenance } from "./provenance_fixture.js";
+const options = { version: "1.21.4", allowNonvalidatedSchematic: true };
+async function makeVariant(directory, name) {
+  const bytes = syntheticSponge();
+  await writeFile(path.join(directory, name), bytes);
+  writeFixtureProvenance(path.join(directory, name), bytes);
+}
 
 async function withTempDirectory(callback) {
   const directory = await mkdtemp(path.join(os.tmpdir(), "mindcraft-schematics-"));
@@ -19,20 +28,20 @@ async function withTempDirectory(callback) {
   }
 }
 
-test("resolveSchematicPath accepts confined files and confined missing candidates", async () => {
-  await withTempDirectory(async (directory) => {
-    const existing = path.join(directory, "house.schem");
-    await writeFile(existing, "schematic");
-
-    assert.equal(await resolveSchematicPath("house.schem", directory), existing);
-    assert.equal(await resolveSchematicPath("future.schematic", directory), path.join(directory, "future.schematic"));
+test("resolveSchematicPath resolves a confined family but rejects missing and unversioned originals", async () => {
+  await withTempDirectory(async directory => {
+    await writeFile(path.join(directory, "house.schem"), "original");
+    await assert.rejects(resolveSchematicPath("house.schem", directory, options), /No compatible/);
+    await makeVariant(directory, "house.mc1.21.4.schem");
+    assert.equal(await resolveSchematicPath("house.schem", directory, options), path.join(directory, "house.mc1.21.4.schem"));
+    await assert.rejects(resolveSchematicPath("future.schematic", directory, options), /Only version-suffixed/);
   });
 });
 
 test("resolveSchematicPath rejects absolute, empty, NUL, and traversal paths", async () => {
   await withTempDirectory(async (directory) => {
     for (const filename of ["", "/tmp/outside.schem", "../outside.schem", "nested/../../outside.schem", "bad\0name.schem"]) {
-      await assert.rejects(resolveSchematicPath(filename, directory));
+      await assert.rejects(resolveSchematicPath(filename, directory, options));
     }
   });
 });
@@ -45,33 +54,29 @@ test("resolveSchematicPath rejects symlinks and missing descendants that escape"
     await symlink(outside, path.join(directory, "escape"), "dir");
 
     try {
-      await assert.rejects(resolveSchematicPath("escape/secret.schem", directory));
-      await assert.rejects(resolveSchematicPath("escape/not-created.schem", directory));
+      await assert.rejects(resolveSchematicPath("escape/secret.schem", directory, options));
+      await assert.rejects(resolveSchematicPath("escape/not-created.schem", directory, options));
     } finally {
       await rm(outside, { recursive: true, force: true });
     }
   });
 });
 
-test("listSchematics returns sorted supported regular files and ignores escaping symlinks", async () => {
+test("listSchematics returns only eligible versioned regular files and ignores symlinks", async () => {
   await withTempDirectory(async (directory) => {
     const outside = path.join(path.dirname(directory), `${path.basename(directory)}-outside.schem`);
     await writeFile(path.join(directory, "zeta.litematic"), "file");
     await writeFile(path.join(directory, "alpha.schem"), "file");
+    await makeVariant(directory, "alpha.mc1.21.4.schem");
     await writeFile(path.join(directory, "middle.schematic"), "file");
     await writeFile(path.join(directory, "ignored.txt"), "file");
     await mkdir(path.join(directory, "folder.schem"));
     await writeFile(outside, "outside");
     await symlink(outside, path.join(directory, "escape.schem"), "file");
-    await symlink(path.join(directory, "alpha.schem"), path.join(directory, "inside.schem"), "file");
+    await symlink(path.join(directory, "alpha.mc1.21.4.schem"), path.join(directory, "inside.mc1.21.4.schem"), "file");
 
     try {
-      assert.deepEqual(await listSchematics(directory), [
-        "alpha.schem",
-        "inside.schem",
-        "middle.schematic",
-        "zeta.litematic",
-      ]);
+      assert.deepEqual(await listSchematics(directory, options), ["alpha.mc1.21.4.schem"]);
     } finally {
       await rm(outside, { force: true });
     }
@@ -80,7 +85,7 @@ test("listSchematics returns sorted supported regular files and ignores escaping
 
 test("listSchematics treats a missing directory as empty", async () => {
   await withTempDirectory(async (directory) => {
-    assert.deepEqual(await listSchematics(path.join(directory, "missing")), []);
+    assert.deepEqual(await listSchematics(path.join(directory, "missing"), options), []);
   });
 });
 

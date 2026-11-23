@@ -1,10 +1,14 @@
 # Blueprint compilation, validation and pack audits
 
+The Python compiler and schematic tests require `nbtlib`; the recorded pack1 batch used version 2.0.4. Install it in an isolated Python environment (for example, `python -m pip install nbtlib==2.0.4`) and use that environment's `python3` on the command path. Node tooling also needs the installed project dependencies.
+
 ## Artifact validation provenance
 
-New compilations publish a `.schem.provenance.json` sidecar containing the exact artifact and blueprint SHA-256 hashes, names, target and `STRICT_VALIDATED` or `NONVALIDATED` status, plus a `.schem.provenance.sha256` checksum. Pack-compiler outputs additionally bind each sidecar to the exact schema-2 conversion report and entry. The individually recompiled bee variants use standalone sidecars with null pack-report references; the existing schema-1 conversion reports are mixed historical/current inventories, not claims of a strict pack recompilation. Keep these files together. The runtime checks bytes, names, paths and report hashes, and independently checks the Sponge v2 structure, dimensions, canonical indices, entire voxel stream, palette, referenced blueprint, declared authored conversion and pinned full-combination profiles before returning strict content status. It does not attest compiler execution, authorship or the trustworthiness of the blueprint: checksums and sidecars are not signatures and can be rewritten together. A rewritten strict sidecar can now pass that independent content check for modern profiles; this does not prove the artifact was originally compiled strictly. Existing NONVALIDATED and historical artifacts are not automatically relabeled. It does not independently certify blueprint counts or spot checks. Trusted code and profile data remain assumptions. NONVALIDATED metadata does not establish blueprint correspondence or legal combinations.
+New compilations publish a `.schem.provenance.json` sidecar containing the exact artifact and blueprint SHA-256 hashes, names, target and `STRICT_VALIDATED` or `NONVALIDATED` status, plus a `.schem.provenance.sha256` checksum. Pack-compiler outputs additionally bind each sidecar to the exact schema-2 conversion report and entry. Keep these files together. The runtime checks bytes, names, paths and report hashes, and independently checks the Sponge v2 structure, dimensions, canonical indices, entire voxel stream, palette, referenced blueprint, declared authored conversion and pinned full-combination profiles before returning strict content status. It does not attest compiler execution, authorship or the trustworthiness of the blueprint: checksums and sidecars are not signatures and can be rewritten together. A rewritten strict sidecar can now pass that independent content check for modern profiles; this does not prove the artifact was originally compiled strictly. Existing NONVALIDATED and historical artifacts are not automatically relabeled. It does not independently certify blueprint counts or spot checks. Trusted code and profile data remain assumptions. NONVALIDATED metadata does not establish blueprint correspondence or legal combinations.
 
-The 88 unchanged pack1 assets remain `HISTORICAL_UNKNOWN` at their original paths and pinned hashes. They remain usable with warnings unless strict-only mode is enabled. The two recompiled bee variants are independently `STRICT_VALIDATED`; the unsuffixed bee original remains historical. Other files without metadata are `UNKNOWN`, and damaged provenance is `INVALID`; neither is buildable. Explicitly set `allow_nonvalidated_schematic_builds: true` in bot settings to permit new NONVALIDATED files, or `require_strict_schematic_validation: true` to exclude both NONVALIDATED and historical files. See [the build policy](../README.md#validation-status-and-compatibility-policy).
+Other files without metadata are `UNKNOWN`, and damaged provenance is `INVALID`; neither is buildable. Explicitly set `allow_nonvalidated_schematic_builds: true` in bot settings to permit new NONVALIDATED files, or `require_strict_schematic_validation: true` to exclude both NONVALIDATED and historical files. See [the build policy](../README.md#validation-status-and-compatibility-policy).
+
+Pack-specific provenance and historical archive evidence are described in the [pack1 validation index](validation/pack1/README.md); these details do not impose an archive on another pack.
 
 The production-reader comparison reports voxel agreement independently of `validationStatus` and `legalCombinationProof`. A voxel PASS and property-domain checks do not themselves prove legal state combinations.
 
@@ -24,9 +28,9 @@ From the repository root (outputs below are examples and must not already exist)
 
 ```sh
 # Strict example: blueprint must declare Java 1.13 / DataVersion 1519.
-python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> /tmp/example.schem --target-version 1.13
+python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> /tmp/example.mc1.13.schem --target-version 1.13
 # Modern releases also have official full combination evidence; strict compilation needs no opt-in.
-python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/03_big_red_barn.json /tmp/barn.schem --target-version 1.21.4
+python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/03_big_red_barn.json /tmp/barn.mc1.21.4.schem --target-version 1.21.4
 python3 schematics/tooling/compile_blueprint.py test-varints
 ```
 
@@ -53,7 +57,7 @@ The output base receives `.mc<version>.schem`, or `.mc<version>.nonvalidated.sch
 ```sh
 node schematics/tooling/validate_blueprint.mjs \
   schematics/blueprints/<packN>/<name>.json \
-  schematics/schems/<packN>/<name>.schem <MC_VERSION>
+  schematics/schems/<packN>/<name>.mc<MC_VERSION>.schem <MC_VERSION>
 ```
 
 The final version argument is optional when `minecraft_version` is present in the JSON. Both source paths are resolved from the repository root and must resolve within it (including after symlink resolution). The reader comparison emits separate `voxelOutcome` and `provenanceOutcome` fields. Its default exit status reports the voxel/count/spot comparison only, even if provenance is INVALID or UNVERIFIED; automation requiring both must pass `--require-strict-provenance`, which exits nonzero unless both outcomes PASS. A strict provenance PASS is the content check described above, not an authorship signature. The conversion fails closed when more than one authored fallback path is reachable; catalog ordering is never a choice policy.
@@ -62,29 +66,20 @@ The validator imports `readSchematic` from the production `src/utils/schematic/r
 
 Pack discovery is not restricted to pack1, but pack names must be a positive decimal number after “pack”. Version selection is metadata-driven, not a promise of arbitrary Minecraft-version support: the exact Java version and DataVersion must be available in the installed registry, and its states must be supported by the reader. The [tooling regression tests](../../test/schematic/tooling_paths.test.js) exercise Minecraft 1.20.4 / DataVersion 3700 as well as pack1's Minecraft 1.21.4 / DataVersion 4189, including mismatched metadata and invalid palette states. The reader check is separate from compiler profile validation and cannot prove placement support.
 
-## Checked pack1 validation and regeneration
+## Pack validation and regeneration
 
-The following audit does not overwrite canonical `.schem` files, but **does overwrite generated validation reports and logs** and runs the full schematic suite. Preserve or review those artifacts before deliberately running it:
+The batch audit requires an explicit pack, source-release target and a fresh output directory under `tmp/`; it never overwrites historical reports or logs. Pack1 is an example, not a default:
 
 ```sh
-python3 schematics/tooling/audit_batch.py --pack pack1 \
-  --minecraft-version 1.21.4 --data-version 4189
+python3 schematics/tooling/audit_batch.py --pack pack1 --minecraft-version 1.21.4 --data-version 4189 --output-dir tmp/pack1-audit-new
 ```
 
-This older audit invokes strict compilation; it checks each source against the compiler's explicit registry target, validates canonical binaries through the production reader, compares voxels with the JSON source, regenerates temporary candidates for byte comparisons, and runs schematic tests. The preserved original wardrobe differs from its repaired blueprint in four door states, in addition to its historical serialization-only byte difference; the preserved bee original differs from its corrected blueprint at four face/brow cells; a source/canonical voxel mismatch is expected and must not be hidden. Binary equality is not a geometry requirement. Run `npm run test:schematic` separately when only the test suite is needed.
+It creates missing parent directories beneath the project temporary directory, refuses symlink components and existing output directories, and leaves existing data untouched. Use a trusted workspace without concurrent directory renames; this is not protection against hostile concurrent filesystem changes. It checks each target-versioned binary against its blueprint through the strict compiler and production reader, regenerates temporary candidates for byte equality, and runs the VarInt and schematic suites. Missing inputs or failed checks fail the audit. A target different from blueprint metadata fails rather than silently skipping checks: the production validator does not accept converted-source comparisons. Historical outputs remain snapshots and are not overwritten. Pack1-specific converted full-volume coverage and archive details are in the [pack1 validation index](validation/pack1/README.md).
 
-Preserve canonical pack binaries rather than regenerating them in place. The provenance audit found the 30 originals unchanged against HEAD, so there is no evidenced overwritten original requiring restoration. The 30 blueprints were instead compiled into 60 separate 1.21.4 and 26.1 variants; see the [versioned compilation report](validation/pack1/versioned_compilation_report.md). The variants reflect the repaired wardrobe source, and the two recompiled bee variants reflect the authorized symmetry correction. Both pack commands now refuse to run over their existing outputs or reports; use an isolated copy for experiments and inspect any partial publication after interruption.
-
-The supplied screenshot shows Minecraft 26.1 rejecting `minecraft:chain`: the original pack targets Java 1.21.4 / DataVersion 4189, whereas 26.1 uses `minecraft:iron_chain`. Client configuration does not downgrade a server. Do not substitute 26.1 names into canonical 1.21.4 assets, and changing only `DataVersion` does not convert a block palette. No live 1.21.4 or 26.1 server placement test was performed; registry validation is not proof of placement compatibility.
+Client configuration does not downgrade a server, and changing only `DataVersion` does not convert a block palette. Registry validation is not proof of live-server placement compatibility.
 
 To verify deterministic output without overwriting the canonical schematic, compile to a new temporary file and compare it, for example with `cmp -s` or `sha256sum`. Keep the blueprint JSON as the source of truth.
 
 ## Audit a pack
 
-```sh
-python3 schematics/tooling/audit_batch.py --pack pack1
-python3 schematics/tooling/audit_batch.py --pack pack1 \
-  --minecraft-version <MC_VERSION> --data-version <DATA_VERSION>
-```
-
-The runner discovers all JSON blueprints in `schematics/blueprints/<packN>/`, checks same-stem schematics in `schematics/schems/<packN>/`, follows explicit IDs in that pack's `index.json`, recompiles only to temporary outputs, and runs the VarInt and schematic test suites. It writes current machine-readable results and logs to `schematics/tooling/validation/<packN>/` and updates only the marked generated-audit section of `schematics/schems/<packN>/batch_report.md`; text outside that generated section is preserved. It does not assume a set of folder numbers: an unknown/missing pack fails rather than receiving fabricated success, and actual missing artifacts or validation failures are retained in the report and return status.
+Use the explicit target and a new output directory as above. For a future pack2 with Java 1.21.4 sources, an illustrative command is `python3 schematics/tooling/audit_batch.py --pack pack2 --minecraft-version 1.21.4 --data-version 4189 --output-dir tmp/pack2-audit-new`; it requires that pack's actual inputs and a fresh output directory. The index supplies logical group/id aliases without requiring same-stem physical originals. Output and logs are isolated from the checked-in historical artifacts; the command refuses an existing output directory. The runner checks the actual versioned files, fails for absent or invalid artifacts, and does not publish generated schematics. See the [symmetry guide](SYMMETRY.md) and [mechanics guide](PACK_MECHANICS.md) for their independent pack selection, configuration and version limits.

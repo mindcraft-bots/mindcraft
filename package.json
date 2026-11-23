@@ -49,7 +49,7 @@
         "start": "node main.js",
         "reinstall": "npm run clean:modules && npm install",
         "clean:modules": "node -e \"const fs=require('fs');const p=require('path');['node_modules','package-lock.json'].forEach(f=>{if(fs.existsSync(f)){if(fs.lstatSync(f).isDirectory()){fs.rmSync(f,{recursive:true,force:true});}else{fs.unlinkSync(f);}}});\"",
-        "test:schematic": "node --test --test-concurrency=1 test/schematic/*.test.js",
+        "test:schematic": "node test/run_schematic_tests.mjs",
         "test:update-project": "node --test test/update-project.test.js"
     },
     "devDependencies": {

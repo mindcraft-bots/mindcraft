@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { fixtureBlueprint } from "./provenance_fixture.js";
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -12,22 +13,21 @@ const projectRoot = path.resolve(testDir, "../..");
 const pythonCompiler = path.join(projectRoot, "schematics/tooling/compile_blueprint.py");
 const registryValidator = path.join(projectRoot, "schematics/tooling/validate_registry.mjs");
 const nodeValidator = path.join(projectRoot, "schematics/tooling/validate_blueprint.mjs");
-const blueprint = "schematics/blueprints/pack1/03_big_red_barn.json";
-const schematic = "schematics/schems/pack1/03_big_red_barn.schem";
 
 function run(command, args, cwd = os.tmpdir()) {
   return spawnSync(command, args, { cwd, encoding: "utf8" });
 }
 
-test("compiler and production validator resolve pack paths from a different cwd", () => {
-  assert.ok(existsSync(path.join(projectRoot, blueprint)));
-  assert.ok(existsSync(path.join(projectRoot, schematic)));
-
-  const binary = run("python3", [pythonCompiler, "validate", blueprint, schematic, "--allow-unverified"]);
+test("compiler and production validator resolve pack paths from a different cwd", t => {
+  const directory = mkdtempSync(path.join(projectRoot, "test/schematic/.tooling-paths-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const schematic = path.relative(projectRoot, path.join(directory, "garden.schem"));
+  const compiled = run("python3", [pythonCompiler, "compile", fixtureBlueprint, schematic]);
+  assert.equal(compiled.status, 0, compiled.stderr || compiled.stdout);
+  const binary = run("python3", [pythonCompiler, "validate", fixtureBlueprint, schematic, "--allow-unverified"]);
   assert.equal(binary.status, 0, binary.stderr || binary.stdout);
   assert.match(binary.stdout, /"volume":/);
-
-  const reader = run("node", [nodeValidator, blueprint, schematic, "1.21.4"]);
+  const reader = run("node", [nodeValidator, fixtureBlueprint, schematic, "1.21.4"]);
   assert.equal(reader.status, 0, reader.stderr || reader.stdout);
   assert.match(reader.stdout, /"fullVoxelAndStateComparison": "PASS"/);
 });
@@ -234,11 +234,11 @@ test("tooling rejects inputs that resolve outside the repository", async () => {
   const outside = path.join(outsideDir, "not-a-repository-blueprint.json");
   try {
     await writeFile(outside, "{}");
-    const binary = run("python3", [pythonCompiler, "validate", outside, schematic]);
+    const binary = run("python3", [pythonCompiler, "validate", outside, fixtureBlueprint]);
     assert.notEqual(binary.status, 0);
     assert.match(binary.stderr, /escapes project root/);
 
-    const reader = run("node", [nodeValidator, outside, schematic]);
+    const reader = run("node", [nodeValidator, outside, fixtureBlueprint]);
     assert.notEqual(reader.status, 0);
     assert.match(reader.stderr, /escapes project root/);
   } finally {
@@ -248,10 +248,38 @@ test("tooling rejects inputs that resolve outside the repository", async () => {
 
 test("audit refuses an unknown pack instead of generating an empty successful report", () => {
   const runner = path.join(projectRoot, "schematics/tooling/audit_batch.py");
-  const result = run("python3", [runner, "--pack", "pack987654"]);
+  const result = run("python3", [runner, "--pack", "pack987654", "--minecraft-version", "1.21.4", "--output-dir", `tmp/unknown-pack-${process.pid}`]);
   assert.equal(result.status, 2, result.stdout || result.stderr);
   assert.match(result.stderr, /no blueprint directory for pack987654/);
   assert.equal(existsSync(path.join(projectRoot, "schematics/schems/pack987654/batch_report.md")), false);
+});
+
+test("batch audit requires an explicit safe target and refuses an existing output directory", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "batch-no-clobber-"));
+  try {
+    const tooling = path.join(root, "schematics/tooling");
+    const blueprints = path.join(root, "schematics/blueprints/pack3");
+    const directory = path.join(root, "tmp", "existing-output");
+    const runner = path.join(tooling, "audit_batch.py");
+    await mkdir(tooling, { recursive: true });
+    await mkdir(blueprints, { recursive: true });
+    await mkdir(directory, { recursive: true });
+    await copyFile(path.join(projectRoot, "schematics/tooling/audit_batch.py"), runner);
+    await writeFile(path.join(blueprints, "fixture.json"), "{}");
+    const marker = path.join(directory, "keep.txt");
+    await writeFile(marker, "preserve me");
+    const output = "tmp/existing-output";
+    const result = run("python3", [runner, "--pack", "pack3", "--minecraft-version", "1.21.4", "--output-dir", output]);
+    assert.equal(result.status, 2, result.stdout || result.stderr);
+    assert.match(result.stderr, /cannot create fresh output directory:.*(?:File exists|Errno 17)/);
+    assert.equal(await readFile(marker, "utf8"), "preserve me");
+    assert.deepEqual(await readdir(directory), ["keep.txt"]);
+    const invalid = run("python3", [runner, "--minecraft-version", "../bad", "--output-dir", output]);
+    assert.equal(invalid.status, 2);
+    assert.match(invalid.stderr, /dotted release number/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("audit manifest reader validates separate numeric fields, normalized uniqueness, and safe targets", async () => {
@@ -279,7 +307,6 @@ for data, phrase in [
     ({'schemaVersion': 2, 'groups': {'2': {'1': 'sparse-entry.schem', '01': 'wide-entry.schematic'}}}, 'duplicate normalized id'),
     ({'schemaVersion': 2, 'groups': {'2': {'1': 'sparse-entry.schem'}, '3': {'1': 'sparse-entry.schem'}}}, 'duplicate schematic filename'),
     ({'schemaVersion': 2, 'groups': {'2': {'1': '../outside.schem'}}}, 'invalid schematic filename'),
-    ({'schemaVersion': 2, 'groups': {'2': {'1': 'missing.schem'}}}, None),
 ]:
     write(data)
     try:
@@ -289,6 +316,9 @@ for data, phrase in [
             assert phrase in str(error), str(error)
     else:
         raise AssertionError(f'accepted invalid manifest: {data!r}')
+
+write({'schemaVersion': 2, 'groups': {'2': {'1': 'missing.schem'}}})
+assert audit_batch.load_index(pack) == {'missing.schem': (2, 1)}
 
 outside = pack.parent / 'outside.schem'
 outside.write_text('outside', encoding='utf-8')

@@ -1,5 +1,5 @@
 import { executeCommand, commandExists } from './commands/index.js';
-import { resolveSchematicPath } from '../utils/schematic/paths.js';
+import { resolveSchematicPath, conservativeBotVersion } from '../utils/schematic/paths.js';
 import settings from './settings.js';
 
 function escapeRegExp(value) {
@@ -244,7 +244,7 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
 
     try {
-        await resolveSchematicPath(request.selector, undefined, { version: agent.bot?.version, allowNonvalidatedSchematic: settings.allow_nonvalidated_schematic_builds === true, requireStrictSchematicValidation: settings.require_strict_schematic_validation === true });
+        await resolveSchematicPath(request.selector, undefined, { version: conservativeBotVersion(agent.bot), allowNonvalidatedSchematic: settings.allow_nonvalidated_schematic_builds === true, requireStrictSchematicValidation: settings.require_strict_schematic_validation === true });
     } catch (error) {
         await agent.routeResponse(source, `Schematic selector ${request.selector} could not be resolved: ${error.message}`);
         return true;

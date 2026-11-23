@@ -34,7 +34,7 @@ export async function schematicProvenance(filename, bytes) {
       text = await readFile(sidecar, 'utf8');
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
-      return historicalHash ? { validationStatus: 'HISTORICAL_UNKNOWN', sha256: digest }
+      return historicalHash ? { validationStatus: 'HISTORICAL_UNKNOWN', sha256: digest, identity: `historical:${digest}` }
         : { validationStatus: 'UNKNOWN', sha256: digest, reason: 'missing provenance' };
     }
     const digestPath = `${absolute}.provenance.sha256`;
@@ -52,6 +52,17 @@ export async function schematicProvenance(filename, bytes) {
     const variant = /^(.*)\.mc(\d+(?:\.\d+)+)(\.nonvalidated)?\.schem$/.exec(report.artifact);
     if (/(?:^|\.)mc\d/i.test(report.artifact.slice(0, -6))
         && (!variant || /(?:^|\.)mc\d/i.test(variant[1]))) throw new Error('invalid schematic variant pattern');
+    if (report.validation === 'NONVALIDATED') {
+      if (report.targetVersion !== null && report.convertTo !== null) throw new Error('conflicting target versions');
+      const declared = report.convertTo ?? report.targetVersion;
+      if (declared !== null) {
+        const profile = loadRelease(declared);
+        if (variant && declared !== variant[2]) throw new Error('provenance target filename mismatch');
+        const { parsed } = await nbt.parse(data);
+        validateSpongeStructure(parsed);
+        if (nbt.simplify(parsed).DataVersion !== profile.dataVersion) throw new Error('provenance target DataVersion mismatch');
+      }
+    }
     const derivative = variant?.[3] ? variant : null;
     if (derivative) {
       if (report.validation !== 'NONVALIDATED' || report.convertTo !== derivative[2] || report.targetVersion !== null) throw new Error('nonvalidated derivative label mismatch');
@@ -105,7 +116,7 @@ export async function schematicProvenance(filename, bytes) {
         }
       }
     }
-    return { validationStatus: report.validation, sha256: digest };
+    return { validationStatus: report.validation, sha256: digest, identity: `sidecar:${hash(Buffer.from(text))}` };
   } catch (error) {
     return { validationStatus: 'INVALID', reason: error.message };
   }

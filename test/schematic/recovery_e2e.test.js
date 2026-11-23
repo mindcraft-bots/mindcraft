@@ -54,7 +54,7 @@ function singleStoneSchematic() {
     name: "Schematic",
     value: {
       Version: { type: "int", value: 2 },
-      DataVersion: { type: "int", value: 3465 },
+      DataVersion: { type: "int", value: 3698 },
       Width: { type: "short", value: 1 },
       Height: { type: "short", value: 1 },
       Length: { type: "short", value: 1 },
@@ -176,7 +176,7 @@ async function interruptWithCombat(agent, buildPromise) {
 
 test("public build command retains eligible interrupted session across repeated combat recovery", async () => {
   await loadProjectModules();
-  const fileName = `recovery_e2e_${process.pid}.schem`;
+  const fileName = `recovery_e2e_${process.pid}.mc1.20.3.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
   writeFixtureProvenance(filePath, singleStoneSchematic());
@@ -210,7 +210,7 @@ test("public build command retains eligible interrupted session across repeated 
 
 test("trusted stop during schematic cleanup cancels the not-yet-registered recovery", async () => {
   await loadProjectModules();
-  const fileName = `recovery_cancel_e2e_${process.pid}.schem`;
+  const fileName = `recovery_cancel_e2e_${process.pid}.mc1.20.3.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
   writeFixtureProvenance(filePath, singleStoneSchematic());
@@ -237,7 +237,7 @@ test("trusted stop during schematic cleanup cancels the not-yet-registered recov
 
 test("replacement action cancels a managed schematic session before resume registration", async () => {
   await loadProjectModules();
-  const fileName = `recovery_replace_e2e_${process.pid}.schem`;
+  const fileName = `recovery_replace_e2e_${process.pid}.mc1.20.3.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
   writeFixtureProvenance(filePath, singleStoneSchematic());

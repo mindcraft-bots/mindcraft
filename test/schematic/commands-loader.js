@@ -9,6 +9,14 @@ const modules = {
 };
 
 export function resolve(specifier, context, nextResolve) {
+  if (process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT && context.parentURL?.endsWith('/src/agent/schematic_request.js')
+      && specifier === '../utils/schematic/paths.js') {
+    const actual = new URL('../utils/schematic/paths.js', context.parentURL).href;
+    const module = `import { resolveSchematicPath as real, conservativeBotVersion } from ${JSON.stringify(actual)};
+      export { conservativeBotVersion };
+      export const resolveSchematicPath = (name, directory, options) => real(name, directory ?? process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, options);`;
+    return { url: `data:text/javascript,${encodeURIComponent(module)}`, shortCircuit: true };
+  }
   if (context.parentURL?.endsWith("/src/agent/agent.js")) {
     const agentModules = {
       "./history.js": `export class History {}`,
@@ -43,7 +51,7 @@ export function resolve(specifier, context, nextResolve) {
     const queryModules = {
       "../library/world.js": ``,
       "../tasks/construction_tasks.js": `export const checkLevelBlueprint = () => ''; export const checkBlueprint = () => '';`,
-        "../../utils/schematic/paths.js": `export async function listSchematicEntries() { return globalThis.__schematicListSchematicEntries?.() ?? (await globalThis.__schematicListSchematics()).map(filename => ({ pack: 'legacy', group: null, id: null, filename })); }`,
+        "../../utils/schematic/paths.js": `export const conservativeBotVersion = bot => bot?.version; export async function listSchematicEntries() { return globalThis.__schematicListSchematicEntries?.() ?? (await globalThis.__schematicListSchematics()).map(filename => ({ pack: 'legacy', group: null, id: null, filename })); }`,
       "cheerio": `export const load = () => {};`,
     };
     if (Object.hasOwn(queryModules, specifier)) {

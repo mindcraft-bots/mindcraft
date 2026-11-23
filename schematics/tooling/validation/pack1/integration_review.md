@@ -1,12 +1,14 @@
 # Focused pack1 integration review
 
+> Historical review: paths and selection claims below describe the layout and runs at that time. Originals now reside in the [outside-root archive](../../../../schematic-archive/pack1_originals/README.md); current results are in the [symmetry audit](symmetry_audit.md).
+
 Identifier displays in this historical review were normalized later to separate group and ID fields; numerical meanings and recorded outcomes are unchanged.
 
 ## Preserved wardrobe byte-rebuild failure
 
-The [original wardrobe schematic](../../../schems/pack1/01_wardrobe_nether_portal.schem) remains 535 bytes, SHA-256 **8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383**. A temporary rebuild of the HEAD legacy blueprint is 505 bytes, SHA-256 **a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886** on zlib 1.3.1. The original matches all 168 legacy voxels, including 90 non-air cells. The current repaired blueprint intentionally changes four door hinge voxels; the 1.21.4 variant matches that repaired blueprint voxel-for-voxel. Exact legacy byte reproducibility remains **FAIL**; the historical [audit](batch_validation.json) is not a current validation run.
+The [original wardrobe schematic](../../../../schematic-archive/pack1_originals/01_wardrobe_nether_portal.schem) remains 535 bytes, SHA-256 **8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383**. A temporary rebuild of the HEAD legacy blueprint is 505 bytes, SHA-256 **a6ec7d5919590a27d895af6081a8080ae2b804e271a45c247d4a56164ecea886** on zlib 1.3.1. The original matches all 168 legacy voxels, including 90 non-air cells. The current repaired blueprint intentionally changes four door hinge voxels; the 1.21.4 variant matches that repaired blueprint voxel-for-voxel. Exact legacy byte reproducibility remains **FAIL**; the historical [audit](batch_validation.json) is not a current validation run.
 
-The [diagnostic regression test](../../../../test/schematic/wardrobe_reproducibility.test.js) compiles twice into temporary files, compares headers, decompressed NBT, palette mappings and decoded states, and logs structured evidence with the WARDROBE_REBUILD_DIAGNOSIS marker in the [full test log](npm_test.log). It also proves that changing only the following encoding choices reconstructs all 535 original bytes in memory:
+The historical diagnostic regression test `test/schematic/wardrobe_reproducibility.test.js` (no longer present at that path) compiled twice into temporary files, compared headers, decompressed NBT, palette mappings and decoded states, and logged structured evidence with the WARDROBE_REBUILD_DIAGNOSIS marker in the [historical full test log](npm_test.log). It also demonstrated that changing only the following encoding choices reconstructed all 535 original bytes in memory:
 
 | Layer | Original asset | Current compiler |
 | --- | --- | --- |

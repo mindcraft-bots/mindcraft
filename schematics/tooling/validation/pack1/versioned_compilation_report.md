@@ -1,6 +1,12 @@
 # Pack 1 versioned compilation report
 
+> Historical compilation record: statements below describe the runs at the time, not current selection behavior. The 30 originals have since been moved to the [outside-root archive](../../../../schematic-archive/pack1_originals/README.md); see the [current 60-variant audit](symmetry_audit.md). No compilation or provenance policy was changed by that move.
+
 Historically both targets compiled all 30 indexed blueprints; the bee alone was subsequently recompiled for both targets. The other entries remain historical, not newly strict-validated. No IDs were unsupported or failed for either target. The two generated conversion reports contain per-file SHA-256 hashes, geometry, and conversion details: [1.21.4](../../../schems/pack1/conversion.mc1.21.4.json) and [26.1](../../../schems/pack1/conversion.mc26.1.json). Variants are in [the pack directory](../../../schems/pack1/); the existing schema-version-2 index remains unchanged.
+
+## Current migration verification
+
+The current active pack has 30 logical schema-2 families and 60 versioned binaries, with no unsuffixed binaries. The [current full-volume audit](symmetry_audit.md) compares 143,414 active voxels without mismatch, with the 30 archived originals separately identified. All original and variant bytes were checked against pre-migration Git; the [archive inventory](../../../../schematic-archive/pack1_originals/inventory.json) records the originals. The 1.21.4 isolated batch audit passed 30/30 binary, reader, and byte-regeneration checks, plus VarInt and full schematic tests; its transient results are under `tmp/pack1-migration-audit-20261123/`. These checks do not establish live-server placement. The 26.1 full-volume audit uses the reviewed history conversion; the batch production-reader validator only accepts the source-release target.
 
 ## Bee-only regeneration and provenance
 

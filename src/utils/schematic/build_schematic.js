@@ -1,4 +1,6 @@
 import { access, readFile } from "node:fs/promises";
+import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import path from "node:path";
 
@@ -14,7 +16,7 @@ import {
   isSchematicAirName,
   withSchematicDestructionGuards,
 } from "./obstruction_policy.js";
-import { resolveSchematicPath } from "./paths.js";
+import { resolveSchematicPath, conservativeBotVersion } from "./paths.js";
 import { schematicProvenance, provenanceAllowed } from "./provenance.js";
 import { getBotWorldGeneration, trackBotWorldLifecycle } from "./world_lifecycle.js";
 import { readSchematic as readProductionSchematic, validateSchematicSource } from "./reader.js";
@@ -213,28 +215,54 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
   let resolvedPath;
   let source;
   let schematic;
+  let provenanceIdentity;
   let build;
   let startPosition;
+  // Production resolution returns the very bytes whose release and provenance were
+  // checked. Injected resolvers may opt in to the same contract for integration tests.
+  const snapshotSelection = resolvePath === resolveSchematicPath || dependencies.requireSelectionSnapshot === true;
+  const selectionOptions = { version: conservativeBotVersion(bot), allowNonvalidatedSchematic, requireStrictSchematicValidation,
+    ...(snapshotSelection ? { returnSnapshot: true } : {}) };
   const saved = resumeSession?.context;
   const isResume = Boolean(saved && !resumeSession?.cancelled);
   if (isResume) resumeSession.resumeEligible = false;
   try {
     if (isResume) {
-      resolvedPath = saved.resolvedPath;
-      source = saved.source;
+      if (!/\.mc\d+(?:\.\d+)+(?:\.nonvalidated)?\.schem$/.test(saved.resolvedPath ?? "")) {
+        throw new Error("Cannot resume an unversioned schematic session");
+      }
+      const selection = await resolvePath(saved.selector ?? fileName, undefined, selectionOptions);
+      if (snapshotSelection && (!selection || typeof selection.path !== 'string' || !Buffer.isBuffer(selection.source))) throw new Error("Invalid schematic selection snapshot");
+      resolvedPath = snapshotSelection ? selection.path : selection;
+      if (resolvedPath !== saved.resolvedPath) throw new Error("Schematic selection changed; cancelling the interrupted build");
+      const currentSource = snapshotSelection ? selection.source : await fsReadFile(resolvedPath);
+      if (!Buffer.isBuffer(saved.source) || !Buffer.from(currentSource).equals(saved.source)) throw new Error("Schematic asset changed; cancelling the interrupted build");
+      const provenance = snapshotSelection ? selection.provenance : await schematicProvenance(resolvedPath, currentSource);
+      if (!provenanceAllowed(provenance, { allowNonvalidatedSchematic, requireStrictSchematicValidation })) throw new Error(`Schematic validation status ${provenance.validationStatus}; cannot resume`);
+      if (snapshotSelection && (saved.sourceSha256 !== createHash('sha256').update(saved.source).digest('hex')
+          || !saved.provenanceIdentity || saved.provenanceIdentity !== provenance.identity)) {
+        throw new Error("Schematic snapshot identity changed; cancelling the interrupted build");
+      }
+      source = Buffer.from(saved.source);
       schematic = saved.schematic;
       startPosition = new Vec3Class(saved.origin.x, saved.origin.y, saved.origin.z);
       if (!isSameWorld(bot, saved.worldIdentity)) {
         throw new Error("Cannot resume schematic build after death, disconnect, or dimension/world change");
       }
     } else {
-      resolvedPath = await resolvePath(fileName, undefined, { version: bot.version, allowNonvalidatedSchematic, requireStrictSchematicValidation });
-      await fsAccess(resolvedPath);
-      source = await fsReadFile(resolvedPath);
-      const provenance = await schematicProvenance(resolvedPath, source);
+      const selection = await resolvePath(fileName, undefined, selectionOptions);
+      if (snapshotSelection && (!selection || typeof selection.path !== 'string' || !Buffer.isBuffer(selection.source))) throw new Error("Invalid schematic selection snapshot");
+      resolvedPath = snapshotSelection ? selection.path : selection;
+      if (snapshotSelection) source = Buffer.from(selection.source);
+      else {
+        await fsAccess(resolvedPath);
+        source = await fsReadFile(resolvedPath);
+      }
+      const provenance = snapshotSelection ? selection.provenance : await schematicProvenance(resolvedPath, source);
       if (!provenanceAllowed(provenance, { allowNonvalidatedSchematic, requireStrictSchematicValidation })) {
         throw new Error(`Validation status ${provenance.validationStatus}: ${provenance.reason ?? 'set allow_nonvalidated_schematic_builds=true to consent to NONVALIDATED output'}`);
       }
+      provenanceIdentity = provenance.identity;
       if (provenance.validationStatus !== 'STRICT_VALIDATED') {
         report(`WARNING: schematic validation status ${provenance.validationStatus}; legal block-state combinations are not proven.`);
       }
@@ -286,8 +314,11 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
   if (!isResume && resumeSession) {
     const originalStates = inspectBuildWorld(bot, build, Vec3Class);
     resumeSession.context = {
+      selector: fileName,
       resolvedPath,
       source: Buffer.isBuffer(source) ? Buffer.from(source) : source,
+      sourceSha256: Buffer.isBuffer(source) ? createHash('sha256').update(source).digest('hex') : null,
+      provenanceIdentity,
       schematic,
       origin: { x: startPosition.x, y: startPosition.y, z: startPosition.z },
       originalStates,

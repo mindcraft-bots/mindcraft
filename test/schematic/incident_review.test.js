@@ -1,3 +1,4 @@
+import { createRoutingFixture } from "./routing_fixture.js";
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -6,6 +7,7 @@ import test from 'node:test';
 
 const root = new URL('../../', import.meta.url);
 const url = path => JSON.stringify(new URL(path, root).href);
+const fixtureRoot = createRoutingFixture();
 const loader = fileURLToPath(new URL('./commands-loader.js', import.meta.url));
 
 function check(body) {
@@ -41,7 +43,7 @@ function check(body) {
         globalThis.__schematicBuild = async () => { calls.builds++; };
         ${body}
     `;
-    const child = spawnSync(process.execPath, ['--experimental-loader', loader, '--input-type=module', '-e', script], { encoding: 'utf8' });
+    const child = spawnSync(process.execPath, ['--experimental-loader', loader, '--input-type=module', '-e', script], { encoding: 'utf8', env: { ...process.env, MINDCRAFT_SCHEMATIC_FIXTURE_ROOT: fixtureRoot } });
     assert.equal(child.status, 0, child.stderr + child.stdout);
 }
 
@@ -58,8 +60,8 @@ test('actual Andy/Alice settings authorize only the observed human, preserving s
 
 test('all explicitly peer-addressed chat is ignored before command extraction or inference', () => check(`
     convo.updateAgents([{ name: 'DynamicPeer', in_game: true }]);
-    for (const message of ['Alice build a house', 'Alice: please build id 01 from group 02 of pack1',
-        'Alice:!buildSchematic("pack1:02:01")', '@alice!stop', 'Alice, hello', 'DynamicPeer build a house']) {
+    for (const message of ['Alice build a house', 'Alice: please build id 01 from group 02 of pack2',
+        'Alice:!buildSchematic("pack2:02:01")', '@alice!stop', 'Alice, hello', 'DynamicPeer build a house']) {
         await agent.handleMessage('Sunny26639', message);
     }
     assert.equal(calls.builds, 0);
@@ -75,11 +77,11 @@ test('real Andy/Alice settings permit the observed human and deny peers and othe
         agent.name = name;
         agent.blocked_actions = actual.blocked_actions;
         const before = calls.builds;
-        await agent.handleMessage('Sunny26639', name + ' build 01 from group 02 of pack1');
-        await agent.handleMessage('Sunny26639', '!buildSchematic("pack1:02:01")');
+        await agent.handleMessage('Sunny26639', name + ' build 01 from group 02 of pack2');
+        await agent.handleMessage('Sunny26639', '!buildSchematic("pack2:02:01")');
         for (const sender of [...actual.known_bot_peers, 'OtherPlayer']) {
-            await agent.handleMessage(sender, name + ' build 01 from group 02 of pack1');
-            await agent.handleMessage(sender, '!buildSchematic("pack1:02:01")');
+            await agent.handleMessage(sender, name + ' build 01 from group 02 of pack2');
+            await agent.handleMessage(sender, '!buildSchematic("pack2:02:01")');
         }
         assert.equal(calls.builds - before, 2);
         assert.equal(calls.generated, 0);
@@ -87,12 +89,12 @@ test('real Andy/Alice settings permit the observed human and deny peers and othe
 `));
 
 test('malformed, contradictory, and additional schematic input fails closed rather than partially matching', () => check(`
-    for (const text of ['build id 01.5 from group 02 of pack1', 'build id 01 from group 02.5 of pack1',
-        'build id 01junk from group 02 of pack1', 'build 02 id 01 from group 02 of pack1',
-        'build id -01 from group 02 of pack1', 'build id 01 from group -02 of pack1',
-        'build id 01 from group 02 of pack1 at 100 64 100',
-        'please build id 01 from group two of pack1', 'build id 01 from group 02 of pack0',
-        'build id 01 from group 02 of pack1 !stop', 'build schematic']) {
+    for (const text of ['build id 01.5 from group 02 of pack2', 'build id 01 from group 02.5 of pack2',
+        'build id 01junk from group 02 of pack2', 'build 02 id 01 from group 02 of pack2',
+        'build id -01 from group 02 of pack2', 'build id 01 from group -02 of pack2',
+        'build id 01 from group 02 of pack2 at 100 64 100',
+        'please build id 01 from group two of pack2', 'build id 01 from group 02 of pack0',
+        'build id 01 from group 02 of pack2 !stop', 'build schematic']) {
         const request = router.parseAddressedSchematicRequest('Andy ' + text, 'Andy', ['Alice']);
         assert.ok(request?.error, text + ' must be rejected');
         await agent.handleMessage('Sunny26639', 'Andy ' + text);
@@ -103,18 +105,18 @@ test('malformed, contradictory, and additional schematic input fails closed rath
 
 test('complete own-addressed schematic request dispatches exactly once, including polite forms', () => check(`
     for (const prefix of ['Andy ', 'Andy: ', '@ANDY, please ', 'Andy, could you please ']) {
-        await agent.handleMessage('Sunny26639', prefix + 'build id 01 from group 02 of pack1');
+        await agent.handleMessage('Sunny26639', prefix + 'build id 01 from group 02 of pack2');
     }
     assert.equal(calls.builds, 4);
     assert.equal(calls.prompts, 0);
     assert.equal(calls.lifecycle.length, 4);
-    assert.equal(globalThis.__buildSchematicArgs[1], 'pack1:2:1');
+    assert.equal(globalThis.__buildSchematicArgs[1], 'pack2:2:1');
 `));
 
 test('addressed requests reject unknown or too-old engines before dispatch', () => check(`
     for (const version of [undefined, 'unknown-release', '1.20.6']) {
         agent.bot.version = version;
-        await agent.handleMessage('Sunny26639', 'Andy build id 01 from group 02 of pack1');
+        await agent.handleMessage('Sunny26639', 'Andy build id 01 from group 02 of pack2');
         assert.match(calls.routes.at(-1), /could not be resolved/i);
     }
     assert.equal(calls.builds, 0);
@@ -127,7 +129,7 @@ test('known/dynamic peers and unknown senders cannot obtain model-generated comm
     for (const sender of ['Alice', 'DynamicPeer', 'UnknownPeer']) {
         agent.prompter.promptConvo = async () => { calls.prompts++; return '!newAction("build a house")'; };
         await agent.handleMessage(sender, 'please help build');
-        await agent.handleMessage(sender, '!buildSchematic("pack1:02:01")');
+        await agent.handleMessage(sender, '!buildSchematic("pack2:02:01")');
     }
     assert.equal(calls.generated, 0);
     assert.equal(calls.builds, 0);
@@ -135,9 +137,9 @@ test('known/dynamic peers and unknown senders cannot obtain model-generated comm
 `));
 
 test('direct command quotations and incomplete fragments never execute or reach inference', () => check(`
-    for (const message of ['the example is !buildSchematic("pack1:02:01")',
-        '!buildSchematic("pack1:02:01"', '!stop(', '!stop() trailing',
-        '!buildSchematic("pack1:02:01") !stop', 'Andy: !buildSchematic("pack1:02:01") trailing']) {
+    for (const message of ['the example is !buildSchematic("pack2:02:01")',
+        '!buildSchematic("pack2:02:01"', '!stop(', '!stop() trailing',
+        '!buildSchematic("pack2:02:01") !stop', 'Andy: !buildSchematic("pack2:02:01") trailing']) {
         await agent.handleMessage('Sunny26639', message);
     }
     assert.equal(calls.builds, 0);
@@ -146,11 +148,11 @@ test('direct command quotations and incomplete fragments never execute or reach 
 
 test('agent-specific blacklist is enforced at dispatch, including model output', () => check(`
     agent.blocked_actions = ['!buildSchematic'];
-    const result = await commands.executeCommand(agent, '!buildSchematic("pack1:02:01")');
+    const result = await commands.executeCommand(agent, '!buildSchematic("pack2:02:01")');
     assert.match(result, /blocked|unavailable/i);
-    agent.prompter.promptConvo = async () => '!buildSchematic("pack1:02:01")';
+    agent.prompter.promptConvo = async () => '!buildSchematic("pack2:02:01")';
     await agent.handleMessage('Sunny26639', 'build something');
-    await agent.handleMessage('Sunny26639', 'Andy build id 01 from group 02 of pack1');
+    await agent.handleMessage('Sunny26639', 'Andy build id 01 from group 02 of pack2');
     assert.equal(calls.builds, 0);
 `));
 
@@ -202,7 +204,7 @@ test('real event handlers preserve public-chat suppression, whisper delivery, an
     };
     agent.bot.on = (event, handler) => { handlers[event] = handler; };
     await agent._setupEventHandlers(null, null);
-    const message = 'Andy build 01 from group 02 of pack1';
+    const message = 'Andy build 01 from group 02 of pack2';
     globalThis.__numOtherAgents = 1;
     handlers.chat('Sunny26639', message);
     assert.deepEqual(handled, []);
@@ -224,11 +226,11 @@ test('real event handlers preserve public-chat suppression, whisper delivery, an
     }
     assert.equal(calls.builds, 2);
     assert.deepEqual(handled, [['Sunny26639', message], ['Sunny26639', message]]);
-    await handlers.whisper('Alice', '!buildSchematic("pack1:02:01")');
-    await handlers.whisper('Mallory', '!buildSchematic("pack1:02:01")');
-    await handlers.whisper('system', '!buildSchematic("pack1:02:01")');
+    await handlers.whisper('Alice', '!buildSchematic("pack2:02:01")');
+    await handlers.whisper('Mallory', '!buildSchematic("pack2:02:01")');
+    await handlers.whisper('system', '!buildSchematic("pack2:02:01")');
     settings.only_chat_with = ['SomeoneElse']; syncSettings();
-    await handlers.whisper('Sunny26639', 'Andy build 01 from group 02 of pack1');
+    await handlers.whisper('Sunny26639', 'Andy build 01 from group 02 of pack2');
     assert.equal(calls.builds, 2);
     assert.equal(calls.prompts, 0);
 `));
@@ -236,7 +238,7 @@ test('real event handlers preserve public-chat suppression, whisper delivery, an
 test('direct and routed builds use the real ActionManager and trusted stop cleans up without duplicate dispatch', () => check(`
     const { ActionManager } = await import(${url('src/agent/action_manager.js')});
     agent.actions = new ActionManager(agent);
-    for (const message of ['Andy build 01 from group 02 of pack1', '!buildSchematic("pack1:02:01")']) {
+    for (const message of ['Andy build 01 from group 02 of pack2', '!buildSchematic("pack2:02:01")']) {
         let started, release;
         const start = new Promise(resolve => { started = resolve; });
         const pending = new Promise(resolve => { release = resolve; });
@@ -277,20 +279,20 @@ test('Docker copies the mandatory postinstall verifier before dependency install
 });
 
 test('every schematic alias composes with full/short labels, filename layouts, and inert descriptions in the real handler', () => check(`
-    const stem = '02_bee_hot_air_balloon';
+    const stem = '09_garden';
     let count = 0;
     for (const alias of ['', 'schema ', 'schem ', 'scheme ', 'schematic ']) {
         const targets = [
             ...['file id ', 'id ', 'file offset ', 'offset ', ''].map(label =>
-                [label + '01 from group 02 of PACK1', 'pack1:2:1', 'fileId']),
+                [label + '01 from group 02 of PACK2', 'pack2:2:1', 'fileId']),
             ...['file name ', 'file '].flatMap(label => [
-                [label + stem + ' of PACK1', 'pack1:' + stem, 'fileName'],
-                [label + 'PACK1/' + stem + '.schem', 'pack1:' + stem + '.schem', 'fileName'],
+                [label + stem + ' of PACK2', 'pack2:' + stem, 'fileName'],
+                [label + 'PACK2/' + stem + '.schem', 'pack2:' + stem + '.schem', 'fileName'],
             ]),
-            ...(alias ? [[stem + ' of PACK1', 'pack1:' + stem, 'fileName'],
-                ['PACK1/' + stem, 'pack1:' + stem, 'fileName'],
-                ['name ' + stem + ' of PACK1', 'pack1:' + stem, 'fileName'],
-                ['name PACK1/' + stem, 'pack1:' + stem, 'fileName']] : []),
+            ...(alias ? [[stem + ' of PACK2', 'pack2:' + stem, 'fileName'],
+                ['PACK2/' + stem, 'pack2:' + stem, 'fileName'],
+                ['name ' + stem + ' of PACK2', 'pack2:' + stem, 'fileName'],
+                ['name PACK2/' + stem, 'pack2:' + stem, 'fileName']] : []),
         ];
         for (const description of ['', 'a balloon ', 'a balloon using ', 'a balloon via ', 'a "file id schema scheme" balloon ']) {
             for (const [target, selector, selectorKind] of targets) {
@@ -316,17 +318,17 @@ test('every schematic alias composes with full/short labels, filename layouts, a
         }
     }
     assert.equal(count, 305);
-    for (const target of ['file id #01 from group #02 of pack1', 'id #01 from group 02 of pack1',
-        'file offset #01 from group #02 of pack1', 'offset #01 from group 02 of pack1',
-        '01 from group #02 of pack1', 'schema #01 from group #02 of pack1']) {
+    for (const target of ['file id #01 from group #02 of pack2', 'id #01 from group 02 of pack2',
+        'file offset #01 from group #02 of pack2', 'offset #01 from group 02 of pack2',
+        '01 from group #02 of pack2', 'schema #01 from group #02 of pack2']) {
         const message = 'Andy build ' + target;
-        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, 'pack1:2:1', message);
+        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, 'pack2:2:1', message);
         const before = calls.builds;
         await agent.handleMessage('Sunny26639', message);
         assert.equal(calls.builds, before + 1, message);
     }
     const beforeBareHash = calls.builds;
-    await agent.handleMessage('Sunny26639', 'Andy build #01 from group 02 of pack1');
+    await agent.handleMessage('Sunny26639', 'Andy build #01 from group 02 of pack2');
     assert.equal(calls.builds, beforeBareHash);
     assert.equal(calls.prompts, 0);
     assert.equal(calls.generated, 0);
@@ -336,27 +338,27 @@ test('aliases fail closed for overlapping selectors, bad boundaries, missing fil
     for (const alias of ['schema', 'schem', 'scheme', 'schematic']) {
         const invalid = [
             alias, alias + ' file', alias + ' file name', alias + ' file id nope',
-            alias + ' file id 0 from group 2 of pack1',
-            alias + ' file id 1 from group 0 of pack1',
-            alias + ' file id 9007199254740992 from group 2 of pack1',
+            alias + ' file id 0 from group 2 of pack2',
+            alias + ' file id 1 from group 0 of pack2',
+            alias + ' file id 9007199254740992 from group 2 of pack2',
             alias + ' file id 1 from group 2 of pack0',
-            alias + ' file id 1 from group 2 of pack1 then build a tower',
-            alias + ' file id 1 from group 2 of pack1 and file id 1 from group 2 of pack1',
-            alias + ' file name 02_bee_hot_air_balloon of pack1 and id 1 from group 2 of pack1',
-            alias + ' file file name 02_bee_hot_air_balloon of pack1',
-            alias + ' file id id 1 from group 2 of pack1',
-            alias + 'x file id 1 from group 2 of pack1 trailing',
-            '-' + alias + ' file name 02_bee_hot_air_balloon of pack1',
-            alias + ' pack1/../outside.schem',
-            alias + ' file name 02_bee_hot_air_balloon of pack1; !stop()',
-            alias + ' file name 02_bee_hot_air_balloon of pack1 at 1 2 3',
-            alias + ' file name 02_BEE_hot_air_balloon.schem of pack1',
-            alias + ' file name 02_bee_hot_air_balloon.SCHEM of pack1',
-            alias + ' file name nonexistent.schem of pack1',
-            alias + ' file name nonexistent.schematic of pack1',
-            alias + ' file name nonexistent.litematic of pack1',
-            alias + ' id 999 from group 2 of pack1',
-            alias + ' file name pack1/02-01',
+            alias + ' file id 1 from group 2 of pack2 then build a tower',
+            alias + ' file id 1 from group 2 of pack2 and file id 1 from group 2 of pack2',
+            alias + ' file name 09_garden of pack2 and id 1 from group 2 of pack2',
+            alias + ' file file name 09_garden of pack2',
+            alias + ' file id id 1 from group 2 of pack2',
+            alias + 'x file id 1 from group 2 of pack2 trailing',
+            '-' + alias + ' file name 09_garden of pack2',
+            alias + ' pack2/../outside.schem',
+            alias + ' file name 09_garden of pack2; !stop()',
+            alias + ' file name 09_garden of pack2 at 1 2 3',
+            alias + ' file name 02_BEE_hot_air_balloon.schem of pack2',
+            alias + ' file name 09_garden.SCHEM of pack2',
+            alias + ' file name nonexistent.schem of pack2',
+            alias + ' file name nonexistent.schematic of pack2',
+            alias + ' file name nonexistent.litematic of pack2',
+            alias + ' id 999 from group 2 of pack2',
+            alias + ' file name pack2/02-01',
         ];
         for (const target of invalid) {
             const message = 'Andy build ' + target;
@@ -366,18 +368,18 @@ test('aliases fail closed for overlapping selectors, bad boundaries, missing fil
             assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
         }
         for (const source of ['Mallory', 'Alice']) {
-            for (const target of [alias + ' file id 1 from group 2 of pack1',
-                alias + ' file name 02_bee_hot_air_balloon of pack1',
-                alias + ' pack1/02_bee_hot_air_balloon']) {
+            for (const target of [alias + ' file id 1 from group 2 of pack2',
+                alias + ' file name 09_garden of pack2',
+                alias + ' pack2/09_garden']) {
                 await agent.handleMessage(source, 'Andy build ' + target);
                 assert.match(calls.routes.at(-1), /trusted command senders/);
             }
         }
         agent.blocked_actions = ['!buildSchematic'];
-        await agent.handleMessage('Sunny26639', 'Andy build ' + alias + ' id 1 from group 2 of pack1');
+        await agent.handleMessage('Sunny26639', 'Andy build ' + alias + ' id 1 from group 2 of pack2');
         assert.match(calls.routes.at(-1), /blocked/);
         agent.blocked_actions = [];
-        await agent.handleMessage('Sunny26639', 'Alice build ' + alias + ' pack1/02_bee_hot_air_balloon');
+        await agent.handleMessage('Sunny26639', 'Alice build ' + alias + ' pack2/09_garden');
     }
     assert.equal(calls.builds, 0);
     assert.equal(calls.prompts, 0);
@@ -398,44 +400,54 @@ test('ordinary color scheme and database schema chat retains inference, not sche
 `));
 
 test('reserved filenames, exact case, extensions, and compatibility fields preserve literal/indexed resolution', () => check(`
-    const { mkdtemp, mkdir, writeFile, rm } = await import('node:fs/promises');
+    const { mkdtemp, mkdir, readFile, writeFile, rm } = await import('node:fs/promises');
     const { tmpdir } = await import('node:os');
     const path = await import('node:path');
-    const { resolveSchematicPath, listSchematicEntries } = await import(${url('src/utils/schematic/paths.js')});
+    const { resolveSchematicPath, listSchematicEntries, SCHEMATICS_DIR } = await import(${url('src/utils/schematic/paths.js')});
+    const { writeFixtureProvenance } = await import(${url('test/schematic/provenance_fixture.js')});
+    const { syntheticSponge } = await import(${url('test/schematic/synthetic_sponge.js')});
+    const options = { version: '1.21.4', allowNonvalidatedSchematic: true };
     const directory = await mkdtemp(path.join(tmpdir(), 'mindcraft-request-review-'));
     try {
-        const pack = path.join(directory, 'schems/pack1');
+        const pack = path.join(directory, 'schems/pack2');
         await mkdir(pack, { recursive: true });
         for (const fileName of ['id.schem', 'name.schem', 'UPPER.SCHEM', '123.schem', 'legacy.schematic', 'convert.litematic']) {
             await writeFile(path.join(pack, fileName), 'path-only test fixture');
         }
+        const bytes = syntheticSponge();
+        for (const stem of ['id', 'name', '123']) {
+            const file = path.join(pack, stem + '.mc1.21.4.schem');
+            await writeFile(file, bytes); writeFixtureProvenance(file, bytes);
+        }
         await writeFile(path.join(pack, 'index.json'), JSON.stringify({ schemaVersion: 2, groups: {
             2: { 1: 'name.schem', 7: 'id.schem' },
         } }));
-        assert.equal(await resolveSchematicPath('pack1:2:1', directory), path.join(pack, 'name.schem'));
-        assert.equal(await resolveSchematicPath('pack1:02:07', directory), path.join(pack, 'id.schem'));
-        await assert.rejects(resolveSchematicPath('pack1:02-01', directory));
-        assert.equal(await resolveSchematicPath('schems/pack1/../pack1/id.schem', directory), path.join(pack, 'id.schem'));
+        assert.equal(await resolveSchematicPath('pack2:2:1', directory, options), path.join(pack, 'name.mc1.21.4.schem'));
+        assert.equal(await resolveSchematicPath('pack2:02:07', directory, options), path.join(pack, 'id.mc1.21.4.schem'));
+        await assert.rejects(resolveSchematicPath('pack2:02-01', directory, options));
+        await assert.rejects(resolveSchematicPath('schems/pack2/../pack2/id.schem', directory, options));
         for (const alias of ['', 'schema ', 'schem ', 'scheme ', 'schematic ']) {
             for (const fileName of ['id', 'name', 'UPPER.SCHEM', '123.schem', 'legacy.schematic', 'convert.litematic']) {
-                for (const target of ['file name ' + fileName + ' of PACK1', 'file name PACK1/' + fileName]) {
+                for (const target of ['file name ' + fileName + ' of PACK2', 'file name PACK2/' + fileName]) {
                     const message = 'Andy build ' + alias + target;
                     const parsed = router.parseAddressedSchematicRequest(message, 'Andy');
                     assert.equal(parsed?.fileName, fileName, message);
                     assert.equal(parsed.filename, fileName, message);
                     assert.equal(parsed.selectorKind, 'fileName', message);
                     assert.equal(Object.hasOwn(parsed, 'fileId'), false, message);
-                    const expected = path.join(pack, fileName === 'id' || fileName === 'name' ? fileName + '.schem' : fileName);
-                    assert.equal(await resolveSchematicPath(parsed.selector, directory), expected, message);
+                    if (['id', 'name', '123.schem'].includes(fileName)) {
+                        const stem = fileName === '123.schem' ? '123' : fileName;
+                        assert.equal(await resolveSchematicPath(parsed.selector, directory, options), path.join(pack, stem + '.mc1.21.4.schem'), message);
+                    } else await assert.rejects(resolveSchematicPath(parsed.selector, directory, options));
                 }
             }
         }
-        for (const selector of ['pack1:upper.SCHEM', 'pack1:UPPER.schem', 'pack1:123']) {
-            await assert.rejects(resolveSchematicPath(selector, directory));
+        for (const selector of ['pack2:upper.SCHEM', 'pack2:UPPER.schem', 'pack2:123']) {
+            await assert.rejects(resolveSchematicPath(selector, directory, options));
         }
-        const entries = await listSchematicEntries(directory);
-        assert.equal(entries.length, 6);
-        assert.deepEqual(entries.slice(0, 2).map(({ fileId, fileName }) => [fileId, fileName]), [[1, 'name.schem'], [7, 'id.schem']]);
+        const entries = await listSchematicEntries(directory, options);
+        assert.equal(entries.length, 3);
+        assert.deepEqual(entries.slice(0, 2).map(({ fileId, fileName }) => [fileId, fileName]), [[1, 'name.mc1.21.4.schem'], [7, 'id.mc1.21.4.schem']]);
         assert.ok(entries.every(entry => entry.fileId === entry.id && entry.fileName === entry.filename));
     } finally {
         await rm(directory, { recursive: true, force: true });
@@ -447,15 +459,15 @@ test('non-BMP description characters do not shift quoted escape boundaries in th
     for (const description of ['"' + slash + slash + '" cottage',
         '😀😀 "' + slash + slash + '" cottage',
         '😀😀 "a ' + slash + '"file' + slash + '"" cottage']) {
-        const message = 'Andy build ' + description + ' file id 1 from group 2 of pack1';
-        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, 'pack1:2:1', message);
+        const message = 'Andy build ' + description + ' file id 1 from group 2 of pack2';
+        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, 'pack2:2:1', message);
         const before = calls.builds;
         await agent.handleMessage('Sunny26639', message);
         assert.equal(calls.builds, before + 1, message);
     }
     for (const description of ['"reserved words" ' + slash + ' cottage',
         '😀😀 "reserved words" ' + slash + ' cottage']) {
-        const message = 'Andy build ' + description + ' file id 1 from group 2 of pack1';
+        const message = 'Andy build ' + description + ' file id 1 from group 2 of pack2';
         assert.match(router.parseAddressedSchematicRequest(message, 'Andy')?.error ?? '', /command fragments/, message);
         const before = calls.builds;
         await agent.handleMessage('Sunny26639', message);

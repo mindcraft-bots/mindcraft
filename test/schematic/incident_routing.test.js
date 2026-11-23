@@ -1,9 +1,11 @@
+import { createRoutingFixture } from "./routing_fixture.js";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
+const fixtureRoot = createRoutingFixture();
 const loaderPath = fileURLToPath(new URL("./commands-loader.js", import.meta.url));
 
 function runChecks() {
@@ -37,34 +39,34 @@ function runChecks() {
     agent.checkTaskDone = async () => {};
     agent.task = { data: null };
 
-    const incident = await agent.handleMessage('Builder', 'Andy build 01 from group 02 of pack1');
+    const incident = await agent.handleMessage('Builder', 'Andy build 01 from group 02 of pack2');
     results.incident = incident;
     results.incidentActions = results.actions.length;
     results.incidentSelector = globalThis.__buildSchematicArgs?.[1];
     results.incidentPrompts = results.prompts;
     results.incidentLifecycle = userCommandLifecycle[0];
 
-    const fileStem = 'Andy build file 02_bee_hot_air_balloon of pack1';
-    const filePath = 'Andy build file pack1/02_bee_hot_air_balloon';
-    const fileWithExtension = 'Andy build file 02_bee_hot_air_balloon.schem of pack1';
-    const filePathWithExtension = 'Andy build file pack1/02_bee_hot_air_balloon.schem';
+    const fileStem = 'Andy build file 09_garden of pack2';
+    const filePath = 'Andy build file pack2/09_garden';
+    const fileWithExtension = 'Andy build file 09_garden.schem of pack2';
+    const filePathWithExtension = 'Andy build file pack2/09_garden.schem';
     results.filenameParses = [fileStem, filePath, fileWithExtension, filePathWithExtension].map(text => parseAddressedSchematicRequest(text, 'Andy', ['Alice']));
     results.filenamePunctuation = parseAddressedSchematicRequest(fileStem + '.', 'Andy', ['Alice']);
     results.naturalExamples = [
-      'Andy build amazing house using file 02_bee_hot_air_balloon of pack1',
-      'Andy build house via file pack1/02_bee_hot_air_balloon',
-      'Andy build thing using offset 01 from group 02 of pack1',
-      'Andy build amazing house id 01 from group 02 of pack1',
-      'Andy build ID 02 from group 02 of PACK1',
-      'Andy build 02 from group 02 of pack1',
-      'Andy, could you please build the finest bee balloon using file 02_bee_hot_air_balloon.schem of PACK1',
-      'Andy build "id and file group pack1" house id 01 from group 02 of pack1',
+      'Andy build amazing house using file 09_garden of pack2',
+      'Andy build house via file pack2/09_garden',
+      'Andy build thing using offset 01 from group 02 of pack2',
+      'Andy build amazing house id 01 from group 02 of pack2',
+      'Andy build ID 02 from group 02 of PACK2',
+      'Andy build 02 from group 02 of pack2',
+      'Andy, could you please build the finest bee balloon using file 09_garden.schem of PACK2',
+      'Andy build "id and file group pack2" house id 01 from group 02 of pack2',
     ].map(text => parseAddressedSchematicRequest(text, 'Andy', ['Alice']));
     results.otherSupportedExtensions = ['schematic', 'litematic'].map(extension =>
-      parseAddressedSchematicRequest('Andy build file example.' + extension + ' of pack1', 'Andy', ['Alice']));
-    results.actualPackFilenameResolve = await resolveSchematicPath('pack1:02_bee_hot_air_balloon.schem');
-    results.actualPackStemResolve = await resolveSchematicPath('pack1:02_bee_hot_air_balloon');
-    results.knownMappedIdResolve = await resolveSchematicPath('pack1:2:2');
+      parseAddressedSchematicRequest('Andy build file example.' + extension + ' of pack2', 'Andy', ['Alice']));
+    results.actualPackFilenameResolve = await resolveSchematicPath('pack2:09_garden.schem', process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, { version: '1.21.4' });
+    results.actualPackStemResolve = await resolveSchematicPath('pack2:09_garden', process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, { version: '1.21.4' });
+    results.knownMappedIdResolve = await resolveSchematicPath('pack2:2:2', process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, { version: '1.21.4' });
     const filenameBefore = results.actions.length;
     for (const text of [fileStem, filePath, fileWithExtension, filePathWithExtension]) {
       await agent.handleMessage('Builder', text);
@@ -74,18 +76,18 @@ function runChecks() {
     results.filenamePrompts = results.prompts;
     results.filenameLifecycle = userCommandLifecycle.slice(1, 5);
 
-    await agent.handleMessage('Builder', 'Andy build id 1 from group 2 of pack1');
+    await agent.handleMessage('Builder', 'Andy build id 1 from group 2 of pack2');
     results.explicitIdSelector = globalThis.__buildSchematicArgs?.[1];
 
     const naturalActionStart = results.actions.length;
     for (const text of [
-      'Andy build amazing house using file 02_bee_hot_air_balloon of pack1',
-      'Andy build house via file pack1/02_bee_hot_air_balloon',
-      'Andy build thing using offset 01 from group 02 of pack1',
-      'Andy build amazing house id 01 from group 02 of pack1',
-      'Andy build ID 02 from group 02 of PACK1',
-      'Andy build 02 from group 02 of pack1',
-      'Andy build offset 02 from group 02 of pack1',
+      'Andy build amazing house using file 09_garden of pack2',
+      'Andy build house via file pack2/09_garden',
+      'Andy build thing using offset 01 from group 02 of pack2',
+      'Andy build amazing house id 01 from group 02 of pack2',
+      'Andy build ID 02 from group 02 of PACK2',
+      'Andy build 02 from group 02 of pack2',
+      'Andy build offset 02 from group 02 of pack2',
     ]) {
       await agent.handleMessage('Builder', text);
     }
@@ -96,12 +98,12 @@ function runChecks() {
     await agent.handleMessage('Builder', 'Andy could you build a house?');
     results.unrelatedPromptDelta = results.prompts - beforeUnrelated;
     const beforeOtherBot = results.actions.length;
-    await agent.handleMessage('Builder', 'Alice build file pack1/02_bee_hot_air_balloon');
+    await agent.handleMessage('Builder', 'Alice build file pack2/09_garden');
     results.otherBotFilenameActionDelta = results.actions.length - beforeOtherBot;
 
     const beforeBadName = results.actions.length;
     const promptsBeforeBadName = results.prompts;
-    await agent.handleMessage('Builder', 'Andy build file pack1/../outside.schem');
+    await agent.handleMessage('Builder', 'Andy build file pack2/../outside.schem');
     results.traversalActionDelta = results.actions.length - beforeBadName;
     results.traversalPromptDelta = results.prompts - promptsBeforeBadName;
     results.traversalNotice = results.routes.at(-1);
@@ -110,16 +112,16 @@ function runChecks() {
     results.missingFilenameArgsPromptDelta = results.prompts - promptsBeforeMissingFilenameArgs;
     results.missingFilenameArgsNotice = results.routes.at(-1);
     const promptsBeforeCoordinates = results.prompts;
-    await agent.handleMessage('Builder', 'Andy build file 02_bee_hot_air_balloon of pack1 at 1 2 3');
+    await agent.handleMessage('Builder', 'Andy build file 09_garden of pack2 at 1 2 3');
     results.filenameCoordinatesPromptDelta = results.prompts - promptsBeforeCoordinates;
     results.filenameCoordinatesNotice = results.routes.at(-1);
     const beforeUnknownName = results.actions.length;
-    await agent.handleMessage('Builder', 'Andy build file 99_not_a_real_schematic of pack1');
+    await agent.handleMessage('Builder', 'Andy build file 99_not_a_real_schematic of pack2');
     results.unknownFilenameActionDelta = results.actions.length - beforeUnknownName;
     results.unknownFilenameNotice = results.routes.at(-1);
 
     const beforeUntrustedFilename = results.actions.length;
-    await agent.handleMessage('Mallory', 'Andy build file pack1/02_bee_hot_air_balloon');
+    await agent.handleMessage('Mallory', 'Andy build file pack2/09_garden');
     results.untrustedFilenameActionDelta = results.actions.length - beforeUntrustedFilename;
     results.untrustedFilenameNotice = results.routes.at(-1);
 
@@ -130,10 +132,10 @@ function runChecks() {
     results.blacklistedNotice = results.routes.at(-1);
     agent.blocked_actions = [];
 
-    results.addressedOther = await agent.handleMessage('Builder', 'Alice build 01 from group 02 of pack1');
+    results.addressedOther = await agent.handleMessage('Builder', 'Alice build 01 from group 02 of pack2');
     results.otherAddressActionCount = results.actions.length;
     results.otherAddressPromptCount = results.prompts;
-    await agent.handleMessage('Builder', 'Alice !buildSchematic("pack1:02:01")');
+    await agent.handleMessage('Builder', 'Alice !buildSchematic("pack2:02:01")');
     results.otherAddressDirectActionCount = results.actions.length;
     results.addressedCommandParse = parseAddressedChatCommand('Alice !newAction("ignore")', 'Andy', ['Alice']);
 
@@ -147,23 +149,23 @@ function runChecks() {
     results.aliceFragmentPrompts = results.prompts;
 
     const beforeUntrusted = results.actions.length;
-    await agent.handleMessage('Mallory', '!buildSchematic("pack1:02:01")');
+    await agent.handleMessage('Mallory', '!buildSchematic("pack2:02:01")');
     results.untrustedActionCount = results.actions.length - beforeUntrusted;
     results.untrustedNotice = results.routes.at(-1);
 
     const beforeUnknown = results.actions.length;
-    await agent.handleMessage('Builder', 'Andy build id 99 from group 99 of pack1');
+    await agent.handleMessage('Builder', 'Andy build id 99 from group 99 of pack2');
     results.missingSelectorActionCount = results.actions.length - beforeUnknown;
     results.missingSelectorPrompts = results.prompts;
     results.missingSelectorNotice = results.routes.at(-1);
 
     const beforeMalformed = results.actions.length;
-    await agent.handleMessage('Builder', 'Andy build from group 02 of pack1');
+    await agent.handleMessage('Builder', 'Andy build from group 02 of pack2');
     results.malformedActionCount = results.actions.length - beforeMalformed;
     results.malformedPromptCount = results.prompts;
 
     const beforeAmbiguous = results.actions.length;
-    await agent.handleMessage('Builder', 'Andy build id 01 from group 02 and group 03 of pack1');
+    await agent.handleMessage('Builder', 'Andy build id 01 from group 02 and group 03 of pack2');
     results.ambiguousActionCount = results.actions.length - beforeAmbiguous;
     results.ambiguousNotice = results.routes.at(-1);
 
@@ -176,25 +178,25 @@ function runChecks() {
       'Andy build id nope',
       'Andy build a balloon using id nope',
       'Andy build offset nope',
-      'Andy build id nope id 01 from group 02 of pack1',
-      'Andy build offset nope file 02_bee_hot_air_balloon of pack1',
-      'Andy build file missing id 01 from group 02 of pack1',
-      'Andy build file #01 from group 02 of pack1',
-      'Andy build file 01 from group 02 of pack1',
-      'Andy build id 01 from group 02 of pack1 and id 02 from group 02 of pack1',
-      'Andy build id 01 from group 02 of pack1 and pack2',
-      'Andy build id 01 from group 02 of pack1 group 03',
-      'Andy build id 01 from group 02 of pack1 then build a tower',
-      'Andy build id 01 from group 02 of pack1; !stop()',
-      'Andy build id 0 from group 02 of pack1',
-      'Andy build id 01 from group 0 of pack1',
-      'Andy build id 999999999999999999999 from group 02 of pack1',
-      'Andy build schematic file id 01 from group 02 of pack1 and schema file id 01 from group 02 of pack1',
-      'Andy build schema pack1/../secret.schem',
-      'Andy build scheme file id 999999999999999999999 from group 02 of pack1',
-      'Andy build schem file name 02_bee_hot_air_balloon of pack1 then build a tower',
+      'Andy build id nope id 01 from group 02 of pack2',
+      'Andy build offset nope file 09_garden of pack2',
+      'Andy build file missing id 01 from group 02 of pack2',
+      'Andy build file #01 from group 02 of pack2',
+      'Andy build file 01 from group 02 of pack2',
+      'Andy build id 01 from group 02 of pack2 and id 02 from group 02 of pack2',
+      'Andy build id 01 from group 02 of pack2 and pack3',
+      'Andy build id 01 from group 02 of pack2 group 03',
+      'Andy build id 01 from group 02 of pack2 then build a tower',
+      'Andy build id 01 from group 02 of pack2; !stop()',
+      'Andy build id 0 from group 02 of pack2',
+      'Andy build id 01 from group 0 of pack2',
+      'Andy build id 999999999999999999999 from group 02 of pack2',
+      'Andy build schematic file id 01 from group 02 of pack2 and schema file id 01 from group 02 of pack2',
+      'Andy build schema pack2/../secret.schem',
+      'Andy build scheme file id 999999999999999999999 from group 02 of pack2',
+      'Andy build schem file name 09_garden of pack2 then build a tower',
       'Andy build a cottage schema file',
-      'Andy build a cottage via scheme pack1',
+      'Andy build a cottage via scheme pack2',
     ];
     const failClosedActionStart = results.actions.length;
     const failClosedPromptStart = results.prompts;
@@ -203,33 +205,33 @@ function runChecks() {
     results.failClosedPromptDelta = results.prompts - failClosedPromptStart;
 
     const beforeEmbedded = results.actions.length;
-    await agent.handleMessage('Builder', '!buildSchematic("pack1:02:01") trailing text');
+    await agent.handleMessage('Builder', '!buildSchematic("pack2:02:01") trailing text');
     results.embeddedActionCount = results.actions.length - beforeEmbedded;
     results.embeddedNotice = results.routes.at(-1);
 
-    const malformed = parseAddressedSchematicRequest('Andy build 01 from group two of pack1', 'Andy', ['Alice']);
-    const ambiguous = parseAddressedSchematicRequest('Andy build 01 from group 02 of pack1 and group 03', 'Andy', ['Alice']);
+    const malformed = parseAddressedSchematicRequest('Andy build 01 from group two of pack2', 'Andy', ['Alice']);
+    const ambiguous = parseAddressedSchematicRequest('Andy build 01 from group 02 of pack2 and group 03', 'Andy', ['Alice']);
     results.malformedError = malformed?.error;
     results.ambiguousError = ambiguous?.error;
-    results.unaddressed = parseAddressedSchematicRequest('build 01 from group 02 of pack1', 'Andy', ['Alice']);
+    results.unaddressed = parseAddressedSchematicRequest('build 01 from group 02 of pack2', 'Andy', ['Alice']);
     results.unrelated = parseAddressedSchematicRequest('Andy, can you build a house?', 'Andy', ['Alice']);
-    results.malformedFilename = parseAddressedSchematicRequest('Andy build file pack1/../secret.schem', 'Andy', ['Alice']);
-    results.conflictingFilename = parseAddressedSchematicRequest('Andy build file 02_bee_hot_air_balloon of pack1 and group 02', 'Andy', ['Alice']);
-    results.filenameCoordinates = parseAddressedSchematicRequest('Andy build file 02_bee_hot_air_balloon of pack1 at 1 2 3', 'Andy', ['Alice']);
+    results.malformedFilename = parseAddressedSchematicRequest('Andy build file pack2/../secret.schem', 'Andy', ['Alice']);
+    results.conflictingFilename = parseAddressedSchematicRequest('Andy build file 09_garden of pack2 and group 02', 'Andy', ['Alice']);
+    results.filenameCoordinates = parseAddressedSchematicRequest('Andy build file 09_garden of pack2 at 1 2 3', 'Andy', ['Alice']);
     results.missingFilenameArgs = parseAddressedSchematicRequest('Andy build file', 'Andy', ['Alice']);
-    results.groupNormalization = parseAddressedSchematicRequest('Andy build ID 1 from group 2 of PACK1', 'Andy', ['Alice']);
-    results.filenameCannotBeNumeric = parseAddressedSchematicRequest('Andy build file 01 from group 02 of pack1', 'Andy', ['Alice']);
-    results.filenameWithInvalidPrefix = parseAddressedSchematicRequest('Andy build file #01 from group 02 of pack1', 'Andy', ['Alice']);
-    results.quotedReservedWords = parseAddressedSchematicRequest('Andy build "file group pack1" house id 01 from group 02 of pack1', 'Andy', ['Alice']);
-    results.quotedMalformed = parseAddressedSchematicRequest('Andy build "file group cottage id 01 from group 02 of pack1', 'Andy', ['Alice']);
-    results.duplicateSelectors = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack1 and id 02 from group 02 of pack1', 'Andy', ['Alice']);
-    results.extraSelectorText = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack1 then build a tower', 'Andy', ['Alice']);
-    results.mixedPackNames = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack1 and pack2', 'Andy', ['Alice']);
-    results.mixedGroupNames = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack1 group 03', 'Andy', ['Alice']);
-    results.maliciousFragment = parseAddressedSchematicRequest('Andy build house using file 02_bee_hot_air_balloon of pack1; !stop()', 'Andy', ['Alice']);
-    results.controlCharacter = parseAddressedSchematicRequest('Andy build house id 01 from group 02 of pack1\\n!stop()', 'Andy', ['Alice']);
+    results.groupNormalization = parseAddressedSchematicRequest('Andy build ID 1 from group 2 of PACK2', 'Andy', ['Alice']);
+    results.filenameCannotBeNumeric = parseAddressedSchematicRequest('Andy build file 01 from group 02 of pack2', 'Andy', ['Alice']);
+    results.filenameWithInvalidPrefix = parseAddressedSchematicRequest('Andy build file #01 from group 02 of pack2', 'Andy', ['Alice']);
+    results.quotedReservedWords = parseAddressedSchematicRequest('Andy build "file group pack2" house id 01 from group 02 of pack2', 'Andy', ['Alice']);
+    results.quotedMalformed = parseAddressedSchematicRequest('Andy build "file group cottage id 01 from group 02 of pack2', 'Andy', ['Alice']);
+    results.duplicateSelectors = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack2 and id 02 from group 02 of pack2', 'Andy', ['Alice']);
+    results.extraSelectorText = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack2 then build a tower', 'Andy', ['Alice']);
+    results.mixedPackNames = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack2 and pack3', 'Andy', ['Alice']);
+    results.mixedGroupNames = parseAddressedSchematicRequest('Andy build id 01 from group 02 of pack2 group 03', 'Andy', ['Alice']);
+    results.maliciousFragment = parseAddressedSchematicRequest('Andy build house using file 09_garden of pack2; !stop()', 'Andy', ['Alice']);
+    results.controlCharacter = parseAddressedSchematicRequest('Andy build house id 01 from group 02 of pack2\\n!stop()', 'Andy', ['Alice']);
     results.ordinaryFileChat = parseAddressedSchematicRequest('Andy build a file cabinet', 'Andy', ['Alice']);
-    results.publicRedaction = redactCommandFragments('Andy used !buildSchematic("pack1:02:01")');
+    results.publicRedaction = redactCommandFragments('Andy used !buildSchematic("pack2:02:01")');
 
     results.disabledCommandExists = commandExists('!newAction');
     results.disabledCommandDocs = getCommandDocs({ blocked_actions: [] }).includes('!newAction');
@@ -241,25 +243,25 @@ function runChecks() {
     settings.allow_insecure_coding = false;
 
     const directBefore = results.actions.length;
-    await agent.handleMessage('Builder', '!buildSchematic("pack1:02:01")');
+    await agent.handleMessage('Builder', '!buildSchematic("pack2:02:01")');
     results.directActionCount = results.actions.length - directBefore;
     results.directSelector = globalThis.__buildSchematicArgs?.[1];
 
     const aliasCases = [
-      ['Andy build a balloon using schematic file id 01 from group 02 of pack1', 'pack1:2:1'],
-      ['Andy build schema id 01 from group 02 of pack1', 'pack1:2:1'],
-      ['Andy build schem file id 01 from group 02 of pack1', 'pack1:2:1'],
-      ['Andy build scheme id 01 from group 02 of pack1', 'pack1:2:1'],
-      ['Andy build file name 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build a balloon via schematic 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schema pack1/02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schem 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build scheme pack1/02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schematic file name 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schema file 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schem file name 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build scheme file 02_bee_hot_air_balloon of pack1', 'pack1:02_bee_hot_air_balloon'],
-      ['Andy build schematic pack1/02_bee_hot_air_balloon.schem', 'pack1:02_bee_hot_air_balloon.schem'],
+      ['Andy build a balloon using schematic file id 01 from group 02 of pack2', 'pack2:2:1'],
+      ['Andy build schema id 01 from group 02 of pack2', 'pack2:2:1'],
+      ['Andy build schem file id 01 from group 02 of pack2', 'pack2:2:1'],
+      ['Andy build scheme id 01 from group 02 of pack2', 'pack2:2:1'],
+      ['Andy build file name 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build a balloon via schematic 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build schema pack2/09_garden', 'pack2:09_garden'],
+      ['Andy build schem 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build scheme pack2/09_garden', 'pack2:09_garden'],
+      ['Andy build schematic file name 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build schema file 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build schem file name 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build scheme file 09_garden of pack2', 'pack2:09_garden'],
+      ['Andy build schematic pack2/09_garden.schem', 'pack2:09_garden.schem'],
     ];
     results.aliasParses = aliasCases.map(([text]) => parseAddressedSchematicRequest(text, 'Andy', ['Alice']));
     const aliasesActionStart = results.actions.length;
@@ -270,30 +272,30 @@ function runChecks() {
     results.aliasSelectors = results.actions.slice(aliasesActionStart).map(args => args[1]);
     results.aliasLifecycle = userCommandLifecycle.slice(-aliasCases.length);
     results.partialAlias = parseAddressedSchematicRequest('Andy build a balloon using schema file id', 'Andy', ['Alice']);
-    results.quotedAliasDescription = parseAddressedSchematicRequest('Andy build "schema, schem, scheme, schematic" balloon via file name 02_bee_hot_air_balloon of pack1', 'Andy', ['Alice']);
+    results.quotedAliasDescription = parseAddressedSchematicRequest('Andy build "schema, schem, scheme, schematic" balloon via file name 09_garden of pack2', 'Andy', ['Alice']);
     results.ordinaryAliasChat = [
       parseAddressedSchematicRequest('Andy build a colour scheme', 'Andy', ['Alice']),
       parseAddressedSchematicRequest('Andy build a database schema', 'Andy', ['Alice']),
     ];
     results.reservedWordFileNames = [
-      parseAddressedSchematicRequest('Andy build file name id of pack1', 'Andy', ['Alice']),
-      parseAddressedSchematicRequest('Andy build file name name of pack1', 'Andy', ['Alice']),
-      parseAddressedSchematicRequest('Andy build scheme id of pack1', 'Andy', ['Alice']),
-      parseAddressedSchematicRequest('Andy build schema name of pack1', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build file name id of pack2', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build file name name of pack2', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build scheme id of pack2', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build schema name of pack2', 'Andy', ['Alice']),
     ];
     results.ambiguousBareReservedWords = [
-      parseAddressedSchematicRequest('Andy build id of pack1', 'Andy', ['Alice']),
-      parseAddressedSchematicRequest('Andy build name of pack1', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build id of pack2', 'Andy', ['Alice']),
+      parseAddressedSchematicRequest('Andy build name of pack2', 'Andy', ['Alice']),
     ];
     const aliasesUntrustedStart = results.actions.length;
     const aliasesPromptBeforeUntrusted = results.prompts;
-    await agent.handleMessage('Mallory', 'Andy build house via scheme 02_bee_hot_air_balloon of pack1');
+    await agent.handleMessage('Mallory', 'Andy build house via scheme 09_garden of pack2');
     results.aliasUntrustedActionDelta = results.actions.length - aliasesUntrustedStart;
     results.aliasUntrustedPromptDelta = results.prompts - aliasesPromptBeforeUntrusted;
     results.aliasUntrustedNotice = results.routes.at(-1);
     console.log(JSON.stringify(results));
   `;
-  return spawnSync(process.execPath, ["--experimental-loader", loaderPath, "--input-type=module", "-e", script], { encoding: "utf8" });
+  return spawnSync(process.execPath, ["--experimental-loader", loaderPath, "--input-type=module", "-e", script], { encoding: "utf8", env: { ...process.env, MINDCRAFT_SCHEMATIC_FIXTURE_ROOT: fixtureRoot } });
 }
 
 test("schematic incident routes deterministically and keeps peer/user commands separated", () => {
@@ -302,52 +304,52 @@ test("schematic incident routes deterministically and keeps peer/user commands s
   const result = JSON.parse(child.stdout.trim().split("\n").at(-1));
   assert.equal(result.incident, true);
   assert.equal(result.incidentActions, 1);
-  assert.equal(result.incidentSelector, "pack1:2:1");
+  assert.equal(result.incidentSelector, "pack2:2:1");
   assert.equal(result.incidentPrompts, 0);
   assert.deepEqual(result.incidentLifecycle, [false, true]);
   assert.deepEqual(result.filenameParses.map(request => [request.kind, request.selector]), [
-    ['filename', 'pack1:02_bee_hot_air_balloon'],
-    ['filename', 'pack1:02_bee_hot_air_balloon'],
-    ['filename', 'pack1:02_bee_hot_air_balloon.schem'],
-    ['filename', 'pack1:02_bee_hot_air_balloon.schem'],
+    ['filename', 'pack2:09_garden'],
+    ['filename', 'pack2:09_garden'],
+    ['filename', 'pack2:09_garden.schem'],
+    ['filename', 'pack2:09_garden.schem'],
   ]);
-  assert.deepEqual([result.filenamePunctuation.kind, result.filenamePunctuation.selector], ['filename', 'pack1:02_bee_hot_air_balloon']);
+  assert.deepEqual([result.filenamePunctuation.kind, result.filenamePunctuation.selector], ['filename', 'pack2:09_garden']);
   assert.deepEqual(result.otherSupportedExtensions.map(request => request.selector), [
-    'pack1:example.schematic',
-    'pack1:example.litematic',
+    'pack2:example.schematic',
+    'pack2:example.litematic',
   ]);
-  assert.match(result.actualPackFilenameResolve, /schems\/pack1\/02_bee_hot_air_balloon\.schem$/);
-  assert.match(result.actualPackStemResolve, /schems\/pack1\/02_bee_hot_air_balloon\.schem$/);
-  assert.match(result.knownMappedIdResolve, /schems\/pack1\/02_enderman_hot_air_balloon\.schem$/);
+  assert.match(result.actualPackFilenameResolve, /schems\/pack2\/09_garden\.mc1\.21\.4\.schem$/);
+  assert.match(result.actualPackStemResolve, /schems\/pack2\/09_garden\.mc1\.21\.4\.schem$/);
+  assert.match(result.knownMappedIdResolve, /schems\/pack2\/17_tower\.mc1\.21\.4\.schem$/);
   assert.equal(result.filenameActionCount, 4);
   assert.equal(result.filenamePrompts, 0);
   assert.deepEqual(result.filenameSelectors, [
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon.schem',
-    'pack1:02_bee_hot_air_balloon.schem',
+    'pack2:09_garden',
+    'pack2:09_garden',
+    'pack2:09_garden.schem',
+    'pack2:09_garden.schem',
   ]);
   assert.deepEqual(result.filenameLifecycle, Array.from({ length: 4 }, () => [false, true]));
-  assert.equal(result.explicitIdSelector, 'pack1:2:1');
+  assert.equal(result.explicitIdSelector, 'pack2:2:1');
   assert.equal(result.naturalActionDelta, 7);
   assert.deepEqual(result.naturalSelectors, [
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:2:1',
-    'pack1:2:1',
-    'pack1:2:2',
-    'pack1:2:2',
-    'pack1:2:2',
+    'pack2:09_garden',
+    'pack2:09_garden',
+    'pack2:2:1',
+    'pack2:2:1',
+    'pack2:2:2',
+    'pack2:2:2',
+    'pack2:2:2',
   ]);
   assert.deepEqual(result.naturalExamples.map(request => request?.selector), [
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon',
-    'pack1:2:1',
-    'pack1:2:1',
-    'pack1:2:2',
-    'pack1:2:2',
-    'pack1:02_bee_hot_air_balloon.schem',
-    'pack1:2:1',
+    'pack2:09_garden',
+    'pack2:09_garden',
+    'pack2:2:1',
+    'pack2:2:1',
+    'pack2:2:2',
+    'pack2:2:2',
+    'pack2:09_garden.schem',
+    'pack2:2:1',
   ]);
   assert.ok(result.unrelatedPromptDelta > 0);
   assert.equal(result.otherBotFilenameActionDelta, 0);
@@ -391,12 +393,12 @@ test("schematic incident routes deterministically and keeps peer/user commands s
   assert.match(result.conflictingFilename.error, /could not safely identify/i);
   assert.match(result.filenameCoordinates.error, /could not safely identify/i);
   assert.match(result.missingFilenameArgs.error, /could not safely identify/i);
-  assert.equal(result.groupNormalization.selector, 'pack1:2:1');
+  assert.equal(result.groupNormalization.selector, 'pack2:2:1');
   assert.equal(result.groupNormalization.group, 2);
   assert.equal(result.groupNormalization.id, 1);
   assert.match(result.filenameCannotBeNumeric.error, /could not safely identify/i);
   assert.match(result.filenameWithInvalidPrefix.error, /could not safely identify/i);
-  assert.equal(result.quotedReservedWords.selector, 'pack1:2:1');
+  assert.equal(result.quotedReservedWords.selector, 'pack2:2:1');
   assert.match(result.quotedMalformed.error, /balanced double quotes/i);
   assert.match(result.duplicateSelectors.error, /one selector only/i);
   assert.match(result.extraSelectorText.error, /could not safely identify/i);
@@ -415,16 +417,16 @@ test("schematic incident routes deterministically and keeps peer/user commands s
   assert.equal(result.enabledCommandDocs, true);
   assert.equal(result.enabledForcedResult, 'generated test action');
   assert.equal(result.directActionCount, 1);
-  assert.equal(result.directSelector, "pack1:02:01");
+  assert.equal(result.directSelector, "pack2:02:01");
   assert.equal(result.aliasActionDelta, 14);
   assert.equal(result.aliasPromptDelta, 0);
   assert.deepEqual(result.aliasSelectors, [
-    'pack1:2:1', 'pack1:2:1', 'pack1:2:1', 'pack1:2:1',
-    'pack1:02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon',
-    'pack1:02_bee_hot_air_balloon', 'pack1:02_bee_hot_air_balloon.schem',
+    'pack2:2:1', 'pack2:2:1', 'pack2:2:1', 'pack2:2:1',
+    'pack2:09_garden', 'pack2:09_garden',
+    'pack2:09_garden', 'pack2:09_garden',
+    'pack2:09_garden', 'pack2:09_garden',
+    'pack2:09_garden', 'pack2:09_garden',
+    'pack2:09_garden', 'pack2:09_garden.schem',
   ]);
   assert.deepEqual(result.aliasLifecycle, Array.from({ length: 14 }, () => [false, true]));
   assert.deepEqual(result.aliasParses.slice(0, 4).map(request => request?.fileId), [1, 1, 1, 1]);
@@ -432,12 +434,12 @@ test("schematic incident routes deterministically and keeps peer/user commands s
   assert.ok(result.aliasParses.slice(0, 4).every(request => !Object.hasOwn(request, 'fileName')),
     'file id selectors must carry one unambiguous numeric selector value');
   assert.deepEqual(result.aliasParses.slice(4).map(request => request?.fileName), [
-    '02_bee_hot_air_balloon', '02_bee_hot_air_balloon', '02_bee_hot_air_balloon', '02_bee_hot_air_balloon',
-    '02_bee_hot_air_balloon', '02_bee_hot_air_balloon', '02_bee_hot_air_balloon', '02_bee_hot_air_balloon',
-    '02_bee_hot_air_balloon', '02_bee_hot_air_balloon.schem',
+    '09_garden', '09_garden', '09_garden', '09_garden',
+    '09_garden', '09_garden', '09_garden', '09_garden',
+    '09_garden', '09_garden.schem',
   ]);
   assert.match(result.partialAlias.error, /could not safely identify/i);
-  assert.equal(result.quotedAliasDescription.fileName, '02_bee_hot_air_balloon');
+  assert.equal(result.quotedAliasDescription.fileName, '09_garden');
   assert.deepEqual(result.ordinaryAliasChat, [null, null]);
   assert.deepEqual(result.reservedWordFileNames.map(request => request?.fileName), ['id', 'name', 'id', 'name']);
   assert.deepEqual(result.reservedWordFileNames.map(request => request?.selectorKind), Array(4).fill('fileName'));

@@ -262,10 +262,10 @@ test("build success is verified and cleans supply, restores game mode and prior 
 
 test("successful public build output names the resolved file rather than its numeric selector", async () => {
   const { bot, calls, dependencies } = fixture({
-    resolvePath: () => '/schematics/schems/pack1/02_bee_hot_air_balloon.schem',
+    resolvePath: () => '/schematics/schems/pack3/garden.schem',
   });
-  assert.equal(await buildSchematic(bot, 'pack1:2:1', null, null, null, dependencies), true);
-  assert.equal(calls.logs.at(-1), 'Successfully built and verified schematic 02_bee_hot_air_balloon.schem.');
+  assert.equal(await buildSchematic(bot, 'pack3:8:13', null, null, null, dependencies), true);
+  assert.equal(calls.logs.at(-1), 'Successfully built and verified schematic garden.mc1.20.4.schem.');
 });
 
 test("reports rejected and interrupted builds as failures while cancelling and restoring", async () => {
@@ -411,7 +411,7 @@ test("combat interruption resumes with the captured source and origin after the 
   bot.entity.position = bot.position;
 
   assert.equal(await buildSchematic(bot, "different-name-is-ignored.schem", null, null, null, { ...dependencies, resumeSession: session }), true);
-  assert.equal(reads, 1);
+  assert.equal(reads, 2);
   assert.equal(attempts, 2);
   assert.equal(session.context, null);
   assert.equal(session.cancelled, true);

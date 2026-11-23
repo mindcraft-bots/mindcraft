@@ -101,16 +101,3 @@ test('independently verified transition releases retain reviewed bounds and unre
   assert.equal(result.legend.A, block);
   assert.deepEqual(result.changes, []);
 });
-
-test('pack1 secret island uses the reviewed rename only for the independently covered old target', () => {
-  const blueprint = JSON.parse(readFileSync(new URL('../../schematics/blueprints/pack1/07_secret_island_base.json', import.meta.url)));
-  assert.equal(blueprint.legend.R, 'minecraft:short_grass');
-  const isolated = convertBlueprint(fixture(blueprint.legend.R, blueprint.minecraft_version, blueprint.data_version), '1.13', history, opt);
-  assert.equal(isolated.legend.A, 'minecraft:grass');
-  assert.match(isolated.changes[0].evidence[0].source, /1.20.3/);
-  const result = convertBlueprint(blueprint, '1.20.2', history, opt);
-  assert.equal(result.validation, 'NONVALIDATED'); assert.equal(result.legend.R, 'minecraft:grass');
-  assert.equal(result.changes.length, 1); assert.match(result.changes[0].evidence[0].source, /1.20.3/);
-  const adjacent = convertBlueprint(blueprint, '1.20.1', history, opt);
-  assert.equal(adjacent.legend.R, 'minecraft:grass');
-});

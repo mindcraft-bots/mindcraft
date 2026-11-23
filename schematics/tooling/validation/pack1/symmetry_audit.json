@@ -1,38 +1,32 @@
 {
-  "schema": 1,
-  "method": "Read-only full-volume paired-state reflection and independent NBT voxel decoding; photo hashes are inventory, not machine visual analysis.",
+  "schema": 3,
+  "pack": "pack1",
+  "status": "complete",
+  "method": "Read-only reflection measurements and independent Sponge v2 voxel comparisons; photo inventory is not visual analysis.",
   "inputs": [
     {
-      "path": "schematics/schems/pack1/index.json",
-      "sha256": "ed5c6817a0863e493c703ac3bbd4efe8c50552363dd9a5dbd2f9fd0f942a5a64"
+      "path": "package-lock.json",
+      "sha256": "3caa12d5a896e0178ce17dd600fc28f29e64f4939c5e5ff32af18fdaed2f83b0"
     },
     {
-      "path": "schematics/tooling/symmetry.mjs",
-      "sha256": "b5580e0d8fdab3d29d596553f6b798f196b56be6621b7e42c24f174d1d6c0a4e"
-    },
-    {
-      "path": "schematics/tooling/audit_pack1_symmetry.mjs",
-      "sha256": "6e8b6c069c4ea53222b208ed75de571431533c5f31a6d2a45e41decad08af716"
-    },
-    {
-      "path": "schematics/tooling/convert_history.mjs",
-      "sha256": "c5229906010916472cfbd160ad706a7dc8cc2270b66851d3b13b750019e26c1f"
-    },
-    {
-      "path": "schematics/tooling/history_registry.mjs",
-      "sha256": "ddfaf612441eadf5356849d43e8c0b2b2b46c0533a9381fb526759445d91e676"
+      "path": "schematics/tooling/audit_pack_symmetry.mjs",
+      "sha256": "5f5fbe99257dfd98192e433a4931bd3bb954febf0e7177032f47c9a15249bf5b"
     },
     {
       "path": "schematics/tooling/block_history.v1.json",
       "sha256": "5377d5b16e29a5c040c36de09717e15db4488fde00992fdb091ab731e79be1cf"
     },
     {
-      "path": "schematics/tooling/block_history/generated/releases/1.21.4.json",
-      "sha256": "2d745d0c782b10bf543f06491632e86e1f01664a2b28417fcd7db45ccc1104be"
+      "path": "schematics/tooling/block_history/generated/deltas/1.21.4.json.gz",
+      "sha256": "926f6d21f2bf47965600912b5a6852e64300a6b7464523fbde18a3a0475e6a32"
     },
     {
-      "path": "schematics/tooling/block_history/generated/releases/26.1.json",
-      "sha256": "8a5aaf084f1e2b8e21457415c18302ea75dda331aa50675f7243fb48670cacc9"
+      "path": "schematics/tooling/block_history/generated/deltas/26.1.json.gz",
+      "sha256": "6e04b16247227c0636154cdc2b2d3a9e8ceaa5ec6638eb2cf455097aa140efc6"
+    },
+    {
+      "path": "schematics/tooling/block_history/generated/index.json",
+      "sha256": "872c65a8d38c3525aab3e1e42d14e49e2014a81086f29606b6f0c0bcaedab888"
     },
     {
       "path": "schematics/tooling/block_history/generated/registries/1.21.4.json.gz",
@@ -43,8 +37,52 @@
       "sha256": "ffc88b600a740c59b5b2fe8b4ef9fae17b24e6f31395b79248369f9294055b2e"
     },
     {
-      "path": "package-lock.json",
-      "sha256": "3caa12d5a896e0178ce17dd600fc28f29e64f4939c5e5ff32af18fdaed2f83b0"
+      "path": "schematics/tooling/block_history/generated/releases/1.21.4.json",
+      "sha256": "2d745d0c782b10bf543f06491632e86e1f01664a2b28417fcd7db45ccc1104be"
+    },
+    {
+      "path": "schematics/tooling/block_history/generated/releases/26.1.json",
+      "sha256": "8a5aaf084f1e2b8e21457415c18302ea75dda331aa50675f7243fb48670cacc9"
+    },
+    {
+      "path": "schematics/tooling/convert_history.mjs",
+      "sha256": "c5229906010916472cfbd160ad706a7dc8cc2270b66851d3b13b750019e26c1f"
+    },
+    {
+      "path": "schematics/tooling/history_registry.mjs",
+      "sha256": "ddfaf612441eadf5356849d43e8c0b2b2b46c0533a9381fb526759445d91e676"
+    },
+    {
+      "path": "schematics/tooling/symmetry.mjs",
+      "sha256": "b5580e0d8fdab3d29d596553f6b798f196b56be6621b7e42c24f174d1d6c0a4e"
+    },
+    {
+      "path": "schematics/schems/pack1/index.json",
+      "sha256": "ed5c6817a0863e493c703ac3bbd4efe8c50552363dd9a5dbd2f9fd0f942a5a64"
+    },
+    {
+      "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem.provenance.json",
+      "sha256": "f52396729c00455cf53b69166a456234211ccd64188875fac319269b99f10413"
+    },
+    {
+      "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem.provenance.sha256",
+      "sha256": "8067f8d42efac8fa8600711f7300e85afc8828f4259840720bb8e6468b05f228"
+    },
+    {
+      "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc26.1.schem.provenance.json",
+      "sha256": "3d72c064563e57fcddfb711cffb36e2f709ada28c8fe1833573bda52e3a6fbcd"
+    },
+    {
+      "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc26.1.schem.provenance.sha256",
+      "sha256": "013e9028cae2461ecc996a8f93c0a8311fed29975fba849e6fd454eb7e0fa78a"
+    },
+    {
+      "path": "schematics/tooling/pack1/symmetry.json",
+      "sha256": "e910e59910823ba70edff41fb766ff4a76b70f1e514b1ce3e583432519d25951"
+    },
+    {
+      "path": "schematic-archive/pack1_originals/inventory.json",
+      "sha256": "89574cbb5caef2c525ec7a712bffc198448ce1446835330fd8126d7e0b63485b"
     }
   ],
   "reference_photos": [
@@ -211,13 +249,21 @@
   ],
   "builds": [
     {
+      "id": {
+        "group": "1",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/01_wardrobe_nether_portal.json",
       "sha256": "1b385d4df5e67d22827fa1f52a2d3ca6a9d8a3984b014497490a7cd430fa9a03",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         6,
         7,
         4
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=2.5",
@@ -244,7 +290,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -253,7 +300,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=1.5",
@@ -280,7 +330,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 46,
@@ -494,7 +545,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 58,
+          "mismatches_truncated": 46
         }
       ],
       "door_gate_cells": [
@@ -574,59 +628,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/01_wardrobe_nether_portal.schem",
-          "sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
-          "data_version": 4189,
-          "voxel_count": 168,
-          "mismatched_voxels": 4,
-          "differences": [
-            {
-              "pos": [
-                2,
-                0,
-                1
-              ],
-              "blueprint": "minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]",
-              "schematic": "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]"
-            },
-            {
-              "pos": [
-                3,
-                0,
-                1
-              ],
-              "blueprint": "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]",
-              "schematic": "minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]"
-            },
-            {
-              "pos": [
-                2,
-                1,
-                1
-              ],
-              "blueprint": "minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]",
-              "schematic": "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]"
-            },
-            {
-              "pos": [
-                3,
-                1,
-                1
-              ],
-              "blueprint": "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]",
-              "schematic": "minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]"
-            }
-          ],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/01_wardrobe_nether_portal.mc1.21.4.schem",
           "sha256": "90af138ad6169f404bd8b94bc4f8182a82a5d1141a0f5dcd430a08a3891c1f8d",
           "data_version": 4189,
           "voxel_count": 168,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/01_wardrobe_nether_portal.mc26.1.schem",
@@ -635,18 +645,74 @@
           "voxel_count": 168,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/01_wardrobe_nether_portal.schem",
+        "sha256": "8deb5fee1a8930b321ad9ff066b955854bb4caedf8f5a8cf17eb710c5da7a383",
+        "data_version": 4189,
+        "voxel_count": 168,
+        "mismatched_voxels": 4,
+        "differences": [
+          {
+            "pos": [
+              2,
+              0,
+              1
+            ],
+            "blueprint": "minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]",
+            "schematic": "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]"
+          },
+          {
+            "pos": [
+              3,
+              0,
+              1
+            ],
+            "blueprint": "minecraft:dark_oak_door[facing=south,half=lower,hinge=left,open=true,powered=false]",
+            "schematic": "minecraft:dark_oak_door[facing=south,half=lower,hinge=right,open=true,powered=false]"
+          },
+          {
+            "pos": [
+              2,
+              1,
+              1
+            ],
+            "blueprint": "minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]",
+            "schematic": "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]"
+          },
+          {
+            "pos": [
+              3,
+              1,
+              1
+            ],
+            "blueprint": "minecraft:dark_oak_door[facing=south,half=upper,hinge=left,open=true,powered=false]",
+            "schematic": "minecraft:dark_oak_door[facing=south,half=upper,hinge=right,open=true,powered=false]"
+          }
+        ],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "2",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
       "sha256": "64e2841e2239a1597be721e5a0a6ed0cb7bdf8f4d28682e411df75434b8b2c2c",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         10,
         17,
         9
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4.5",
@@ -673,7 +739,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -682,7 +749,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=4",
@@ -709,7 +779,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 140,
@@ -923,7 +994,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 194,
+          "mismatches_truncated": 182
         }
       ],
       "door_gate_cells": [
@@ -972,56 +1046,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 24
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/02_bee_hot_air_balloon.schem",
-          "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
-          "data_version": 4189,
-          "voxel_count": 1530,
-          "mismatched_voxels": 4,
-          "differences": [
-            {
-              "pos": [
-                6,
-                10,
-                1
-              ],
-              "blueprint": "minecraft:yellow_concrete",
-              "schematic": "minecraft:black_wool"
-            },
-            {
-              "pos": [
-                8,
-                10,
-                1
-              ],
-              "blueprint": "minecraft:black_wool",
-              "schematic": "minecraft:yellow_concrete"
-            },
-            {
-              "pos": [
-                6,
-                12,
-                0
-              ],
-              "blueprint": "minecraft:air",
-              "schematic": "minecraft:black_wool"
-            },
-            {
-              "pos": [
-                8,
-                12,
-                0
-              ],
-              "blueprint": "minecraft:black_wool",
-              "schematic": "minecraft:air"
-            }
-          ],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem",
           "sha256": "bbb7232b2ab68f3501c7fdd7418aa815066ec76eba1930b9274b8e757c8b16f4",
@@ -1029,7 +1058,9 @@
           "voxel_count": 1530,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/02_bee_hot_air_balloon.mc26.1.schem",
@@ -1038,18 +1069,74 @@
           "voxel_count": 1530,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/02_bee_hot_air_balloon.schem",
+        "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+        "data_version": 4189,
+        "voxel_count": 1530,
+        "mismatched_voxels": 4,
+        "differences": [
+          {
+            "pos": [
+              6,
+              10,
+              1
+            ],
+            "blueprint": "minecraft:yellow_concrete",
+            "schematic": "minecraft:black_wool"
+          },
+          {
+            "pos": [
+              8,
+              10,
+              1
+            ],
+            "blueprint": "minecraft:black_wool",
+            "schematic": "minecraft:yellow_concrete"
+          },
+          {
+            "pos": [
+              6,
+              12,
+              0
+            ],
+            "blueprint": "minecraft:air",
+            "schematic": "minecraft:black_wool"
+          },
+          {
+            "pos": [
+              8,
+              12,
+              0
+            ],
+            "blueprint": "minecraft:black_wool",
+            "schematic": "minecraft:air"
+          }
+        ],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "2",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/02_enderman_hot_air_balloon.json",
       "sha256": "2b59f5eb4b4b68fec5b6da7fc9dd36a1fbdf726cef5c6f0d90d277c925014943",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         8,
         15,
         8
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=3.5",
@@ -1076,7 +1163,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -1085,7 +1173,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=3.5",
@@ -1112,7 +1203,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 4,
@@ -1326,7 +1418,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 14,
+          "mismatches_truncated": 2
         },
         {
           "plane": "x=z",
@@ -1353,7 +1448,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 4,
@@ -1567,7 +1663,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 14,
+          "mismatches_truncated": 2
         },
         {
           "plane": "x=-z+7",
@@ -1594,7 +1693,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 4,
@@ -1808,7 +1908,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 14,
+          "mismatches_truncated": 2
         }
       ],
       "door_gate_cells": [
@@ -1857,19 +1960,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 24
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/02_enderman_hot_air_balloon.schem",
-          "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
-          "data_version": 4189,
-          "voxel_count": 960,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/02_enderman_hot_air_balloon.mc1.21.4.schem",
           "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
@@ -1877,7 +1972,9 @@
           "voxel_count": 960,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/02_enderman_hot_air_balloon.mc26.1.schem",
@@ -1886,18 +1983,37 @@
           "voxel_count": 960,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/02_enderman_hot_air_balloon.schem",
+        "sha256": "73d2776a93ef6ae16c61817a41304813814060021429a88fad24531af4429b75",
+        "data_version": 4189,
+        "voxel_count": 960,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "2",
+        "id": "3"
+      },
       "source": "schematics/blueprints/pack1/02_pig_hot_air_balloon.json",
       "sha256": "3f1f9eaa70e9589e0484e9d573c2b42b86297486e013b6ff65ac1670c9e09d34",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         8,
         15,
         9
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=3.5",
@@ -1924,7 +2040,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -1933,7 +2050,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=4",
@@ -1960,7 +2080,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 132,
@@ -2174,7 +2295,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 160,
+          "mismatches_truncated": 148
         }
       ],
       "door_gate_cells": [
@@ -2223,19 +2347,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 24
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/02_pig_hot_air_balloon.schem",
-          "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
-          "data_version": 4189,
-          "voxel_count": 1080,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/02_pig_hot_air_balloon.mc1.21.4.schem",
           "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
@@ -2243,7 +2359,9 @@
           "voxel_count": 1080,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/02_pig_hot_air_balloon.mc26.1.schem",
@@ -2252,18 +2370,37 @@
           "voxel_count": 1080,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/02_pig_hot_air_balloon.schem",
+        "sha256": "0fda9199770c5928f5dc5f707150c845e0f86de93c3f20f649f2fa3ca0efc1d4",
+        "data_version": 4189,
+        "voxel_count": 1080,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "3",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/03_big_red_barn.json",
       "sha256": "8c7d2a2a14c3beb2e542c9c7df42fa182211ec2f3b1e3b0899b15c8babbce8e5",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         18,
         17,
         19
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=8.5",
@@ -2290,7 +2427,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 698,
@@ -2504,7 +2642,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 778,
+          "mismatches_truncated": 766
         },
         {
           "plane": "z=9",
@@ -2531,7 +2672,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 53,
@@ -2745,7 +2887,50 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 108,
+          "mismatches_truncated": 96
+        },
+        {
+          "plane": "x=6.5",
+          "bounds": [
+            0,
+            13,
+            7,
+            12,
+            0,
+            0
+          ],
+          "pairs": {
+            "compared": 7,
+            "matched": 7,
+            "mismatched": 0,
+            "air_only": 35,
+            "coverage": 1
+          },
+          "center": {
+            "cells": 0,
+            "occupied": 0,
+            "mismatched": 0
+          },
+          "out_of_bounds": {
+            "cells": 0,
+            "occupied": [],
+            "occupied_total": 0,
+            "occupied_truncated": 0
+          },
+          "mismatch_classes": {
+            "occupancy": 0,
+            "material": 0,
+            "state": 0
+          },
+          "mismatches": [],
+          "exact": true,
+          "intent": "exact",
+          "expectation_met": true,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         }
       ],
       "door_gate_cells": [
@@ -2762,22 +2947,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/03_big_red_barn.schem",
-          "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
-          "data_version": 4189,
-          "voxel_count": 5814,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/03_big_red_barn.mc1.21.4.schem",
           "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
           "data_version": 4189,
           "voxel_count": 5814,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/03_big_red_barn.mc26.1.schem",
@@ -2786,18 +2964,37 @@
           "voxel_count": 5814,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/03_big_red_barn.schem",
+        "sha256": "68cd72d47b5af6f72c59b225eaa24a1c026b1529b023e14083bb3e427f38c813",
+        "data_version": 4189,
+        "voxel_count": 5814,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "3",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/03_storage_silo.json",
       "sha256": "a883a7e56dfe30087a79fff8fda5c5b21e936a63b6c87868bca4869d04da9410",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         9,
         23,
         9
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4",
@@ -2824,7 +3021,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 20,
@@ -3038,7 +3236,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 21,
+          "mismatches_truncated": 9
         },
         {
           "plane": "z=4",
@@ -3065,7 +3266,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -3074,7 +3276,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "x=z",
@@ -3101,7 +3306,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 20,
@@ -3315,7 +3521,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 21,
+          "mismatches_truncated": 9
         },
         {
           "plane": "x=-z+8",
@@ -3342,7 +3551,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 20,
@@ -3556,7 +3766,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 21,
+          "mismatches_truncated": 9
         }
       ],
       "door_gate_cells": [],
@@ -3564,22 +3777,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/03_storage_silo.schem",
-          "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
-          "data_version": 4189,
-          "voxel_count": 1863,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/03_storage_silo.mc1.21.4.schem",
           "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
           "data_version": 4189,
           "voxel_count": 1863,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/03_storage_silo.mc26.1.schem",
@@ -3588,18 +3794,37 @@
           "voxel_count": 1863,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/03_storage_silo.schem",
+        "sha256": "cce83cb03d3dbea8254632978e52dd5325694d52a307436238b19c28d5da36c0",
+        "data_version": 4189,
+        "voxel_count": 1863,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "4",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/04_pagoda.json",
       "sha256": "0206079863090d618b05e75a23606c8cacc1ffbe89a699e348a5f66c2ba074b4",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         15,
         39,
         16
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=7",
@@ -3626,7 +3851,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 49,
@@ -3840,7 +4066,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 70,
+          "mismatches_truncated": 58
         },
         {
           "plane": "z=7.5",
@@ -3867,7 +4096,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 576,
@@ -4081,7 +4311,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 781,
+          "mismatches_truncated": 769
         }
       ],
       "door_gate_cells": [],
@@ -4089,22 +4322,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/04_pagoda.schem",
-          "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
-          "data_version": 4189,
-          "voxel_count": 9360,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/04_pagoda.mc1.21.4.schem",
           "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
           "data_version": 4189,
           "voxel_count": 9360,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/04_pagoda.mc26.1.schem",
@@ -4113,18 +4339,37 @@
           "voxel_count": 9360,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/04_pagoda.schem",
+        "sha256": "42858a838218a29e250c8176be52bf7d74bca18f7caed6b692c806578a8f8a44",
+        "data_version": 4189,
+        "voxel_count": 9360,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "5",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/05_allay_statue.json",
       "sha256": "1d8f883f54ef5d6616af987fb217d016e6c37150333df7594072ee2be54e7414",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         17,
         14,
         6
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=8",
@@ -4151,7 +4396,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -4195,7 +4441,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 2,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=2.5",
@@ -4222,7 +4471,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 96,
@@ -4436,7 +4686,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 123,
+          "mismatches_truncated": 111
         }
       ],
       "door_gate_cells": [],
@@ -4444,22 +4697,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/05_allay_statue.schem",
-          "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
-          "data_version": 4189,
-          "voxel_count": 1428,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/05_allay_statue.mc1.21.4.schem",
           "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
           "data_version": 4189,
           "voxel_count": 1428,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/05_allay_statue.mc26.1.schem",
@@ -4468,18 +4714,37 @@
           "voxel_count": 1428,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/05_allay_statue.schem",
+        "sha256": "b835dd1491230d604dd1596073837b81feedb517bf48405f33241d16aa9676cb",
+        "data_version": 4189,
+        "voxel_count": 1428,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "6",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/06_wild_west_jail.json",
       "sha256": "1dff6d6538c6fb4ab9b0534628a8a901822137b2ae4c8cfea2959bcd1a18aae8",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         9,
         9
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -4506,7 +4771,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 202,
@@ -4720,7 +4986,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 269,
+          "mismatches_truncated": 257
         },
         {
           "plane": "z=4",
@@ -4747,7 +5016,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 158,
@@ -4961,7 +5231,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 226,
+          "mismatches_truncated": 214
         }
       ],
       "door_gate_cells": [
@@ -4994,22 +5267,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/06_wild_west_jail.schem",
-          "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
-          "data_version": 4189,
-          "voxel_count": 1053,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/06_wild_west_jail.mc1.21.4.schem",
           "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
           "data_version": 4189,
           "voxel_count": 1053,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/06_wild_west_jail.mc26.1.schem",
@@ -5018,18 +5284,37 @@
           "voxel_count": 1053,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/06_wild_west_jail.schem",
+        "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965",
+        "data_version": 4189,
+        "voxel_count": 1053,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "7",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/07_secret_island_base.json",
       "sha256": "89f0d6a68e2e207748d7b2d3a4b5a91d2a5935f4df873f4a818996273dabd400",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         24,
         13
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -5056,7 +5341,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 12,
@@ -5270,7 +5556,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 13,
+          "mismatches_truncated": 1
         },
         {
           "plane": "z=6",
@@ -5297,7 +5586,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 42,
@@ -5511,7 +5801,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 72,
+          "mismatches_truncated": 60
         },
         {
           "plane": "x=z",
@@ -5538,7 +5831,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 127,
@@ -5752,7 +6046,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 163,
+          "mismatches_truncated": 151
         },
         {
           "plane": "x=-z+12",
@@ -5779,7 +6076,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 124,
@@ -5993,7 +6291,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 163,
+          "mismatches_truncated": 151
         }
       ],
       "door_gate_cells": [
@@ -6034,22 +6335,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/07_secret_island_base.schem",
-          "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
-          "data_version": 4189,
-          "voxel_count": 4056,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/07_secret_island_base.mc1.21.4.schem",
           "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
           "data_version": 4189,
           "voxel_count": 4056,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/07_secret_island_base.mc26.1.schem",
@@ -6058,18 +6352,37 @@
           "voxel_count": 4056,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/07_secret_island_base.schem",
+        "sha256": "38b8b48afb7e800b135ac73e9c088ed8ed4354982ac345cdb7901cf5ceede015",
+        "data_version": 4189,
+        "voxel_count": 4056,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "8",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/08_greenhouse.json",
       "sha256": "717a3ae4e9b2fc181d363f9139891d6d6069a20f67db3137cf97a5746a6e4cc0",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         15,
         16,
         19
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=7",
@@ -6096,7 +6409,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 127,
@@ -6310,7 +6624,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 145,
+          "mismatches_truncated": 133
         },
         {
           "plane": "z=9",
@@ -6337,7 +6654,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 133,
@@ -6551,7 +6869,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 160,
+          "mismatches_truncated": 148
         }
       ],
       "door_gate_cells": [],
@@ -6563,19 +6884,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 19
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/08_greenhouse.schem",
-          "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
-          "data_version": 4189,
-          "voxel_count": 4560,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/08_greenhouse.mc1.21.4.schem",
           "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
@@ -6583,7 +6896,9 @@
           "voxel_count": 4560,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/08_greenhouse.mc26.1.schem",
@@ -6592,18 +6907,37 @@
           "voxel_count": 4560,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/08_greenhouse.schem",
+        "sha256": "6512a7eade46c93b4c271813c829313696bb6f1bff28844af9704711894e63d1",
+        "data_version": 4189,
+        "voxel_count": 4560,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "9",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/09_river_steamboat.json",
       "sha256": "20f794826b3ac81d35f7348fcc87836a114349baa483068369a047465fc6c99d",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         16,
         22
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -6630,7 +6964,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 16,
@@ -6844,7 +7179,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 24,
+          "mismatches_truncated": 12
         },
         {
           "plane": "z=10.5",
@@ -6871,7 +7209,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 525,
@@ -7085,7 +7424,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 588,
+          "mismatches_truncated": 576
         }
       ],
       "door_gate_cells": [
@@ -7114,19 +7456,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 1
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/09_river_steamboat.schem",
-          "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
-          "data_version": 4189,
-          "voxel_count": 4576,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/09_river_steamboat.mc1.21.4.schem",
           "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
@@ -7134,7 +7468,9 @@
           "voxel_count": 4576,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/09_river_steamboat.mc26.1.schem",
@@ -7143,18 +7479,37 @@
           "voxel_count": 4576,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/09_river_steamboat.schem",
+        "sha256": "dc478807f2a11946f779b74f98280aeca64a27b1db1bf62c575b356dfd0af8e7",
+        "data_version": 4189,
+        "voxel_count": 4576,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "10",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/10_pachinko_parkour.json",
       "sha256": "6f5537410c1713376ed8af5c150d98e786cdb509f81d66d4c7f411d1dd1eb507",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         14,
         16,
         6
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6.5",
@@ -7181,7 +7536,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 284,
@@ -7395,7 +7751,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 335,
+          "mismatches_truncated": 323
         },
         {
           "plane": "z=2.5",
@@ -7422,7 +7781,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 168,
@@ -7636,7 +7996,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 235,
+          "mismatches_truncated": 223
         }
       ],
       "door_gate_cells": [
@@ -7661,22 +8024,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/10_pachinko_parkour.schem",
-          "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
-          "data_version": 4189,
-          "voxel_count": 1344,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/10_pachinko_parkour.mc1.21.4.schem",
           "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
           "data_version": 4189,
           "voxel_count": 1344,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/10_pachinko_parkour.mc26.1.schem",
@@ -7685,18 +8041,37 @@
           "voxel_count": 1344,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/10_pachinko_parkour.schem",
+        "sha256": "c058e9ac4ed773a3ee4655b9c3889159b9689ff7b24d8bf4365f2c19b65c1903",
+        "data_version": 4189,
+        "voxel_count": 1344,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/11_grandstand.json",
       "sha256": "3b0befe69e02e795fca8a851fd7e05328eae22ceefd7167754e9261545df9472",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         8,
         9
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -7723,7 +8098,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 5,
@@ -7903,7 +8279,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 10,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=4",
@@ -7930,7 +8309,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 65,
@@ -8144,7 +8524,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 97,
+          "mismatches_truncated": 85
         }
       ],
       "door_gate_cells": [],
@@ -8152,22 +8535,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_grandstand.schem",
-          "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
-          "data_version": 4189,
-          "voxel_count": 936,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_grandstand.mc1.21.4.schem",
           "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
           "data_version": 4189,
           "voxel_count": 936,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_grandstand.mc26.1.schem",
@@ -8176,18 +8552,37 @@
           "voxel_count": 936,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_grandstand.schem",
+        "sha256": "bc7f88291fda4e85f66ff22854ab77f1bb9b4bff1c4fa1e9ab9f7b02aff2b801",
+        "data_version": 4189,
+        "voxel_count": 936,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/11_hairpin.json",
       "sha256": "cd77c940cb3d5c301a5acaa53192ba64940e555f86c84a132bf18aba9ab5e314",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         24,
         2,
         12
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=11.5",
@@ -8214,7 +8609,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -8428,7 +8824,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 22,
+          "mismatches_truncated": 10
         },
         {
           "plane": "z=5.5",
@@ -8455,7 +8854,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -8669,7 +9069,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 86,
+          "mismatches_truncated": 74
         }
       ],
       "door_gate_cells": [],
@@ -8677,22 +9080,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_hairpin.schem",
-          "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
-          "data_version": 4189,
-          "voxel_count": 576,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_hairpin.mc1.21.4.schem",
           "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
           "data_version": 4189,
           "voxel_count": 576,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_hairpin.mc26.1.schem",
@@ -8701,18 +9097,37 @@
           "voxel_count": 576,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_hairpin.schem",
+        "sha256": "9d14b6eacc1d2662de02dc812d6de88f704d17b6fe6b39f53bd225fcbb076af2",
+        "data_version": 4189,
+        "voxel_count": 576,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "3"
+      },
       "source": "schematics/blueprints/pack1/11_safety_fence.json",
       "sha256": "c925532c90976b05b3d104dad6457f33cf9bab2f77faa8a5236d09a17d2c1c2f",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         9,
         5,
         3
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4",
@@ -8739,7 +9154,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -8748,7 +9164,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=1",
@@ -8775,7 +9194,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -8784,7 +9204,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         }
       ],
       "door_gate_cells": [],
@@ -8792,22 +9215,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_safety_fence.schem",
-          "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
-          "data_version": 4189,
-          "voxel_count": 135,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_safety_fence.mc1.21.4.schem",
           "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
           "data_version": 4189,
           "voxel_count": 135,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_safety_fence.mc26.1.schem",
@@ -8816,18 +9232,37 @@
           "voxel_count": 135,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_safety_fence.schem",
+        "sha256": "4fce019d0f984bd46dd8397c84e119277025aee35f367af1742d95f81e9e94c6",
+        "data_version": 4189,
+        "voxel_count": 135,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "4"
+      },
       "source": "schematics/blueprints/pack1/11_starting_gate.json",
       "sha256": "c4d2c0883edb918ec03f845742450b35eb91b6dd467495613ee0cc89d8c5f305",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         11,
         11,
         7
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=5",
@@ -8854,7 +9289,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 4,
@@ -8983,7 +9419,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 7,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=3",
@@ -9010,7 +9449,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 21,
@@ -9224,7 +9664,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 26,
+          "mismatches_truncated": 14
         }
       ],
       "door_gate_cells": [],
@@ -9232,22 +9675,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_starting_gate.schem",
-          "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
-          "data_version": 4189,
-          "voxel_count": 847,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_starting_gate.mc1.21.4.schem",
           "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
           "data_version": 4189,
           "voxel_count": 847,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_starting_gate.mc26.1.schem",
@@ -9256,18 +9692,37 @@
           "voxel_count": 847,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_starting_gate.schem",
+        "sha256": "87513d6ebc09d42eaf125b860c2196844d825a9cf8c84a4635362225c8ab846d",
+        "data_version": 4189,
+        "voxel_count": 847,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "5"
+      },
       "source": "schematics/blueprints/pack1/11_starting_grid.json",
       "sha256": "c02cf6f824f78a4d87c3e26f7578969704389f60d0b253b8fdacb5fcfb3fe04b",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         9,
         3,
         19
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4",
@@ -9294,7 +9749,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -9406,7 +9862,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 6,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=9",
@@ -9433,7 +9892,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -9647,7 +10107,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 19,
+          "mismatches_truncated": 7
         }
       ],
       "door_gate_cells": [],
@@ -9655,22 +10118,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_starting_grid.schem",
-          "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
-          "data_version": 4189,
-          "voxel_count": 513,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_starting_grid.mc1.21.4.schem",
           "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
           "data_version": 4189,
           "voxel_count": 513,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_starting_grid.mc26.1.schem",
@@ -9679,18 +10135,37 @@
           "voxel_count": 513,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_starting_grid.schem",
+        "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f",
+        "data_version": 4189,
+        "voxel_count": 513,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "11",
+        "id": "6"
+      },
       "source": "schematics/blueprints/pack1/11_turn.json",
       "sha256": "c8440d22deac63f928490e6d212c66e6ca3ac9510bd65866e7fd28de80461983",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         12,
         2,
         12
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=5.5",
@@ -9717,7 +10192,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -9931,7 +10407,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 39,
+          "mismatches_truncated": 27
         },
         {
           "plane": "z=5.5",
@@ -9958,7 +10437,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -10172,7 +10652,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 39,
+          "mismatches_truncated": 27
         },
         {
           "plane": "x=z",
@@ -10199,7 +10682,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -10208,7 +10692,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "x=-z+11",
@@ -10235,7 +10722,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -10449,7 +10937,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 53,
+          "mismatches_truncated": 41
         }
       ],
       "door_gate_cells": [],
@@ -10457,22 +10948,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/11_turn.schem",
-          "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
-          "data_version": 4189,
-          "voxel_count": 288,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/11_turn.mc1.21.4.schem",
           "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
           "data_version": 4189,
           "voxel_count": 288,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/11_turn.mc26.1.schem",
@@ -10481,18 +10965,37 @@
           "voxel_count": 288,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/11_turn.schem",
+        "sha256": "1230c72976fb4d64419e7ba3d756bef85fc1e2845e73c9e94edf7f0fd093ac11",
+        "data_version": 4189,
+        "voxel_count": 288,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "12",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/12_scouting_tower.json",
       "sha256": "75ed9108f3ae39f55b023a8b2bf2a0be2748fb0355dce432bbfc9152c098f76b",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         27,
         13
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -10519,7 +11022,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 48,
@@ -10733,7 +11237,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 71,
+          "mismatches_truncated": 59
         },
         {
           "plane": "z=6",
@@ -10760,7 +11267,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 81,
@@ -10974,7 +11482,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 110,
+          "mismatches_truncated": 98
         },
         {
           "plane": "x=z",
@@ -11001,7 +11512,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 52,
@@ -11215,7 +11727,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 60,
+          "mismatches_truncated": 48
         },
         {
           "plane": "x=-z+12",
@@ -11242,7 +11757,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 85,
@@ -11456,7 +11972,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 138,
+          "mismatches_truncated": 126
         }
       ],
       "door_gate_cells": [],
@@ -11464,22 +11983,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/12_scouting_tower.schem",
-          "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
-          "data_version": 4189,
-          "voxel_count": 4563,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/12_scouting_tower.mc1.21.4.schem",
           "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
           "data_version": 4189,
           "voxel_count": 4563,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/12_scouting_tower.mc26.1.schem",
@@ -11488,18 +12000,37 @@
           "voxel_count": 4563,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/12_scouting_tower.schem",
+        "sha256": "774f18ad7a1b016cae92fde687cd210f21e2c4bfa1b8e117a7890a4080e11961",
+        "data_version": 4189,
+        "voxel_count": 4563,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "13",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/13_skull_cave.json",
       "sha256": "adea4cdc66f0d16e3578407000a828d4e6cdef0a74d50c92f5ad44952272b151",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         20,
         16,
         16
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=9.5",
@@ -11526,7 +12057,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 183,
@@ -11740,7 +12272,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 213,
+          "mismatches_truncated": 201
         },
         {
           "plane": "z=7.5",
@@ -11767,7 +12302,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 849,
@@ -11981,7 +12517,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 999,
+          "mismatches_truncated": 987
         }
       ],
       "door_gate_cells": [],
@@ -11989,22 +12528,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/13_skull_cave.schem",
-          "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
-          "data_version": 4189,
-          "voxel_count": 5120,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/13_skull_cave.mc1.21.4.schem",
           "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
           "data_version": 4189,
           "voxel_count": 5120,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/13_skull_cave.mc26.1.schem",
@@ -12013,18 +12545,37 @@
           "voxel_count": 5120,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/13_skull_cave.schem",
+        "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1",
+        "data_version": 4189,
+        "voxel_count": 5120,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "14",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/14_school_monster_bus.json",
       "sha256": "0db115389d89a8ee3b4f69e7c6ff50c362484bc1341508fb641126c987815956",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         8,
         10,
         15
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=3.5",
@@ -12051,7 +12602,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 9,
@@ -12265,7 +12817,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 20,
+          "mismatches_truncated": 8
         },
         {
           "plane": "z=7",
@@ -12292,7 +12847,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 73,
@@ -12506,7 +13062,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 116,
+          "mismatches_truncated": 104
         }
       ],
       "door_gate_cells": [
@@ -12586,22 +13145,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/14_school_monster_bus.schem",
-          "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
-          "data_version": 4189,
-          "voxel_count": 1200,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/14_school_monster_bus.mc1.21.4.schem",
           "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
           "data_version": 4189,
           "voxel_count": 1200,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/14_school_monster_bus.mc26.1.schem",
@@ -12610,18 +13162,37 @@
           "voxel_count": 1200,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/14_school_monster_bus.schem",
+        "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9",
+        "data_version": 4189,
+        "voxel_count": 1200,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "15",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/15_potion_factory.json",
       "sha256": "c4e6f36725e7cde86abb09ea9aa339971272d24f33d29faf904fab6693dd32fb",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         19,
         13,
         15
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=9",
@@ -12648,7 +13219,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 128,
@@ -12862,7 +13434,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 157,
+          "mismatches_truncated": 145
         },
         {
           "plane": "z=7",
@@ -12889,7 +13464,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 137,
@@ -13103,7 +13679,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 155,
+          "mismatches_truncated": 143
         }
       ],
       "door_gate_cells": [
@@ -13144,22 +13723,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/15_potion_factory.schem",
-          "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
-          "data_version": 4189,
-          "voxel_count": 3705,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/15_potion_factory.mc1.21.4.schem",
           "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
           "data_version": 4189,
           "voxel_count": 3705,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/15_potion_factory.mc26.1.schem",
@@ -13168,18 +13740,37 @@
           "voxel_count": 3705,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/15_potion_factory.schem",
+        "sha256": "6e4a12b15d94ed02100aa82d2c60b565f32e767211917d872e7b672a2cc05acb",
+        "data_version": 4189,
+        "voxel_count": 3705,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "16",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/16_wishing_well.json",
       "sha256": "d17499dd2fbf314ff8d9d59567a25e0ee774b73746578d96ce9dd275da23a39f",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         5,
         15,
         8
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=2",
@@ -13206,7 +13797,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 18,
@@ -13420,7 +14012,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 30,
+          "mismatches_truncated": 18
         },
         {
           "plane": "z=3.5",
@@ -13447,7 +14042,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 107,
@@ -13661,7 +14257,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 130,
+          "mismatches_truncated": 118
         }
       ],
       "door_gate_cells": [],
@@ -13669,22 +14268,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/16_wishing_well.schem",
-          "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
-          "data_version": 4189,
-          "voxel_count": 600,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/16_wishing_well.mc1.21.4.schem",
           "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
           "data_version": 4189,
           "voxel_count": 600,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/16_wishing_well.mc26.1.schem",
@@ -13693,18 +14285,37 @@
           "voxel_count": 600,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/16_wishing_well.schem",
+        "sha256": "0914ae10fea6e97183036c9cbb125dd5cf31dbb5e2ef997013b8821c0e531ae8",
+        "data_version": 4189,
+        "voxel_count": 600,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "17",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/17_carousel.json",
       "sha256": "e5af9578179ed051cb63ced0db51e4156225821396b71f62a05174e05120acc1",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         17,
         17,
         17
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=8",
@@ -13731,7 +14342,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -13740,7 +14352,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=8",
@@ -13767,7 +14382,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -13981,7 +14597,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 12,
+          "mismatches_truncated": 0
         },
         {
           "plane": "x=z",
@@ -14008,7 +14627,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -14222,7 +14842,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 24,
+          "mismatches_truncated": 12
         },
         {
           "plane": "x=-z+16",
@@ -14249,7 +14872,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -14463,7 +15087,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 24,
+          "mismatches_truncated": 12
         }
       ],
       "door_gate_cells": [],
@@ -14471,22 +15098,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/17_carousel.schem",
-          "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
-          "data_version": 4189,
-          "voxel_count": 4913,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/17_carousel.mc1.21.4.schem",
           "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
           "data_version": 4189,
           "voxel_count": 4913,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/17_carousel.mc26.1.schem",
@@ -14495,18 +15115,37 @@
           "voxel_count": 4913,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/17_carousel.schem",
+        "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2",
+        "data_version": 4189,
+        "voxel_count": 4913,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "17",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/17_strider_bath.json",
       "sha256": "13f48d36edf4857e32e2418db2e03a9a035df8eb42f94c2324f016d14d66378f",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         9,
         8,
         11
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4",
@@ -14533,7 +15172,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -14542,7 +15182,10 @@
           },
           "mismatches": [],
           "exact": true,
-          "mismatches_truncated": false
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 0,
+          "mismatches_truncated": 0
         },
         {
           "plane": "z=5",
@@ -14569,7 +15212,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 75,
@@ -14783,7 +15427,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 92,
+          "mismatches_truncated": 80
         }
       ],
       "door_gate_cells": [],
@@ -14791,22 +15438,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/17_strider_bath.schem",
-          "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
-          "data_version": 4189,
-          "voxel_count": 792,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/17_strider_bath.mc1.21.4.schem",
           "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
           "data_version": 4189,
           "voxel_count": 792,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/17_strider_bath.mc26.1.schem",
@@ -14815,18 +15455,37 @@
           "voxel_count": 792,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/17_strider_bath.schem",
+        "sha256": "88914b5c54376a58e38891e655c3c6f6af4e2d751564861355a32ea984f027da",
+        "data_version": 4189,
+        "voxel_count": 792,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "18",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/18_easter_island_head.json",
       "sha256": "29a2299acb63126c76d4b41e3e85f36b79b92b380a3f925c1a47f95f82680a2a",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         5,
         9,
         4
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=2",
@@ -14853,7 +15512,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 0,
@@ -15067,7 +15727,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 14,
+          "mismatches_truncated": 2
         },
         {
           "plane": "z=1.5",
@@ -15094,7 +15757,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 38,
@@ -15308,7 +15972,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 51,
+          "mismatches_truncated": 39
         }
       ],
       "door_gate_cells": [],
@@ -15316,22 +15983,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/18_easter_island_head.schem",
-          "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
-          "data_version": 4189,
-          "voxel_count": 180,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/18_easter_island_head.mc1.21.4.schem",
           "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
           "data_version": 4189,
           "voxel_count": 180,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/18_easter_island_head.mc26.1.schem",
@@ -15340,18 +16000,37 @@
           "voxel_count": 180,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/18_easter_island_head.schem",
+        "sha256": "dbdd6a398f94c463c5b878b88bca3783a8c43c1b06e7e5d755c7ae42ff28067d",
+        "data_version": 4189,
+        "voxel_count": 180,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "18",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/18_giant_grandfather_clock.json",
       "sha256": "62894696a4e04a210ae201ecd83ef9ac231e5b43f4f068bb9e2f54e142fae592",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         13,
         33,
         11
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=6",
@@ -15378,7 +16057,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 33,
@@ -15592,7 +16272,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 61,
+          "mismatches_truncated": 49
         },
         {
           "plane": "z=5",
@@ -15619,7 +16302,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 105,
@@ -15833,7 +16517,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 189,
+          "mismatches_truncated": 177
         }
       ],
       "door_gate_cells": [
@@ -15862,6 +16549,7 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 2
         },
         {
@@ -15870,19 +16558,11 @@
           "via": [
             "minecraft:iron_chain"
           ],
+          "target_version": "26.1",
           "voxel_count": 2
         }
       ],
       "schematics": [
-        {
-          "path": "schematics/schems/pack1/18_giant_grandfather_clock.schem",
-          "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
-          "data_version": 4189,
-          "voxel_count": 4719,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
         {
           "path": "schematics/schems/pack1/18_giant_grandfather_clock.mc1.21.4.schem",
           "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
@@ -15890,7 +16570,9 @@
           "voxel_count": 4719,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/18_giant_grandfather_clock.mc26.1.schem",
@@ -15899,18 +16581,37 @@
           "voxel_count": 4719,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/18_giant_grandfather_clock.schem",
+        "sha256": "87ea5d4a5747d9a09e898670f6fa570c6710e3a7fb3c4f06961c2c5cd33916a6",
+        "data_version": 4189,
+        "voxel_count": 4719,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "19",
+        "id": "1"
+      },
       "source": "schematics/blueprints/pack1/19_hot_spring_chalet.json",
       "sha256": "200211c3e6ada9249da298635df34e4f14c55cf93a4c0140b90d137359fca2a8",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         10,
         6,
         13
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=4.5",
@@ -15937,7 +16638,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 69,
@@ -16151,7 +16853,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 99,
+          "mismatches_truncated": 87
         },
         {
           "plane": "z=6",
@@ -16178,7 +16883,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 23,
@@ -16392,7 +17098,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 29,
+          "mismatches_truncated": 17
         }
       ],
       "door_gate_cells": [],
@@ -16400,22 +17109,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/19_hot_spring_chalet.schem",
-          "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
-          "data_version": 4189,
-          "voxel_count": 780,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/19_hot_spring_chalet.mc1.21.4.schem",
           "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
           "data_version": 4189,
           "voxel_count": 780,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/19_hot_spring_chalet.mc26.1.schem",
@@ -16424,18 +17126,37 @@
           "voxel_count": 780,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/19_hot_spring_chalet.schem",
+        "sha256": "5da9aeaff9c9425e1b28b75e3abd3d50d0b8b35c1be0aa1ad0dc198bb095c52c",
+        "data_version": 4189,
+        "voxel_count": 780,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     },
     {
+      "id": {
+        "group": "19",
+        "id": "2"
+      },
       "source": "schematics/blueprints/pack1/19_thermal_springs.json",
       "sha256": "fad503c11c512a057e152a86d04040875840336227f52aab40a50c11b6b173bd",
+      "minecraft_version": "1.21.4",
+      "data_version": 4189,
       "dimensions": [
         23,
         8,
         22
       ],
+      "symmetry_status": "measured",
+      "symmetry_reason": null,
       "symmetry": [
         {
           "plane": "x=11",
@@ -16462,7 +17183,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 204,
@@ -16676,7 +17398,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 336,
+          "mismatches_truncated": 324
         },
         {
           "plane": "z=10.5",
@@ -16703,7 +17428,8 @@
           "out_of_bounds": {
             "cells": 0,
             "occupied": [],
-            "occupied_total": 0
+            "occupied_total": 0,
+            "occupied_truncated": 0
           },
           "mismatch_classes": {
             "occupancy": 580,
@@ -16917,7 +17643,10 @@
             }
           ],
           "exact": false,
-          "mismatches_truncated": true
+          "intent": "measure",
+          "expectation_met": null,
+          "mismatch_total": 708,
+          "mismatches_truncated": 696
         }
       ],
       "door_gate_cells": [],
@@ -16925,22 +17654,15 @@
       "conversions": [],
       "schematics": [
         {
-          "path": "schematics/schems/pack1/19_thermal_springs.schem",
-          "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
-          "data_version": 4189,
-          "voxel_count": 4048,
-          "mismatched_voxels": 0,
-          "differences": [],
-          "palette_equal": true
-        },
-        {
           "path": "schematics/schems/pack1/19_thermal_springs.mc1.21.4.schem",
           "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
           "data_version": 4189,
           "voxel_count": 4048,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "1.21.4",
+          "status": "matched"
         },
         {
           "path": "schematics/schems/pack1/19_thermal_springs.mc26.1.schem",
@@ -16949,9 +17671,20 @@
           "voxel_count": 4048,
           "mismatched_voxels": 0,
           "differences": [],
-          "palette_equal": true
+          "palette_equal": true,
+          "version": "26.1",
+          "status": "matched"
         }
-      ]
+      ],
+      "historical_original": {
+        "path": "schematic-archive/pack1_originals/19_thermal_springs.schem",
+        "sha256": "985ddd73114c424fdd548de97eee21008cdd9c5d9c7e78a901906bef14acb05e",
+        "data_version": 4189,
+        "voxel_count": 4048,
+        "mismatched_voxels": 0,
+        "differences": [],
+        "palette_equal": true
+      }
     }
   ]
 }

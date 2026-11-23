@@ -130,8 +130,8 @@ test("pack staging, reports, runtime filename selection, no overwrite and path s
     assert.equal(report.entries[0].targetDataVersion, 4786);
     assert.equal(report.entries[0].changes[0].to, iron);
     assert.equal(await readFile(path.join(outputs, "one.schem"), "utf8"), "canonical");
-    assert.equal(await resolveSchematicPath(`${pack}:one.mc26.1.nonvalidated.schem`), path.join(outputs, "one.mc26.1.nonvalidated.schem"));
-    assert.equal(await resolveSchematicPath(`${pack}:1:1`), path.join(outputs, "one.schem"));
+    assert.equal(await resolveSchematicPath(`${pack}:one.mc26.1.nonvalidated.schem`, undefined, { version: "26.1", allowNonvalidatedSchematic: true }), path.join(outputs, "one.mc26.1.nonvalidated.schem"));
+    assert.equal(await resolveSchematicPath(`${pack}:1:1`, undefined, { version: "26.1", allowNonvalidatedSchematic: true }), path.join(outputs, "one.mc26.1.nonvalidated.schem"));
     const original = await readFile(path.join(outputs, "one.mc26.1.nonvalidated.schem"));
     assert.notEqual(packRun(pack, "26.1").status, 0);
     assert.deepEqual(await readFile(path.join(outputs, "one.mc26.1.nonvalidated.schem")), original);

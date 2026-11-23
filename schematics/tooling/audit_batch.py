@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Audit every blueprint and matching schematic in a schematics pack."""
+"""Audit versioned pack assets for the blueprints' explicit source release."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -21,6 +22,33 @@ READER_VALIDATOR = TOOLING / "validate_blueprint.mjs"
 BEGIN = "<!-- BEGIN GENERATED BATCH AUDIT -->"
 END = "<!-- END GENERATED BATCH AUDIT -->"
 PACK_RE = re.compile(r"^pack[1-9][0-9]*$")
+
+
+def create_output_dir(raw: str) -> Path:
+    """Create a fresh directory below tmp without following symlink components.
+
+    Parent directories are retained on failure. This is not protection against
+    concurrent renames after creation; use a trusted, stable workspace.
+    """
+    parts = raw.split("/")
+    if len(parts) < 2 or parts[0] != "tmp" or any(p in ("", ".", "..") or "\\" in p for p in parts):
+        raise ValueError("--output-dir must be a relative new directory under project tmp/")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    fd = os.open(ROOT, flags)
+    try:
+        for index, part in enumerate(parts):
+            last = index == len(parts) - 1
+            try:
+                os.mkdir(part, mode=0o700, dir_fd=fd)
+            except FileExistsError:
+                if last:
+                    raise
+            next_fd = os.open(part, flags, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+    finally:
+        os.close(fd)
+    return ROOT.joinpath(*parts)
 
 
 def sha256(path: Path) -> str:
@@ -115,9 +143,11 @@ def load_index(schems_dir: Path) -> dict[str, tuple[int, int]]:
                 raise ValueError(f"invalid schematic filename {filename!r} in {path}")
             if filename in mappings:
                 raise ValueError(f"duplicate schematic filename {filename!r} in {path}")
-            candidate = (schems_dir / filename).resolve(strict=True)
-            if candidate == pack_real or pack_real not in candidate.parents or not candidate.is_file():
-                raise ValueError(f"unsafe or non-file schematic target {filename!r} in {path}")
+            logical = schems_dir / filename
+            if logical.exists() or logical.is_symlink():
+                candidate = logical.resolve(strict=True)
+                if candidate == pack_real or pack_real not in candidate.parents or not candidate.is_file():
+                    raise ValueError(f"unsafe or non-file schematic target {filename!r} in {path}")
             mappings[filename] = (group, identifier)
     return mappings
 
@@ -131,7 +161,8 @@ def result_status(check: dict) -> str:
     return "ERROR"
 
 
-def make_rows(audit: dict, pack: str) -> list[str]:
+def make_rows(audit: dict, pack: str, report_dir: Path | None = None) -> list[str]:
+    report_dir = report_dir or (SCHEMATICS / "schems" / pack)
     rows = []
     for item in audit["builds"]:
         blueprint = Path(item["blueprint"]["path"])
@@ -159,15 +190,15 @@ def make_rows(audit: dict, pack: str) -> list[str]:
         else:
             reader_text = f"{reader['result']} (exit {reader['exit_code']})"
         title = item.get("title", stem).replace("|", "\\|")
-        bp_link = f"[{{blueprint.name}}](../../blueprints/{pack}/{{blueprint.name}})"
-        schem_link = f"[{{schematic.name}}]({{schematic.name}})"
-        action_link = f"[`!buildSchematic(\"{selector}\")`](../../../src/agent/commands/actions.js:492)"
+        bp_link = f"[{{blueprint.name}}]({os.path.relpath(ROOT / blueprint, report_dir)})"
+        schem_link = f"[{{schematic.name}}]({os.path.relpath(ROOT / schematic, report_dir)})"
+        action_link = f"[`!buildSchematic(\"{selector}\")`]({os.path.relpath(ROOT / 'src/agent/commands/actions.js', report_dir)}:492)"
         rows.append(f"| {item.get('group', '—')} | {item.get('id', '—')} | {title} | {bp_link} / {schem_link} | {dim_text} | {item.get('non_air_count', '—')} | {binary_text} / {determinism_text} | {reader_text} | {action_link} |".format(blueprint=blueprint, schematic=schematic))
     return rows
 
 
 def update_report(audit: dict, report: Path, pack: str) -> None:
-    rows = make_rows(audit, pack)
+    rows = make_rows(audit, pack, report.parent)
     summary = audit["summary"]
     coverage = audit["coverage"]
     tests = audit["tests"]
@@ -175,7 +206,7 @@ def update_report(audit: dict, report: Path, pack: str) -> None:
         BEGIN,
         f"## Current audit for `{pack}` (generated)",
         "",
-        f"Audit timestamp: `{audit['checked_at_utc']}`. This run read canonical artifacts and regenerated only temporary schematics.",
+        f"Audit timestamp: `{audit['checked_at_utc']}`. This run read explicit-target versioned artifacts and regenerated only temporary schematics.",
         "",
         "| Group | ID | Title | Blueprint / schematic | X×Y×Z | Non-air | Binary / deterministic | Production-reader result | Stable command |",
         "| ---: | ---: | --- | --- | --- | ---: | --- | --- | --- |",
@@ -183,11 +214,11 @@ def update_report(audit: dict, report: Path, pack: str) -> None:
         "",
         f"**Aggregate:** {summary['build_count']} blueprints inspected; binary validations {summary['binary_pass']} passed / {summary['binary_fail']} failed; deterministic regenerations {summary['deterministic_pass']} matched / {summary['deterministic_fail']} failed; production-reader comparisons {summary['reader_pass']} passed, {summary['reader_mismatch']} mismatched, {summary['reader_error']} errored/not run. Blueprint inventory coverage: {coverage['blueprint_count']} JSON; {coverage['schematic_count']} matching schematics; {coverage['notes_nonempty_count']} nonempty validation notes. Missing/empty artifacts: `{json.dumps(coverage['artifact_issues'], ensure_ascii=False)}`.",
         "",
-        f"**Tests:** VarInt test exit {tests['varint']['exit_code']} ([log](../../tooling/validation/{pack}/varint_test.log)); `npm run test:schematic` exit {tests['npm_test']['exit_code']} ([log](../../tooling/validation/{pack}/npm_test.log)). Per-build logs are in [the pack audit logs](../../tooling/validation/{pack}/build_logs/).",
+        f"**Tests:** VarInt test exit {tests['varint']['exit_code']} ([log](varint_test.log)); `npm run test:schematic` exit {tests['npm_test']['exit_code']} ([log](npm_test.log)). Per-build logs are in [the pack audit logs](build_logs/).",
         "",
         "Reader mismatches and command errors are retained as failures; a binary pass is not a reader pass. No live-server placement or image-fidelity test is implied. Existing reports and baseline evidence outside this generated section are historical records.",
         "",
-        f"Machine-readable results: [batch_validation.json](../../tooling/validation/{pack}/batch_validation.json). Reproducible runner: [audit_batch.py](../../tooling/audit_batch.py).",
+        f"Machine-readable results: [batch_validation.json](batch_validation.json). Reproducible runner: [audit_batch.py]({os.path.relpath(Path(__file__), report.parent)}).",
         END,
     ]
     generated = "\n".join(section)
@@ -208,16 +239,17 @@ def update_report(audit: dict, report: Path, pack: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pack", default="pack1", help="pack directory name (default: pack1)")
-    parser.add_argument("--minecraft-version", help="require this version; otherwise use each blueprint's metadata")
+    parser.add_argument("--minecraft-version", required=True, help="explicit target matching each blueprint source release")
+    parser.add_argument("--output-dir", required=True, help="new, non-existing directory under project tmp/ for reports and logs")
     parser.add_argument("--data-version", type=int, help="require this DataVersion; otherwise use each blueprint's metadata")
     args = parser.parse_args()
+    if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)+", args.minecraft_version):
+        parser.error("--minecraft-version must be a dotted release number")
     if not PACK_RE.fullmatch(args.pack):
         parser.error("--pack must be packN where N is a positive integer")
 
     blueprints_dir = SCHEMATICS / "blueprints" / args.pack
     schems_dir = SCHEMATICS / "schems" / args.pack
-    validation_dir = TOOLING / "validation" / args.pack
-    report_path = schems_dir / "batch_report.md"
     if not blueprints_dir.is_dir():
         print(f"ERROR: no blueprint directory for {args.pack}: {rel(blueprints_dir)}", file=sys.stderr)
         return 2
@@ -231,9 +263,13 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
+    try:
+        validation_dir = create_output_dir(args.output_dir)
+    except (OSError, ValueError) as error:
+        parser.error(f"cannot create fresh output directory: {error}")
+    report_path = validation_dir / "batch_report.md"
     filenames_to_tuples = ids
     build_logs = validation_dir / "build_logs"
-    validation_dir.mkdir(parents=True, exist_ok=True)
 
     version_lines = {
         "node": subprocess.run(["node", "--version"], cwd=ROOT, text=True, capture_output=True).stdout.strip(),
@@ -253,7 +289,7 @@ def main() -> int:
     artifact_issues = []
     for blueprint_path in blueprint_files:
         stem = blueprint_path.stem
-        schematic_path = schems_dir / f"{stem}.schem"
+        schematic_path = schems_dir / f"{stem}.mc{args.minecraft_version}.schem"
         notes_path = blueprints_dir / f"{stem}.validation.md"
         try:
             blueprint = json.loads(blueprint_path.read_text(encoding="utf-8"))
@@ -265,8 +301,8 @@ def main() -> int:
         item = {
             "folder": stem[:2] if len(stem) >= 2 else "—",
             "title": blueprint.get("source_title", blueprint.get("title", stem)),
-            "group": filenames_to_tuples.get(schematic_path.name, (None, None))[0],
-            "id": filenames_to_tuples.get(schematic_path.name, (None, None))[1],
+            "group": filenames_to_tuples.get(f"{stem}.schem", (None, None))[0],
+            "id": filenames_to_tuples.get(f"{stem}.schem", (None, None))[1],
             "blueprint": file_meta(blueprint_path),
             "schematic": {"path": rel(schematic_path), "exists": schematic_path.is_file(), "bytes": schematic_path.stat().st_size if schematic_path.is_file() else 0,
                           "sha256": sha256(schematic_path) if schematic_path.is_file() else None, "nonempty": schematic_path.is_file() and schematic_path.stat().st_size > 0},
@@ -346,11 +382,11 @@ def main() -> int:
         "pack": args.pack,
         "pack_index_schema_version": 2 if (schems_dir / "index.json").is_file() else None,
         "requested_constraints": {"minecraft_version": args.minecraft_version, "data_version": args.data_version},
-        "scope": f"All blueprint JSONs in schematics/blueprints/{args.pack} and same-stem canonical schematics in schematics/schems/{args.pack}; deterministic regeneration uses temporary output only.",
+        "scope": f"All blueprint JSONs in schematics/blueprints/{args.pack} and explicit-target versioned schematics in schematics/schems/{args.pack}; deterministic regeneration uses temporary output only.",
         "versions": version_lines,
         "commands": {
-            "binary": "python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem [--target-version <MC_VERSION>]",
-            "production_reader": "node schematics/tooling/validate_blueprint.mjs schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.schem [<MC_VERSION>]",
+            "binary": "python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.mc<MC_VERSION>.schem --target-version <MC_VERSION>",
+            "production_reader": "node schematics/tooling/validate_blueprint.mjs schematics/blueprints/<pack>/<name>.json schematics/schems/<pack>/<name>.mc<MC_VERSION>.schem <MC_VERSION>",
             "deterministic": "python3 schematics/tooling/compile_blueprint.py compile <blueprint.json> <temporary.schem> [--target-version <MC_VERSION>]",
             "varint": "python3 schematics/tooling/compile_blueprint.py test-varints",
             "npm_test": "npm run test:schematic",
