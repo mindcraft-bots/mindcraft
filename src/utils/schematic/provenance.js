@@ -10,7 +10,7 @@ import { validateSpongeStructure } from './sponge_structure.js';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const inventoryPath = path.join(projectRoot, 'schematics/tooling/historical_artifacts.v1.json');
-const inventoryHash = '087834e3be09842bf533b883c9628748f734d4d6eeadbee34b3298fc281b3fd2';
+const inventoryHash = '815a8dc6780bf7bc1e11c7c5ea6b50409a5bb6a4b5e496117e418aae0f49b174';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 // Status is an assertion about these exact bytes, not the name used to find them.

@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "source_sha256": "8a1f66fed416f28889ebfcf180653735d8721718ee6500c0b716602bb49fd0df",
+  "config": {
+    "plane": "x=4.5",
+    "bounds": "0,9,0,16,0,8",
+    "authoritative": "low",
+    "threshold": 0.98,
+    "allow": [
+      [
+        8,
+        10,
+        1
+      ],
+      [
+        6,
+        10,
+        1
+      ],
+      [
+        8,
+        12,
+        0
+      ],
+      [
+        6,
+        12,
+        0
+      ]
+    ]
+  },
+  "report": {
+    "plane": "x=4.5",
+    "bounds": [
+      0,
+      9,
+      0,
+      16,
+      0,
+      8
+    ],
+    "pairs": {
+      "compared": 221,
+      "matched": 217,
+      "mismatched": 4,
+      "air_only": 544,
+      "coverage": 0.9819004524886877
+    },
+    "center": {
+      "cells": 0,
+      "occupied": 0,
+      "mismatched": 0
+    },
+    "out_of_bounds": {
+      "cells": 0,
+      "occupied": []
+    },
+    "mismatch_classes": {
+      "occupancy": 2,
+      "material": 2,
+      "state": 0
+    },
+    "mismatches": [
+      {
+        "class": "material",
+        "from": [
+          1,
+          10,
+          1
+        ],
+        "to": [
+          8,
+          10,
+          1
+        ],
+        "source": "minecraft:black_wool",
+        "expected": "minecraft:black_wool",
+        "actual": "minecraft:yellow_concrete",
+        "center": false
+      },
+      {
+        "class": "material",
+        "from": [
+          3,
+          10,
+          1
+        ],
+        "to": [
+          6,
+          10,
+          1
+        ],
+        "source": "minecraft:yellow_concrete",
+        "expected": "minecraft:yellow_concrete",
+        "actual": "minecraft:black_wool",
+        "center": false
+      },
+      {
+        "class": "occupancy",
+        "from": [
+          1,
+          12,
+          0
+        ],
+        "to": [
+          8,
+          12,
+          0
+        ],
+        "source": "minecraft:black_wool",
+        "expected": "minecraft:black_wool",
+        "actual": "minecraft:air",
+        "center": false
+      },
+      {
+        "class": "occupancy",
+        "from": [
+          3,
+          12,
+          0
+        ],
+        "to": [
+          6,
+          12,
+          0
+        ],
+        "source": "minecraft:air",
+        "expected": "minecraft:air",
+        "actual": "minecraft:black_wool",
+        "center": false
+      }
+    ],
+    "exact": false
+  },
+  "changes": [
+    {
+      "from": [
+        1,
+        10,
+        1
+      ],
+      "to": [
+        8,
+        10,
+        1
+      ],
+      "source": "minecraft:black_wool",
+      "before": "minecraft:yellow_concrete",
+      "after": "minecraft:black_wool",
+      "class": "material"
+    },
+    {
+      "from": [
+        3,
+        10,
+        1
+      ],
+      "to": [
+        6,
+        10,
+        1
+      ],
+      "source": "minecraft:yellow_concrete",
+      "before": "minecraft:black_wool",
+      "after": "minecraft:yellow_concrete",
+      "class": "material"
+    },
+    {
+      "from": [
+        1,
+        12,
+        0
+      ],
+      "to": [
+        8,
+        12,
+        0
+      ],
+      "source": "minecraft:black_wool",
+      "before": "minecraft:air",
+      "after": "minecraft:black_wool",
+      "class": "occupancy"
+    },
+    {
+      "from": [
+        3,
+        12,
+        0
+      ],
+      "to": [
+        6,
+        12,
+        0
+      ],
+      "source": "minecraft:air",
+      "before": "minecraft:black_wool",
+      "after": "minecraft:air",
+      "class": "occupancy"
+    }
+  ],
+  "warning": "Agreement is not evidence of intended symmetry; verify every change against references. No side was selected automatically."
+}

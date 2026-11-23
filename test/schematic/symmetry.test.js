@@ -24,19 +24,15 @@ test('wardrobe keeps a mirror but the two doors have the reviewed outside hinges
   assert.deepEqual(report.pairs, { compared: 45, matched: 45, mismatched: 0, air_only: 39, coverage: 1 });
 });
 
-test('bee reports all four differing pairs and CLI check does not alter either source', () => {
+test('bee correction is an exact mirror and CLI check is read-only', () => {
   const bee = pathFor('02_bee_hot_air_balloon'), wardrobe = pathFor('01_wardrobe_nether_portal');
   const before = [hash(bee), hash(wardrobe)];
   const result = spawnSync(process.execPath, [tool.pathname, '--check', '--plane', 'x=4.5', bee.pathname], { encoding: 'utf8' });
-  assert.equal(result.status, 1, result.stderr);
+  assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout).reports[0].results[0];
-  assert.equal(report.exact, false);
-  assert.equal(report.pairs.compared, 221);
-  assert.equal(report.pairs.matched, 217);
-  assert.deepEqual(report.mismatch_classes, { occupancy: 2, material: 2, state: 0 });
-  assert.deepEqual(report.mismatches.map(({from,to}) => [from,to]), [
-    [[1,10,1],[8,10,1]], [[3,10,1],[6,10,1]], [[1,12,0],[8,12,0]], [[3,12,0],[6,12,0]],
-  ]);
+  assert.equal(report.exact, true);
+  assert.deepEqual(report.pairs, { compared: 220, matched: 220, mismatched: 0, air_only: 545, coverage: 1 });
+  assert.deepEqual(report.mismatch_classes, { occupancy: 0, material: 0, state: 0 });
   assert.deepEqual([hash(bee), hash(wardrobe)], before);
 });
 
@@ -94,7 +90,7 @@ test('classifies state differences, checks center, bounds and rejects unsupporte
   assert.equal(outside.out_of_bounds.cells, 2);
   assert.equal(outside.out_of_bounds.occupied.length, 1);
   assert.equal(diagnose(data, 'x=1', '0,1,0,0,0,0').out_of_bounds.occupied[0].outside, 'region');
-  assert.throws(() => diagnose(fixture({ a:'minecraft:oak_sign[rotation=0,waterlogged=false]' }, ['a']), 'x=0'), /unsupported property rotation/);
+  assert.equal(diagnose(fixture({ a:'minecraft:oak_sign[rotation=0,waterlogged=false]' }, ['a']), 'x=0').exact, true);
   assert.throws(() => diagnose(fixture({ a:'minecraft:oak_stairs[facing=east]' }, ['a']), 'x=0'), /incomplete properties/);
   assert.throws(() => diagnose(data, 'x=1.25'), /invalid plane/);
 });

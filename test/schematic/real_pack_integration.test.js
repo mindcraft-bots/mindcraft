@@ -57,7 +57,7 @@ test("every real pack1 asset is listed with separate group and id fields and res
       assert.equal(versioned.selector, `pack1:${group}:${id}`);
       assert.equal(versioned.compatible, true);
       assert.equal(versioned.selected, true);
-      assert.equal(versioned.validationStatus, "HISTORICAL_UNKNOWN");
+      assert.equal(versioned.validationStatus, filename === "02_bee_hot_air_balloon.schem" ? "STRICT_VALIDATED" : "HISTORICAL_UNKNOWN");
       const parsedVariant = await readSchematic(await readFile(selected), version);
       assert.deepEqual([parsedVariant.size.x, parsedVariant.size.y, parsedVariant.size.z], [blueprint.width_x, blueprint.height_y, blueprint.length_z]);
     }
@@ -151,7 +151,7 @@ test("production buildSchematic reader and planner pass migrated bee-chain items
     writeLog: message => logs.push(message),
   });
   assert.equal(success, true, logs.join("\n"));
-  assert.match(logs.join("\n"), /WARNING: schematic validation status HISTORICAL_UNKNOWN/);
+  assert.doesNotMatch(logs.join("\n"), /WARNING: schematic validation status HISTORICAL_UNKNOWN/);
   assert.equal(plannedBuild.plan.filter(entry => entry.name === "iron_chain").length, 24);
   assert.equal(bot.game.gameMode, "survival");
   assert.equal(logs.at(-1), "Successfully built and verified schematic 02_bee_hot_air_balloon.mc26.1.schem.");

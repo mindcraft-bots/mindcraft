@@ -119,14 +119,14 @@ test('strict proof, historical allowlist, report binding and variant constraints
     await writeFile(meta, sidecar); await rm(meta);
     assert.equal((await schematicProvenance(strict)).validationStatus, 'UNKNOWN');
     const old = path.join(SCHEMATICS_DIR, 'schems/pack1/02_bee_hot_air_balloon.mc26.1.schem');
-    assert.equal((await schematicProvenance(old)).validationStatus, 'HISTORICAL_UNKNOWN');
+    assert.equal((await schematicProvenance(old)).validationStatus, 'STRICT_VALIDATED');
     assert.equal((await schematicProvenance(old, Buffer.concat([await readFile(old), Buffer.from([0])]))).validationStatus, 'INVALID');
     const comparison = run(process.execPath, ['schematics/tooling/validate_blueprint.mjs', bee,
       path.join(SCHEMATICS_DIR, 'schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem')]);
     assert.equal(comparison.status, 0, comparison.stderr);
-    assert.equal(JSON.parse(comparison.stdout).validationStatus, 'HISTORICAL_UNKNOWN');
+    assert.equal(JSON.parse(comparison.stdout).validationStatus, 'STRICT_VALIDATED');
     assert.equal(JSON.parse(comparison.stdout).legalCombinationProof, 'NOT_PERFORMED_BY_READER_COMPARISON');
-    await assert.rejects(resolveSchematicPath('pack1:02_bee_hot_air_balloon.mc26.1.schem', SCHEMATICS_DIR, { version: '26.1', requireStrictSchematicValidation: true }), /HISTORICAL_UNKNOWN/);
+    assert.equal(await resolveSchematicPath('pack1:02_bee_hot_air_balloon.mc26.1.schem', SCHEMATICS_DIR, { version: '26.1', requireStrictSchematicValidation: true }), old);
     await assert.rejects(resolveSchematicPath('pack1:02_bee_hot_air_balloon.mc26.1.schem', SCHEMATICS_DIR, { version: '1.21.4' }), /No compatible/);
     await assert.rejects(resolveSchematicPath('pack1:02_bee_hot_air_balloon.MC26.1.schem', SCHEMATICS_DIR, { version: '26.1' }));
   } finally { await rm(dir, { recursive: true, force: true }); }
@@ -248,7 +248,8 @@ test('actual bee tuple selects consented derivative, reports ownership, and reje
     assert.equal(await resolveSchematicPath('pack1:2:1', SCHEMATICS_DIR, options), path.join(pack, name));
     assert.equal(await resolveSchematicPath(`pack1:${name}`, SCHEMATICS_DIR, options), path.join(pack, name));
     assert.match(await resolveSchematicPath('pack1:2:1', SCHEMATICS_DIR, { version: '26.1' }), /mc26\.1\.schem$/);
-    await assert.rejects(resolveSchematicPath('pack1:2:1', SCHEMATICS_DIR, { ...options, requireStrictSchematicValidation: true }), /No compatible/);
+    assert.equal(await resolveSchematicPath('pack1:2:1', SCHEMATICS_DIR, { ...options, requireStrictSchematicValidation: true }), path.join(pack, '02_bee_hot_air_balloon.mc26.1.schem'));
+    await assert.rejects(resolveSchematicPath(`pack1:${name}`, SCHEMATICS_DIR, { ...options, requireStrictSchematicValidation: true }), /NONVALIDATED|No compatible/);
     const entry = (await listSchematicEntries(SCHEMATICS_DIR, options)).find(item => item.fileName === name);
     assert.deepEqual([entry.group, entry.fileId, entry.selector, entry.validationStatus, entry.selected], [2, 1, 'pack1:2:1', 'NONVALIDATED', true]);
     const reportPath = path.join(pack, `${name}.provenance.json`), text = await readFile(reportPath, 'utf8');

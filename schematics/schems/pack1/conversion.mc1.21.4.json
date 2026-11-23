@@ -26,7 +26,7 @@
       "air": 1090,
       "block_data_bytes": 1530,
       "blueprint": "02_bee_hot_air_balloon.json",
-      "bytes": 761,
+      "bytes": 760,
       "changes": [],
       "dimensions": [
         10,
@@ -36,12 +36,13 @@
       "non_air": 440,
       "palette_entries": 25,
       "schematic": "02_bee_hot_air_balloon.mc1.21.4.schem",
-      "sha256": "1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119",
+      "sha256": "bbb7232b2ab68f3501c7fdd7418aa815066ec76eba1930b9274b8e757c8b16f4",
       "sourceDataVersion": 4189,
       "sourceVersion": "1.21.4",
       "spot_checks": 18,
       "targetDataVersion": 4189,
       "targetVersion": "1.21.4",
+      "validation": "STRICT_VALIDATED",
       "volume": 1530
     },
     {

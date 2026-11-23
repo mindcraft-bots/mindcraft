@@ -192,19 +192,38 @@ test('model-generated incomplete zero-argument command does not cancel an action
 
 test('real event handlers preserve public-chat suppression, whisper delivery, and peer/user filters', () => check(`
     const handlers = {};
+    const handled = [];
+    let publicCompletion;
+    agent.handleMessage = (...args) => {
+        handled.push(args);
+        const result = Agent.prototype.handleMessage.apply(agent, args);
+        if (publicCompletion) result.then(publicCompletion.resolve, publicCompletion.reject);
+        return result;
+    };
     agent.bot.on = (event, handler) => { handlers[event] = handler; };
     await agent._setupEventHandlers(null, null);
-    const settle = () => new Promise(resolve => setTimeout(resolve, 20));
+    const message = 'Andy build 01 from group 02 of pack1';
     globalThis.__numOtherAgents = 1;
-    handlers.chat('Sunny26639', 'Andy build 01 from group 02 of pack1');
-    await settle();
+    handlers.chat('Sunny26639', message);
+    assert.deepEqual(handled, []);
     assert.equal(calls.builds, 0);
-    await handlers.whisper('Sunny26639', 'Andy build 01 from group 02 of pack1');
+    await handlers.whisper('Sunny26639', message);
     assert.equal(calls.builds, 1);
     globalThis.__numOtherAgents = 0;
-    handlers.chat('Sunny26639', 'Andy build 01 from group 02 of pack1');
-    await settle();
+    let deadline;
+    const completed = new Promise((resolve, reject) => {
+        publicCompletion = { resolve, reject };
+        deadline = setTimeout(() => reject(new Error('Timed out waiting for public-chat message handling')), 5000);
+    });
+    try {
+        handlers.chat('Sunny26639', message);
+        await completed;
+    } finally {
+        clearTimeout(deadline);
+        publicCompletion = null;
+    }
     assert.equal(calls.builds, 2);
+    assert.deepEqual(handled, [['Sunny26639', message], ['Sunny26639', message]]);
     await handlers.whisper('Alice', '!buildSchematic("pack1:02:01")');
     await handlers.whisper('Mallory', '!buildSchematic("pack1:02:01")');
     await handlers.whisper('system', '!buildSchematic("pack1:02:01")');

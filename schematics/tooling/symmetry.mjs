@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Read-only voxel reflection diagnostic; this is not a reconstruction or repair tool.
+// Voxel reflection diagnostic; patch application is deliberately separate and opt-in.
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
@@ -15,7 +15,7 @@ const air = new Set(['minecraft:air', 'minecraft:cave_air', 'minecraft:void_air'
 
 function fail(message) { throw new Error(message); }
 
-function parseState(raw, registry) {
+export function parseState(raw, registry) {
   if (typeof raw !== 'string') fail('block state must be a string');
   const match = /^(minecraft:[a-z0-9_]+)(?:\[([^\]]+)\])?$/.exec(raw);
   if (!match) fail(`invalid state: ${raw}`);
@@ -36,16 +36,17 @@ function parseState(raw, registry) {
   return { name: match[1], props };
 }
 
-function render({ name, props }) {
+export function render({ name, props }) {
   const pairs = Object.entries(props).sort(([a], [b]) => a.localeCompare(b));
   return name + (pairs.length ? `[${pairs.map(([k, v]) => `${k}=${v}`).join(',')}]` : '');
 }
 
-function transform(state, plane) {
+export function transform(state, plane) {
   const maps = {
     x: { north: 'north', south: 'south', east: 'west', west: 'east' },
     z: { north: 'south', south: 'north', east: 'east', west: 'west' },
     diagonal: { north: 'west', south: 'east', east: 'south', west: 'north' },
+    antidiagonal: { north: 'east', south: 'west', east: 'north', west: 'south' },
   };
   const map = maps[plane.kind];
   const result = { name: state.name, props: {} };
@@ -57,7 +58,11 @@ function transform(state, plane) {
       else if (!['up', 'down'].includes(value)) fail(`unsupported facing in ${render(state)}`);
     } else if (key === 'axis') {
       if (!['x', 'y', 'z'].includes(value)) fail(`unsupported axis in ${render(state)}`);
-      if (plane.kind === 'diagonal' && value !== 'y') next = value === 'x' ? 'z' : 'x';
+      if (['diagonal', 'antidiagonal'].includes(plane.kind) && value !== 'y') next = value === 'x' ? 'z' : 'x';
+    } else if (key === 'rotation') {
+      if (!/^(?:[0-9]|1[0-5])$/.test(value)) fail(`unsupported rotation in ${render(state)}`);
+      const offset = { x: 0, z: 8, diagonal: 12, antidiagonal: 4 }[plane.kind];
+      next = String((offset - Number(value) + 16) % 16);
     } else if (key === 'hinge') {
       if (!state.name.endsWith('_door') || !['left', 'right'].includes(value)) fail(`unsupported hinge in ${render(state)}`);
       next = value === 'left' ? 'right' : 'left';
@@ -86,17 +91,20 @@ function transform(state, plane) {
   return result;
 }
 
-function parsePlane(text) {
+export function parsePlane(text) {
   let m = /^(x|z)=(-?\d+(?:\.5)?)$/.exec(text);
   if (m) return { kind: m[1], value: Number(m[2]), label: text };
   m = /^x=z(?:([+-])(\d+))?$/.exec(text);
   if (m) return { kind: 'diagonal', value: m[2] ? Number(m[2]) * (m[1] === '-' ? -1 : 1) : 0, label: text };
-  fail(`invalid plane ${text}; use x=2.5, z=4, x=z, or x=z+2`);
+  m = /^x=-z(?:([+-])(\d+))?$/.exec(text);
+  if (m) return { kind: 'antidiagonal', value: m[2] ? Number(m[2]) * (m[1] === '-' ? -1 : 1) : 0, label: text };
+  fail(`invalid plane ${text}; use x=2.5, z=4, x=z+2, or x=-z+4`);
 }
 
 function reflected([x, y, z], plane) {
   if (plane.kind === 'x') return [2 * plane.value - x, y, z];
   if (plane.kind === 'z') return [x, y, 2 * plane.value - z];
+  if (plane.kind === 'antidiagonal') return [plane.value - z, y, plane.value - x];
   return [z + plane.value, y, x - plane.value];
 }
 

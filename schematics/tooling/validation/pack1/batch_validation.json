@@ -4142,5 +4142,6 @@
     "reader_pass": 30,
     "reader_mismatch": 0,
     "reader_error": 0
-  }
+  },
+  "snapshot_status": "Historical 2026-11-21 run; bee source and validation note have since changed. Bee source-to-original binary and reader PASS results are not current; see symmetry_audit.json."
 }

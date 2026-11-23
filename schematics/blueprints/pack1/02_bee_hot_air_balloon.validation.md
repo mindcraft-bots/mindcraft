@@ -1,17 +1,33 @@
 > **Historical execution record:** The results, exact shell transcripts, file hashes, and source-image ordering below were recorded before the pack/tooling relocation. Those recorded command strings and hash values are intentionally preserved as evidence, not claimed as commands or hashes from the current layout. Markdown links now target current files; use [`BLUEPRINT_TOOLING.md`](../../tooling/BLUEPRINT_TOOLING.md) for current commands. Blueprint image metadata now names the current screenshot paths, so historical byte hashes refer to the original metadata bytes.
 
 
-> **Current rerun commands (not part of the historical execution record):** From the repository root, run the following commands. When invoking the tool by absolute path from another working directory, its input arguments still resolve from the repository root. `compile` writes to the canonical output; use it only when intentionally rebuilding.
+> **Current validation commands:** From the repository root, validate the versioned variants below. The unsuffixed original is archival and deliberately differs from the corrected source; do not compile over it.
 >
 > ```sh
-> python3 schematics/tooling/compile_blueprint.py compile schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.schem
-> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.schem
-> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.schem 1.21.4
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem --convert-to 1.21.4
+> python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.mc26.1.schem --convert-to 26.1
+> node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/02_bee_hot_air_balloon.json schematics/schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem 1.21.4
 > ```
 
 # Folder 02 validation — Bee hot-air balloon illustrated alternative
 
-## Current production-reader result — 2026-11-15 repair
+## Authorized symmetry correction — 2026-11-23
+
+The user explicitly identified this build as mirror-symmetric. The references do not unambiguously establish which side is correct: the existing west brow spot check anchors a deterministic **west-side reconstruction assumption**, not photographic proof. The reviewed [plan](../../tooling/validation/pack1/bee_symmetry_plan.json) uses X=4.5, full bounds 0..9/0..16/0..8, west (low X), threshold 0.98, and precisely the four destinations below. It recorded source SHA-256 `8a1f66fed416f28889ebfcf180653735d8721718ee6500c0b716602bb49fd0df`. The safe repair checked the source hash, exact plan, metadata, allowed inert states and neighbors; it preserved all other cells.
+
+| East coordinate | Before | After (west reflection) |
+| --- | --- | --- |
+| (8,10,1) | yellow concrete | black wool |
+| (6,10,1) | black wool | yellow concrete |
+| (8,12,0) | air | black wool |
+| (6,12,0) | black wool | air |
+
+All 221 pairs occupied on at least one side **before** the correction now match. The diagnostic's current non-air denominator is **220/220**: one formerly mismatched pair is now air on both sides and is counted as air-only. No cells west of the plane changed. The 25-state palette, 440 occupied cells, 1,090 air cells and 18 spot checks remain consistent. The unsuffixed original is archival and differs at these four cells; the prior reader result below is historical, not a current source-to-original pass. The two versioned binaries were independently compiled and fully validated against the corrected source, with the reviewed 26.1 chain-to-iron-chain conversion. See the [versioned report](../../tooling/validation/pack1/versioned_compilation_report.md).
+
+Recovery: Git commit `03be8a6` contains the pre-correction source and both pre-existing versions; 1.21.4 SHA-256 `1fadaa1d0383e918b954dde7f9fc09a0528674c44e9a09cddf4ddeac5379a119`, 26.1 SHA-256 `bed752999f001676731d99bcdba51b2606c918ec2ce6fc7f1c5d4c19a4c1a8c2`. The original unsuffixed bytes were not overwritten. Do not rerun the historical compile command below against that archival output.
+
+
+## Historical production-reader result — 2026-11-15 repair
 
 **PASS:** all 1,530 voxels, exact block states/counts and all 18 spot checks now match. The original 4 mismatched voxels were caused by the shared dependency encoding one-based integer values as literal offsets instead of registry value indices. The [narrow dependency patch](../../../patches/prismarine-schematic+1.3.0.patch) repairs the reader without altering this blueprint or schematic; both hashes match the [preserved baseline](../../tooling/validation/reader_baseline.json). See the [current batch diagnosis and placement limitations](../../schems/pack1/batch_report.md) and [fresh production-reader log](../../tooling/validation/build_logs/pack1/02_bee_hot_air_balloon.reader.log). This does not certify live placement or remove reconstruction/physics limitations. The initial narrative below is retained as historical evidence, including its now-resolved reader-failure statements.
 
