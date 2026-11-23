@@ -15,6 +15,7 @@ import {
   withSchematicDestructionGuards,
 } from "./obstruction_policy.js";
 import { resolveSchematicPath } from "./paths.js";
+import { schematicProvenance, provenanceAllowed } from "./provenance.js";
 import { getBotWorldGeneration, trackBotWorldLifecycle } from "./world_lifecycle.js";
 import { readSchematic as readProductionSchematic, validateSchematicSource } from "./reader.js";
 import { acquireBuildLifecycle, runBuild } from "./run_build.js";
@@ -200,6 +201,8 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
     writeLog,
     cleanupTimeoutMs = CLEANUP_TIMEOUT_MS,
     resumeSession,
+    allowNonvalidatedSchematic = false,
+    requireStrictSchematicValidation = false,
   } = dependencies;
   const report = (message) => logSafely(writeLog, message);
 
@@ -225,9 +228,16 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
         throw new Error("Cannot resume schematic build after death, disconnect, or dimension/world change");
       }
     } else {
-      resolvedPath = await resolvePath(fileName, undefined, { version: bot.version });
+      resolvedPath = await resolvePath(fileName, undefined, { version: bot.version, allowNonvalidatedSchematic, requireStrictSchematicValidation });
       await fsAccess(resolvedPath);
       source = await fsReadFile(resolvedPath);
+      const provenance = await schematicProvenance(resolvedPath, source);
+      if (!provenanceAllowed(provenance, { allowNonvalidatedSchematic, requireStrictSchematicValidation })) {
+        throw new Error(`Validation status ${provenance.validationStatus}: ${provenance.reason ?? 'set allow_nonvalidated_schematic_builds=true to consent to NONVALIDATED output'}`);
+      }
+      if (provenance.validationStatus !== 'STRICT_VALIDATED') {
+        report(`WARNING: schematic validation status ${provenance.validationStatus}; legal block-state combinations are not proven.`);
+      }
     }
   } catch (error) {
     report(`Could not read schematic ${fileName}: ${describeError(error)}`);

@@ -1,3 +1,4 @@
+import { validateSpongeStructure } from "./sponge_structure.js";
 import { createRequire } from "node:module";
 import { gzipSync } from "node:zlib";
 
@@ -244,11 +245,15 @@ async function prepareSchematicSource(buffer, version, registry) {
 
   const hasSpongePalette = root.Palette && typeof root.Palette === "object";
   const hasLegacyBlocks = Array.isArray(root.Blocks);
-  if (!hasSpongePalette && !hasLegacyBlocks) return sourceBuffer;
+  if (!hasSpongePalette && !hasLegacyBlocks) {
+    if (root.Version === 2 || root.BlockData) validateSpongeStructure(parsed);
+    return sourceBuffer;
+  }
 
   const data = registryFor(version, registry);
   if (hasSpongePalette) {
     const migrated = migrateSpongePalette(parsed, root, version, data);
+    validateSpongeStructure(parsed);
     if (!migrated) validateSpongePalette(root, data);
     if (migrated) {
       const serialized = nbt.writeUncompressed(parsed);

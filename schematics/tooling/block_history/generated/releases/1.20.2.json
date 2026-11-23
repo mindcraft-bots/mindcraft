@@ -1,0 +1,28 @@
+{
+  "block_count": 1003,
+  "coverage": "exact",
+  "data_version": 3578,
+  "delta": {
+    "path": "deltas/1.20.2.json.gz",
+    "sha256": "8a2613577f5e4a6a3ed5e02b7758647d2d73f4c6b00014570e89f0ff2661deeb"
+  },
+  "edition": "java",
+  "feature_flags": "unknown; registry may include experimental or disabled blocks",
+  "generator": "block-history-generator/1",
+  "generator_sha256": "1447629c5792323067f56ee760aa12f152aefa12fb3bf0ae1c43b8b99f1053c7",
+  "identifier_coverage": "complete-as-reported",
+  "known_schema_count": 1003,
+  "legal_combinations_coverage": "complete",
+  "registry": {
+    "path": "registries/1.20.2.json.gz",
+    "sha256": "6f37d18c66e2f7912ca68073676e785a27569847bbb5cf4c2ebcc8db68a646f4"
+  },
+  "release": "1.20.2",
+  "same_registry_as_previous": false,
+  "schema": 1,
+  "schema_coverage": "complete-as-reported",
+  "source_kind": "official-full-report",
+  "source_lock_sha256": "12e2dc6575bdd920198c3ee2bc18ed526391c3c2c94c6ddc21924c7091e53f88",
+  "source_revision": "dbea3084d4ca047309b908801c0af6977042dc54",
+  "unknown_schema_count": 0
+}

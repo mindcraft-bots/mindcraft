@@ -79,7 +79,8 @@ test("numeric keys resolve independently, including sparse and wide values", asy
     assert.equal(await resolveSchematicPath("pack2:100:9007199254740991", root), path.join(second, "maximum-id-entry.schem"));
     assert.equal(await resolveSchematicPath("pack2:9007199254740991:3", root), path.join(second, "wide-entry.litematic"));
     const entries = await listSchematicEntries(root);
-    assert.deepEqual(entries, [
+    assert.ok(entries.every(entry => entry.validationStatus === "UNKNOWN"));
+    assert.deepEqual(entries.map(({ pack, group, fileId, fileName, id, filename }) => ({ pack, group, fileId, fileName, id, filename })), [
       { pack: "pack1", group: 2, fileId: 7, fileName: "first-entry.schematic", id: 7, filename: "first-entry.schematic" },
       { pack: "pack1", group: null, fileId: null, fileName: "unmapped-automated-addition.schem", id: null, filename: "unmapped-automated-addition.schem" },
       { pack: "pack2", group: 100, fileId: 9007199254740991, fileName: "maximum-id-entry.schem", id: 9007199254740991, filename: "maximum-id-entry.schem" },

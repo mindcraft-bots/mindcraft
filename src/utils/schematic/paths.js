@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import minecraftData from "minecraft-data";
 import nbt from "prismarine-nbt";
+import { schematicProvenance, provenanceAllowed } from "./provenance.js";
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,7 +13,7 @@ export const SCHEMATIC_PACKS_DIR = path.join(SCHEMATICS_DIR, "schems");
 const SCHEMATIC_EXTENSIONS = new Set([".schem", ".schematic", ".litematic"]);
 const PACK_NAME = /^pack[1-9]\d*$/;
 const GROUP_AND_FILE_ID_SELECTOR = /^(\d+):(\d+)$/;
-const VARIANT = /^(.*)\.mc(\d+(?:\.\d+)+)\.schem$/;
+const VARIANT = /^(.*)\.mc(\d+(?:\.\d+)+)(\.nonvalidated)?\.schem$/;
 // Older minecraft-data entries omit releaseType; numeric labels identify those releases.
 const releases = minecraftData.versions.pc.filter((version) => /^\d+(?:\.\d+)+$/.test(version.minecraftVersion)
   && (version.releaseType === "release" || version.releaseType === undefined)
@@ -22,6 +23,12 @@ const releasesByDataVersion = new Map(releases.map((version) => [version.dataVer
 
 function releaseFor(name) {
   return typeof name === "string" ? releasesByName.get(name) : undefined;
+}
+
+function validationDiagnostic(provenance, options) {
+  const status = provenance?.validationStatus ?? 'UNKNOWN';
+  return `validation status ${status}${status === 'NONVALIDATED' && !options.requireStrictSchematicValidation
+    ? '; operator consent requires allow_nonvalidated_schematic_builds=true' : ''}`;
 }
 
 async function baseRelease(candidate) {
@@ -36,33 +43,48 @@ async function baseRelease(candidate) {
 }
 
 // Variant labels are the compiler's target release, not the registry's possibly aliased label.
-async function selectFamily(baseName, fileNames, directory, targetVersion, owned = () => true) {
+async function selectFamily(baseName, fileNames, directory, targetVersion, owned = () => true, options = {}, cache = new Map()) {
   if (!baseName.endsWith(".schem")) {
     throw new Error(`No compatible known-version schematic for case-sensitive filename ${baseName}`);
   }
   const target = releaseFor(targetVersion);
   if (!target) throw new Error(`Unknown Minecraft engine release ${String(targetVersion)}; cannot select a schematic version`);
   const stem = baseName.slice(0, -".schem".length);
+  if (/(?:^|\.)mc\d/i.test(stem)) throw new Error(`Invalid schematic variant pattern ${baseName}`);
   const candidates = [];
   for (const name of fileNames) {
     if (!owned(name)) continue;
     const match = VARIANT.exec(name);
     if (match && match[1] === stem) {
       const release = releaseFor(match[2]);
-      if (release) candidates.push({ name, release, variant: true });
+      const embedded = await baseRelease(path.join(directory, name));
+      if (release && embedded?.dataVersion === release.dataVersion) candidates.push({ name, release, variant: true, nonvalidatedVariant: Boolean(match[3]) });
     } else if (name === baseName) {
       const release = await baseRelease(path.join(directory, name));
       if (release) candidates.push({ name, release, variant: false });
     }
   }
+  for (const candidate of candidates) {
+    const filename = path.join(directory, candidate.name);
+    if (!cache.has(filename)) cache.set(filename, schematicProvenance(filename));
+    candidate.provenance = await cache.get(filename);
+  }
   const seen = new Map();
   for (const candidate of candidates.filter((item) => item.variant)) {
-    const previous = seen.get(candidate.release.dataVersion);
-    if (previous) throw new Error(`Ambiguous schematic variants ${previous} and ${candidate.name} share a DataVersion`);
-    seen.set(candidate.release.dataVersion, candidate.name);
+    const group = seen.get(candidate.release.dataVersion) ?? [];
+    for (const previous of group) {
+      if (!(previous.nonvalidatedVariant !== candidate.nonvalidatedVariant
+        && (previous.nonvalidatedVariant ? previous : candidate).provenance.validationStatus === 'NONVALIDATED'
+        && ['HISTORICAL_UNKNOWN', 'STRICT_VALIDATED'].includes((previous.nonvalidatedVariant ? candidate : previous).provenance.validationStatus))) {
+        throw new Error(`Ambiguous schematic variants ${previous.name} and ${candidate.name} share a DataVersion`);
+      }
+    }
+    group.push(candidate);
+    seen.set(candidate.release.dataVersion, group);
   }
-  const compatible = candidates.filter(({ release }) => release.dataVersion <= target.dataVersion)
-    .sort((a, b) => b.release.dataVersion - a.release.dataVersion || Number(b.variant) - Number(a.variant));
+  const compatible = candidates.filter(({ release, provenance }) => release.dataVersion <= target.dataVersion && provenanceAllowed(provenance, options))
+    .sort((a, b) => b.release.dataVersion - a.release.dataVersion || Number(b.variant) - Number(a.variant)
+      || Number(b.nonvalidatedVariant) - Number(a.nonvalidatedVariant));
   return { candidates, selected: compatible[0] ?? null, target };
 }
 
@@ -226,15 +248,21 @@ export async function resolveSchematicPath(fileName, directory = SCHEMATICS_DIR,
       }
     }
     const name = path.basename(candidate);
-    const explicit = VARIANT.exec(name);
-    const base = explicit ? `${explicit[1]}.schem` : name;
-    const family = await selectFamily(base, safeNames, parent, options.version);
+    const variant = VARIANT.exec(name);
+    const exactUntrusted = safeNames.includes(name) && !['HISTORICAL_UNKNOWN', 'STRICT_VALIDATED'].includes((await schematicProvenance(candidate)).validationStatus);
+    const explicit = variant || exactUntrusted;
+    const base = variant ? `${variant[1]}.schem` : name;
+    const family = await selectFamily(base, safeNames, parent, options.version, () => true, options);
     const selected = explicit ? family.candidates.find((item) => item.name === name
-      && item.release.dataVersion <= family.target.dataVersion) : family.selected;
-    if (!selected) throw new Error(`No compatible known-version schematic for ${fileName} on Minecraft ${String(options.version)}`);
+      && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(item.provenance, options)) : family.selected;
+    if (!selected) throw new Error(`No compatible known-version schematic for ${fileName} on Minecraft ${String(options.version)}; ${validationDiagnostic(family.candidates.find(item => item.name === name)?.provenance, options)}`);
     const result = path.join(parent, selected.name);
     await assertExistingAncestorsStayWithin(root, result);
     return result;
+  }
+  if (options) {
+    const provenance = await schematicProvenance(candidate);
+    if (!provenanceAllowed(provenance, options)) throw new Error(`Schematic validation status ${provenance.validationStatus}: ${provenance.reason ?? 'consent or strict policy prevents selection'}`);
   }
   return candidate;
 }
@@ -383,20 +411,27 @@ async function resolvePackSchematic(packName, selector, directory, options) {
   const { realPackDirectory } = await getPackDirectory(packName, directory);
   if (options && matches[0].toLowerCase().endsWith(".schem")) {
     const name = matches[0];
-    const explicit = VARIANT.exec(name);
-    const base = explicit ? `${explicit[1]}.schem` : name;
-    const owner = fileNamesToTuple.get(name);
+    const variant = VARIANT.exec(name);
+    const exactUntrusted = !indexedSelector && fileNames.includes(name) && !['HISTORICAL_UNKNOWN', 'STRICT_VALIDATED'].includes((await schematicProvenance(path.join(packDirectory, name))).validationStatus);
+    const explicit = variant || exactUntrusted;
+    const base = variant ? `${variant[1]}.schem` : name;
+    const owner = fileNamesToTuple.get(name) ?? fileNamesToTuple.get(base);
     const owned = (candidate) => {
       const tuple = fileNamesToTuple.get(candidate);
       return !tuple || (owner && tuple.group === owner.group && tuple.fileId === owner.fileId);
     };
-    const family = await selectFamily(base, fileNames, packDirectory, options.version, owned);
+    const family = await selectFamily(base, fileNames, packDirectory, options.version, owned, options);
     const selected = explicit ? family.candidates.find((item) => item.name === name
-      && item.release.dataVersion <= family.target.dataVersion) : family.selected;
-    if (!selected) throw new Error(`No compatible known-version schematic for ${packName}:${selector} on Minecraft ${String(options.version)}`);
+      && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(item.provenance, options)) : family.selected;
+    if (!selected) throw new Error(`No compatible known-version schematic for ${packName}:${selector} on Minecraft ${String(options.version)}; ${validationDiagnostic(family.candidates.find(item => item.name === name)?.provenance, options)}`);
     return assertPackFile(packDirectory, realPackDirectory, selected.name);
   }
-  return assertPackFile(packDirectory, realPackDirectory, matches[0]);
+  const result = await assertPackFile(packDirectory, realPackDirectory, matches[0]);
+  if (options) {
+    const provenance = await schematicProvenance(result);
+    if (!provenanceAllowed(provenance, options)) throw new Error(`Schematic validation status ${provenance.validationStatus}: ${provenance.reason ?? 'consent or strict policy prevents selection'}`);
+  }
+  return result;
 }
 
 /** List supported schematic filenames, sorted lexically; escaping symlinks are ignored. */
@@ -450,16 +485,21 @@ export async function listSchematicEntries(directory = SCHEMATICS_DIR, options =
     filename: fileName,
   });
   const legacyEntry = (fileName) => entryWithAliases("legacy", null, null, fileName);
+  const provenanceCache = new Map();
   async function annotate(result, name, names, folder, owned, selector, exact = false) {
+    const filename = path.join(folder, name);
+    if (!provenanceCache.has(filename)) provenanceCache.set(filename, schematicProvenance(filename));
+    const provenance = await provenanceCache.get(filename);
+    result = { ...result, ...provenance };
     if (!options || !name.toLowerCase().endsWith(".schem")) return result;
     const match = VARIANT.exec(name);
     const base = match ? `${match[1]}.schem` : name;
     try {
-      const family = await selectFamily(base, names, folder, options.version, owned);
+      const family = await selectFamily(base, names, folder, options.version, owned, options, provenanceCache);
       const item = family.candidates.find((candidate) => candidate.name === name);
       return { ...result, selector, version: item?.release.minecraftVersion ?? null,
-        compatible: item ? item.release.dataVersion <= family.target.dataVersion : false,
-        selected: exact ? Boolean(item && item.release.dataVersion <= family.target.dataVersion) : family.selected?.name === name };
+        compatible: item ? item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(provenance, options) : false,
+        selected: exact ? Boolean(item && item.release.dataVersion <= family.target.dataVersion && provenanceAllowed(provenance, options)) : family.selected?.name === name };
     } catch (error) {
       const version = match?.[2] ?? (await baseRelease(path.join(folder, name)))?.minecraftVersion ?? null;
       return { ...result, selector, version, compatible: false, selected: false, selectionError: error.message };

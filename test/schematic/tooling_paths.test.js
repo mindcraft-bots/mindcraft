@@ -23,7 +23,7 @@ test("compiler and production validator resolve pack paths from a different cwd"
   assert.ok(existsSync(path.join(projectRoot, blueprint)));
   assert.ok(existsSync(path.join(projectRoot, schematic)));
 
-  const binary = run("python3", [pythonCompiler, "validate", blueprint, schematic]);
+  const binary = run("python3", [pythonCompiler, "validate", blueprint, schematic, "--allow-unverified"]);
   assert.equal(binary.status, 0, binary.stderr || binary.stdout);
   assert.match(binary.stdout, /"volume":/);
 
@@ -36,7 +36,7 @@ test("explicit compiler target enforces Minecraft 1.21.4 metadata and registry-v
   const directory = path.join(projectRoot, "schematics/blueprints", `target${Date.now()}${process.pid}`);
   await mkdir(directory);
   const blueprintPath = path.join(directory, "fixture.json");
-  const outputPath = path.join(directory, "fixture.schem");
+  const outputPath = path.join(directory, "fixture.nonvalidated.schem");
   const source = path.relative(projectRoot, blueprintPath);
   const output = path.relative(projectRoot, outputPath);
   const fixture = {
@@ -46,14 +46,14 @@ test("explicit compiler target enforces Minecraft 1.21.4 metadata and registry-v
     expected_counts: { "minecraft:stone": 1 }, non_air_count: 1,
     spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
   };
-  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4"]);
+  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4", "--allow-unverified"]);
   try {
     await writeFile(blueprintPath, JSON.stringify(fixture));
     const valid = compile();
     assert.equal(valid.status, 0, valid.stderr || valid.stdout);
     assert.ok(existsSync(outputPath));
     const validOutput = await readFile(outputPath);
-    const checked = run("python3", [pythonCompiler, "validate", source, output, "--target-version", "1.21.4"]);
+    const checked = run("python3", [pythonCompiler, "validate", source, output, "--target-version", "1.21.4", "--allow-unverified"]);
     assert.equal(checked.status, 0, checked.stderr || checked.stdout);
 
     await writeFile(blueprintPath, JSON.stringify({ ...fixture, minecraft_version: "1.21.5" }));
@@ -65,7 +65,7 @@ test("explicit compiler target enforces Minecraft 1.21.4 metadata and registry-v
     await writeFile(blueprintPath, JSON.stringify({ ...fixture, data_version: 3700 }));
     const wrongDataVersion = compile();
     assert.notEqual(wrongDataVersion.status, 0);
-    assert.match(wrongDataVersion.stderr, /does not match minecraft-data 1\.21\.4 DataVersion 4189/);
+    assert.match(wrongDataVersion.stderr, /does not match 1\.21\.4 DataVersion 4189/);
     assert.deepEqual(await readFile(outputPath), validOutput, "failed DataVersion validation must preserve existing output bytes");
 
     await writeFile(blueprintPath, JSON.stringify({ ...fixture, legend: { S: "minecraft:stone[not_a_property=true]" }, expected_counts: { "minecraft:stone[not_a_property=true]": 1 } }));
@@ -104,7 +104,7 @@ test("registry validation accepts shared 1.21.10 data at DataVersion 4556 and re
   const directory = path.join(projectRoot, "schematics/blueprints", `release${Date.now()}${process.pid}`);
   await mkdir(directory);
   const blueprintPath = path.join(directory, "fixture.json");
-  const outputPath = path.join(directory, "fixture.schem");
+  const outputPath = path.join(directory, "fixture.nonvalidated.schem");
   const source = path.relative(projectRoot, blueprintPath);
   const output = path.relative(projectRoot, outputPath);
   const fixture = {
@@ -115,7 +115,7 @@ test("registry validation accepts shared 1.21.10 data at DataVersion 4556 and re
     spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
   };
   const compile = (target = "1.21.10") => run("python3", [
-    pythonCompiler, "compile", source, output, "--target-version", target,
+    pythonCompiler, "compile", source, output, "--target-version", target, "--allow-unverified",
   ]);
   try {
     await writeFile(blueprintPath, JSON.stringify(fixture));
@@ -134,7 +134,7 @@ test("registry validation accepts shared 1.21.10 data at DataVersion 4556 and re
     await writeFile(blueprintPath, JSON.stringify({ ...fixture, data_version: 4554 }));
     const wrongDataVersion = compile();
     assert.notEqual(wrongDataVersion.status, 0);
-    assert.match(wrongDataVersion.stderr, /does not match minecraft-data 1\.21\.10 DataVersion 4556/);
+    assert.match(wrongDataVersion.stderr, /does not match 1\.21\.10 DataVersion 4556/);
     assert.deepEqual(await readFile(outputPath), validOutput, "wrong DataVersion must preserve existing output bytes");
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -159,6 +159,9 @@ test("legacy integer state domains use registry cardinality and canonical values
   try {
     for (const legal of ["minecraft:oak_sapling[stage=0]", "minecraft:oak_sapling[stage=1]"]) {
       await writeFile(blueprintPath, JSON.stringify(makeFixture(legal)));
+      await rm(outputPath, { force: true });
+      await rm(`${outputPath}.provenance.json`, { force: true });
+      await rm(`${outputPath}.provenance.sha256`, { force: true });
       const valid = compile();
       assert.equal(valid.status, 0, valid.stderr || valid.stdout);
     }
@@ -174,7 +177,7 @@ test("legacy integer state domains use registry cardinality and canonical values
       await writeFile(blueprintPath, JSON.stringify(makeFixture(invalidState)));
       const invalid = compile();
       assert.notEqual(invalid.status, 0, `accepted out-of-domain/noncanonical state ${invalidState}`);
-      assert.match(invalid.stderr, /illegal stage=/);
+      assert.match(invalid.stderr, /illegal stage=|malformed or duplicate property/);
       assert.deepEqual(await readFile(outputPath), validOutput, `${invalidState} replaced existing output bytes`);
     }
   } finally {
@@ -186,7 +189,7 @@ test("explicit nonzero integer state values accept snow and leaf domain maxima",
   const directory = path.join(projectRoot, "schematics/blueprints", `integer${Date.now()}${process.pid}`);
   await mkdir(directory);
   const blueprintPath = path.join(directory, "fixture.json");
-  const outputPath = path.join(directory, "fixture.schem");
+  const outputPath = path.join(directory, "fixture.nonvalidated.schem");
   const source = path.relative(projectRoot, blueprintPath);
   const output = path.relative(projectRoot, outputPath);
   const makeFixture = (state) => ({
@@ -196,13 +199,16 @@ test("explicit nonzero integer state values accept snow and leaf domain maxima",
     expected_counts: { [state]: 1 }, non_air_count: 1,
     spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
   });
-  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4"]);
+  const compile = () => run("python3", [pythonCompiler, "compile", source, output, "--target-version", "1.21.4", "--allow-unverified"]);
   try {
     for (const legal of [
       "minecraft:snow[layers=8]",
       "minecraft:oak_leaves[distance=7,persistent=false,waterlogged=false]",
     ]) {
       await writeFile(blueprintPath, JSON.stringify(makeFixture(legal)));
+      await rm(outputPath, { force: true });
+      await rm(`${outputPath}.provenance.json`, { force: true });
+      await rm(`${outputPath}.provenance.sha256`, { force: true });
       const valid = compile();
       assert.equal(valid.status, 0, valid.stderr || valid.stdout);
     }
@@ -339,19 +345,19 @@ test("compiler and production validator accept another pack and registry version
   const directory = path.join(projectRoot, "schematics/blueprints", `pack${Date.now()}${process.pid}`);
   await mkdir(directory);
   const source = path.relative(projectRoot, path.join(directory, "stone.json"));
-  const output = path.relative(projectRoot, path.join(directory, "stone.schem"));
+  const output = path.relative(projectRoot, path.join(directory, "stone.nonvalidated.schem"));
   const fixture = {
     minecraft_version: "1.20.4", data_version: 3700,
     width_x: 1, height_y: 1, length_z: 1,
-    legend: { S: "minecraft:stone" }, layers: [["S"]],
-    expected_counts: { "minecraft:stone": 1 }, non_air_count: 1,
+    legend: { S: "minecraft:oak_sapling[stage=0]" }, layers: [["S"]],
+    expected_counts: { "minecraft:oak_sapling[stage=0]": 1 }, non_air_count: 1,
     spot_checks: [{ x: 0, y: 0, z: 0, char: "S" }],
   };
   try {
     await writeFile(path.join(projectRoot, source), JSON.stringify(fixture));
-    const compile = run("python3", [pythonCompiler, "compile", source, path.join(projectRoot, output)]);
+    const compile = run("python3", [pythonCompiler, "compile", source, path.join(projectRoot, output), "--allow-unverified"]);
     assert.equal(compile.status, 0, compile.stderr || compile.stdout);
-    const binary = run("python3", [pythonCompiler, "validate", source, output]);
+    const binary = run("python3", [pythonCompiler, "validate", source, output, "--allow-unverified"]);
     assert.equal(binary.status, 0, binary.stderr || binary.stdout);
     const reader = run("node", [nodeValidator, source, output]);
     assert.equal(reader.status, 0, reader.stderr || reader.stdout);

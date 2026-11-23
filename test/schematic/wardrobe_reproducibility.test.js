@@ -20,9 +20,10 @@ variant = variant_path.read_bytes()
 sha = lambda data: hashlib.sha256(data).hexdigest()
 with tempfile.TemporaryDirectory(prefix='wardrobe-diagnosis-') as directory:
     legacy_path = pathlib.Path(directory) / 'legacy.json'
-    legacy_path.write_bytes(subprocess.check_output(['git', 'show', 'HEAD:' + str(blueprint_path)]))
-    _, rebuilt = compiler.compile_blueprint(legacy_path, pathlib.Path(directory) / 'first.schem')
-    _, repeated = compiler.compile_blueprint(legacy_path, pathlib.Path(directory) / 'second.schem')
+    # Pin the actual pre-repair revision; HEAD may already contain the repair.
+    legacy_path.write_bytes(subprocess.check_output(['git', 'show', '8ff5b2c^:' + str(blueprint_path)]))
+    _, rebuilt = compiler.compile_blueprint(legacy_path, pathlib.Path(directory) / 'first.nonvalidated.schem', allow_unverified=True)
+    _, repeated = compiler.compile_blueprint(legacy_path, pathlib.Path(directory) / 'second.nonvalidated.schem', allow_unverified=True)
     roots = [compiler.nbtlib.File.parse(io.BytesIO(gzip.decompress(data))) for data in (canonical, rebuilt, variant)]
     original, current, _ = roots
     blueprint, voxels = compiler.read_blueprint(legacy_path)

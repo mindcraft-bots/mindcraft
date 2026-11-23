@@ -34,7 +34,9 @@ test("every real pack1 asset is listed with separate group and id fields and res
   const unsupported = [];
   for (const { group, id, filename } of mappings) {
     const listed = entries.find(entry => entry.group === group && entry.fileId === id && entry.fileName === filename);
-    assert.deepEqual(listed, { pack: "pack1", group, fileId: id, fileName: filename, id, filename });
+    assert.deepEqual({ pack: listed.pack, group: listed.group, fileId: listed.fileId, fileName: listed.fileName, id: listed.id, filename: listed.filename },
+      { pack: "pack1", group, fileId: id, fileName: filename, id, filename });
+    assert.equal(listed.validationStatus, "HISTORICAL_UNKNOWN");
     const expected = path.join(directory, filename);
     for (const selector of [`${group}:${id}`, filename, path.basename(filename, ".schem")]) {
       assert.equal(await resolveSchematicPath(`pack1:${selector}`), expected);
@@ -55,6 +57,7 @@ test("every real pack1 asset is listed with separate group and id fields and res
       assert.equal(versioned.selector, `pack1:${group}:${id}`);
       assert.equal(versioned.compatible, true);
       assert.equal(versioned.selected, true);
+      assert.equal(versioned.validationStatus, "HISTORICAL_UNKNOWN");
       const parsedVariant = await readSchematic(await readFile(selected), version);
       assert.deepEqual([parsedVariant.size.x, parsedVariant.size.y, parsedVariant.size.z], [blueprint.width_x, blueprint.height_y, blueprint.length_z]);
     }
@@ -148,6 +151,7 @@ test("production buildSchematic reader and planner pass migrated bee-chain items
     writeLog: message => logs.push(message),
   });
   assert.equal(success, true, logs.join("\n"));
+  assert.match(logs.join("\n"), /WARNING: schematic validation status HISTORICAL_UNKNOWN/);
   assert.equal(plannedBuild.plan.filter(entry => entry.name === "iron_chain").length, 24);
   assert.equal(bot.game.gameMode, "survival");
   assert.equal(logs.at(-1), "Successfully built and verified schematic 02_bee_hot_air_balloon.mc26.1.schem.");
@@ -162,6 +166,7 @@ test("real listing and public wardrobe selectors reach preflight and fail closed
     const listing = await getCommand('!listSchematics').perform({});
     assert.match(listing, /- pack1 \\| group 1 \\| file id 1 \\| file name 01_wardrobe_nether_portal\\.schem/);
     assert.match(listing, /- pack1 \\| group 2 \\| file id 1 \\| file name 02_bee_hot_air_balloon\\.schem/);
+    assert.match(listing, /validation HISTORICAL_UNKNOWN \\(WARNING: legal combinations not proven\\)/);
     assert.equal(listing.split('\\n').filter(line => line.startsWith('- pack1 |')).length, 90);
     let completed = 0;
     globalThis.__schematicBuild = async (bot, selector, x, y, z) => {

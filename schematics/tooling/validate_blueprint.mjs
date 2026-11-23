@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 import { readSchematic } from "../../src/utils/schematic/reader.js";
+import { schematicProvenance } from "../../src/utils/schematic/provenance.js";
 
 const require = createRequire(import.meta.url);
 const minecraftData = require("minecraft-data");
@@ -62,9 +63,13 @@ function normalizedProperties(block) {
 }
 
 async function main() {
-  const [blueprintArg, schematicArg, versionArg] = process.argv.slice(2);
-  assert(blueprintArg && schematicArg && process.argv.length <= 5,
-    "Usage: node schematics/tooling/validate_blueprint.mjs <blueprint.json> <output.schem> [<MC_VERSION>]");
+  const args = process.argv.slice(2);
+  const requireProvenance = args.includes('--require-strict-provenance');
+  const positional = args.filter(arg => arg !== '--require-strict-provenance');
+  const [blueprintArg, schematicArg, versionArg] = positional;
+  assert(blueprintArg && schematicArg && positional.length <= 3 && args.length === positional.length + Number(requireProvenance)
+    && !positional.some(arg => arg.startsWith('--')),
+    "Usage: node schematics/tooling/validate_blueprint.mjs <blueprint.json> <output.schem> [<MC_VERSION>] [--require-strict-provenance]");
   const resolveInput = async (input) => {
     const candidate = path.resolve(projectRoot, input);
     const resolved = await realpath(candidate);
@@ -148,11 +153,20 @@ async function main() {
   const countDiffs = [...new Set([...Object.keys(counts), ...Object.keys(expectedCounts)])].sort()
     .filter((state) => (counts[state] ?? 0) !== (expectedCounts[state] ?? 0))
     .map((state) => ({ state, expected: expectedCounts[state] ?? 0, actual: counts[state] ?? 0 }));
+  const provenance = await schematicProvenance(schematicPath, buffer);
+  const provenanceOutcome = provenance.validationStatus === 'STRICT_VALIDATED' ? 'PASS'
+    : provenance.validationStatus === 'INVALID' ? 'FAIL' : 'UNVERIFIED';
+  const voxelOutcome = mismatches.length === 0 && spotFailures.length === 0 && countDiffs.length === 0 ? 'PASS' : 'FAIL';
   const result = {
+    voxelOutcome,
+    provenanceOutcome,
+    provenanceRequired: requireProvenance,
     blueprint: path.relative(projectRoot, blueprintPath),
     schematic: path.relative(projectRoot, schematicPath),
     parser: "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
     registry: `minecraft-data ${version}`,
+    ...provenance,
+    legalCombinationProof: 'NOT_PERFORMED_BY_READER_COMPARISON',
     dimensions: actualDimensions,
     volume,
     comparedVoxels: compared,
@@ -160,7 +174,7 @@ async function main() {
     parserDerivedAir: counts["minecraft:air"] ?? 0,
     parserDerivedCountsMatch: countDiffs.length === 0,
     countDiffs,
-    legendEntriesValidated: Object.keys(blueprint.legend).length,
+    legendEntriesDomainChecked: Object.keys(blueprint.legend).length,
     spotChecks: blueprint.spot_checks.length,
     spotCheckFailures: spotFailures,
     parserMismatches: mismatches.length,
@@ -168,7 +182,7 @@ async function main() {
     fullVoxelAndStateComparison: mismatches.length === 0 ? "PASS" : "FAIL",
   };
   console.log(JSON.stringify(result, null, 2));
-  if (mismatches.length > 0 || spotFailures.length > 0 || !result.parserDerivedCountsMatch) process.exitCode = 2;
+  if (voxelOutcome !== 'PASS' || (requireProvenance && provenanceOutcome !== 'PASS')) process.exitCode = 2;
 }
 
 main().catch((error) => {

@@ -7,6 +7,7 @@ import { gzipSync } from "node:zlib";
 
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
+import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
@@ -114,7 +115,7 @@ function fixture(overrides = {}) {
     cleanupTimeoutMs: 20,
   };
   Object.assign(dependencies, overrides);
-  return { bot, build, calls, dependencies };
+  return { bot, build, calls, dependencies: provenanceFixtureDependencies(dependencies) };
 }
 
 test("rejects missing and escaping paths before reading or changing game mode", async () => {

@@ -8,9 +8,11 @@ import gzip
 import hashlib
 import io
 import json
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 
@@ -20,7 +22,6 @@ from nbtlib import tag
 
 STATE_RE = re.compile(r"^([a-z0-9_.-]+):([a-z0-9_./-]+)(?:\[(.*)\])?$")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-REGISTRY_VALIDATOR = PROJECT_ROOT / "schematics" / "tooling" / "validate_registry.mjs"
 HISTORY_CONVERTER = PROJECT_ROOT / "schematics" / "tooling" / "convert_history.mjs"
 
 
@@ -49,34 +50,38 @@ def require(condition: bool, message: str) -> None:
         raise ValueError(message)
 
 
-def validate_target(blueprint_path: Path, blueprint: dict, target_version: str | None) -> None:
-    """Require exact blueprint metadata and registry-valid states for an explicit target."""
-    if target_version is None:
-        return
-    require(isinstance(target_version, str) and bool(target_version.strip()), "target Minecraft version must be nonempty")
-    require(blueprint.get("minecraft_version") == target_version,
-            f"target Minecraft version {target_version} does not match blueprint minecraft_version {blueprint.get('minecraft_version')!r}")
+def validate_target(blueprint_path: Path, blueprint: dict, target_version: str | None,
+                    allow_unverified: bool = False) -> None:
+    """Validate the declared exact release even when no target was specified."""
+    if target_version is not None:
+        require(blueprint.get("minecraft_version") == target_version,
+                f"target Minecraft version {target_version} does not match blueprint minecraft_version {blueprint.get('minecraft_version')!r}")
     try:
         result = subprocess.run(
-            ["node", str(REGISTRY_VALIDATOR), str(blueprint_path), target_version],
-            cwd=PROJECT_ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
+            ["node", str(HISTORY_CONVERTER), "-", "--validate-source"]
+            + (["--allow-unverified"] if allow_unverified else []),
+            cwd=PROJECT_ROOT, input=json.dumps(blueprint), text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
         )
     except OSError as error:
-        raise ValueError(f"cannot run Minecraft registry validator for target {target_version}: {error}") from error
+        raise ValueError(f"cannot run Minecraft history validator: {error}") from error
     require(result.returncode == 0,
-            f"Minecraft {target_version} registry validation failed: {result.stdout.strip() or 'no diagnostic'}")
+            f"Minecraft registry validation failed: {result.stdout.strip() or 'no diagnostic'}")
 
 
-def prepare_blueprint(blueprint_path: Path, target_version: str | None, convert_to: str | None):
+def prepare_blueprint(blueprint_path: Path, target_version: str | None, convert_to: str | None,
+                      allow_unverified: bool = False):
     blueprint, voxels = read_blueprint(blueprint_path)
     require(not (target_version and convert_to), "--target-version and --convert-to are mutually exclusive")
-    validate_target(blueprint_path, blueprint, target_version)
+    if convert_to is None:
+        validate_target(blueprint_path, blueprint, target_version, allow_unverified)
     if convert_to is None:
         return blueprint, voxels, None
     try:
         result = subprocess.run(
-            ["node", str(HISTORY_CONVERTER), str(blueprint_path), convert_to], cwd=PROJECT_ROOT,
-            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            ["node", str(HISTORY_CONVERTER), "-", convert_to]
+            + (["--allow-unverified"] if allow_unverified else []), cwd=PROJECT_ROOT,
+            input=json.dumps(blueprint), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
     except OSError as error:
         raise ValueError(f"cannot run history converter: {error}") from error
@@ -88,12 +93,13 @@ def prepare_blueprint(blueprint_path: Path, target_version: str | None, convert_
     return blueprint, voxels, report
 
 
-def variant_path(output_path: Path, version: str) -> Path:
+def variant_path(output_path: Path, version: str, allow_unverified: bool = False) -> Path:
     require(re.fullmatch(r"\d+(?:\.\d+)+", version) is not None, "invalid target Minecraft version")
     require(output_path.suffix == ".schem", "conversion output base must end in .schem")
     require(re.search(r"\.mc\d+(?:\.\d+)+$", output_path.stem) is None,
             "conversion output must be an unsuffixed base name")
-    return output_path.with_name(f"{output_path.stem}.mc{version}.schem")
+    label = ".nonvalidated" if allow_unverified else ""
+    return output_path.with_name(f"{output_path.stem}.mc{version}{label}.schem")
 
 
 def read_blueprint(path: Path) -> tuple[dict, list[str]]:
@@ -191,8 +197,11 @@ def gzip_nbt(root: nbtlib.File) -> bytes:
 
 
 def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: str | None = None,
-                      convert_to: str | None = None) -> tuple[dict, bytes]:
-    blueprint, voxels, _ = prepare_blueprint(blueprint_path, target_version, convert_to)
+                      convert_to: str | None = None, allow_unverified: bool = False,
+                      return_report: bool = False):
+    require(not allow_unverified or output_path.name.endswith(".nonvalidated.schem"),
+            "unverified output filename must end in .nonvalidated.schem")
+    blueprint, voxels, _ = prepare_blueprint(blueprint_path, target_version, convert_to, allow_unverified)
     data_version = blueprint_data_version(blueprint)
     palette, _ = state_palette(blueprint)
     block_data = b"".join(encode_varint(palette[state]) for state in voxels)
@@ -213,17 +222,59 @@ def compile_blueprint(blueprint_path: Path, output_path: Path, target_version: s
     }, root_name="Schematic")
     packed = gzip_nbt(root)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    if convert_to:
-        with output_path.open("xb") as stream:
+    temporary = None
+    metadata_temp = None
+    digest_temp = None
+    metadata_path = output_path.with_name(output_path.name + ".provenance.json")
+    digest_path = output_path.with_name(output_path.name + ".provenance.sha256")
+    try:
+        with tempfile.NamedTemporaryFile(dir=output_path.parent, prefix=".schematic-", delete=False) as stream:
+            temporary = Path(stream.name)
             stream.write(packed)
-    else:
-        output_path.write_bytes(packed)
-    return blueprint, packed
+        report = validate_schematic(blueprint_path, temporary, target_version, convert_to, allow_unverified)
+        require(not os.path.lexists(metadata_path), f"refusing to overwrite provenance: {metadata_path}")
+        require(not os.path.lexists(digest_path), f"refusing to overwrite provenance digest: {digest_path}")
+        source_path = blueprint_path.resolve()
+        source_name = str(source_path.relative_to(PROJECT_ROOT)) if source_path.is_relative_to(PROJECT_ROOT) else str(source_path)
+        metadata = {"schemaVersion": 1, "artifact": output_path.name, "sha256": report["sha256"],
+                    "validation": report["validation"],
+                    "blueprint": source_name,
+                    "blueprintSha256": hashlib.sha256(blueprint_path.read_bytes()).hexdigest(),
+                    "targetVersion": target_version, "convertTo": convert_to,
+                    "packReport": None, "packReportSha256": None}
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=output_path.parent,
+                                         prefix=".provenance-", delete=False) as stream:
+            metadata_temp = Path(stream.name)
+            json.dump(metadata, stream, sort_keys=True, indent=2)
+            stream.write("\n")
+        with tempfile.NamedTemporaryFile(mode="w", encoding="ascii", dir=output_path.parent,
+                                         prefix=".provenance-hash-", delete=False) as stream:
+            digest_temp = Path(stream.name)
+            stream.write(hashlib.sha256(metadata_temp.read_bytes()).hexdigest() + "\n")
+        os.link(digest_temp, digest_path, follow_symlinks=False)
+        try:
+            os.link(metadata_temp, metadata_path, follow_symlinks=False)
+            try:
+                os.link(temporary, output_path, follow_symlinks=False)
+            except Exception:
+                metadata_path.unlink(missing_ok=True)
+                raise
+        except Exception:
+            digest_path.unlink(missing_ok=True)
+            raise
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+        if metadata_temp is not None:
+            metadata_temp.unlink(missing_ok=True)
+        if digest_temp is not None:
+            digest_temp.unlink(missing_ok=True)
+    return (blueprint, packed, report) if return_report else (blueprint, packed)
 
 
 def validate_schematic(blueprint_path: Path, schematic_path: Path, target_version: str | None = None,
-                       convert_to: str | None = None) -> dict:
-    blueprint, voxels, conversion = prepare_blueprint(blueprint_path, target_version, convert_to)
+                       convert_to: str | None = None, allow_unverified: bool = False) -> dict:
+    blueprint, voxels, conversion = prepare_blueprint(blueprint_path, target_version, convert_to, allow_unverified)
     packed = schematic_path.read_bytes()
     require(bool(packed), f"empty schematic: {schematic_path}")
     raw = gzip.decompress(packed)
@@ -279,6 +330,7 @@ def validate_schematic(blueprint_path: Path, schematic_path: Path, target_versio
         "sha256": hashlib.sha256(packed).hexdigest(),
         "bytes": len(packed),
         "spot_checks": len(blueprint["spot_checks"]),
+        "validation": "NONVALIDATED" if allow_unverified else "STRICT_VALIDATED",
         **({"conversion": conversion} if conversion else {}),
     }
 
@@ -292,12 +344,14 @@ def main() -> int:
     compile_versions = compile_parser.add_mutually_exclusive_group()
     compile_versions.add_argument("--target-version", help="require matching blueprint metadata and registry-valid states")
     compile_versions.add_argument("--convert-to", help="convert to a verified target release, writing a new .mc<VERSION>.schem variant")
+    compile_parser.add_argument("--allow-unverified", action="store_true", help="permit partial profiles and unknown combinations; output is NONVALIDATED")
     validate_parser = subparsers.add_parser("validate", help="reload gzip NBT and validate every voxel")
     validate_parser.add_argument("blueprint", type=Path)
     validate_parser.add_argument("schematic", type=Path)
     validate_versions = validate_parser.add_mutually_exclusive_group()
     validate_versions.add_argument("--target-version", help="require matching blueprint metadata and registry-valid states")
     validate_versions.add_argument("--convert-to", help="validate against the converted target palette")
+    validate_parser.add_argument("--allow-unverified", action="store_true", help="permit partial profiles and unknown combinations; result is NONVALIDATED")
     subparsers.add_parser("test-varints", help="exercise canonical multibyte VarInt boundaries")
     args = parser.parse_args()
     try:
@@ -306,15 +360,14 @@ def main() -> int:
             blueprint_path = repo_input(args.blueprint)
             output_path = cli_output(args.output)
             if args.convert_to:
-                output_path = variant_path(output_path, args.convert_to)
-            blueprint, packed = compile_blueprint(blueprint_path, output_path, args.target_version, args.convert_to)
-            result = validate_schematic(blueprint_path, output_path, args.target_version, args.convert_to)
-            output_name = variant_path(args.output, args.convert_to) if args.convert_to else args.output
+                output_path = variant_path(output_path, args.convert_to, args.allow_unverified)
+            blueprint, packed, result = compile_blueprint(blueprint_path, output_path, args.target_version, args.convert_to, args.allow_unverified, return_report=True)
+            output_name = variant_path(args.output, args.convert_to, args.allow_unverified) if args.convert_to else args.output
             print(json.dumps({"compiled": str(output_name), "blueprint": str(args.blueprint), **result}, sort_keys=True))
         elif args.command == "validate":
             blueprint_path = repo_input(args.blueprint)
             schematic_path = repo_input(args.schematic)
-            print(json.dumps(validate_schematic(blueprint_path, schematic_path, args.target_version, args.convert_to), sort_keys=True))
+            print(json.dumps(validate_schematic(blueprint_path, schematic_path, args.target_version, args.convert_to, args.allow_unverified), sort_keys=True))
         else:
             print("canonical VarInt boundaries passed (including 1-, 2-, 3-, 4-, and 5-byte values; overlong encoding rejected)")
         return 0

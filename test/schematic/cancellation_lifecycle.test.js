@@ -7,6 +7,7 @@ import test from "node:test";
 import { beginCreativeSupply, loadSchematicBuilder } from "../../src/utils/schematic/builder_compat.js";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { runBuild } from "../../src/utils/schematic/run_build.js";
+import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
@@ -133,7 +134,7 @@ const tinySchematic = {
 };
 
 function dependencies(calls) {
-  return {
+  return provenanceFixtureDependencies({
     resolvePath: (filename) => `/schematics/${filename}`,
     fsAccess: async () => {},
     fsReadFile: () => Buffer.from("tiny schematic fixture"),
@@ -151,7 +152,7 @@ function dependencies(calls) {
       return true;
     },
     writeLog: (message) => calls.logs.push(message),
-  };
+  });
 }
 
 test("stale real plugin loop exits after suspended look; lifecycle quarantine rejects retry before mutations", async () => {

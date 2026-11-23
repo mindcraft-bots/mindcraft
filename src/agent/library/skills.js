@@ -3,6 +3,7 @@ import * as world from "./world.js";
 import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
+import agentSettings from '../settings.js';
 import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
 import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
@@ -35,6 +36,8 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
     const resumeSession = schematicResumeSessions.get(bot) ?? null;
     const result = await buildSchematicImplementation(bot, fileName, x, y, z, {
         resumeSession,
+        allowNonvalidatedSchematic: agentSettings.allow_nonvalidated_schematic_builds === true,
+        requireStrictSchematicValidation: agentSettings.require_strict_schematic_validation === true,
         writeLog: (message) => log(bot, message),
     });
     const sessionStillValid = resumeSession?.context != null

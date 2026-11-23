@@ -1,0 +1,367 @@
+{
+  "edition": "java",
+  "generator": "block-history-generator/1",
+  "generator_sha256": "1447629c5792323067f56ee760aa12f152aefa12fb3bf0ae1c43b8b99f1053c7",
+  "releases": [
+    {
+      "config": "releases/1.13.json",
+      "coverage": "exact",
+      "data_version": 1519,
+      "release": "1.13",
+      "sha256": "3986097581071d63d5ee3014193945c3415b80a3bb4bef9a3b1b6056f9f50d18"
+    },
+    {
+      "config": "releases/1.13.1.json",
+      "coverage": "exact",
+      "data_version": 1628,
+      "release": "1.13.1",
+      "sha256": "b7da2c12b018de0ccd0606e330633592b65b5b78e044fc0439e768bd6ee67269"
+    },
+    {
+      "config": "releases/1.13.2.json",
+      "coverage": "shared",
+      "data_version": 1631,
+      "release": "1.13.2",
+      "sha256": "fd3fdfb3cd19963765d7cb824ced8c486f99632641d4ab7910494d3ca55f7e39"
+    },
+    {
+      "config": "releases/1.14.json",
+      "coverage": "exact",
+      "data_version": 1952,
+      "release": "1.14",
+      "sha256": "16f80685f1653de5ef5a586d36607ff5172edce59474976868bb4313316ea069"
+    },
+    {
+      "config": "releases/1.14.1.json",
+      "coverage": "exact",
+      "data_version": 1957,
+      "release": "1.14.1",
+      "sha256": "f644ea026512d4e8b6c7469c55a77a9a6d5967f3a47038b6609f037558a8147f"
+    },
+    {
+      "config": "releases/1.14.2.json",
+      "coverage": "exact",
+      "data_version": 1963,
+      "release": "1.14.2",
+      "sha256": "302feb030cf9c0e5d0b8712ddfcb56e469bfbb4bc0ff8cd5b8e47e9e81118f64"
+    },
+    {
+      "config": "releases/1.14.3.json",
+      "coverage": "exact",
+      "data_version": 1968,
+      "release": "1.14.3",
+      "sha256": "61287bcd9d114f464ec119ab13a20079828450379a1becfc1b4ba0710099c08c"
+    },
+    {
+      "config": "releases/1.14.4.json",
+      "coverage": "exact",
+      "data_version": 1976,
+      "release": "1.14.4",
+      "sha256": "5336c2308a550cd71a220ee5a00cf486c6d43e7fc62b3e0d7291b0abd1fe946c"
+    },
+    {
+      "config": "releases/1.15.json",
+      "coverage": "exact",
+      "data_version": 2225,
+      "release": "1.15",
+      "sha256": "2e3da000c8652c104abbcf5b8c6514b8812f4b5ac269038566a9ba3897eba5e6"
+    },
+    {
+      "config": "releases/1.15.1.json",
+      "coverage": "exact",
+      "data_version": 2227,
+      "release": "1.15.1",
+      "sha256": "3f95da32eed7670a96dc7337edb71b2943e92dd1bbe5c4acff4faa89cce65c3f"
+    },
+    {
+      "config": "releases/1.15.2.json",
+      "coverage": "exact",
+      "data_version": 2230,
+      "release": "1.15.2",
+      "sha256": "01e947051685d7c5601990457064346e127239b58237b7dbf7e45781a3a2b278"
+    },
+    {
+      "config": "releases/1.16.json",
+      "coverage": "exact",
+      "data_version": 2566,
+      "release": "1.16",
+      "sha256": "1085167075d19a3c145534c3f26b5ac99a76ee53168ae76a91233dfa285e8840"
+    },
+    {
+      "config": "releases/1.16.1.json",
+      "coverage": "exact",
+      "data_version": 2567,
+      "release": "1.16.1",
+      "sha256": "82a3f8819d199edccd3ad7b898f4d721dd89f63baac3e053e0f70f420d1cbd17"
+    },
+    {
+      "config": "releases/1.16.2.json",
+      "coverage": "exact",
+      "data_version": 2578,
+      "release": "1.16.2",
+      "sha256": "412af42c968eda35b715bc1148a1d5e74a2913cc88e37a3470204918cfdc3ac7"
+    },
+    {
+      "config": "releases/1.16.3.json",
+      "coverage": "exact",
+      "data_version": 2580,
+      "release": "1.16.3",
+      "sha256": "3a8e7ffb39cc1da385a62e25ee9ef2593a45eeaa16551d23ec61e0441f1eacc0"
+    },
+    {
+      "config": "releases/1.16.4.json",
+      "coverage": "exact",
+      "data_version": 2584,
+      "release": "1.16.4",
+      "sha256": "c473dce08f19a3fc08da818201573028364fbd749df9e3977535aa427eb2c4a0"
+    },
+    {
+      "config": "releases/1.16.5.json",
+      "coverage": "exact",
+      "data_version": 2586,
+      "release": "1.16.5",
+      "sha256": "45b32d98671c23d7084389da1f76ea6e6fb484495f1e481b5c0da8b646f93266"
+    },
+    {
+      "config": "releases/1.17.json",
+      "coverage": "exact",
+      "data_version": 2724,
+      "release": "1.17",
+      "sha256": "a76085d15d725b0ecbcf2135095baff6019244731df4edb2b5135b678ef5459d"
+    },
+    {
+      "config": "releases/1.17.1.json",
+      "coverage": "exact",
+      "data_version": 2730,
+      "release": "1.17.1",
+      "sha256": "bcf0f5f02e8864c0b11ed1ffb3dcc86cdd269875b1d3931f182e9049b08e990b"
+    },
+    {
+      "config": "releases/1.18.json",
+      "coverage": "exact",
+      "data_version": 2860,
+      "release": "1.18",
+      "sha256": "2a8ad1e23469e206c4f1aa05b850565801cff9b2be42f3beeed3c4771187bbf8"
+    },
+    {
+      "config": "releases/1.18.1.json",
+      "coverage": "exact",
+      "data_version": 2865,
+      "release": "1.18.1",
+      "sha256": "f4a7bc3936776fcac43d461fe42070e6d69cd17d73606b2741018b38f0bbbc86"
+    },
+    {
+      "config": "releases/1.18.2.json",
+      "coverage": "exact",
+      "data_version": 2975,
+      "release": "1.18.2",
+      "sha256": "05bcc8891a056bdc1d56286a4f66dbca5a55ae0ff88b84c0c00f8fb8da59a6ad"
+    },
+    {
+      "config": "releases/1.19.json",
+      "coverage": "exact",
+      "data_version": 3105,
+      "release": "1.19",
+      "sha256": "ed5c82752d3bbdfaa1278fc0b8d74c788a381e068d9134ddcb2c2963e9e6f2c0"
+    },
+    {
+      "config": "releases/1.19.1.json",
+      "coverage": "exact",
+      "data_version": 3117,
+      "release": "1.19.1",
+      "sha256": "25817189d14e0b5ba57594b61873b7c52a962f2f16ed8a2904d30c9e28d38ecc"
+    },
+    {
+      "config": "releases/1.19.2.json",
+      "coverage": "exact",
+      "data_version": 3120,
+      "release": "1.19.2",
+      "sha256": "0d8559b4bcc425f15228602ae93990fc724067e8bb9124b68cbdfdefc6f0a0d1"
+    },
+    {
+      "config": "releases/1.19.3.json",
+      "coverage": "exact",
+      "data_version": 3218,
+      "release": "1.19.3",
+      "sha256": "2d82b286b00cc1b48392c3e88a6e3b49e6d1a21e0e3988b082e467e086483afd"
+    },
+    {
+      "config": "releases/1.19.4.json",
+      "coverage": "exact",
+      "data_version": 3337,
+      "release": "1.19.4",
+      "sha256": "bd28df97c7b7ec42b61867533f8c38201a7aa79aaa30e6076f4725ea65743bcb"
+    },
+    {
+      "config": "releases/1.20.json",
+      "coverage": "exact",
+      "data_version": 3463,
+      "release": "1.20",
+      "sha256": "500da730e27757da189089e734564b842c9ef38f5bf786081f0d252f98a1f543"
+    },
+    {
+      "config": "releases/1.20.1.json",
+      "coverage": "exact",
+      "data_version": 3465,
+      "release": "1.20.1",
+      "sha256": "1695524027378ffa33cb93e783af3fc9c781ba33fd57f162bebab552319df930"
+    },
+    {
+      "config": "releases/1.20.2.json",
+      "coverage": "exact",
+      "data_version": 3578,
+      "release": "1.20.2",
+      "sha256": "b79276b7876c982b212b499731364f25cb4ff9261f34f0be857704be212d885c"
+    },
+    {
+      "config": "releases/1.20.3.json",
+      "coverage": "exact",
+      "data_version": 3698,
+      "release": "1.20.3",
+      "sha256": "fe9272241ff866ef52ce0f94505be93fa30eb9b2728316cc975d9baa3d585a7d"
+    },
+    {
+      "config": "releases/1.20.4.json",
+      "coverage": "exact",
+      "data_version": 3700,
+      "release": "1.20.4",
+      "sha256": "672d29684aa99a6a937409b9c2081ce399e637ae32ef0a931c76499c5bc8d03c"
+    },
+    {
+      "config": "releases/1.20.5.json",
+      "coverage": "exact",
+      "data_version": 3837,
+      "release": "1.20.5",
+      "sha256": "38396474bcc303e6cf1eb78b4a2efaf982be24c7749e4d388868d69ce7339eb0"
+    },
+    {
+      "config": "releases/1.20.6.json",
+      "coverage": "exact",
+      "data_version": 3839,
+      "release": "1.20.6",
+      "sha256": "3e24309d884fdee2a5665e0e2e091785ab0c2be744a0ae47153172e898d00ddb"
+    },
+    {
+      "config": "releases/1.21.json",
+      "coverage": "exact",
+      "data_version": 3953,
+      "release": "1.21",
+      "sha256": "bac6d2feb587f556e5f0611198d6f5d8866747b1324dd2639312cd2e62565ad9"
+    },
+    {
+      "config": "releases/1.21.1.json",
+      "coverage": "exact",
+      "data_version": 3955,
+      "release": "1.21.1",
+      "sha256": "31c1536ed5eb153971dfcc14c9008ea70e494518957941624b8d8796b44e6486"
+    },
+    {
+      "config": "releases/1.21.2.json",
+      "coverage": "exact",
+      "data_version": 4080,
+      "release": "1.21.2",
+      "sha256": "43eb4d3349c1ec2f191314c78a8b4e008e4f96cc1e13b02e8c335cd8dbd3c2fd"
+    },
+    {
+      "config": "releases/1.21.3.json",
+      "coverage": "exact",
+      "data_version": 4082,
+      "release": "1.21.3",
+      "sha256": "4ce58ede910bf98682950c7fa8c4099634f0fc822bd64094aef3ff1bddf2a060"
+    },
+    {
+      "config": "releases/1.21.4.json",
+      "coverage": "exact",
+      "data_version": 4189,
+      "release": "1.21.4",
+      "sha256": "2d745d0c782b10bf543f06491632e86e1f01664a2b28417fcd7db45ccc1104be"
+    },
+    {
+      "config": "releases/1.21.5.json",
+      "coverage": "exact",
+      "data_version": 4325,
+      "release": "1.21.5",
+      "sha256": "a9ee3780d4b18a2f3cea334ac5d5d3d495ac6803c4af7232ca78ab653cb2681d"
+    },
+    {
+      "config": "releases/1.21.6.json",
+      "coverage": "exact",
+      "data_version": 4435,
+      "release": "1.21.6",
+      "sha256": "22b87e1487480300431a8057d8f5499e9f0b835ed6395bf1265e4f1465d5d7ce"
+    },
+    {
+      "config": "releases/1.21.7.json",
+      "coverage": "exact",
+      "data_version": 4438,
+      "release": "1.21.7",
+      "sha256": "57243281c557aa125a5c16eb02dd990eac401d614fc408970dd6f3d0db4575a7"
+    },
+    {
+      "config": "releases/1.21.8.json",
+      "coverage": "exact",
+      "data_version": 4440,
+      "release": "1.21.8",
+      "sha256": "4d6b5c887d6bbd356c0c6be835e9e173aee59ad0debc1bdac4f74ab09db42366"
+    },
+    {
+      "config": "releases/1.21.9.json",
+      "coverage": "exact",
+      "data_version": 4554,
+      "release": "1.21.9",
+      "sha256": "73da39c54544c855e3b3cbad6194854d58e1fe7df083d02f1cb7b72b84b0dae4"
+    },
+    {
+      "config": "releases/1.21.10.json",
+      "coverage": "exact",
+      "data_version": 4556,
+      "release": "1.21.10",
+      "sha256": "12e5e090445524a7474feff7015cb83631cc93b3315206aa3898c1f94590c783"
+    },
+    {
+      "config": "releases/1.21.11.json",
+      "coverage": "exact",
+      "data_version": 4671,
+      "release": "1.21.11",
+      "sha256": "ef6c04f54b8b7b15ab46790003bf07bbbf143fc35b797fab74ac8b8eb2d83534"
+    },
+    {
+      "config": "releases/26.1.json",
+      "coverage": "exact",
+      "data_version": 4786,
+      "release": "26.1",
+      "sha256": "8a5aaf084f1e2b8e21457415c18302ea75dda331aa50675f7243fb48670cacc9"
+    },
+    {
+      "config": "releases/26.1.1.json",
+      "coverage": "exact",
+      "data_version": 4788,
+      "release": "26.1.1",
+      "sha256": "9985567094775d32705489ded7a9d36d169e2701628a55d65f2a3144305c26a2"
+    },
+    {
+      "config": "releases/26.1.2.json",
+      "coverage": "exact",
+      "data_version": 4790,
+      "release": "26.1.2",
+      "sha256": "34912b8c8d8a4da59d689c963122087fe053e9dd6acc055a7dc862f197f6978e"
+    },
+    {
+      "config": "releases/26.2.json",
+      "coverage": "exact",
+      "data_version": 4903,
+      "release": "26.2",
+      "sha256": "75b88a83c99dd2488927e1d1344ab1e13acd2dad60392e10cc796cb858484eb8"
+    },
+    {
+      "config": "releases/26.3.json",
+      "coverage": "exact",
+      "data_version": 5023,
+      "release": "26.3",
+      "sha256": "5156877ab73555ec89c6096d964fa7d14b88f8c275f3711045c39afc1ce72a11"
+    }
+  ],
+  "schema": 1,
+  "source_lock_sha256": "12e2dc6575bdd920198c3ee2bc18ed526391c3c2c94c6ddc21924c7091e53f88",
+  "unsupported": "pre-1.13, snapshots, Bedrock and modded registries"
+}

@@ -7,6 +7,8 @@ import test, { after } from "node:test";
 import { gzipSync } from "node:zlib";
 
 import { SCHEMATICS_DIR } from "../../src/utils/schematic/paths.js";
+import agentSettings from "../../src/agent/settings.js";
+import { writeFixtureProvenance } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
@@ -22,6 +24,7 @@ let executeCommand;
 let modulesLoaded;
 
 async function loadProjectModules() {
+  agentSettings.allow_nonvalidated_schematic_builds = true;
   if (!modulesLoaded) {
     modulesLoaded = (async () => {
       try {
@@ -176,6 +179,7 @@ test("public build command retains eligible interrupted session across repeated 
   const fileName = `recovery_e2e_${process.pid}.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
+  writeFixtureProvenance(filePath, singleStoneSchematic());
   const { agent, calls } = makeLifecycle(fileName);
   try {
     const command = `!buildSchematic("${fileName}", 0, 64, 0)`;
@@ -199,6 +203,8 @@ test("public build command retains eligible interrupted session across repeated 
     assert.equal(agent.actions.resume_func, null);
   } finally {
     await rm(filePath, { force: true });
+    await rm(`${filePath}.provenance.json`, { force: true });
+    await rm(`${filePath}.provenance.sha256`, { force: true });
   }
 });
 
@@ -207,6 +213,7 @@ test("trusted stop during schematic cleanup cancels the not-yet-registered recov
   const fileName = `recovery_cancel_e2e_${process.pid}.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
+  writeFixtureProvenance(filePath, singleStoneSchematic());
   const { agent, calls } = makeLifecycle(fileName, { delayRestore: true });
   Object.setPrototypeOf(agent, Agent.prototype);
   try {
@@ -223,6 +230,8 @@ test("trusted stop during schematic cleanup cancels the not-yet-registered recov
   } finally {
     calls.releaseRestore?.();
     await rm(filePath, { force: true });
+    await rm(`${filePath}.provenance.json`, { force: true });
+    await rm(`${filePath}.provenance.sha256`, { force: true });
   }
 });
 
@@ -231,6 +240,7 @@ test("replacement action cancels a managed schematic session before resume regis
   const fileName = `recovery_replace_e2e_${process.pid}.schem`;
   const filePath = path.join(SCHEMATICS_DIR, fileName);
   await writeFile(filePath, singleStoneSchematic());
+  writeFixtureProvenance(filePath, singleStoneSchematic());
   const { agent, calls } = makeLifecycle(fileName, { delayRestore: true });
   try {
     const build = executeCommand(agent, `!buildSchematic("${fileName}", 0, 64, 0)`);
@@ -246,6 +256,8 @@ test("replacement action cancels a managed schematic session before resume regis
   } finally {
     calls.releaseRestore?.();
     await rm(filePath, { force: true });
+    await rm(`${filePath}.provenance.json`, { force: true });
+    await rm(`${filePath}.provenance.sha256`, { force: true });
   }
 });
 

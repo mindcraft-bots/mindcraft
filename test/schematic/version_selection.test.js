@@ -1,17 +1,36 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { spawnSync } from "node:child_process";
 import { EventEmitter } from "node:events";
+import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { copyFile, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import minecraftData from "minecraft-data";
+import nbt from "prismarine-nbt";
 import { SCHEMATICS_DIR, listSchematicEntries, resolveSchematicPath } from "../../src/utils/schematic/paths.js";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { readSchematic } from "../../src/utils/schematic/reader.js";
 
 const source = path.join(SCHEMATICS_DIR, "schems/pack1/02_bee_hot_air_balloon.schem");
-const opts = (version) => ({ version });
+const opts = (version) => ({ version, allowNonvalidatedSchematic: true });
+const blueprint = path.join(SCHEMATICS_DIR, "blueprints/pack1/02_bee_hot_air_balloon.json");
+const sha = data => createHash("sha256").update(data).digest("hex");
+
+// Exercise the real provenance gate for synthetic version-selection fixtures.
+async function syntheticArtifact(file, version = null) {
+  const { parsed } = await nbt.parse(await readFile(source));
+  if (version) parsed.value.DataVersion.value = minecraftData.versions.pc.find(v => v.minecraftVersion === version).dataVersion;
+  const bytes = gzipSync(nbt.writeUncompressed(parsed));
+  await writeFile(file, bytes);
+  const report = JSON.stringify({ schemaVersion: 1, artifact: path.basename(file), sha256: sha(bytes),
+    validation: "NONVALIDATED", blueprint: "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+    blueprintSha256: sha(await readFile(blueprint)), targetVersion: null, convertTo: null, packReport: null, packReportSha256: null });
+  await writeFile(`${file}.provenance.json`, report);
+  await writeFile(`${file}.provenance.sha256`, `${sha(Buffer.from(report))}\n`);
+}
 
 async function fixture(run) {
   const root = await mkdtemp(path.join(os.tmpdir(), "schematic-versions-"));
@@ -26,9 +45,9 @@ async function manifest(pack, groups) {
 
 test("selects by release DataVersion, including gaps and registry aliases, and lists picks", async () => {
   await fixture(async (root, pack) => {
-    await copyFile(source, path.join(pack, "balloon.schem"));
+    await syntheticArtifact(path.join(pack, "balloon.schem"));
     for (const version of ["1.21.4", "1.21.9", "1.21.10", "26.1"]) {
-      await writeFile(path.join(pack, `balloon.mc${version}.schem`), "compiled variant");
+      await syntheticArtifact(path.join(pack, `balloon.mc${version}.schem`), version);
     }
     await manifest(pack, { 2: { 1: "balloon.schem" } });
     const resolve = (selector, version) => resolveSchematicPath(selector, root, opts(version));
@@ -38,7 +57,7 @@ test("selects by release DataVersion, including gaps and registry aliases, and l
     assert.equal(minecraftData("1.21.10").version.minecraftVersion, "1.21.9");
     assert.equal(minecraftData("26.1.1").version.minecraftVersion, "26.1");
     for (const selector of ["pack1:balloon", "pack1:balloon.schem", "schems/pack1/balloon.schem"]) {
-      assert.equal(await resolve(selector, "26.1"), path.join(pack, "balloon.mc26.1.schem"));
+      assert.equal(await resolve(selector, "26.1"), path.join(pack, "balloon.schem"));
     }
     await assert.rejects(resolve("pack1:balloon.SCHEM", "26.1"), /No schematic named/);
     await writeFile(path.join(pack, "balloon.SCHEM"), "unrelated uppercase asset");
@@ -59,10 +78,10 @@ test("selects by release DataVersion, including gaps and registry aliases, and l
 
 test("unversioned bases require a known embedded release and arbitrary selectors remain usable", async () => {
   await fixture(async (root, pack) => {
-    await copyFile(source, path.join(pack, "custom.schem"));
+    await syntheticArtifact(path.join(pack, "custom.schem"));
     await writeFile(path.join(pack, "unknown.schem"), "not nbt");
     await writeFile(path.join(pack, "unknown.SCHEM"), "not nbt");
-    await writeFile(path.join(pack, "other.schematic"), "other format");
+    await syntheticArtifact(path.join(pack, "other.schematic"));
     await manifest(pack, {});
     assert.equal(await resolveSchematicPath("pack1:custom", root, opts("26.1")), path.join(pack, "custom.schem"));
     await assert.rejects(resolveSchematicPath("pack1:custom", root, opts("1.20.6")), /No compatible/);
@@ -72,10 +91,10 @@ test("unversioned bases require a known embedded release and arbitrary selectors
     await writeFile(path.join(pack, "custom.schematic"), "other");
     await assert.rejects(resolveSchematicPath("pack1:custom", root, opts("26.1")), /Ambiguous/);
     assert.equal(await resolveSchematicPath("pack1:custom.schem", root, opts("26.1")), path.join(pack, "custom.schem"));
-    await writeFile(path.join(pack, "variant-only.mc26.1.schem"), "variant");
+    await syntheticArtifact(path.join(pack, "variant-only.mc26.1.schem"), "26.1");
     assert.equal(await resolveSchematicPath("pack1:variant-only", root, opts("26.1")), path.join(pack, "variant-only.mc26.1.schem"));
     await assert.rejects(resolveSchematicPath("pack1:variant-only", root, opts("1.21.4")), /No compatible/);
-    await writeFile(path.join(pack, "old.mc1.16.5.schem"), "older variant");
+    await syntheticArtifact(path.join(pack, "old.mc1.16.5.schem"), "1.16.5");
     assert.equal(await resolveSchematicPath("pack1:old", root, opts("1.16.5")), path.join(pack, "old.mc1.16.5.schem"));
     await writeFile(path.join(pack, "variant-only.schematic"), "other format");
     await assert.rejects(resolveSchematicPath("pack1:variant-only", root, opts("26.1")), /Ambiguous/);
@@ -84,9 +103,9 @@ test("unversioned bases require a known embedded release and arbitrary selectors
 
 test("manifest ownership, extension matching, duplicate mappings, and traversal fail safely", async () => {
   await fixture(async (root, pack) => {
-    await copyFile(source, path.join(pack, "one.schem"));
-    await copyFile(source, path.join(pack, "two.schem"));
-    await writeFile(path.join(pack, "one.mc26.1.schem"), "belongs to another ID");
+    await syntheticArtifact(path.join(pack, "one.schem"));
+    await syntheticArtifact(path.join(pack, "two.schem"));
+    await syntheticArtifact(path.join(pack, "one.mc26.1.schem"), "26.1");
     await writeFile(path.join(pack, "one-extra.mc26.1.schem"), "different stem");
     await writeFile(path.join(pack, "one.mc26.1.schematic"), "different extension");
     await manifest(pack, { 1: { 1: "one.schem", 2: "one.mc26.1.schem", 3: "two.schem" } });
@@ -137,7 +156,7 @@ test("real pack selects and reads the native bee variant for each engine", async
   }
 });
 
-test("real bee blueprint builds the compiler's selected native and chain-converted variants", async () => {
+test("real bee blueprint mock-builds explicitly selected nonvalidated variants", async () => {
   await fixture(async (root, pack) => {
     const base = path.join(pack, "02_bee_hot_air_balloon.schem");
     await copyFile(source, base);
@@ -145,7 +164,7 @@ test("real bee blueprint builds the compiler's selected native and chain-convert
     const compiler = path.join(SCHEMATICS_DIR, "tooling/compile_blueprint.py");
     const blueprint = path.join(SCHEMATICS_DIR, "blueprints/pack1/02_bee_hot_air_balloon.json");
     for (const version of ["1.21.4", "26.1"]) {
-      const result = spawnSync("python3", [compiler, "compile", blueprint, base, "--convert-to", version], { encoding: "utf8" });
+      const result = spawnSync("python3", [compiler, "compile", blueprint, base, "--convert-to", version, "--allow-unverified"], { encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
     }
     const canonical = await readFile(source);
@@ -158,7 +177,9 @@ test("real bee blueprint builds the compiler's selected native and chain-convert
       const logs = [];
       let selected;
       const success = await buildSchematic(bot, "pack1:2:1", 100, 64, -20, {
-        resolvePath: async (selector, _directory, options) => (selected = await resolveSchematicPath(selector, root, options)),
+        allowNonvalidatedSchematic: true,
+        resolvePath: async (_selector, _directory, options) => (selected = await resolveSchematicPath(
+          `pack1:02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`, root, options)),
         changeGameMode: async (_bot, mode) => { bot.game.gameMode = mode; return true; },
         clearObstructions: async () => ({ cleared: 0 }),
         guardDestruction: async (_bot, _build, _Vec3, run) => run(),
@@ -171,7 +192,7 @@ test("real bee blueprint builds the compiler's selected native and chain-convert
         writeLog: message => logs.push(message),
       });
       assert.equal(success, true, logs.join("\n"));
-      assert.equal(selected, path.join(pack, `02_bee_hot_air_balloon.mc${version}.schem`));
+      assert.equal(selected, path.join(pack, `02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`));
     }
     assert.deepEqual(await readFile(base), canonical);
   });

@@ -5,6 +5,7 @@ import convoManager from '../conversation.js';
 import { checkLevelBlueprint, checkBlueprint } from '../tasks/construction_tasks.js';
 import { load } from 'cheerio';
 import { listSchematicEntries } from '../../utils/schematic/paths.js';
+import settings from '../settings.js';
 
 const pad = (str) => {
     return '\n' + str + '\n';
@@ -231,7 +232,7 @@ export const queryList = [
         name: '!listSchematics',
         description: 'List supported schematic files, release compatibility, and selector picks for this bot. Pack file IDs are explicit index mappings, not sorted positions. Use !buildSchematic("packN:<group>:<fileId>") or a pack-qualified filename.',
         perform: function (agent) {
-            return listSchematicEntries(undefined, { version: agent?.bot?.version }).then(entries => {
+            return listSchematicEntries(undefined, { version: agent?.bot?.version, allowNonvalidatedSchematic: settings.allow_nonvalidated_schematic_builds === true, requireStrictSchematicValidation: settings.require_strict_schematic_validation === true }).then(entries => {
                 entries.sort((left, right) => {
                     const packOrder = left.pack.localeCompare(right.pack);
                     if (packOrder) return packOrder;
@@ -246,8 +247,8 @@ export const queryList = [
                 if (entries.length === 0) {
                     return pad('SCHEMATICS\nNo schematic files found. Add a .schem, .schematic, or .litematic file to the schematics folder, then run !listSchematics again.');
                 }
-                return pad(`SCHEMATICS (Minecraft ${agent?.bot?.version ?? 'unknown'})\n${entries.map(({ pack, group, fileId, fileName, id, filename, selector, version, compatible, selected, selectionError }) =>
-                    `- ${pack} | group ${group ?? '—'} | file id ${fileId ?? id ?? '—'} | file name ${fileName ?? filename}${selector ? ` | selector ${selector} | version ${version ?? 'unknown'} | ${selectionError ?? (compatible ? (selected ? 'compatible, selected' : 'compatible') : 'not known compatible')}` : ''}`).join('\n')}`);
+                return pad(`SCHEMATICS (Minecraft ${agent?.bot?.version ?? 'unknown'})\n${entries.map(({ pack, group, fileId, fileName, id, filename, selector, version, compatible, selected, selectionError, validationStatus, reason }) =>
+                    `- ${pack} | group ${group ?? '—'} | file id ${fileId ?? id ?? '—'} | file name ${fileName ?? filename}${selector ? ` | selector ${selector} | version ${version ?? 'unknown'} | ${selectionError ?? (compatible ? (selected ? 'compatible, selected' : 'compatible') : 'not known compatible')}` : ''}${validationStatus ? ` | validation ${validationStatus}${validationStatus !== 'STRICT_VALIDATED' ? ' (WARNING: legal combinations not proven)' : ' (content and blueprint checked; authorship unverified)'}${reason ? `: ${reason}` : ''}` : ''}`).join('\n')}`);
             }).catch(error => {
                 const message = error instanceof Error ? error.message : String(error);
                 return pad(`Unable to list schematics because of a filesystem error: ${message}`);
