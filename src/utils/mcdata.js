@@ -9,6 +9,7 @@ import { plugin as autoEat } from 'mineflayer-auto-eat';
 import plugin from 'mineflayer-armor-manager';
 import { loadSchematicBuilder } from './schematic/builder_compat.js';
 import { trackBotWorldLifecycle } from './schematic/world_lifecycle.js';
+import { trackAuthenticatedChatConnection } from './authenticated_chat.js';
 const armorManager = plugin;
 let mc_version = settings.minecraft_version;
 let mcdata = null;
@@ -68,6 +69,7 @@ export function initBot(username) {
     }
 
     const bot = createBot(options);
+    trackAuthenticatedChatConnection(bot, options.auth);
     // Register before login/respawn packets can be processed; schematic recovery
     // must observe transitions even when world/entity references are retained.
     trackBotWorldLifecycle(bot);

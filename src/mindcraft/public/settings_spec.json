@@ -46,6 +46,21 @@
         "description": "List of agents to only chat with. If empty, the bot will chat publicly",
         "default": []
     },
+    "schematic_placement_mode": {
+        "type": "placementMode",
+        "description": "Legacy (null), bounded safe, balanced, or destructive for explicitly listed humans via authenticated public Minecraft chat.",
+        "default": null
+    },
+    "schematic_balanced_radius": {
+        "type": "number",
+        "description": "Balanced horizontal search radius, integer 0–16.",
+        "default": 4
+    },
+    "schematic_balanced_threshold": {
+        "type": "number",
+        "description": "Strict balanced full-volume mismatch threshold, integer 1–4097.",
+        "default": 9
+    },
     "speak": {
         "type": "boolean",
         "description": "Whether to enable text-to-speech reading on the host machine",

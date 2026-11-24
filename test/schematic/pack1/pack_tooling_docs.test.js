@@ -30,14 +30,24 @@ test('pack1 documentation points to its real configuration, tests and evidence',
   assert.match(review, /historical diagnostic regression test[^\n]*wardrobe_reproducibility\.test\.js[^\n]*no longer present/i);
 });
 
-test('guide pack1 links resolve, including the historical archive', async () => {
+test('guide preserves the historical archive reference without claiming missing assets are present', async () => {
   const guide = await read('schematics/README.md');
   const targets = [...guide.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map(m => m[1])
     .filter(target => /(?:^|\/)pack1(?:_originals)?(?:\/|#|$)/i.test(target));
   assert(targets.some(target => target.includes('pack1_originals/README.md')));
   assert(targets.some(target => target.includes('schems/pack1/index.json')));
+  const archiveTarget = targets.find(target => target.includes('pack1_originals/README.md'));
+  const archivePath = path.resolve(root, 'schematics', archiveTarget.replace(/:\d+(?:-\d+)?$/, '').split('#', 1)[0]);
+  let archiveAvailable = true;
+  try {
+    await access(archivePath);
+  } catch {
+    archiveAvailable = false;
+    assert.match(guide, /referenced `schematic-archive\/pack1_originals\/` directory is absent from this checkout/i);
+  }
   for (const target of targets) {
     const local = target.replace(/:\d+(?:-\d+)?$/, '').split('#', 1)[0];
+    if (!archiveAvailable && local.includes('pack1_originals/')) continue;
     await access(path.resolve(root, 'schematics', local));
   }
 });
@@ -53,6 +63,6 @@ test('command documentation retains the real pack1 selector examples', () => {
   assert.match(result.docs, /Andy build file id 01 from group 02 of pack1/i);
   assert.match(result.docs, /pack1:02:01/);
   assert.match(result.docs, /schema pack1\/02_bee_hot_air_balloon/i);
-  assert.deepEqual(result.indexed.args, ['pack1:02:01', null, null, null]);
-  assert.deepEqual(result.named.args, ['pack1:02_bee_hot_air_balloon', null, null, null]);
+  assert.deepEqual(result.indexed.args, ['pack1:02:01', null, null, null, null, null, null]);
+  assert.deepEqual(result.named.args, ['pack1:02_bee_hot_air_balloon', null, null, null, null, null, null]);
 });

@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import { performance } from "node:perf_hooks";
+import { assertAuthorizedGameplaySupport, authorizedGameplayEdit } from "./authorized_gameplay_edit.js";
 
 const require = createRequire(import.meta.url);
 const { goals } = require("mineflayer-pathfinder");
@@ -202,8 +203,9 @@ function hasUnsafeFluidState(block, version) {
   });
 }
 
-function obstructionReason(block, version) {
+function obstructionReason(block, version, clearingQualification = null) {
   if (!block?.name) return "unknown block type";
+  if (clearingQualification?.(block) === true) return null;
   if (!vanillaBlocksFor(version)?.has(block.name)) return "block type is unknown to the vanilla registry";
   if (block.entity || block.blockEntity || block._blockEntity || block.nbt) return "block entity / attached data is protected";
   if (PROTECTED_NAME.test(block.name)) return "valuable, interactive, or structural block is protected";
@@ -236,7 +238,7 @@ function readBlock(bot, position, Vec3Class) {
   }
 }
 
-function requireCells(build) {
+export function requireSchematicCells(build) {
   if (!Array.isArray(build?.cells) || build.cells.length === 0) {
     throw new Error("Schematic obstruction safety requires the complete transformed-volume cell plan; refusing to build without it");
   }
@@ -267,20 +269,39 @@ function requireCells(build) {
   return build.cells;
 }
 
-/** Clear only allowlisted natural blocks after a complete, fail-closed volume preflight. */
-export async function clearSchematicObstructions(bot, build, {
+// Classify one cell without mutating the world. The caller must enforce the
+// attempt identity before and after reading and must inspect the whole volume.
+export function inspectSchematicCell(bot, cell, Vec3Class, observe = null, clearingQualification = null) {
+  const block = readBlock(bot, cell.position, Vec3Class);
+  if (!block) {
+    throw Object.assign(new Error(`Schematic obstruction at ${positionKey(cell.position)} is unavailable or unloaded; refusing to clear`), {
+      code: "SCHEMATIC_OBSTRUCTION", position: cell.position, kind: "unloaded",
+    });
+  }
+  if (observe) observe(block);
+  if (AIR_NAMES.has(block.name) || isExpected(block, cell)) return null;
+  const reason = obstructionReason(block, bot.version, clearingQualification);
+  if (reason) {
+    throw Object.assign(new Error(`Refusing obstruction ${block.name ?? "unknown"} at ${positionKey(cell.position)}: ${reason}`), {
+      code: "SCHEMATIC_OBSTRUCTION", position: cell.position, blockName: block.name, reason,
+    });
+  }
+  return { cell, name: block.name, properties: copyProperties(block) };
+}
+
+/** Read-only inspection; snapshots are advisory until a fresh guarded clearing scan. */
+export function inspectSchematicObstructions(bot, build, {
   Vec3Class,
   isInterrupted = () => Boolean(bot.interrupt_code),
   attemptIdentity = captureSchematicAttemptIdentity(bot),
-  navigationTimeoutMs = DEFAULT_NAVIGATION_TIMEOUT_MS,
+  collectSnapshots = true,
+  clearingQualification = null,
+  inspectionCheck = null,
 } = {}) {
-  if (!bot || typeof bot.blockAt !== "function" || typeof bot.dig !== "function" || !Vec3Class) {
-    throw new Error("Safe schematic clearing requires block inspection, digging, and a vector implementation");
+  if (!bot || typeof bot.blockAt !== "function" || !Vec3Class) {
+    throw new Error("Safe schematic inspection requires block inspection and a vector implementation");
   }
-  if (!Number.isFinite(navigationTimeoutMs) || navigationTimeoutMs <= 0) {
-    throw new RangeError("Schematic obstruction clearing navigation timeout must be a positive finite number of milliseconds");
-  }
-  const cells = requireCells(build);
+  const cells = requireSchematicCells(build);
   const assertAttempt = () => assertAttemptIdentity(
     bot,
     attemptIdentity,
@@ -288,21 +309,52 @@ export async function clearSchematicObstructions(bot, build, {
     "Schematic obstruction clearing",
   );
   assertAttempt();
-  build.approvedObstructions = new Map();
   const snapshots = [];
+  let rejection = null;
 
   // Inspect the full exact volume before the first destructive action. This
   // prevents partial clearing when a chest/structure/unloaded cell is present.
   for (const cell of cells) {
     assertAttempt();
-    const block = readBlock(bot, cell.position, Vec3Class);
+    inspectionCheck?.();
+    let snapshot;
+    try {
+      snapshot = inspectSchematicCell(bot, cell, Vec3Class, null, clearingQualification);
+    } catch (error) {
+      if (error?.code !== "SCHEMATIC_OBSTRUCTION") throw error;
+      rejection ??= error;
+      snapshots.length = 0;
+      continue;
+    }
     assertAttempt();
-    if (!block) throw new Error(`Schematic obstruction at ${positionKey(cell.position)} is unavailable or unloaded; refusing to clear`);
-    if (AIR_NAMES.has(block.name) || isExpected(block, cell)) continue;
-    const reason = obstructionReason(block, bot.version);
-    if (reason) throw new Error(`Refusing obstruction ${block.name ?? "unknown"} at ${positionKey(cell.position)}: ${reason}`);
-    snapshots.push({ cell, name: block.name, properties: copyProperties(block) });
+    if (snapshot && collectSnapshots && !rejection) snapshots.push(snapshot);
   }
+  assertAttempt();
+  if (rejection) throw rejection;
+  return snapshots;
+}
+
+/** Clear only allowlisted natural blocks after a complete, fail-closed volume preflight. */
+export async function clearSchematicObstructions(bot, build, {
+  Vec3Class,
+  isInterrupted = () => Boolean(bot.interrupt_code),
+  attemptIdentity = captureSchematicAttemptIdentity(bot),
+  navigationTimeoutMs = DEFAULT_NAVIGATION_TIMEOUT_MS,
+  clearingQualification = null,
+} = {}) {
+  if (!bot || typeof bot.blockAt !== "function" || typeof bot.dig !== "function" || !Vec3Class) {
+    throw new Error("Safe schematic clearing requires block inspection, digging, and a vector implementation");
+  }
+  if (!Number.isFinite(navigationTimeoutMs) || navigationTimeoutMs <= 0) {
+    throw new RangeError("Schematic obstruction clearing navigation timeout must be a positive finite number of milliseconds");
+  }
+  const assertAttempt = () => assertAttemptIdentity(
+    bot, attemptIdentity, () => isInterrupted() || Boolean(build?.isCancelled), "Schematic obstruction clearing",
+  );
+  assertAttempt();
+  build.approvedObstructions = new Map();
+  // Never reuse an earlier inspection to authorize edits.
+  const snapshots = inspectSchematicObstructions(bot, build, { Vec3Class, isInterrupted, attemptIdentity, clearingQualification });
   build.approvedObstructions = new Map(snapshots.map((snapshot) => [
     positionKey(snapshot.cell.position),
     Object.freeze({ name: snapshot.name, properties: Object.freeze({ ...snapshot.properties }) }),
@@ -343,7 +395,7 @@ export async function clearSchematicObstructions(bot, build, {
     if (before.name !== snapshot.name || !sameProperties(getProperties(before), snapshot.properties)) {
       throw new Error(`Obstruction at ${positionKey(snapshot.cell.position)} changed after preflight; refusing destructive action`);
     }
-    const reason = obstructionReason(before, bot.version);
+    const reason = obstructionReason(before, bot.version, clearingQualification);
     if (reason) throw new Error(`Refusing changed obstruction ${before.name} at ${positionKey(snapshot.cell.position)}: ${reason}`);
     assertAttempt();
     try {
@@ -390,8 +442,8 @@ function cloneMovements(movements) {
 }
 
 /** Temporarily prevent implicit builder digs and pathfinder excavation/scaffolding. */
-export async function withSchematicDestructionGuards(bot, build, Vec3Class, operation, getPendingSettlement = () => null, attemptIdentity = captureSchematicAttemptIdentity(bot)) {
-  const cells = requireCells(build);
+export async function withSchematicDestructionGuards(bot, build, Vec3Class, operation, getPendingSettlement = () => null, attemptIdentity = captureSchematicAttemptIdentity(bot), clearingQualification = null, finalWriteAuthorization = false) {
+  const cells = requireSchematicCells(build);
   const volume = new Map(cells.map((cell) => [positionKey(cell.position), cell]));
   const priorDig = bot.dig;
   const priorPlaceBlock = bot.placeBlock;
@@ -405,10 +457,12 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
   }
   let operationEnded = false;
   const assertAttempt = () => assertAttemptIdentity(bot, attemptIdentity, () => Boolean(operationEnded || build?.isCancelled || bot.interrupt_code), "Schematic builder");
+  if (finalWriteAuthorization) assertAuthorizedGameplaySupport(bot);
 
   bot.dig = async function guardedSchematicDig(block, ...args) {
     assertAttempt();
-    const position = block?.position;
+    build.beforeSchematicEdit?.();
+    const position = block?.position && { ...block.position };
     const cell = position && volume.get(positionKey(position));
     if (!cell) throw new Error("Blocked mineflayer-schem dig outside the exact schematic volume");
     const approved = build.approvedObstructions?.get(positionKey(position));
@@ -424,15 +478,36 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
     if (current.name !== approved.name || !sameProperties(getProperties(current), approved.properties)) {
       throw new Error(`Blocked schematic dig of a changed obstruction at ${positionKey(position)}`);
     }
-    const reason = obstructionReason(current, bot.version);
+    const reason = obstructionReason(current, bot.version, clearingQualification);
     if (reason) throw new Error(`Blocked unsafe schematic dig of ${current.name} at ${positionKey(position)}: ${reason}`);
     assertAttempt();
-    const result = await priorDig.call(this, current, ...args);
+    const currentStateId = current.stateId;
+    const authorize = () => {
+      assertAttempt();
+      build.beforeSchematicEdit?.();
+      const live = readBlock(bot, position, Vec3Class);
+      if (!live || live.name !== approved.name || !sameProperties(getProperties(live), approved.properties)
+          || !Number.isSafeInteger(currentStateId) || live.stateId !== currentStateId
+          || isExpected(live, cell) || obstructionReason(live, bot.version, clearingQualification)) {
+        throw new Error(`Blocked stale final schematic dig at ${positionKey(position)}`);
+      }
+      assertAttempt();
+    };
+    const result = finalWriteAuthorization
+      ? await authorizedGameplayEdit(bot, { kind: "dig", block: current, target: position,
+        authorize, assertCurrent: assertAttempt, identity: attemptIdentity })
+      : await priorDig.call(this, current, ...args);
     assertAttempt();
+    build.afterSchematicEdit?.(position);
     return result;
   };
   bot.placeBlock = async function guardedSchematicPlace(reference, face, ...args) {
     assertAttempt();
+    build.beforeSchematicEdit?.();
+    if (finalWriteAuthorization && (!face || ![face.x, face.y, face.z].every(Number.isSafeInteger)
+        || Math.abs(face.x) + Math.abs(face.y) + Math.abs(face.z) !== 1)) {
+      throw new Error("Blocked schematic placement with an invalid face");
+    }
     const target = reference?.position && face && {
       x: reference.position.x + face.x,
       y: reference.position.y + face.y,
@@ -447,12 +522,38 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
       throw new Error(`Blocked schematic placement into non-air cell ${positionKey(target)} (${current?.name ?? "unavailable"})`);
     }
     assertAttempt();
-    const result = await priorPlaceBlock.call(this, reference, face, ...args);
+    const referenceBefore = finalWriteAuthorization && readBlock(bot, reference.position, Vec3Class);
+    const targetStateId = current.stateId;
+    const referenceStateId = referenceBefore?.stateId;
+    const referenceName = referenceBefore?.name;
+    const referenceProperties = referenceBefore && copyProperties(referenceBefore);
+    const referencePosition = reference?.position && { ...reference.position };
+    const authorize = () => {
+      assertAttempt();
+      build.beforeSchematicEdit?.();
+      const live = readBlock(bot, target, Vec3Class);
+      const liveReference = readBlock(bot, referencePosition, Vec3Class);
+      if (!live || !isSchematicAirName(live.name) || !referenceBefore || !liveReference
+          || !Number.isSafeInteger(targetStateId) || live.stateId !== targetStateId
+          || !Number.isSafeInteger(referenceStateId) || liveReference.stateId !== referenceStateId
+          || isSchematicAirName(volume.get(positionKey(target)).name)
+          || isSchematicAirName(liveReference.name) || liveReference.name !== referenceName
+          || !sameProperties(getProperties(liveReference), referenceProperties)) {
+        throw new Error(`Blocked stale final schematic placement or reference at ${positionKey(target)}`);
+      }
+      assertAttempt();
+    };
+    const result = finalWriteAuthorization
+      ? await authorizedGameplayEdit(bot, { kind: "place", block: referenceBefore, face, target,
+        expectedStateId: volume.get(positionKey(target)).stateId,
+        authorize, assertCurrent: assertAttempt, identity: attemptIdentity })
+      : await priorPlaceBlock.call(this, reference, face, ...args);
     assertAttempt();
+    build.afterSchematicEdit?.(target);
     return result;
   };
-  if (builder) builder.clearArea = async () => {
-    throw new Error("The mineflayer-schem clearArea operation is disabled; only preflighted in-volume natural obstructions may be cleared");
+  if (builder) builder.clearArea = () => {
+    return Promise.reject(new Error("The mineflayer-schem clearArea operation is disabled; only preflighted in-volume natural obstructions may be cleared"));
   };
   let movementsChanged = false;
   let restored = false;

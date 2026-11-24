@@ -13,7 +13,7 @@ const exists = name => access(path.join(root, name));
 test('root agent guidance scopes reusable tooling and preserves evidence', async () => {
   const guidance = await read('AGENTS.md');
   for (const pattern of [
-    /canonical root location/i, /discovery vary/i, /nested guidance/i,
+    /canonical root location/i, /discovery depends on the tool/i, /nested guidance/i,
     /pack-neutral in both names and behavior/i, /honored or rejected/i,
     /hidden live pack1/i, /pack2\/pack3/i, /no-overwrite/i,
     /test\/schematic\/pack<N>\//, /schematics\/tooling\/validation\/pack<N>\//,

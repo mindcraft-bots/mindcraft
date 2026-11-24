@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   clearSchematicObstructions,
   captureSchematicAttemptIdentity,
+  inspectSchematicObstructions,
   isKnownNaturalObstructionName,
   isSafeNaturalObstruction,
   withSchematicDestructionGuards,
@@ -31,6 +32,23 @@ const block = (name, position, extra = {}) => ({
   diggable: true,
   getProperties: () => ({}),
   ...extra,
+});
+
+test("read-only inspection scans the full volume without approving or clearing obstructions", () => {
+  const cells = [0, 1, 2].map(x => ({ position: { x, y: 0, z: 0 }, name: "air", properties: {} }));
+  const { bot, build, removed } = fixture(cells, new Map([
+    ["0,0,0", block("poppy", cells[0].position)],
+    ["1,0,0", block("birch_leaves", cells[1].position)],
+  ]));
+  const approved = new Map([["existing", { name: "sentinel" }]]);
+  build.approvedObstructions = approved;
+  const originalBlockAt = bot.blockAt.bind(bot);
+  const visited = [];
+  bot.blockAt = position => { visited.push(key(position)); return originalBlockAt(position); };
+  assert.throws(() => inspectSchematicObstructions(bot, build, { Vec3Class: Vec3 }), /birch_leaves.*allowlist/);
+  assert.deepEqual(visited, ["0,0,0", "1,0,0", "2,0,0"]);
+  assert.equal(build.approvedObstructions, approved);
+  assert.deepEqual(removed, []);
 });
 
 function fixture(cells, blocks) {
@@ -69,6 +87,20 @@ test("clears foliage obstructions for target-solid and intended-air cells only w
   assert.deepEqual(removed, ["0,4,0", "1,4,0"]);
   assert.equal(blocks.get("2,4,0").name, "oak_planks", "already-correct player construction is preserved");
   assert.equal(blocks.get("3,4,0").name, "poppy", "outside-volume foliage is untouched");
+});
+
+test("a successful guarded clearing scan visits every cell before the first dig", async () => {
+  const cells = [0, 1, 2].map(x => ({ position: { x, y: 0, z: 0 }, name: "air", properties: {} }));
+  const candidate = fixture(cells, new Map([["0,0,0", block("poppy", cells[0].position)]]));
+  const visited = new Set();
+  const originalBlockAt = candidate.bot.blockAt.bind(candidate.bot);
+  const originalDig = candidate.bot.dig.bind(candidate.bot);
+  candidate.bot.blockAt = position => { visited.add(key(position)); return originalBlockAt(position); };
+  candidate.bot.dig = target => {
+    assert.deepEqual([...visited].sort(), ["0,0,0", "1,0,0", "2,0,0"]);
+    return originalDig(target);
+  };
+  assert.deepEqual(await clearSchematicObstructions(candidate.bot, candidate.build, { Vec3Class: Vec3 }), { cleared: 1 });
 });
 
 test("preflight refuses containers, valuables, and player-built materials without digging", async () => {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
-import { access, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test, { after } from "node:test";
 import { gzipSync } from "node:zlib";
@@ -21,6 +21,7 @@ let ActionManager;
 let Agent;
 let initModes;
 let executeCommand;
+let dispatchAddressedSchematicRequest;
 let modulesLoaded;
 
 async function loadProjectModules() {
@@ -33,11 +34,12 @@ async function loadProjectModules() {
         await writeFile(rootSettingsPath, "export default {};\n", { flag: "wx" });
         createdSettingsStub = true;
       }
-      [{ ActionManager }, { Agent }, { initModes }, { executeCommand }] = await Promise.all([
+      [{ ActionManager }, { Agent }, { initModes }, { executeCommand }, { dispatchAddressedSchematicRequest }] = await Promise.all([
         import("../../src/agent/action_manager.js"),
         import("../../src/agent/agent.js"),
         import("../../src/agent/modes.js"),
         import("../../src/agent/commands/index.js"),
+        import("../../src/agent/schematic_request.js"),
       ]);
     })();
   }
@@ -158,8 +160,52 @@ function makeLifecycle(fileName, { delayRestore = false } = {}) {
   agent.shut_up = false;
   agent.blocked_actions = [];
   agent.history = { add() {}, save() {} };
-  return { agent, bot, calls, fileName };
+  return { agent, bot, calls, fileName, world };
 }
+
+test("addressed balanced suffix and configured settings select an actual build origin", async () => {
+  await loadProjectModules();
+  const pack = `pack${1000000 + process.pid}`;
+  const directory = path.join(SCHEMATICS_DIR, "schems", pack);
+  await mkdir(directory);
+  const filePath = path.join(directory, "balanced.mc1.20.3.schem");
+  const bytes = singleStoneSchematic();
+  const old = [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold];
+  try {
+    await writeFile(path.join(directory, "index.json"), JSON.stringify({ schemaVersion: 2, groups: { 2: { 1: "balanced.schem" } } }));
+    await writeFile(filePath, bytes);
+    writeFixtureProvenance(filePath, bytes);
+    const { agent, bot, calls, world } = makeLifecycle("balanced.schem");
+    const responses = [];
+    agent.routeResponse = async (_source, message) => { responses.push(message); };
+    bot.position = new Vec3(-2, 64, -2);
+    bot.entity.position = new Vec3(100, 64, 100);
+    bot.entity.width = 0.6;
+    bot.entity.height = 1.8;
+    bot.entities = { 1: bot.entity };
+    const getBlock = bot.blockAt.bind(bot);
+    bot.blockAt = position => position.y === 63
+      ? { name: "dirt", shapes: [[0, 0, 0, 1, 1, 1]], getProperties: () => ({}) }
+      : getBlock(position);
+    world.set("-1,64,0", { name: "stone", getProperties: () => ({}) });
+    const origins = [];
+    bot.builder.build = build => { origins.push({ ...build.cells[0].position }); build.actions.length = 0; return Promise.resolve(); };
+    agentSettings.schematic_placement_mode = "balanced";
+    agentSettings.schematic_balanced_radius = 0;
+    agentSettings.schematic_balanced_threshold = 1;
+    assert.equal(await dispatchAddressedSchematicRequest(agent, "trusted", `Builder build id 1 from group 2 of ${pack} using balanced mode radius=1`, { trusted: true }), true);
+    assert.deepEqual(origins, [{ x: -1, y: 64, z: 0 }]);
+    assert.match(responses.join(" "), /Balanced site: origin -1,64,0/);
+    agentSettings.schematic_balanced_radius = 1;
+    bot.output = "";
+    assert.equal(await dispatchAddressedSchematicRequest(agent, "trusted", `Builder build id 1 from group 2 of ${pack}`, { trusted: true }), true);
+    assert.deepEqual(origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+    assert.deepEqual(calls.mode, ["creative", "survival", "creative", "survival"]);
+  } finally {
+    [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold] = old;
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 async function waitFor(predicate, message) {
   const deadline = Date.now() + 3_000;

@@ -1,6 +1,7 @@
 import { executeCommand, commandExists } from './commands/index.js';
 import { resolveSchematicPath, conservativeBotVersion } from '../utils/schematic/paths.js';
 import settings from './settings.js';
+import { resolvePlacementOptions } from '../utils/schematic/placement_options.js';
 
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -132,17 +133,41 @@ function selectorAt(text, start) {
     };
 }
 
+function hasReplacementIntent(text) {
+    // Match actions/relations aimed at an existing structure or an explicit referent,
+    // not building nouns alone, material alternatives ("oak instead of birch"), or
+    // words such as "replacement" in a shop description. Quotes do not waive safety.
+    const structure = '(?:buildings?|barns?|houses?|structures?|homes?|cottages?|cabins?|castles?|huts?|towers?|sheds?|walls?|roofs?|ruins?|bases?)\\b';
+    const existing = '(?:old|existing|unfinished|current|abandoned|partially\\s+built)\\b';
+    const target = `(?:(?:this|that|these|those|it|them)\\b|(?:(?:the|an?|my|our|your|their)\\s+)?(?:${existing}|${structure})|(?:the|an?|my|our|your|their)\\s+(?:[a-z-]+\\s+)+?${structure})`;
+    const relation = '(?:instead\\s+of|rather\\s+than|in\\s+place\\s+of|(?:as\\s+)?(?:a\\s+)?replacement\\s+(?:for|of)|demolition\\s+of)';
+    // Spatial descriptions alone ("a tower on top of a cottage") are not replacement.
+    const existingTarget = `(?:(?:this|that|these|those|it|them)\\b|(?:(?:the|my|our|your|their)\\s+)?${existing})`;
+    const overlay = `(?:on\\s+top\\s+of|(?:build(?:ing)?\\s+)?over)\\s+${existingTarget}`;
+    const takeDown = '(?:tear(?:ing)?|knock(?:ing)?|tak(?:e|ing)|pull(?:ing)?)';
+    const action = `(?:replac(?:e|es|ing)|rebuild(?:s|ing)?|demolish(?:es|ing)?|destroy(?:s|ing)?|remov(?:e|es|ing)|raz(?:e|es|ing)|clear(?:s|ing)?(?:\\s+away)?|overwrit(?:e|es|ing)|get(?:ting)?\\s+rid\\s+of|${takeDown}\\s+down)`;
+    // A filename is data even without a selector cue. Do not turn its separators
+    // into a prose instruction; retain a placeholder so surrounding words cannot join.
+    const prose = text.replace(/\S+\.(?:schem|schematic|litematic|nbt)(?=$|[\s"'.,!?])/gi, ' filename ')
+        .replace(/[^A-Za-z0-9_]+/g, ' ');
+    return new RegExp(`\\b(?:${relation}|${action})\\s+${target}|\\b${overlay}|\\b${takeDown}\\s+${target}(?:\\s+[a-z]+)*?\\s+down\\b`, 'i').test(prose);
+}
+
 /** Parse one anchored selector after an inert description prefix; never recover a partial match. */
-function parseSchematicSelector(text, addressedTo) {
+function parseSchematicSelector(text, addressedTo, { replacementOnly = false } = {}) {
     const normalized = stripRequestPunctuation(text);
     const scanned = scanRequestWords(normalized);
     const rawSelectorCue = /\b(?:file\s+(?:id|offset|name)|(?:id|offset)\s+\d+|pack[1-9]\d*|\d+\s+from\s+(?:group|\S+\s+group))\b/i.test(normalized);
-    if (!hasSelectorCue(scanned.words, normalized) && !(scanned.invalid && rawSelectorCue)) return null;
+    // Explicit unsupported intent must be refused even without a schematic selector.
+    // Still leave benign descriptions and ordinary conversation outside this route.
+    if (!hasSelectorCue(scanned.words, normalized) && !(scanned.invalid && rawSelectorCue)
+        && !hasReplacementIntent(normalized)) return null;
 
     // Natural-language descriptions are inert, but command/control syntax and controls never enter a target.
     // Quote spans use UTF-16 offsets, so keep the same indexing even after non-BMP text.
     const hasUnquotedBackslash = normalized.split('').some((character, index) => character === '\\'
         && !scanned.quotedSpans.some(([quoteStart, quoteEnd]) => index >= quoteStart && index < quoteEnd));
+    // eslint-disable-next-line no-control-regex -- reject control characters in human requests.
     if (/[\u0000-\u001f\u007f-\u009f\u2028\u2029;&|`$<>()[\]{}]|!(?=[A-Za-z0-9_])/i.test(normalized)
         || hasUnquotedBackslash) {
         return { addressedTo, error: 'I could not safely identify that schematic request; command fragments and control characters are not allowed.' };
@@ -171,6 +196,22 @@ function parseSchematicSelector(text, addressedTo) {
     // the same terminal selector and collapse to one candidate, never to multiple matches.
     const uniqueMatches = matches.filter((match, index) => matches.findIndex(candidate =>
         candidate.kind === match.kind && candidate.selector === match.selector) === index);
+
+    // Valid selectors contain identifiers, not prose: inspect only their description.
+    // This also leaves the intentionally supported exact numeric trailing phrase inert,
+    // without allowing it to exempt any replacement intent in the prefix. For invalid
+    // requests inspect the whole text for a useful explanation; never recover a selector.
+    const intentText = uniqueMatches.length === 1 ? normalized.slice(0, uniqueMatches[0].start) : normalized;
+    if (hasReplacementIntent(intentText)) {
+        return {
+            addressedTo,
+            error: 'I cannot replace an existing building or demolish it. A bare selector starts an ordinary nearby build, not a replacement.',
+        };
+    }
+
+    // Non-build directives are recognized only to refuse targeted replacement intent.
+    // In particular a literal selector filename must never make them start a build.
+    if (replacementOnly) return null;
 
     if (uniqueMatches.length !== 1) {
         return {
@@ -208,16 +249,53 @@ export function parseChatAddress(message, agentName, knownBotPeers = []) {
     return { addressedTo, text: message.slice(address[0].length) };
 }
 
-/** Recognize only explicitly addressed, typed schematic build requests. */
+/** Recognize addressed typed builds and refuse explicit unsupported replacement requests. */
 export function parseAddressedSchematicRequest(message, agentName, knownBotPeers = []) {
     const address = parseChatAddress(message, agentName, knownBotPeers);
     if (!address) return null;
     const { addressedTo } = address;
     const text = address.text.replace(/^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?/i, '');
-    if (!/^build\b/i.test(text)) return null;
-    const requestText = text.replace(/^build\b/i, '').trim();
-    const parsed = parseSchematicSelector(requestText, addressedTo);
-    if (!parsed) return null;
+    const build = /^build\b/i.test(text);
+    // Anchoring keeps questions/discussion about replacement out of deterministic routing.
+    // Only imperative openings are refusal-only aliases; noun-led discussion is chat.
+    if (!build && !/^(?:replace|rebuild|demolish|destroy|remove|raze|clear|overwrite|tear|knock|take|pull|get\s+rid\s+of)\b/i.test(text)) return null;
+    let requestText = (build ? text.replace(/^build\b/i, '') : text).trim();
+    const normalized = stripRequestPunctuation(requestText);
+    const modeSuffix = /\s+(?:using|via)\s+(balanced|safe|destructive)\s+mode((?:\s+(?:radius|threshold)=\d+)*)$/i.exec(normalized);
+    const scan = scanRequestWords(normalized);
+    const suffixIsQuoted = modeSuffix && scan.quotedSpans.some(([start, end]) => modeSuffix.index >= start && modeSuffix.index < end);
+    // The suffix is removed before selector parsing, so inspect the complete input
+    // first; in particular, whitespace in the suffix must not hide control bytes.
+    // eslint-disable-next-line no-control-regex -- reject control characters before suffix extraction.
+    if (modeSuffix && !suffixIsQuoted && /[\u0000-\u001f\u007f-\u009f\u2028\u2029;&|`$<>()[\]{}]|!(?=[A-Za-z0-9_])/i.test(normalized))
+        return { addressedTo, error: 'I could not safely identify that schematic request; command fragments and control characters are not allowed.' };
+    if (modeSuffix && !scan.invalid && !suffixIsQuoted) requestText = normalized.slice(0, modeSuffix.index);
+    const baseScan = scanRequestWords(requestText);
+    const unquotedBase = requestText.split('').map((character, index) =>
+        baseScan.quotedSpans.some(([start, end]) => index >= start && index < end) ? ' ' : character).join('');
+    if (build && (/\b(?:using|via)\s+(?:safe|destructive|balanced)\b/i.test(unquotedBase)
+        || /\b(?:using|via)\s+\S+\s+mode\b/i.test(unquotedBase)
+        || /\b(?:radius|threshold)\s*=/i.test(unquotedBase)))
+        return { addressedTo, error: 'Malformed or duplicate placement mode/options; no build was started.' };
+    const parsed = parseSchematicSelector(requestText, addressedTo, { replacementOnly: !build });
+    if (!parsed) {
+        if (build && scan.words.some((word, index) => /^(?:using|via)$/i.test(word.value)
+            && /^(?:safe|destructive|balanced|\w+)$/i.test(scan.words[index + 1]?.value ?? '')
+            && /^mode$/i.test(scan.words[index + 2]?.value ?? '')))
+            return { addressedTo, error: 'A placement mode requires exactly one valid schematic selector.' };
+        return null;
+    }
+    if (build && modeSuffix && !scan.invalid && !suffixIsQuoted && !parsed.error) {
+        const overrides = { mode: modeSuffix[1].toLowerCase() };
+        for (const token of modeSuffix[2].trim().split(/\s+/).filter(Boolean)) {
+            const [key, value] = token.toLowerCase().split('=');
+            if (Object.hasOwn(overrides, key)) return { addressedTo, error: `Duplicate ${key} placement option; no build was started.` };
+            overrides[key] = Number(value);
+        }
+        try { resolvePlacementOptions({}, overrides); }
+        catch (error) { return { addressedTo, error: `${error.message}; no build was started.` }; }
+        return { ...parsed, placementOverrides: overrides };
+    }
     return parsed;
 }
 
@@ -233,6 +311,8 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     agentName = agent.name,
     knownBotPeers = [],
     trusted = false,
+    checkBuild = () => null,
+    executeBuild = executeCommand,
 } = {}) {
     const request = parseAddressedSchematicRequest(message, agentName, knownBotPeers);
     if (!request) return false;
@@ -252,10 +332,25 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
         return true;
     }
 
+    const override = request.placementOverrides;
+    const args = override ? [request.selector, null, null, null, override.mode, override.radius ?? null, override.threshold ?? null] : [request.selector];
+    const command = `!buildSchematic(${args.map(value => JSON.stringify(value)).join(', ')})`;
+    const refusal = checkBuild(command);
+    if (refusal) {
+        await agent.routeResponse(source, refusal);
+        return true;
+    }
+
     try {
         await resolveSchematicPath(request.selector, undefined, { version: conservativeBotVersion(agent.bot), allowNonvalidatedSchematic: settings.allow_nonvalidated_schematic_builds === true, requireStrictSchematicValidation: settings.require_strict_schematic_validation === true });
     } catch (error) {
         await agent.routeResponse(source, `Schematic selector ${request.selector} could not be resolved: ${error.message}`);
+        return true;
+    }
+
+    const changedRefusal = checkBuild(command);
+    if (changedRefusal) {
+        await agent.routeResponse(source, changedRefusal);
         return true;
     }
 
@@ -264,7 +359,7 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
     agent.self_prompter?.handleUserPromptedCmd(false, true);
     await agent.routeResponse(source, `*${source} requested a schematic build*`);
-    const result = await executeCommand(agent, `!buildSchematic("${request.selector}")`);
+    const result = await executeBuild(agent, command);
     if (result) await agent.routeResponse(source, result);
     return true;
 }

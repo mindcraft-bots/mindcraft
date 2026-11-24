@@ -4,6 +4,7 @@ import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
 import agentSettings from '../settings.js';
+import { resolvePlacementOptions } from '../../utils/schematic/placement_options.js';
 import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
 import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
@@ -21,7 +22,7 @@ export function setSchematicResumeSession(bot, session) {
     else schematicResumeSessions.delete(bot);
 }
 
-export async function buildSchematic(bot, fileName, x = null, y = null, z = null) {
+export async function buildSchematic(bot, fileName, x = null, y = null, z = null, placementOptions = resolvePlacementOptions(agentSettings)) {
     /**
      * Build and verify a compatible version-suffixed .schem variant from the schematics directory.
      * @param {MinecraftBot} bot - the bot that will build the schematic.
@@ -36,6 +37,7 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
     const resumeSession = schematicResumeSessions.get(bot) ?? null;
     const result = await buildSchematicImplementation(bot, fileName, x, y, z, {
         resumeSession,
+        placementOptions,
         allowNonvalidatedSchematic: agentSettings.allow_nonvalidated_schematic_builds === true,
         requireStrictSchematicValidation: agentSettings.require_strict_schematic_validation === true,
         writeLog: (message) => log(bot, message),

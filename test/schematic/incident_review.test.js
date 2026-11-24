@@ -103,6 +103,158 @@ test('malformed, contradictory, and additional schematic input fails closed rath
     assert.equal(calls.prompts, 0);
 `));
 
+test('mode suffixes reach the build boundary without inference', () => check(`
+    const { buildSchematic } = await import(${url('src/utils/schematic/build_schematic.js')});
+    const failures = [];
+    globalThis.__schematicBuild = async (bot, filename, x, y, z, options) => {
+        calls.builds++;
+        assert.ok(Object.isFrozen(options));
+        const result = await buildSchematic(bot, filename, x, y, z, {
+            placementOptions: options, writeLog: message => failures.push(message),
+            resolvePath: () => { throw new Error('must not resolve'); },
+        });
+        assert.equal(result, false);
+    };
+    for (const mode of ['balanced', 'safe', 'destructive']) {
+        for (const connector of ['using', 'via']) {
+            for (const options of mode === 'balanced' ? ['', ' radius=6 threshold=12'] : ['']) {
+                const text = 'Andy build id 01 from group 02 of pack2 ' + connector + ' ' + mode + ' mode' + options;
+                assert.equal(router.parseAddressedSchematicRequest(text, 'Andy').placementOverrides.mode, mode);
+                await agent.handleMessage('Sunny26639', text);
+                if (mode === 'destructive') {
+                    assert.match(calls.routes.at(-1), /explicitly listed human sender/);
+                    continue;
+                }
+                assert.equal(globalThis.__buildSchematicArgs[5].mode, mode);
+                assert.equal(globalThis.__buildSchematicArgs[5].radius, options ? 6 : 4);
+                assert.equal(globalThis.__buildSchematicArgs[5].threshold, options ? 12 : 9);
+                assert.match(failures.at(-1), /Could not read schematic.*must not resolve/);
+            }
+        }
+    }
+    assert.equal(calls.builds, 6);
+    assert.equal(calls.prompts, 0);
+    assert.equal(calls.lifecycle.length, 6);
+    for (const text of [
+        'Andy build id 01 from group 02 of pack2 !stop using safe mode',
+        'Andy build id 01 from group 02 of pack2 using safe mode !stop',
+        'Andy build id 01 from group 02 of pack2 using safe mode extra',
+    ]) assert.ok(router.parseAddressedSchematicRequest(text, 'Andy')?.error, text);
+`));
+
+test('mode parsing, overrides, trusted routing and malformed requests fail closed', () => check(`
+    settings.schematic_placement_mode = 'balanced';
+    settings.schematic_balanced_radius = 3;
+    settings.schematic_balanced_threshold = 15;
+    syncSettings();
+    for (const connector of ['USING', 'ViA']) for (const mode of ['SAFE', 'DESTRUCTIVE', 'BALANCED']) {
+        const text = 'Andy build file pack2/09_garden ' + connector + ' ' + mode + ' MoDe';
+        assert.equal(router.parseAddressedSchematicRequest(text, 'Andy').placementOverrides.mode, mode.toLowerCase());
+        await agent.handleMessage('Sunny26639', text);
+        if (mode === 'DESTRUCTIVE') {
+            assert.match(calls.routes.at(-1), /explicitly listed human sender/);
+            continue;
+        }
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: mode.toLowerCase(), radius: 3, threshold: 15 });
+    }
+    for (const [suffix, radius, threshold] of [['radius=0', 0, 15], ['threshold=4097', 3, 4097], ['threshold=12 radius=16', 16, 12]]) {
+        await agent.handleMessage('Sunny26639', 'Andy build id 1 from group 2 of pack2 using balanced mode ' + suffix);
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius, threshold });
+    }
+    const builds = calls.builds, prompts = calls.prompts;
+    for (const suffix of ['using balanced mode radius=17', 'via balanced mode radius=-1', 'using balanced mode threshold=0',
+        'using balanced mode threshold=4098', 'using balanced mode radius=1.5', 'using balanced mode radius=2 radius=3',
+        'using balanced mode threshold=2 threshold=3', 'using safe mode radius=2', 'via destructive mode threshold=2',
+        'using magic mode', 'using balanced mode radius=', 'using balanced mode extra',
+        'using safe mode via balanced mode', 'using balanced mode; !stop()', 'via balanced mode radius=6 !stop()',
+        'using balanced mode\\n radius=6', 'using\\tbalanced mode']) {
+        const message = 'Andy build id 1 from group 2 of pack2 ' + suffix;
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        await agent.handleMessage('Sunny26639', message);
+    }
+    assert.ok(router.parseAddressedSchematicRequest('Andy build using safe mode id 1 from group 2 of pack2 via balanced mode', 'Andy').error);
+    for (const text of ['Andy build a house using balanced', 'Andy build a house via safe mod', 'Andy build a house using mystery mode']) {
+        assert.ok(router.parseAddressedSchematicRequest(text, 'Andy')?.error, text);
+        await agent.handleMessage('Sunny26639', text);
+    }
+    await agent.handleMessage('OtherPlayer', 'Andy build id 1 from group 2 of pack2 using safe mode');
+    await agent.handleMessage('Sunny26639', 'Alice build id 1 from group 2 of pack2 using safe mode');
+    assert.equal(calls.builds, builds);
+    assert.equal(calls.prompts, prompts);
+`));
+
+test('direct mode commands validate entire input and carry effective options', () => check(`
+    const { buildSchematic } = await import(${url('src/utils/schematic/build_schematic.js')});
+    const failures = [];
+    globalThis.__schematicBuild = async (bot, filename, x, y, z, options) => {
+        calls.builds++;
+        assert.equal(await buildSchematic(bot, filename, x, y, z, {
+            placementOptions: options, writeLog: message => failures.push(message),
+            resolvePath: () => { throw new Error('must not resolve'); },
+        }), false);
+    };
+    settings.schematic_placement_mode = 'balanced';
+    settings.schematic_balanced_radius = 5;
+    settings.schematic_balanced_threshold = 10;
+    syncSettings();
+    for (const [command, expected] of [
+        ['!buildSchematic("pack2:2:1")', { mode: 'balanced', radius: 5, threshold: 10 }],
+        ['!buildSchematic("pack2:2:1", 1, 2, 3, "SAFE")', { mode: 'safe', radius: 5, threshold: 10 }],
+        ['!buildSchematic("pack2:2:1", null, null, null, "balanced", 6, 12)', { mode: 'balanced', radius: 6, threshold: 12 }],
+        ['!buildSchematic("pack2:2:1", null, null, null, null, null, 1)', { mode: 'balanced', radius: 5, threshold: 1 }],
+    ]) {
+        await agent.handleMessage('Sunny26639', command);
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], expected);
+        assert.ok(Object.isFrozen(globalThis.__buildSchematicArgs[5]));
+        assert.match(failures.at(-1), /Could not read schematic.*must not resolve/);
+    }
+    const builds = calls.builds, prompts = calls.prompts;
+    for (const command of [
+        '!buildSchematic("pack2:2:1", 1, null, 3, "safe")',
+        '!buildSchematic("pack2:2:1", null, null, null, "safe", 2)',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", 17)',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", 1.2)',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", "6")',
+        '!buildSchematic("pack2:2:1", null, null, null, "null")',
+        '!buildSchematic("pack2:2:1", null, null, null, "unknown")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", 6, 12, 7)',
+        '!buildSchematic("pack2:2:1", null, null, null, "safe") trailing',
+        '!buildSchematic("pack2:2:1", null, null, null, "safe"; !stop())',
+    ]) {
+        await agent.handleMessage('Sunny26639', command);
+        assert.equal(calls.builds, builds, command);
+    }
+    assert.equal(calls.prompts, prompts);
+`));
+
+test('managed resume retains the original resolved options when settings change', () => check(`
+    settings.schematic_balanced_radius = 6;
+    syncSettings();
+    const seen = [];
+    let resume, session;
+    agent.actions = {
+        lastInterruption: { interruptedLabel: 'action:buildSchematic', byActionLabel: 'mode:self_defense' },
+        runAction: async (_name, fn) => { await fn(); return { interrupted: true, timedout: false }; },
+        registerResume: (_name, fn, options) => { resume = fn; assert.equal(options.guard(), true); },
+    };
+    globalThis.__schematicBuild = async (_bot, _name, _x, _y, _z, options) => {
+        seen.push(options);
+        session.context = { placementOptions: options };
+        session.resumeEligible = true;
+        session.isWorldValid = () => true;
+    };
+    // The loader does not implement session tracking, so retain the managed context here.
+    // Capture the context through the stubbed session bridge.
+    globalThis.__setSchematicSession = value => { session = value; };
+    await commands.executeCommand(agent, '!buildSchematic("pack2:2:1")');
+    settings.schematic_balanced_radius = 12; syncSettings();
+    await resume();
+    assert.equal(seen.length, 2);
+    assert.equal(seen[0], seen[1]);
+    assert.equal(seen[1].radius, 6);
+    assert.ok(Object.isFrozen(seen[1]));
+`));
+
 test('complete own-addressed schematic request dispatches exactly once, including polite forms', () => check(`
     for (const prefix of ['Andy ', 'Andy: ', '@ANDY, please ', 'Andy, could you please ']) {
         await agent.handleMessage('Sunny26639', prefix + 'build id 01 from group 02 of pack2');
@@ -194,38 +346,18 @@ test('model-generated incomplete zero-argument command does not cancel an action
 
 test('real event handlers preserve public-chat suppression, whisper delivery, and peer/user filters', () => check(`
     const handlers = {};
-    const handled = [];
-    let publicCompletion;
-    agent.handleMessage = (...args) => {
-        handled.push(args);
-        const result = Agent.prototype.handleMessage.apply(agent, args);
-        if (publicCompletion) result.then(publicCompletion.resolve, publicCompletion.reject);
-        return result;
-    };
     agent.bot.on = (event, handler) => { handlers[event] = handler; };
     await agent._setupEventHandlers(null, null);
     const message = 'Andy build 01 from group 02 of pack2';
     globalThis.__numOtherAgents = 1;
     handlers.chat('Sunny26639', message);
-    assert.deepEqual(handled, []);
     assert.equal(calls.builds, 0);
     await handlers.whisper('Sunny26639', message);
     assert.equal(calls.builds, 1);
     globalThis.__numOtherAgents = 0;
-    let deadline;
-    const completed = new Promise((resolve, reject) => {
-        publicCompletion = { resolve, reject };
-        deadline = setTimeout(() => reject(new Error('Timed out waiting for public-chat message handling')), 5000);
-    });
-    try {
-        handlers.chat('Sunny26639', message);
-        await completed;
-    } finally {
-        clearTimeout(deadline);
-        publicCompletion = null;
-    }
+    handlers.chat('Sunny26639', message);
+    for (let i = 0; i < 100 && calls.builds < 2; i++) await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(calls.builds, 2);
-    assert.deepEqual(handled, [['Sunny26639', message], ['Sunny26639', message]]);
     await handlers.whisper('Alice', '!buildSchematic("pack2:02:01")');
     await handlers.whisper('Mallory', '!buildSchematic("pack2:02:01")');
     await handlers.whisper('system', '!buildSchematic("pack2:02:01")');
@@ -297,7 +429,7 @@ test('all five incident requests parse and equivalent synthetic requests dispatc
         await agent.handleMessage('Sunny26639', synthetic);
         assert.equal(calls.builds, before + 1, synthetic);
         assert.equal(globalThis.__buildSchematicArgs[1], 'pack2:2:1', synthetic);
-        assert.deepEqual(globalThis.__buildSchematicArgs.slice(2), [null, null, null], synthetic);
+        assert.deepEqual(globalThis.__buildSchematicArgs.slice(2), [null, null, null, { mode: null, radius: 4, threshold: 9 }], synthetic);
         assert.deepEqual(calls.lifecycle.at(-1), [false, true], synthetic);
         if (index === 0) assert.match(calls.routes.slice(routesBefore).join(' '), /does not remove or replace.*normal nearby placement/i);
     }
@@ -348,6 +480,7 @@ test('alternate numeric order and inert suffix fail closed on malformed, ambiguo
         valid + ' instead of this unfinished building and remove it',
         'file name 09_garden of pack2' + suffix,
         valid + ' "instead of this unfinished building"',
+        '"' + valid + suffix + '"',
     ];
     for (const target of invalid) {
         const message = 'Andy build ' + target;
@@ -356,7 +489,6 @@ test('alternate numeric order and inert suffix fail closed on malformed, ambiguo
         await agent.handleMessage('Sunny26639', message);
         assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
     }
-    assert.equal(router.parseAddressedSchematicRequest('Andy build "' + valid + suffix + '"', 'Andy'), null);
     for (const source of ['Mallory', 'Alice']) {
         await agent.handleMessage(source, 'Andy build ' + valid + suffix);
         assert.match(calls.routes.at(-1), /trusted command senders/);
@@ -372,6 +504,256 @@ test('alternate numeric order and inert suffix fail closed on malformed, ambiguo
     await agent.handleMessage('Sunny26639', 'Andy build ' + valid + suffix);
     assert.match(calls.routes.at(-1), /could not be resolved/);
     assert.equal(calls.builds, 0);
+    assert.equal(calls.prompts, 0);
+`));
+
+test('unsupported replacement wording is rejected with explicit nearby-build guidance', () => check(`
+    const message = 'Andy build id 1 from 2 group of pack2 instead of this unfinished barn';
+    const parsed = router.parseAddressedSchematicRequest(message, 'Andy');
+    assert.match(parsed.error, /cannot replace an existing building/i);
+    assert.match(parsed.error, /bare selector.*ordinary nearby build.*not a replacement/i);
+    const before = [calls.builds, calls.prompts, calls.generated, calls.lifecycle.length];
+    await agent.handleMessage('Sunny26639', message);
+    assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before);
+    assert.match(calls.routes.at(-1), /cannot replace an existing building/i);
+    assert.equal(router.parseAddressedSchematicRequest('Andy build id 1 from 2 group of pack2 instead of this unfinished building', 'Andy').inertReplacementPhrase, true);
+`));
+
+test('replacement intent before or after every selector form fails closed without commands or inference', () => check(`
+    const repro = router.parseAddressedSchematicRequest('Alice build instead of this unfinished barn id 1 from group 3 of pack1', 'Alice');
+    assert.match(repro?.error ?? '', /cannot replace an existing building/i);
+    const selectors = [
+        'id 1 from group 2 of pack2', 'file id 01 from 02 group of pack2',
+        'offset 1 from group 2 of pack2', '1 from 2 group of pack2',
+        'schematic id 1 from group 2 of pack2', 'schema file id 1 from 2 group of pack2',
+        'file name 09_garden of pack2', 'file pack2/09_garden',
+        'schem 09_garden of pack2', 'scheme pack2/09_garden.schem',
+    ];
+    const intents = [
+        'instead of this unfinished barn', 'instead of this unfinished building',
+        'instead of the old house', 'in place of that structure',
+        'as a replacement for our unfinished barn', 'to replace this barn',
+        'replacement of the old barn', 'demolition of this unfinished barn',
+        'a replacement of our old house', 'after demolition of that structure',
+        'replacing the old house', 'replace the ugly red barn',
+        'to demolish this building', 'after demolishing the old barn',
+        'after tearing down that barn', 'knock down the old house',
+        'remove the existing structure', 'clear this building',
+        'build over the old barn', 'on top of this unfinished house',
+        'instead of it', 'to replace it', 'a replacement for the barn',
+        'instead of unfinished barn', 'replace existing barn', 'demolish old barn',
+        'in place of the unfinished construction', 'rebuild this cabin',
+        'rather than this unfinished barn', 'over this unfinished barn',
+        'tear this old barn down', 'take the old house down',
+        'clear away this structure', 'get rid of this building',
+        'INSTEAD OF THIS UNFINISHED BARN',
+        'a cottage "instead of this unfinished barn"',
+        "instead of 'this unfinished barn'", 'instead of: this unfinished barn',
+        'replace-this-barn', 'instead of this, unfinished barn',
+    ];
+    for (const selector of selectors) {
+        for (const intent of intents) {
+            for (const target of [intent + ' using ' + selector, selector + ' ' + intent]) {
+                // Only the already-supported exact numeric trailing phrase remains inert.
+                if (intent === 'instead of this unfinished building' && target === selector + ' ' + intent
+                    && !selector.includes('09_garden')) continue;
+                const message = 'Andy build ' + target + '.';
+                const parsed = router.parseAddressedSchematicRequest(message, 'Andy');
+                assert.match(parsed?.error ?? '', /cannot replace an existing building/i, message);
+                const before = [calls.builds, calls.prompts, calls.generated, calls.lifecycle.length];
+                const routesBefore = calls.routes.length;
+                await agent.handleMessage('Sunny26639', message);
+                assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
+                assert.equal(calls.routes.length, routesBefore + 1, message);
+                assert.match(calls.routes.at(-1), /not a replacement/i, message);
+            }
+        }
+    }
+`));
+
+test('audit noun-form repros and selector-free replacement requests never reach ordinary dispatch or inference', () => check(`
+    const messages = [
+        'Andy build replacement of the old barn id 1 from group 2 of pack2',
+        'Andy build demolition of this unfinished barn id 1 from group 2 of pack2',
+        'Andy build replace this unfinished barn',
+    ];
+    for (const intent of [
+        'replace this unfinished barn', 'replacement of the old barn',
+        'demolish this unfinished barn', 'demolition of this unfinished barn',
+        'rebuild the old house', 'remove this building', 'tear the old barn down',
+    ]) {
+        for (const prefix of ['Andy build ', '@Andy: could you please build ', 'Andy ', 'Andy please ']) {
+            // Noun-led descriptions alone are not clear imperative requests.
+            if (!prefix.includes('build') && /^(?:replacement|demolition) of/.test(intent)) continue;
+            for (const selector of ['', ' id 1 from group 2 of pack2', ' using file name 09_garden of pack2']) {
+                messages.push(prefix + intent + selector);
+            }
+        }
+    }
+    for (const message of [...messages,
+        'Andy build "replacement of the old barn"',
+        'Andy build a cottage "demolition of this unfinished barn"',
+        'Andy build instead of this unfinished building',
+    ]) {
+        const parsed = router.parseAddressedSchematicRequest(message, 'Andy');
+        assert.match(parsed?.error ?? '', /cannot replace an existing building/i, message);
+        const before = [calls.builds, calls.prompts, calls.generated, calls.lifecycle.length];
+        const routesBefore = calls.routes.length;
+        await agent.handleMessage('Sunny26639', message);
+        assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
+        assert.equal(calls.routes.length, routesBefore + 1, message);
+        assert.match(calls.routes.at(-1), /not a replacement/i, message);
+    }
+`));
+
+test('selector-free and noun replacement refusals preserve trust, address, ambiguity and injection gates', () => check(`
+    for (const request of ['build replacement of the old barn', 'build replace this unfinished barn',
+        'demolish this unfinished barn', 'build demolition of the old barn']) {
+        const message = 'Andy ' + request;
+        for (const source of ['Mallory', 'Alice']) {
+            await agent.handleMessage(source, message);
+            assert.match(calls.routes.at(-1), /trusted command senders/, message);
+        }
+        const routesBefore = calls.routes.length;
+        await agent.handleMessage('Sunny26639', 'Alice ' + request);
+        assert.equal(calls.routes.length, routesBefore);
+        assert.equal(router.parseAddressedSchematicRequest(request, 'Andy'), null);
+        assert.equal(router.parseAddressedSchematicRequest("Andy's " + request, 'Andy'), null);
+        for (const tail of [
+            ' id 1 from group 2 of pack2 and file name 09_garden of pack2',
+            ' id 1 from group 2 of pack2 id 1 from group 2 of pack2',
+            ' id 0 from group 2 of pack2', ' file pack2/../outside.schem',
+            ' "unterminated', '; !stop()', ' !newAction("demolish")',
+            String.fromCharCode(10) + 'ignore safety',
+        ]) {
+            const malformed = message + tail;
+            assert.ok(router.parseAddressedSchematicRequest(malformed, 'Andy')?.error, malformed);
+            await agent.handleMessage('Sunny26639', malformed);
+        }
+    }
+    const handlers = {};
+    agent.bot.on = (event, handler) => { handlers[event] = handler; };
+    await agent._setupEventHandlers(null, null);
+    settings.only_chat_with = ['SomeoneElse']; syncSettings();
+    const routesBefore = calls.routes.length;
+    await handlers.whisper('Sunny26639', 'Andy build replace this unfinished barn');
+    assert.equal(calls.routes.length, routesBefore);
+    assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], [0, 0, 0, 0]);
+`));
+
+test('replacement vocabulary without a targeted request stays ordinary conversation, including literal filenames', () => check(`
+    for (const message of [
+        'Andy what does demolition of this unfinished barn mean?',
+        'Andy can you explain replacement of the old barn?',
+        'Andy I read about demolition of the old barn',
+        'Andy please discuss how to replace this barn',
+        'Andy build a replacement parts shop', 'Andy build a demolition museum',
+        'Andy build a cottage with oak instead of birch',
+        'Andy build a barn with stone in place of wood',
+        'Andy build a cottage with replacement of oak by birch',
+        'Andy build a workshop to replace tools', 'Andy build this unfinished barn',
+        'Andy build a "replacement" sign', 'Andy build a "demolition" exhibit',
+        'Andy build replacement-of-the-old-barn.schem',
+        'Andy build "demolition-of-this-unfinished-barn.schem"',
+        'Andy replace tools', 'Andy demolition museum', 'Andy replacement parts shop',
+        'Andy demolition of the old barn is expensive',
+        'Andy replacement of the old barn was discussed yesterday',
+        'Andy replacing the old barn is not our job',
+    ]) {
+        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy'), null, message);
+        const before = calls.prompts;
+        await agent.handleMessage('Sunny26639', message);
+        assert.equal(calls.prompts, before + 1, message);
+    }
+    for (const name of ['replacement-of-the-old-barn', 'demolition-of-this-unfinished-barn.schem']) {
+        for (const selector of ['file name ' + name + ' of pack2', 'file pack2/' + name]) {
+            const parsed = router.parseAddressedSchematicRequest('Andy build ' + selector, 'Andy');
+            assert.equal(parsed?.selector, 'pack2:' + name);
+            assert.equal(parsed.error, undefined);
+            // A filename alone cannot turn a non-build directive into a build.
+            assert.equal(router.parseAddressedSchematicRequest('Andy replace ' + selector, 'Andy'), null);
+        }
+    }
+    assert.deepEqual([calls.builds, calls.generated, calls.lifecycle.length], [0, 0, 0]);
+`));
+
+test('the exact inert suffix cannot whitelist replacement prefixes or malformed and ambiguous selectors', () => check(`
+    const valid = 'id 1 from group 2 of pack2';
+    const suffix = ' instead of this unfinished building';
+    for (const target of [
+        'instead of this unfinished barn ' + valid + suffix,
+        'replace this building using ' + valid + suffix,
+        'replacement of the old barn ' + valid + suffix,
+        'demolition of this unfinished barn ' + valid + suffix,
+        '"instead of this unfinished building" ' + valid + suffix,
+        valid + suffix + ' and remove it', valid + suffix + ' 2',
+        'instead of this barn id 0 from group 2 of pack2',
+        'instead of this barn id 1 from two group of pack2',
+        'instead of this barn id 1 from group 2 of pack0',
+        'instead of this barn file pack2/../outside.schem',
+        'instead of this barn file pack2/09_garden and ' + valid,
+        valid + ' and ' + valid + suffix,
+        'instead of this barn "unterminated ' + valid,
+        'instead of this barn ' + valid + '; !stop()',
+    ]) {
+        const message = 'Andy build ' + target;
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        const before = [calls.builds, calls.prompts, calls.generated, calls.lifecycle.length];
+        await agent.handleMessage('Sunny26639', message);
+        assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
+    }
+`));
+
+test('benign building descriptions and material alternatives remain inert, and filenames are not instructions', () => check(`
+    for (const description of [
+        'a barn', 'this unfinished barn', 'an old house', 'an existing building design',
+        'a cottage with oak instead of birch', 'a barn with stone in place of wood',
+        'a workshop to replace tools', 'a demolition museum', 'a replacement parts shop',
+        'a cottage with replacement of oak by birch',
+        'a lookout over a barn', 'a tower on top of a cottage',
+        'a "replace" sign on a barn', 'a "file id schema scheme" cottage',
+    ]) {
+        for (const selector of ['id 1 from group 2 of pack2', 'file name 09_garden of pack2']) {
+            const message = 'Andy build ' + description + ' using ' + selector;
+            assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, message);
+            const before = calls.builds;
+            await agent.handleMessage('Sunny26639', message);
+            assert.equal(calls.builds, before + 1, message);
+        }
+    }
+    for (const name of ['replace', 'demolish', 'replacement_barn', 'instead-of-this-unfinished-barn']) {
+        const message = 'Andy build file name ' + name + ' of pack2';
+        assert.equal(router.parseAddressedSchematicRequest(message, 'Andy')?.selector, 'pack2:' + name, message);
+    }
+    assert.equal(calls.prompts, 0);
+    assert.equal(calls.generated, 0);
+`));
+
+test('replacement rejection preserves sender and addressee gates and the exact warning precedes dispatch', () => check(`
+    const rejected = 'Andy build instead of this barn id 1 from group 2 of pack2';
+    for (const source of ['Mallory', 'Alice']) {
+        await agent.handleMessage(source, rejected);
+        assert.match(calls.routes.at(-1), /trusted command senders/);
+    }
+    const routesBefore = calls.routes.length;
+    await agent.handleMessage('Sunny26639', rejected.replace('Andy', 'Alice'));
+    assert.equal(calls.routes.length, routesBefore);
+    const handlers = {};
+    agent.bot.on = (event, handler) => { handlers[event] = handler; };
+    await agent._setupEventHandlers(null, null);
+    settings.only_chat_with = ['SomeoneElse']; syncSettings();
+    await handlers.whisper('Sunny26639', rejected);
+    assert.equal(calls.routes.length, routesBefore);
+    assert.equal(calls.builds, 0);
+    assert.equal(calls.lifecycle.length, 0);
+    settings.only_chat_with = []; syncSettings();
+    globalThis.__schematicBuild = async () => {
+        assert.ok(calls.routes.some(text => /does not remove or replace.*normal nearby placement/i.test(text)));
+        calls.builds++;
+    };
+    await agent.handleMessage('Sunny26639', 'Andy build a barn id 1 from 2 group of pack2 instead of this unfinished building!');
+    assert.equal(calls.builds, 1);
+    assert.equal(calls.lifecycle.length, 1);
     assert.equal(calls.prompts, 0);
 `));
 

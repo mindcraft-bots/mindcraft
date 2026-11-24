@@ -6,6 +6,7 @@ import * as skills from './library/skills.js';
 import * as world from './library/world.js';
 import { Vec3 } from 'vec3';
 import {ESLint} from "eslint";
+import { markBotExposedToGeneratedCode } from '../utils/schematic/unsafe_code_history.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -86,6 +87,7 @@ export class Coder {
 
             try {
                 console.log('Executing code...');
+                markBotExposedToGeneratedCode(this.agent.bot);
                 await executionModule.main(this.agent.bot);
 
                 const code_output = this.agent.actions.getBotOutputSummary();

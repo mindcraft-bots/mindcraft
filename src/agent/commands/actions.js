@@ -526,25 +526,28 @@ export const actionsList = [
             'filename': { type: 'string', description: 'A fileName or pack-qualified selector (the legacy parameter key remains filename). Indexed syntax is packN:<group>:<fileId>, e.g. pack1:2:1 selects group 2, fileId 1 through index.json. Group and fileId are independently normalized positive safe integers. Pack-qualified literal fileNames/stems and contained schematics-root-relative fileNames are also supported. A base .schem selects its highest known release variant not newer than the bot; an explicit .mc<version>.schem selects that exact compatible variant. Use !listSchematics to see versions and picks.' },
             'x': { type: 'coordinate', description: 'Optional x coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
             'y': { type: 'coordinate', description: 'Optional y coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
-            'z': { type: 'coordinate', description: 'Optional z coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' }
+            'z': { type: 'coordinate', description: 'Optional z coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'mode': { type: 'placementMode', description: 'Optional quoted safe, balanced or destructive mode. Destructive requires an explicitly allowlisted human using authenticated public player chat; whispers do not authorize it.', optional: true, default: null },
+            'radius': { type: 'placementInteger', description: 'Optional balanced radius, integer 0–16; null uses settings.', optional: true, default: null },
+            'threshold': { type: 'placementInteger', description: 'Optional balanced strict obstruction threshold, integer 1–4097; null uses settings.', optional: true, default: null }
         },
-        perform: runAsAction(async (agent, filename, x, y, z) => {
-            await skills.buildSchematic(agent.bot, filename, x, y, z);
+        perform: runAsAction(async (agent, filename, x, y, z, options) => {
+            await skills.buildSchematic(agent.bot, filename, x, y, z, options);
         }, false, -1, {
-            run: (agent, [filename, x, y, z], session) => {
+            run: (agent, [filename, x, y, z, options], session) => {
                 skills.setSchematicResumeSession?.(agent.bot, session);
-                return skills.buildSchematic(agent.bot, filename, x, y, z);
+                return skills.buildSchematic(agent.bot, filename, x, y, z, options);
             },
-            shouldResume: (agent, interruption, _filename, _x, _y, _z, session) =>
+            shouldResume: (agent, interruption, _filename, _x, _y, _z, _options, session) =>
                 session?.context != null
                 && session.resumeEligible === true
                 && !session.cancelled
                 && isSchematicCombatInterruption(interruption),
-            canResume: (agent, _filename, _x, _y, _z, session) =>
+            canResume: (agent, _filename, _x, _y, _z, _options, session) =>
                 Boolean(session?.context && session.resumeEligible && !session.cancelled
                     && session.isWorldValid?.(agent.bot)
                     && isSchematicCombatInterruption(agent.actions.lastInterruption)),
-            cancel: (_agent, _filename, _x, _y, _z, session) => {
+            cancel: (_agent, _filename, _x, _y, _z, _options, session) => {
                 if (session) {
                     session.cancelled = true;
                     session.resumeEligible = false;

@@ -16,6 +16,9 @@ const settings = {
     "auto_open_ui": false, // opens UI in browser on startup
 
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
+    "schematic_placement_mode": null, // null keeps legacy; destructive requires explicitly listed human Minecraft chat ingress
+    "schematic_balanced_radius": 4, // integer 0-16
+    "schematic_balanced_threshold": 9, // strict obstruction count limit, integer 1-4097
     // "base_profile": "_default", // survival, assistant, creative, or god_mode
     "profiles": [
         "./alice.json",

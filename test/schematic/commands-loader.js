@@ -3,12 +3,32 @@ import process from "node:process";
 const modules = {
   "../../utils/mcdata.js": `export const getBlockId = () => 1; export const getItemId = () => 1; export const initBot = () => ({});`,
   "./queries.js": `export const queryList = [];`,
-  "../library/skills.js": `export async function buildSchematic(...args) { globalThis.__buildSchematicArgs = args; return globalThis.__schematicBuild?.(...args); }`,
+  "../library/skills.js": `export function setSchematicResumeSession(bot, session) { globalThis.__setSchematicSession?.(session); } export async function buildSchematic(...args) { globalThis.__buildSchematicArgs = args; return globalThis.__schematicBuild?.(...args); }`,
   "../settings.js": `const settings = globalThis.__testSettings ?? {}; export default settings;`,
   "../conversation.js": `export default {};`,
 };
 
 export function resolve(specifier, context, nextResolve) {
+  if (process.env.MINDCRAFT_DESTRUCTIVE_INGRESS_FIXTURE === '1'
+      && context.parentURL?.endsWith('/src/agent/coder.js')) {
+    const stubs = { './library/skills.js': 'export const log = () => {};',
+      './library/world.js': '', './library/lockdown.js': 'export const lockdown = () => {}; export const makeCompartment = () => ({});' };
+    if (Object.hasOwn(stubs, specifier)) return { url: `data:text/javascript,${encodeURIComponent(stubs[specifier])}`, shortCircuit: true };
+  }
+  if (process.env.MINDCRAFT_DESTRUCTIVE_INGRESS_FIXTURE === '1'
+      && context.parentURL?.endsWith('/src/agent/agent.js')
+      && specifier === '../utils/schematic/build_schematic.js') {
+    const actual = new URL('../utils/schematic/build_schematic.js', context.parentURL).href;
+    const module = `import { buildTrustedDestructiveSchematic as real } from ${JSON.stringify(actual)};
+      export function buildTrustedDestructiveSchematic(bot, name, x, y, z, options) {
+        globalThis.__ingressCalls.push({ name, x, y, z, options });
+        return real(bot, name, x, y, z, { ...globalThis.__destructiveDependencies, ...options });
+      }`;
+    return { url: `data:text/javascript,${encodeURIComponent(module)}`, shortCircuit: true };
+  }
+  if (specifier === '../../../settings.js' && context.parentURL?.endsWith('/src/agent/library/skills.js')) {
+    return { url: 'data:text/javascript,export default %7B%7D', shortCircuit: true };
+  }
   if (process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT && context.parentURL?.endsWith('/src/agent/schematic_request.js')
       && specifier === '../utils/schematic/paths.js') {
     const actual = new URL('../utils/schematic/paths.js', context.parentURL).href;

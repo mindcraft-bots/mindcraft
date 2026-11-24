@@ -3,6 +3,8 @@ import settings from './settings.js';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { readFileSync } from 'fs';
+import { resolvePlacementOptions } from './src/utils/schematic/placement_options.js';
+import { validateTrustedCommandSenders } from './src/utils/command_trust.js';
 
 function parseArguments() {
     return yargs(hideBin(process.argv))
@@ -71,6 +73,8 @@ if (process.env.SETTINGS_JSON) {
 }
 
 
+resolvePlacementOptions(settings);
+validateTrustedCommandSenders(settings.trusted_command_senders);
 Mindcraft.init(false, settings.mindserver_port, settings.auto_open_ui);
 
 for (let profile of settings.profiles) {

@@ -49,7 +49,9 @@ export function provenanceFixtureDependencies(dependencies) {
           const folder = path.join(directory, String(sequence++));
           const { mkdirSync } = await import('node:fs');
           mkdirSync(folder);
-          const name = path.basename(original).replace(/(?<!\.mc1\.20\.4)\.schem$/, '.mc1.20.4.schem');
+          const basename = path.basename(original);
+          const name = /\.mc\d+(?:\.\d+)+\.schem$/.test(basename)
+            ? basename : basename.replace(/\.schem$/, '.mc1.20.4.schem');
           resolved.set(original, path.join(folder, name));
         }
         return resolved.get(original);

@@ -2,6 +2,7 @@ import { getBlockId, getItemId } from "../../utils/mcdata.js";
 import { actionsList } from './actions.js';
 import { queryList } from './queries.js';
 import { parseOptionalCoordinate } from '../../utils/schematic/paths.js';
+import { resolvePlacementOptions } from '../../utils/schematic/placement_options.js';
 import settings from '../settings.js';
 
 let suppressNoDomainWarning = true;
@@ -116,6 +117,10 @@ export function parseCommandMessage(message) {
 
     const commandName = "!"+commandMatch[1];
 
+    if (commandName === '!buildSchematic' && (message.slice(0, commandMatch.index).trim()
+        || commandMatch[0] !== message.slice(commandMatch.index).trimEnd() || !commandMatch[2]))
+        return 'Error: !buildSchematic must be a complete command with strictly formatted arguments.';
+
     let args;
     if (commandMatch[2]) args = commandMatch[2].match(commandName === '!buildSchematic' ? coordinateArgRegex : argRegex);
     else args = [];
@@ -173,6 +178,18 @@ export function parseCommandMessage(message) {
                     return `Error: Param '${paramNames[i]}' must be a finite number or null.`;
                 }
                 break;
+            case 'placementMode':
+                if (args[i] === 'null' || args[i] === null) arg = null;
+                else if (typeof args[i] !== 'string' || !/^"(?:safe|destructive|balanced)"$/i.test(args[i].trim()))
+                    return `Error: Param '${paramNames[i]}' must be a quoted placement mode or null.`;
+                else arg = arg.toLowerCase();
+                break;
+            case 'placementInteger':
+                if (args[i] === 'null' || args[i] === null) arg = null;
+                else if (typeof args[i] !== 'string' || !/^\d+$/.test(args[i].trim()))
+                    return `Error: Param '${paramNames[i]}' must be an integer or null.`;
+                else arg = Number(arg);
+                break;
             case 'BlockName':
             case 'BlockOrItemName':
             case 'ItemName':
@@ -183,7 +200,7 @@ export function parseCommandMessage(message) {
             default:
                 throw new Error(`Command '${commandName}' parameter '${paramNames[i]}' has an unknown type: ${param.type}`);
         }
-        if((arg === null && param.type !== 'coordinate') || Number.isNaN(arg))
+        if((arg === null && !['coordinate', 'placementMode', 'placementInteger'].includes(param.type)) || Number.isNaN(arg))
             return `Error: Param '${paramNames[i]}' must be of type ${param.type}.`
 
         if(typeof arg === 'number') { //Check the domain of numbers
@@ -213,6 +230,8 @@ export function parseCommandMessage(message) {
         args[i] = arg;
     }
     
+    if (commandName === '!buildSchematic' && ![0, 3].includes(args.slice(1, 4).filter(value => value !== null).length))
+        return "Error: Optional parameters 'coordinates' must be provided together as three finite numbers or all null.";
     return { commandName, args };
 }
 
@@ -270,7 +289,19 @@ export async function executeCommand(agent, message) {
         if (numArgs !== numParams(command))
             return `Command ${command.name} was given ${numArgs} args, but requires ${numParams(command)} args.`;
         else {
-            const result = await command.perform(agent, ...parsed.args);
+            let args = parsed.args;
+            if (parsed.commandName === '!buildSchematic') {
+                try {
+                    const [filename, x, y, z, mode, radius, threshold] = args;
+                    const options = resolvePlacementOptions(settings, { mode, radius, threshold });
+                    if (options.mode === 'destructive')
+                        return 'Destructive schematic mode requires an explicitly listed human sender through authenticated public player chat; no build was started.';
+                    args = [filename, x, y, z, options];
+                } catch (error) {
+                    return `Error: ${error.message}. No schematic build was started.`;
+                }
+            }
+            const result = await command.perform(agent, ...args);
             return result;
         }
     }
