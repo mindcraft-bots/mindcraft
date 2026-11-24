@@ -9,6 +9,8 @@ export class ActionManager {
         this.resume_name = '';
         this.last_action_time = 0;
         this.recent_action_counter = 0;
+        this.actionCount = 0;       // actions started so far (resumes included)
+        this.interruptedBy = null;  // label of the action now stopping the current one, while it does
     }
 
     async resumeAction(actionFn, timeout) {
@@ -80,14 +82,20 @@ export class ActionManager {
                 }
             }
             this.last_action_time = Date.now();
+            this.actionCount++;
             console.log('executing code...\n');
 
             // await current action to finish (executing=false), with 10 seconds timeout
             // also tell agent.bot to stop various actions
             if (this.executing) {
                 console.log(`action "${actionLabel}" trying to interrupt current action "${this.currentActionLabel}"`);
+                this.interruptedBy = actionLabel;  // lets the interrupted action see who stopped it
             }
-            await this.stop();
+            try {
+                await this.stop();
+            } finally {
+                this.interruptedBy = null;
+            }
 
             // clear bot logs and reset interrupt code
             this.agent.clearBotLogs();
