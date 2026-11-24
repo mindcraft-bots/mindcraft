@@ -1,6 +1,7 @@
 import * as skills from '../library/skills.js';
 import settings from '../settings.js';
 import convoManager from '../conversation.js';
+import { routeOrNull } from '../library/route_travel.js';
 
 
 function runAsAction (actionFn, resume = false, timeout = -1) {
@@ -120,6 +121,9 @@ export const actionsList = [
             'closeness': {type: 'float', description: 'How close to get to the location.', domain: [0, Infinity]}
         },
         perform: runAsAction(async (agent, x, y, z, closeness) => {
+            // far targets (beyond loaded chunks) are routed over the map when topography is on; null = plain pathing
+            const routed = await routeOrNull(agent, { x, y, z }, { closeness });
+            if (routed) return;
             await skills.goToPosition(agent.bot, x, y, z, closeness);
         })
     },
@@ -177,6 +181,8 @@ export const actionsList = [
             skills.log(agent.bot, `No location named "${name}" saved.`);
             return;
             }
+            const routed = await routeOrNull(agent, { x: pos[0], y: pos[1], z: pos[2] }, { closeness: 1, label: name });
+            if (routed) return;
             await skills.goToPosition(agent.bot, pos[0], pos[1], pos[2], 1);
         })
     },

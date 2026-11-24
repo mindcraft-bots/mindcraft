@@ -46,6 +46,26 @@ Do not connect this bot to public servers with coding enabled. This project allo
 If you encounter issues, check the [FAQ](https://github.com/mindcraft-bots/mindcraft/blob/main/FAQ.md) or find support on [discord](https://discord.gg/mp73p35dzC). We are currently not very responsive to github issues. To run tasks please refer to [Minecollab Instructions](minecollab.md#installation)
 
 
+## Cartography (optional terrain map)
+
+Optional support for [Cartography](https://github.com/milkucha/cartography-service), a small local map service
+(Python, standard library only). The bot forwards the chunks it loads; the service builds a terrain map from
+them. With it, the bot gets a short terrain summary in its prompt, map commands (`!topography`, `!overview`,
+`!flatAreas`, `!shoreline`, `!landforms`, `!area_composition`, `!bridgeSpan`, `!recall`), and long-range
+routing for `!goToCoordinates`. It needs no server mod or world save, and the bot only knows what it has seen.
+
+**Off by default.** To use it, start the service and enable it in `settings.js` or a profile:
+
+```powershell
+python main.py --name my-world      # in the cartography-service checkout
+```
+```json
+{ "cartography_enabled": true, "cartography_service_url": "http://127.0.0.1:8090" }
+```
+
+`topography_routing` (default `true` once enabled) turns map routing for far targets on or off. Results and
+architecture are in the [service README](https://github.com/milkucha/cartography-service).
+
 # Configuration
 ## Model Customization
 

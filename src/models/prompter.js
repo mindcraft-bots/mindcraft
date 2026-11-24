@@ -9,6 +9,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { selectAPI, createModel } from './_model_map.js';
+import { fetchPerception, pushPosition, isOverworld } from '../agent/topography/service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -146,6 +147,31 @@ export class Prompter {
         if (prompt.includes('$INVENTORY')) {
             let inventory = await getCommand('!inventory').perform(this.agent);
             prompt = prompt.replaceAll('$INVENTORY', inventory);
+        }
+        const topographyEnabled = this.profile?.cartography_enabled ?? settings.cartography_enabled ?? false;
+        const perceptionEnabled = topographyEnabled && (this.profile?.topography_perception ?? settings.topography_perception ?? true);
+        const topographyDebug = this.profile?.topography_debug ?? settings.topography_debug ?? false;
+        if (prompt.includes('$TOPOGRAPHY')) {
+            let perception = '';
+            if (perceptionEnabled) {
+                try {
+                    perception = await fetchPerception(this.agent, { enabled: perceptionEnabled, debug: topographyDebug });
+                } catch (error) {
+                    console.warn('Failed to build topography perception:', error);
+                    perception = '';
+                }
+            }
+            prompt = prompt.replaceAll('$TOPOGRAPHY', perception);
+            if (perceptionEnabled)
+                pushPosition(this.agent, { enabled: perceptionEnabled, debug: topographyDebug });
+        }
+        if (prompt.includes('$TOPO_GUIDE')) {
+            prompt = prompt.replaceAll(
+                '$TOPO_GUIDE',
+                perceptionEnabled && isOverworld(this.agent)
+                    ? 'When a TOPOGRAPHY block is present, prefer it for nearby terrain and water before scanning. North is -Z, south is +Z. For highest/lowest ground or area/direction questions, use its highest ground, highest by direction, and built lines, or !area_composition. !topography is a 1D line profile for bridges and roads, not an area search. For places beyond the TOPOGRAPHY block, or that you saw earlier, use !overview.'
+                    : ''
+            );
         }
         if (prompt.includes('$ACTION')) {
             prompt = prompt.replaceAll('$ACTION', this.agent.actions.currentActionLabel);
