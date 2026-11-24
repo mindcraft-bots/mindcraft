@@ -98,14 +98,14 @@ or orphaned containers, rotated/deleted logs, and logs unavailable from the
 configured logging driver cannot be recovered. Files can also change during
 collection; this is not an atomic snapshot.
 
-To make reviewed evidence accessible in `github.com/mindcraft-bots/temp/mindcraft`,
+To make reviewed evidence accessible in `github.com/mindcraft-bots/mindcraft/tmp`,
 copy only the reviewed output directory from the external host using your
 normal secure transfer or shared mount, not the working environment. If an
 archive is useful, create a private compressed archive of that reviewed output
 directory only, verify its contents and permissions, and transfer it securely.
 For example, after transferring it to the machine hosting that checkout, copy
 the reviewed directory into
-`github.com/mindcraft-bots/temp/mindcraft/` from the workspace root. Verify the
+`github.com/mindcraft-bots/mindcraft/tmp` from the workspace root. Verify the
 destination is visible in the devcontainer; the host Docker daemon and host
 filesystem are not automatically available there. Keep the evidence uncommitted.
 The collector tests can be run from the main checkout with

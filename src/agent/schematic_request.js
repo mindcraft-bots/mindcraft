@@ -57,6 +57,12 @@ const SCHEMATIC_WORD = '(?:schema|schem|scheme|schematic)';
 const PACK_WORD = '(pack[1-9]\\d*)';
 const SAFE_NAME = '([A-Za-z0-9_.-]+)';
 
+function numericSelectorStart(words, index) {
+    if (!/^\d+$/.test(words[index].value) || words[index + 1]?.value.toLowerCase() !== 'from') return false;
+    const afterFrom = words[index + 2]?.value.toLowerCase() ?? '';
+    return afterFrom === 'group' || (/^\d+$/.test(afterFrom) && words[index + 3]?.value.toLowerCase() === 'group');
+}
+
 function hasSelectorCue(words, text) {
     return words.some((word, index) => {
         const value = word.value.toLowerCase();
@@ -79,7 +85,10 @@ function hasSelectorCue(words, text) {
             const aliasTarget = /^(?:file(?:\s+(?:id|offset|name)\b)?\b|(?:id|offset)\s*(?:#?\s*\d+)?\b|name\b|pack[1-9]\d*(?:\s*\/)?\b|[A-Za-z0-9_.-]+\s+of\s+pack[1-9]\d*)/i.test(text.slice(word.end).trimStart());
             return index === 0 || previous === 'using' || previous === 'via' || aliasTarget;
         }
-        return /^\d+$/.test(value) && next === 'from' && words[index + 2]?.value.toLowerCase() === 'group';
+        // Recognize a malformed bare group-before-word target as selector intent too,
+        // even if its pack label is invalid, so it cannot fall back to inference.
+        return numericSelectorStart(words, index) || (/^\d+$/.test(value)
+            && /^\d+\s+from\s+\S+\s+group\b/i.test(text.slice(word.start)));
     });
 }
 
@@ -104,11 +113,11 @@ function selectorAt(text, start) {
         };
     }
 
-    const numeric = new RegExp(`^(?:using\\s+|via\\s+)?${alias}(?:(?:file\\s+)?(?:id|offset)\\s+#?\\s*(\\d+)|#?\\s*(\\d+))\\s+from\\s+group\\s+#?\\s*(\\d+)\\s+of\\s+${PACK_WORD}$`, 'i').exec(tail);
+    const numeric = new RegExp(`^(?:using\\s+|via\\s+)?${alias}(?:(?:file\\s+)?(?:id|offset)\\s+#?\\s*(\\d+)|#?\\s*(\\d+))\\s+from\\s+(?:group\\s+#?\\s*(\\d+)|#?\\s*(\\d+)\\s+group)\\s+of\\s+${PACK_WORD}(\\s+instead\\s+of\\s+this\\s+unfinished\\s+building)?$`, 'i').exec(tail);
     if (!numeric) return null;
     const rawFileId = numeric[1] ?? numeric[2];
-    const rawGroup = numeric[3];
-    const rawPack = numeric[4];
+    const rawGroup = numeric[3] ?? numeric[4];
+    const rawPack = numeric[5];
     if (!positiveNumber(rawFileId) || !positiveNumber(rawGroup)) return null;
     const group = Number(rawGroup);
     const fileId = Number(rawFileId);
@@ -119,6 +128,7 @@ function selectorAt(text, start) {
         fileId,
         id: fileId,
         selector: `${rawPack.toLowerCase()}:${group}:${fileId}`,
+        ...(numeric[6] ? { inertReplacementPhrase: true } : {}),
     };
 }
 
@@ -126,7 +136,7 @@ function selectorAt(text, start) {
 function parseSchematicSelector(text, addressedTo) {
     const normalized = stripRequestPunctuation(text);
     const scanned = scanRequestWords(normalized);
-    const rawSelectorCue = /\b(?:file\s+(?:id|offset|name)|(?:id|offset)\s+\d+|pack[1-9]\d*|\d+\s+from\s+group)\b/i.test(normalized);
+    const rawSelectorCue = /\b(?:file\s+(?:id|offset|name)|(?:id|offset)\s+\d+|pack[1-9]\d*|\d+\s+from\s+(?:group|\S+\s+group))\b/i.test(normalized);
     if (!hasSelectorCue(scanned.words, normalized) && !(scanned.invalid && rawSelectorCue)) return null;
 
     // Natural-language descriptions are inert, but command/control syntax and controls never enter a target.
@@ -142,8 +152,7 @@ function parseSchematicSelector(text, addressedTo) {
     }
 
     const selectorWords = scanned.words.filter((word, index) => /^(?:file|id|offset|schema|schem|scheme|schematic)$/i.test(word.value)
-        || (/^\d+$/.test(word.value) && scanned.words[index + 1]?.value.toLowerCase() === 'from'
-            && scanned.words[index + 2]?.value.toLowerCase() === 'group'
+        || (numericSelectorStart(scanned.words, index)
             && !/^(?:id|offset)$/i.test(scanned.words[index - 1]?.value ?? '')));
     const matches = [];
     for (const word of selectorWords) {
@@ -166,7 +175,7 @@ function parseSchematicSelector(text, addressedTo) {
     if (uniqueMatches.length !== 1) {
         return {
             addressedTo,
-            error: 'I could not safely identify that schematic. Use exactly one filename selector (“file name <filename> of pack1” or “file pack1/<filename>”) or one numeric selector (“file id 01 from group 02 of pack1”); schema, schem, scheme, and schematic are optional selector prefixes.',
+            error: 'I could not safely identify that schematic. Use exactly one filename selector (“file name <filename> of pack1” or “file pack1/<filename>”) or one numeric selector (“file id 01 from group 02 of pack1” or “file id 01 from 02 group of pack1”); schema, schem, scheme, and schematic are optional selector prefixes.',
         };
     }
 
@@ -250,6 +259,9 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
         return true;
     }
 
+    if (request.inertReplacementPhrase) {
+        await agent.routeResponse(source, 'The trailing phrase does not remove or replace the unfinished building. The schematic uses normal nearby placement and build safety checks.');
+    }
     agent.self_prompter?.handleUserPromptedCmd(false, true);
     await agent.routeResponse(source, `*${source} requested a schematic build*`);
     const result = await executeCommand(agent, `!buildSchematic("${request.selector}")`);

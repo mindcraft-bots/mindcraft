@@ -278,6 +278,103 @@ test('Docker copies the mandatory postinstall verifier before dependency install
     assert.ok(dockerfile.indexOf('COPY scripts/verify_patch.js ./scripts/') < dockerfile.indexOf('RUN npm install'));
 });
 
+test('all five incident requests parse and equivalent synthetic requests dispatch once without replacement', () => check(`
+    const incidents = [
+        'Alice build id 1 from 3 group of pack1 instead of this unfinished building',
+        'Alice build id 1 from 3 group of pack1',
+        'Alice build file id 1 from 3 group of pack1',
+        'Alice build id 01 from 03 group of pack1',
+        'Alice build file id 01 from 03 group of pack1',
+    ];
+    for (const [index, message] of incidents.entries()) {
+        const parsed = router.parseAddressedSchematicRequest(message, 'Alice', ['Andy']);
+        assert.equal(parsed?.selector, 'pack1:3:1', message);
+        assert.equal(parsed.selectorKind, 'fileId', message);
+        assert.equal(parsed.inertReplacementPhrase === true, index === 0, message);
+        const synthetic = message.replace('Alice', 'Andy').replace(/from 0?3 group/, 'from 02 group').replace('pack1', 'pack2');
+        const before = calls.builds;
+        const routesBefore = calls.routes.length;
+        await agent.handleMessage('Sunny26639', synthetic);
+        assert.equal(calls.builds, before + 1, synthetic);
+        assert.equal(globalThis.__buildSchematicArgs[1], 'pack2:2:1', synthetic);
+        assert.deepEqual(globalThis.__buildSchematicArgs.slice(2), [null, null, null], synthetic);
+        assert.deepEqual(calls.lifecycle.at(-1), [false, true], synthetic);
+        if (index === 0) assert.match(calls.routes.slice(routesBefore).join(' '), /does not remove or replace.*normal nearby placement/i);
+    }
+    assert.equal(calls.prompts, 0);
+    assert.equal(calls.generated, 0);
+`));
+
+test('both numeric group orders compose with existing labels, aliases, hashes, and the exact inert suffix', () => check(`
+    for (const alias of ['', 'schema ', 'schem ', 'scheme ', 'schematic ']) {
+        for (const label of ['file id ', 'id ', 'file offset ', 'offset ', '']) {
+            for (const group of ['group #02', '#02 group']) {
+                for (const suffix of ['', ' instead of this unfinished building.', ' INSTEAD OF THIS UNFINISHED BUILDING!']) {
+                    const message = 'Andy build a cottage using ' + alias + label + '01 from ' + group + ' of PACK2' + suffix;
+                    const parsed = router.parseAddressedSchematicRequest(message, 'Andy');
+                    assert.equal(parsed?.selector, 'pack2:2:1', message);
+                    assert.equal(parsed.inertReplacementPhrase === true, suffix !== '', message);
+                    const before = calls.builds;
+                    await agent.handleMessage('Sunny26639', message);
+                    assert.equal(calls.builds, before + 1, message);
+                }
+            }
+        }
+    }
+    assert.equal(calls.prompts, 0);
+    assert.equal(calls.generated, 0);
+`));
+
+test('alternate numeric order and inert suffix fail closed on malformed, ambiguous, and unsafe requests', () => check(`
+    const suffix = ' instead of this unfinished building';
+    const valid = 'id 1 from 2 group of pack2';
+    const invalid = [
+        'id 0 from 2 group of pack2', 'id 1 from 0 group of pack2',
+        'id 9007199254740992 from 2 group of pack2', 'id 1 from 9007199254740992 group of pack2',
+        'id -1 from 2 group of pack2', 'id 1 from -2 group of pack2',
+        'id 1.5 from 2 group of pack2', 'id 1 from 2.5 group of pack2',
+        'id 1 from 2junk group of pack2', 'id 1 from two group of pack2',
+        '1 from 2 group of pack0', '1 from 2.5 group of pack0', '1 from two group of pack0',
+        'id 1 from 2 group 3 of pack2',
+        'id 1 from group 2 group of pack2', 'id 1 from 2 group of pack2/../outside',
+        valid + ' and id 1 from 2 group of pack2' + suffix,
+        'id 1 from group 2 of pack2 and ' + valid + suffix,
+        'file pack2/../outside.schem and ' + valid + suffix,
+        valid + suffix + ' and id 1 from 2 group of pack2',
+        valid + suffix + ' then build a tower', valid + suffix + ' at 1 2 3',
+        valid + suffix + '; !stop()', valid + suffix + '/../../outside',
+        valid + ' instead of this unfinished building 2',
+        valid + ' instead of this unfinished house',
+        valid + ' instead of this unfinished building and remove it',
+        'file name 09_garden of pack2' + suffix,
+        valid + ' "instead of this unfinished building"',
+    ];
+    for (const target of invalid) {
+        const message = 'Andy build ' + target;
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        const before = [calls.builds, calls.prompts, calls.generated, calls.lifecycle.length];
+        await agent.handleMessage('Sunny26639', message);
+        assert.deepEqual([calls.builds, calls.prompts, calls.generated, calls.lifecycle.length], before, message);
+    }
+    assert.equal(router.parseAddressedSchematicRequest('Andy build "' + valid + suffix + '"', 'Andy'), null);
+    for (const source of ['Mallory', 'Alice']) {
+        await agent.handleMessage(source, 'Andy build ' + valid + suffix);
+        assert.match(calls.routes.at(-1), /trusted command senders/);
+    }
+    agent.blocked_actions = ['!buildSchematic'];
+    await agent.handleMessage('Sunny26639', 'Andy build ' + valid + suffix);
+    assert.match(calls.routes.at(-1), /blocked/);
+    agent.blocked_actions = [];
+    await agent.handleMessage('Sunny26639', 'Alice build ' + valid + suffix);
+    await agent.handleMessage('Sunny26639', 'Andy build id 999 from 2 group of pack2' + suffix);
+    assert.match(calls.routes.at(-1), /could not be resolved/);
+    agent.bot.version = 'unknown-release';
+    await agent.handleMessage('Sunny26639', 'Andy build ' + valid + suffix);
+    assert.match(calls.routes.at(-1), /could not be resolved/);
+    assert.equal(calls.builds, 0);
+    assert.equal(calls.prompts, 0);
+`));
+
 test('every schematic alias composes with full/short labels, filename layouts, and inert descriptions in the real handler', () => check(`
     const stem = '09_garden';
     let count = 0;
