@@ -77,14 +77,17 @@ export class Prompter {
 
         
         let embedding_model_profile = null;
-        if (this.profile.embedding) {
+        if (this.profile.embedding && this.profile.embedding !== 'none') {
             try {
                 embedding_model_profile = selectAPI(this.profile.embedding);
             } catch (e) {
                 embedding_model_profile = null;
             }
         }
-        if (embedding_model_profile) {
+        if (this.profile.embedding === 'none') {
+            this.embedding_model = null;
+        }
+        else if (embedding_model_profile) {
             this.embedding_model = createModel(embedding_model_profile);
         }
         else {

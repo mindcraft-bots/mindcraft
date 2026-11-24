@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { performance } from "node:perf_hooks";
 
 const require = createRequire(import.meta.url);
 const { goals } = require("mineflayer-pathfinder");
@@ -10,6 +11,10 @@ import {
 } from "./world_lifecycle.js";
 const AIR_NAMES = new Set(["air", "cave_air", "void_air"]);
 const vanillaBlockNames = new Map();
+// Per-obstruction approach budget, separate from the later builder stall watchdog.
+// Allow time for long routes and path recomputation without waiting indefinitely.
+const DEFAULT_NAVIGATION_TIMEOUT_MS = 120_000;
+const NAVIGATION_POLL_MS = 50;
 
 // Exact vanilla name classes only. Leaves are excluded because their removal
 // can trigger neighboring leaf-decay updates. Dependent plants (for example
@@ -73,11 +78,7 @@ function assertAttemptIdentity(bot, identity, isInterrupted, message = "Schemati
   }
 }
 
-function waitBriefly() {
-  return new Promise((resolve) => setTimeout(resolve, 50));
-}
-
-async function navigateWithoutEditing(bot, goal, isInterrupted, position, assertAttempt) {
+async function navigateWithoutEditing(bot, goal, position, assertAttempt, timeoutMs) {
   const assertNavigationAttempt = () => {
     try {
       assertAttempt();
@@ -86,35 +87,54 @@ async function navigateWithoutEditing(bot, goal, isInterrupted, position, assert
     }
   };
   assertNavigationAttempt();
-  const movement = Promise.resolve().then(() => bot.pathfinder.goto(goal));
-  // Observe rejection immediately, even if cancellation wins the polling race.
-  movement.catch(() => {});
+  const startedAt = performance.now();
+  const remainingTime = () => timeoutMs - (performance.now() - startedAt);
+  let terminated = false;
+  let outcome = null;
+  let wake = null;
+  // Attach only once: a pending goto must not accumulate handlers on every poll.
+  // Observe late rejection even when cancellation or the deadline wins.
+  Promise.resolve().then(() => {
+    if (terminated) return;
+    assertNavigationAttempt();
+    if (remainingTime() <= 0) return;
+    return bot.pathfinder.goto(goal);
+  }).then(
+    () => { outcome = { ok: true }; wake?.(); },
+    (error) => { outcome = { ok: false, error }; wake?.(); },
+  );
   const stopMovement = () => {
     try {
       if (typeof bot.pathfinder.setGoal === "function") bot.pathfinder.setGoal(null);
       else bot.pathfinder.stop?.();
     } catch {
-      // Cancellation remains authoritative; do not continue to a destructive dig.
+      // Cancellation or timeout remains authoritative; never proceed to dig.
     }
   };
   while (true) {
     try {
       assertNavigationAttempt();
     } catch (error) {
+      terminated = true;
       stopMovement();
       throw error;
     }
-    const settled = await Promise.race([
-      movement.then(() => true, (error) => { throw error; }),
-      waitBriefly().then(() => false),
-    ]);
-    try {
-      assertNavigationAttempt();
-    } catch (error) {
+    const remainingMs = remainingTime();
+    if (remainingMs <= 0) {
+      terminated = true;
       stopMovement();
+      const error = new Error(`Schematic obstruction clearing navigation timed out after ${timeoutMs}ms while moving to ${positionKey(position)}; obstruction is inaccessible`);
+      error.code = "SCHEMATIC_CLEAR_NAVIGATION_TIMEOUT";
       throw error;
     }
-    if (settled) return;
+    if (outcome) {
+      if (!outcome.ok) throw outcome.error;
+      return;
+    }
+    await new Promise((resolve) => {
+      const timer = setTimeout(() => { wake = null; resolve(); }, Math.min(NAVIGATION_POLL_MS, remainingMs));
+      wake = () => { clearTimeout(timer); wake = null; resolve(); };
+    });
   }
 }
 
@@ -252,9 +272,13 @@ export async function clearSchematicObstructions(bot, build, {
   Vec3Class,
   isInterrupted = () => Boolean(bot.interrupt_code),
   attemptIdentity = captureSchematicAttemptIdentity(bot),
+  navigationTimeoutMs = DEFAULT_NAVIGATION_TIMEOUT_MS,
 } = {}) {
   if (!bot || typeof bot.blockAt !== "function" || typeof bot.dig !== "function" || !Vec3Class) {
     throw new Error("Safe schematic clearing requires block inspection, digging, and a vector implementation");
+  }
+  if (!Number.isFinite(navigationTimeoutMs) || navigationTimeoutMs <= 0) {
+    throw new RangeError("Schematic obstruction clearing navigation timeout must be a positive finite number of milliseconds");
   }
   const cells = requireCells(build);
   const assertAttempt = () => assertAttemptIdentity(
@@ -305,9 +329,9 @@ export async function clearSchematicObstructions(bot, build, {
           snapshot.cell.position.y,
           snapshot.cell.position.z,
           3,
-        ), isInterrupted, snapshot.cell.position, assertAttempt);
+        ), snapshot.cell.position, assertAttempt, navigationTimeoutMs);
       } catch (error) {
-        if (error?.code === "SCHEMATIC_CLEAR_CANCELLED") throw error;
+        if (error?.code === "SCHEMATIC_CLEAR_CANCELLED" || error?.code === "SCHEMATIC_CLEAR_NAVIGATION_TIMEOUT") throw error;
         throw new Error(`Obstruction at ${positionKey(snapshot.cell.position)} is inaccessible: ${error?.message ?? error}`);
       }
       assertAttempt();

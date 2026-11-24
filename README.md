@@ -245,9 +245,11 @@ All apis have default models and urls, so those fields are optional. The `params
 
 Embedding models are used to embed and efficiently select relevant examples for conversation and coding.
 
+Set `"embedding": "none"` in a profile to disable embeddings and use word overlap for examples and skill documentation. When omitted, the chat model's API remains the default embedding provider.
+
 Supported Embedding APIs: `openai`, `google`, `replicate`, `huggingface`, `novita`
 
-If you try to use an unsupported model, then it will default to a simple word-overlap method. Expect reduced performance. We recommend using supported embedding APIs.
+If an embedding provider does not support embeddings, initialization falls back to a simple word-overlap method. An unrecognized embedding selector instead retains the default chat API provider. Expect reduced performance with word overlap. We recommend using supported embedding APIs.
 
 ## Voice Synthesis Models
 

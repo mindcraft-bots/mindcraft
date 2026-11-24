@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { EventEmitter } from "node:events";
+import { performance } from "node:perf_hooks";
 import test from "node:test";
 
 import {
@@ -307,6 +308,136 @@ test("cancellation while navigating stops pathfinding before any obstruction is 
   await assert.rejects(pending, /cancelled while moving/);
   assert.equal(stopped, true);
   assert.deepEqual(removed, []);
+});
+
+test("pending obstruction navigation times out once, stops, and cannot dig even after late rejection", { timeout: 2000 }, async () => {
+  const position = { x: 10, y: 4, z: -2 };
+  const cells = [{ position, name: "air", properties: {} }];
+  const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+  let rejectMovement;
+  let subscriptions = 0;
+  let stops = 0;
+  bot.entity.position.distanceTo = () => 100;
+  bot.pathfinder = {
+    goto: () => ({ then(_resolve, reject) { subscriptions++; rejectMovement = reject; } }),
+    setGoal(goal) { assert.equal(goal, null); stops++; },
+  };
+  await assert.rejects(clearSchematicObstructions(bot, build, { Vec3Class: Vec3, navigationTimeoutMs: 130 }), (error) => {
+    assert.equal(error.code, "SCHEMATIC_CLEAR_NAVIGATION_TIMEOUT");
+    assert.match(error.message, /obstruction clearing navigation timed out after 130ms.*10,4,-2.*inaccessible/i);
+    return true;
+  });
+  assert.equal(subscriptions, 1, "the returned navigation thenable is observed once");
+  assert.equal(stops, 1);
+  assert.deepEqual(removed, []);
+  rejectMovement(new Error("late navigation failure"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(removed, []);
+});
+
+test("navigation timeout clears real pathfinder goto listeners", { timeout: 2000 }, async () => {
+  const position = { x: 10, y: 0, z: 0 };
+  const cells = [{ position, name: "air", properties: {} }];
+  const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+  const goto = require("mineflayer-pathfinder/lib/goto");
+  const events = ["path_stop", "goal_reached", "path_update", "goal_updated"];
+  const baseline = events.map((event) => bot.listenerCount(event));
+  bot.entity.position.distanceTo = () => 100;
+  bot.pathfinder = {
+    goto: (goal) => goto(bot, goal),
+    setGoal(goal) { bot.emit("goal_updated", goal); },
+  };
+  await assert.rejects(clearSchematicObstructions(bot, build, { Vec3Class: Vec3, navigationTimeoutMs: 20 }), /navigation timed out/);
+  assert.deepEqual(events.map((event) => bot.listenerCount(event)), baseline);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.deepEqual(removed, []);
+});
+
+for (const phase of ["initial check", "queued startup"]) {
+  test(`navigation deadline before ${phase} never starts a goal or leaks goto listeners`, async (t) => {
+    const position = { x: 10, y: 0, z: 0 };
+    const cells = [{ position, name: "air", properties: {} }];
+    const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+    const goto = require("mineflayer-pathfinder/lib/goto");
+    const events = ["path_stop", "goal_reached", "path_update", "goal_updated"];
+    const baseline = events.map((event) => bot.listenerCount(event));
+    let clockCalls = 0;
+    t.mock.method(performance, "now", () => {
+      clockCalls++;
+      return clockCalls <= (phase === "initial check" ? 1 : 2) ? 0 : 2;
+    });
+    let starts = 0;
+    let goal = null;
+    let stops = 0;
+    bot.entity.position.distanceTo = () => 100;
+    bot.pathfinder = {
+      goto(target) { starts++; return goto(bot, target); },
+      setGoal(target) { goal = target; if (target === null) stops++; bot.emit("goal_updated", target); },
+    };
+    await assert.rejects(clearSchematicObstructions(bot, build, { Vec3Class: Vec3, navigationTimeoutMs: 1 }), { code: "SCHEMATIC_CLEAR_NAVIGATION_TIMEOUT" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(starts, 0);
+    assert.equal(goal, null);
+    assert.equal(stops, 1);
+    assert.deepEqual(events.map((event) => bot.listenerCount(event)), baseline);
+    assert.deepEqual(removed, []);
+  });
+}
+
+test("queued navigation rechecks cancellation before starting", async () => {
+  const position = { x: 10, y: 0, z: 0 };
+  const cells = [{ position, name: "air", properties: {} }];
+  const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+  let starts = 0;
+  let stops = 0;
+  bot.entity.position.distanceTo = () => { queueMicrotask(() => { bot.interrupt_code = true; }); return 100; };
+  bot.pathfinder = {
+    goto() { starts++; return Promise.resolve(); },
+    setGoal(goal) { assert.equal(goal, null); stops++; },
+  };
+  await assert.rejects(clearSchematicObstructions(bot, build, { Vec3Class: Vec3 }), { code: "SCHEMATIC_CLEAR_CANCELLED" });
+  assert.equal(starts, 0);
+  assert.equal(stops, 1);
+  assert.deepEqual(removed, []);
+});
+
+test("pending navigation honors interruption, build cancellation, and lifecycle changes before timeout", { timeout: 2000 }, async () => {
+  for (const reason of ["interrupt", "build", "world", "lifecycle"]) {
+    const position = { x: 10, y: 0, z: 0 };
+    const cells = [{ position, name: "air", properties: {} }];
+    const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+    let current = true;
+    const identity = captureSchematicAttemptIdentity(bot, { isCurrent: () => current });
+    let stops = 0;
+    bot.entity.position.distanceTo = () => 100;
+    bot.pathfinder = {
+      goto: () => {
+        if (reason === "interrupt") bot.interrupt_code = true;
+        if (reason === "build") build.isCancelled = true;
+        if (reason === "world") bot._client.emit("respawn");
+        if (reason === "lifecycle") current = false;
+        return new Promise(() => {});
+      },
+      stop() { stops++; },
+    };
+    await assert.rejects(clearSchematicObstructions(bot, build, {
+      Vec3Class: Vec3, attemptIdentity: identity, navigationTimeoutMs: 500,
+    }), (error) => error.code === "SCHEMATIC_CLEAR_CANCELLED" && /moving to 10,0,0/.test(error.message));
+    assert.equal(stops, 1, reason);
+    assert.deepEqual(removed, [], reason);
+  }
+});
+
+test("successful navigation clears only the revalidated obstruction", async () => {
+  const position = { x: 10, y: 0, z: 0 };
+  const cells = [{ position, name: "air", properties: {} }];
+  const { bot, removed, build } = fixture(cells, new Map([[key(position), block("poppy", position)]]));
+  let moves = 0;
+  bot.entity.position.distanceTo = () => 100;
+  bot.pathfinder = { goto() { moves++; return Promise.resolve(); } };
+  assert.deepEqual(await clearSchematicObstructions(bot, build, { Vec3Class: Vec3, navigationTimeoutMs: 500 }), { cleared: 1 });
+  assert.equal(moves, 1);
+  assert.deepEqual(removed, [key(position)]);
 });
 
 test("world transition during navigation await fails closed before any dig", async () => {

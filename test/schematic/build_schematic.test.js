@@ -7,6 +7,8 @@ import { gzipSync } from "node:zlib";
 
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
+import { clearSchematicObstructions } from "../../src/utils/schematic/obstruction_policy.js";
+import { acquireBuildLifecycle } from "../../src/utils/schematic/run_build.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
@@ -226,6 +228,44 @@ test("floors three finite coordinates and otherwise uses bot position offset and
   const fallback = fixture();
   assert.equal(await buildSchematic(fallback.bot, "house.schem", 10, Number.NaN, 7, fallback.dependencies), true);
   assert.deepEqual(fallback.calls.startPosition, new FakeVec3(3, 64, -2));
+});
+
+test("obstruction navigation timeout restores guards, mode, and lifecycle before builder startup", { timeout: 2000 }, async () => {
+  let supplyStarted = false;
+  let builderStarted = false;
+  const candidate = fixture({
+    clearObstructions: (bot, build, options) => clearSchematicObstructions(bot, build, { ...options, navigationTimeoutMs: 20 }),
+    startSupply: () => { supplyStarted = true; },
+    executeBuild: () => { builderStarted = true; },
+  });
+  const { bot, calls, dependencies } = candidate;
+  let stops = 0;
+  let digs = 0;
+  bot.blockAt = (position) => ({ name: "poppy", position, diggable: true, getProperties: () => ({}) });
+  bot.dig = () => { digs++; };
+  bot.pathfinder.goto = () => new Promise(() => {});
+  bot.pathfinder.setGoal = (goal) => { assert.equal(goal, null); stops++; };
+  const originalDig = bot.dig;
+  const originalPlace = bot.placeBlock;
+  const originalClear = bot.builder.clearArea;
+  const originalMovements = bot.pathfinder.movements;
+
+  assert.equal(await buildSchematic(bot, "house.schem", null, null, null, dependencies), false);
+  assert.match(calls.logs.join(" "), /obstruction preflight\/clearing failed:.*navigation timed out after 20ms.*3,64,5/i);
+  assert.equal(stops, 1);
+  assert.equal(digs, 0);
+  assert.equal(supplyStarted, false);
+  assert.equal(builderStarted, false);
+  assert.equal(bot.dig, originalDig);
+  assert.equal(bot.placeBlock, originalPlace);
+  assert.equal(bot.builder.clearArea, originalClear);
+  assert.equal(bot.pathfinder.movements, originalMovements);
+  assert.deepEqual(calls.modes.map(({ mode }) => mode), ["creative", "survival"]);
+  assert.equal(calls.modes[1].force, true);
+  assert.equal(calls.paused, false);
+  const nextLease = acquireBuildLifecycle(bot);
+  assert.ok(nextLease, "failed clearing releases build ownership");
+  nextLease.release();
 });
 
 test("Creative permission denial aborts the build and still restores mode and unstuck state", async () => {
