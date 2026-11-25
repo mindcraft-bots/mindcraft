@@ -17,6 +17,7 @@ export class NPCContoller {
         this.build_goal = new BuildGoal(agent);
         this.constructions = {};
         this.last_goals = {};
+        this.running_next = false;
     }
 
     getBuiltPositions() {
@@ -103,48 +104,54 @@ export class NPCContoller {
     }
 
     async executeNext() {
-        if (!this.agent.isIdle()) return;
-        await this.agent.actions.runAction('npc:moveAway', async () => {
-            await skills.moveAway(this.agent.bot, 2);
-        });
+        if (this.running_next) return;
+        this.running_next = true;
+        try {
+            if (!this.agent.isIdle()) return;
+            await this.agent.actions.runAction('npc:moveAway', async () => {
+                await skills.moveAway(this.agent.bot, 2);
+            });
 
-        if (!this.data.do_routine || this.agent.bot.time.timeOfDay < 13000) { 
-            // Exit any buildings
-            let building = this.currentBuilding();
-            if (building == this.data.home) {
-                let door_pos = this.getBuildingDoor(building);
-                if (door_pos) {
-                    await this.agent.actions.runAction('npc:exitBuilding', async () => {
+            if (!this.data.do_routine || this.agent.bot.time.timeOfDay < 13000) {
+                // Exit any buildings
+                let building = this.currentBuilding();
+                if (building == this.data.home) {
+                    let door_pos = this.getBuildingDoor(building);
+                    if (door_pos) {
+                        await this.agent.actions.runAction('npc:exitBuilding', async () => {
+                            await skills.useDoor(this.agent.bot, door_pos);
+                            await skills.moveAway(this.agent.bot, 2); // If the bot is too close to the building it will try to enter again
+                        });
+                    }
+                }
+
+                // Work towards goals
+                await this.executeGoal();
+
+            } else {
+                // Reset goal at the end of the day
+                this.data.curr_goal = null;
+
+                // Return to home
+                let building = this.currentBuilding();
+                if (this.data.home !== null && (building === null || building != this.data.home)) {
+                    let door_pos = this.getBuildingDoor(this.data.home);
+                    await this.agent.actions.runAction('npc:returnHome', async () => {
                         await skills.useDoor(this.agent.bot, door_pos);
-                        await skills.moveAway(this.agent.bot, 2); // If the bot is too close to the building it will try to enter again
                     });
                 }
-            }
 
-            // Work towards goals
-            await this.executeGoal();
-
-        } else {
-            // Reset goal at the end of the day
-            this.data.curr_goal = null;
-
-            // Return to home
-            let building = this.currentBuilding();
-            if (this.data.home !== null && (building === null || building != this.data.home)) {
-                let door_pos = this.getBuildingDoor(this.data.home);
-                await this.agent.actions.runAction('npc:returnHome', async () => {
-                    await skills.useDoor(this.agent.bot, door_pos);
+                // Go to bed
+                await this.agent.actions.runAction('npc:bed', async () => {
+                    await skills.goToBed(this.agent.bot);
                 });
             }
 
-            // Go to bed
-            await this.agent.actions.runAction('npc:bed', async () => {
-                await skills.goToBed(this.agent.bot);
-            });
+            if (this.agent.isIdle())
+                this.agent.bot.emit('idle');
+        } finally {
+            this.running_next = false;
         }
-
-        if (this.agent.isIdle())
-            this.agent.bot.emit('idle');
     }
 
     async executeGoal() {

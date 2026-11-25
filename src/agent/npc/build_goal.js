@@ -13,6 +13,7 @@ export class BuildGoal {
     async wrapSkill(func) {
         if (!this.agent.isIdle())
             return false;
+        await new Promise(resolve => setTimeout(resolve, 50)); // one game tick per block
         let res = await this.agent.actions.runAction('BuildGoal', func);
         return !res.interrupted;
     }
