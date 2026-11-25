@@ -211,13 +211,14 @@ export class Prompter {
         this.last_prompt_time = Date.now();
     }
 
-    async promptConvo(messages) {
+    async promptConvo(messages, from_player = false) {
         this.most_recent_msg_time = Date.now();
         let current_msg_time = this.most_recent_msg_time;
+        const superseded = () => !from_player && current_msg_time !== this.most_recent_msg_time;
 
         for (let i = 0; i < 3; i++) { // try 3 times to avoid hallucinations
             await this.checkCooldown();
-            if (current_msg_time !== this.most_recent_msg_time) {
+            if (superseded()) {
                 return '';
             }
 
@@ -245,7 +246,7 @@ export class Prompter {
                 continue;
             }
 
-            if (current_msg_time !== this.most_recent_msg_time) {
+            if (superseded()) {
                 console.warn(`${this.agent.name} received new message while generating, discarding old response.`);
                 return '';
             }

@@ -317,7 +317,7 @@ export class Agent {
         for (let i=0; i<max_responses; i++) {
             if (checkInterrupt()) break;
             let history = this.history.getHistory();
-            let res = await this.prompter.promptConvo(history);
+            let res = await this.prompter.promptConvo(history, !self_prompt && !from_other_bot);
 
             console.log(`${this.name} full response to ${source}: ""${res}""`);
 
