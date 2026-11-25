@@ -44,9 +44,10 @@ export function wordOverlapScore(text1, text2) {
 export function strictFormat(turns) {
     let prev_role = null;
     let messages = [];
-    let filler = {role: 'user', content: '_'};
-    for (let msg of turns) {
-        if (typeof msg.content === 'string')  {
+    for (let original of turns) {
+        // copy so the caller's message objects are never mutated
+        let msg = (original && typeof original === 'object') ? { ...original } : original;
+        if (msg && typeof msg.content === 'string') {
             msg.content = msg.content.trim();
         }
         if (msg.role === 'system') {
@@ -55,24 +56,23 @@ export function strictFormat(turns) {
         }
         if (msg.role === prev_role && msg.role === 'assistant') {
             // insert empty user message to separate assistant messages
-            messages.push(filler);
+            messages.push({ role: 'user', content: '_' });
             messages.push(msg);
         }
         else if (msg.role === prev_role) {
             // combine new message with previous message instead of adding a new one
-            messages[messages.length-1].content += '\n' + msg.content;
+            messages[messages.length - 1].content += '\n' + msg.content;
         }
         else {
             messages.push(msg);
         }
         prev_role = msg.role;
-        
     }
     if (messages.length > 0 && messages[0].role !== 'user') {
-        messages.unshift(filler); // anthropic requires user message to start
+        messages.unshift({ role: 'user', content: '_' }); // anthropic requires user message to start
     }
     if (messages.length === 0) {
-        messages.push(filler);
+        messages.push({ role: 'user', content: '_' });
     }
     return messages;
 }
