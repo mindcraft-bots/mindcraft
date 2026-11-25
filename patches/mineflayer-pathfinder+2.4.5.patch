@@ -28,7 +28,7 @@ index b38bd30..2ca8205 100644
 +
 +      // openned doors have small Collision box
 +      // that may stop the bot from moving forward
-+      if(i === 0 && b?.name.includes('door')) {
++      if (b?.name.endsWith('_door')) {
 +        curPoint.x = Math.floor(curPoint.x) + 0.5
 +        curPoint.y = Math.floor(curPoint.y)
 +        curPoint.z = Math.floor(curPoint.z) + 0.5
