@@ -202,6 +202,10 @@ export function createMindServer(host_public = false, port = 8080) {
                 console.warn(`Agent ${agentName} tried to send a message but is not logged in`);
                 return;
             }
+            if (agent_connections[agentName].socket === null) {
+                console.warn(`${curAgentName} -> ${agentName}: not connected right now, message dropped: ${json.message}`);
+                return;
+            }
             console.log(`${curAgentName} sending message to ${agentName}: ${json.message}`);
             agent_connections[agentName].socket.emit('chat-message', curAgentName, json);
         });
