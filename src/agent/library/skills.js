@@ -608,6 +608,12 @@ export async function breakBlockAt(bot, x, y, z) {
 }
 
 
+const CLICKABLE_CUBES = ['crafting_table', 'furnace', 'blast_furnace', 'smoker', 'barrel', 'dispenser', 'dropper',
+    'crafter', 'note_block', 'jukebox', 'loom', 'cartography_table', 'smithing_table', 'beacon', 'respawn_anchor',
+    'chiseled_bookshelf', 'command_block', 'chain_command_block', 'repeating_command_block', 'structure_block', 'jigsaw'];
+const isFullCube = block => block.shapes?.length === 1 && block.shapes[0].join() === '0,0,0,1,1,1';
+const firmToBuildOn = block => isFullCube(block) && !CLICKABLE_CUBES.includes(block.name) && !block.name.endsWith('shulker_box');
+
 export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dontCheat=false) {
     /**
      * Place the given block type at the given position. It will build off from any adjacent blocks. Will fail if there is a block in the way or nothing to build off of.
@@ -737,13 +743,15 @@ export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dont
     }
     dirs.push(...Object.values(dir_map).filter(d => !dirs.includes(d)));
 
-    for (let d of dirs) {
-        const block = bot.blockAt(target_dest.plus(d));
-        if (!empty_blocks.includes(block.name)) {
-            buildOffBlock = block;
-            faceVec = new Vec3(-d.x, -d.y, -d.z); // invert
-            break;
-        }
+    const touching = dirs
+        .filter(d => !(d.y === 1 && item_name.endsWith('torch')))
+        .map(d => ({ d, block: bot.blockAt(target_dest.plus(d)) }))
+        .filter(({ block }) => !empty_blocks.includes(block.name));
+    const firm = touching.filter(({ block }) => firmToBuildOn(block));
+    const chosen = firm.length > 0 ? firm[0] : touching[0];
+    if (chosen !== undefined) {
+        buildOffBlock = chosen.block;
+        faceVec = new Vec3(-chosen.d.x, -chosen.d.y, -chosen.d.z); // invert
     }
     if (!buildOffBlock) {
         log(bot, `Cannot place ${blockType} at ${targetBlock.position}: nothing to place on.`);
@@ -1113,7 +1121,7 @@ export async function goToGoal(bot, goal) {
 }
 
 let _doorInterval = null;
-function startDoorInterval(bot) {
+export function startDoorInterval(bot) {
     /**
      * Start helper interval that opens nearby doors if the bot is stuck.
      * @param {MinecraftBot} bot, reference to the minecraft bot.
@@ -1165,6 +1173,7 @@ function startDoorInterval(bot) {
                      block.name.includes('fence_gate') ||
                      block.name.includes('trapdoor'))) 
                 {
+                    if (block.getProperties?.()?.open === true) continue; // already open: leave it
                     bot.activateBlock(block);
                     break;
                 }
