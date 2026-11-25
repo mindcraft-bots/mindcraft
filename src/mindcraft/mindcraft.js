@@ -1,4 +1,4 @@
-import { createMindServer, registerAgent, numStateListeners } from './mindserver.js';
+import { createMindServer, registerAgent, numStateListeners, getAgentConnections } from './mindserver.js';
 import { AgentProcess } from '../process/agent_process.js';
 import { getServer } from './mcserver.js';
 import open from 'open';
@@ -60,6 +60,10 @@ export async function createAgent(settings) {
         const agentProcess = new AgentProcess(agent_name, mindserver_port);
         agentProcess.start(load_memory, init_message, agentIndex);
         agent_processes[settings.profile.name] = agentProcess;
+        const connections = getAgentConnections();
+        if (connections[agent_name]) {
+            connections[agent_name].process = agentProcess;
+        }
     } catch (error) {
         console.error(`Error creating agent ${agent_name}:`, error);
         destroyAgent(agent_name);
@@ -106,6 +110,6 @@ export function shutdown() {
         agent_processes[agentName].stop();
     }
     setTimeout(() => {
-        process.exit(0);
+        globalThis.process.exit(0);
     }, 2000);
 }

@@ -16,6 +16,8 @@ let io;
 let server;
 const agent_connections = {};
 const agent_listeners = [];
+const agent_watchdogs = new Map();
+const DEFAULT_AGENT_WATCHDOG_MS = 60000;
 
 const settings_spec = JSON.parse(readFileSync(path.join(__dirname, 'public/settings_spec.json'), 'utf8'));
 
@@ -32,8 +34,11 @@ class AgentConnection {
     }
 }
 
-export function registerAgent(settings, viewer_port) {
+export function registerAgent(settings, viewer_port, childProcess = null) {
     let agentConnection = new AgentConnection(settings, viewer_port);
+    agentConnection.process = childProcess;
+    // Replace any stale watchdog for a re-registered agent name.
+    clearAgentWatchdog(settings.profile.name);
     agent_connections[settings.profile.name] = agentConnection;
 }
 
@@ -42,6 +47,64 @@ export function logoutAgent(agentName) {
         agent_connections[agentName].in_game = false;
         agentsStatusUpdate();
     }
+    clearAgentWatchdog(agentName);
+}
+
+export function getAgentWatchdogTimeoutMs() {
+    const env = Number(globalThis.process?.env?.MINDCRAFT_AGENT_WATCHDOG_MS);
+    if (Number.isFinite(env) && env > 0) return env;
+    return DEFAULT_AGENT_WATCHDOG_MS;
+}
+
+export function clearAgentWatchdog(agentName) {
+    const entry = agent_watchdogs.get(agentName);
+    if (entry) {
+        clearTimeout(entry.timer);
+        agent_watchdogs.delete(agentName);
+    }
+}
+
+function resolveAgentProcess(agentName) {
+    const conn = agent_connections[agentName];
+    if (conn && (conn.process || conn.child || conn.agentProcess || conn.proc)) {
+        return conn.process || conn.child || conn.agentProcess || conn.proc;
+    }
+    try {
+        const proc = mindcraft.getAgentProcess?.(agentName);
+        return proc?.process || null;
+    } catch {
+        return null;
+    }
+}
+
+export function startAgentWatchdog(agentName, childProcess = null, delayMs = null) {
+    clearAgentWatchdog(agentName);
+    const delay = (delayMs == null) ? getAgentWatchdogTimeoutMs() : delayMs;
+    const proc = childProcess || resolveAgentProcess(agentName);
+    if (!proc) return null;
+    const entry = { process: proc, startedAt: Date.now() };
+    entry.timer = setTimeout(() => {
+        const current = agent_watchdogs.get(agentName);
+        if (!current || current !== entry) return;
+        agent_watchdogs.delete(agentName);
+
+        const conn = agent_connections[agentName];
+        // Agent reconnected or was removed/replaced: do nothing.
+        if (!conn) return;
+        if (conn.socket) return;
+        const currentProc = resolveAgentProcess(agentName);
+        if (currentProc !== entry.process) return; // replaced
+        const p = entry.process;
+        if (!p || p.killed || p.exitCode !== null || p.signalCode !== null) return; // already exited
+        try {
+            p.kill('SIGKILL');
+        } catch {
+            // ignore
+        }
+    }, delay);
+    if (typeof entry.timer?.unref === 'function') entry.timer.unref();
+    agent_watchdogs.set(agentName, entry);
+    return entry.timer;
 }
 
 // Initialize the server
@@ -169,6 +232,7 @@ export function createMindServer(host_public = false, port = 8080) {
         socket.on('connect-agent-process', (agentName) => {
             if (agent_connections[agentName]) {
                 agent_connections[agentName].socket = socket;
+                clearAgentWatchdog(agentName);
                 agentsStatusUpdate();
             }
         });
@@ -178,6 +242,7 @@ export function createMindServer(host_public = false, port = 8080) {
                 agent_connections[agentName].socket = socket;
                 agent_connections[agentName].in_game = true;
                 curAgentName = agentName;
+                clearAgentWatchdog(agentName);
                 agentsStatusUpdate();
             }
             else {
@@ -191,6 +256,7 @@ export function createMindServer(host_public = false, port = 8080) {
                 agent_connections[curAgentName].in_game = false;
                 agent_connections[curAgentName].socket = null;
                 agentsStatusUpdate();
+                startAgentWatchdog(curAgentName);
             }
             if (agent_listeners.includes(socket)) {
                 removeListener(socket);
@@ -228,6 +294,7 @@ export function createMindServer(host_public = false, port = 8080) {
         });
 
         socket.on('destroy-agent', (agentName) => {
+            clearAgentWatchdog(agentName);
             if (agent_connections[agentName]) {
                 mindcraft.destroyAgent(agentName);
                 delete agent_connections[agentName];
@@ -343,3 +410,5 @@ function removeListener(listener_socket) {
 export const getIO = () => io;
 export const getServer = () => server;
 export const numStateListeners = () => agent_listeners.length;
+export const getAgentConnections = () => agent_connections;
+export const getAgentWatchdogs = () => agent_watchdogs;
