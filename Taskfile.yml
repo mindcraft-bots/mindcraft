@@ -1,0 +1,6 @@
+version: '3'
+tasks:
+  test:schematics:
+    desc: Run the isolated schematic end-to-end suite and remove its world
+    cmds:
+      - ./ci/run_schematics.sh

@@ -11,7 +11,7 @@ const settings = {
     // "server_host": "host.docker.internal",
     // "server_port": 28080,
     // the mindserver manages all agents and hosts the UI
-    "mindserver_host": "127.0.0.1", 
+    "mindserver_host": "127.0.0.1",
     "mindserver_port": 8082,
     "auto_open_ui": false, // opens UI in browser on startup
 
@@ -26,6 +26,7 @@ const settings = {
     // "base_profile": "_default", // survival, assistant, creative, or god_mode
     "profiles": [
         "./alice.json",
+        "./andy.json",
         // "./profiles/gpt.json",
         // "./profiles/claude.json",
         // "./profiles/gemini.json",
@@ -44,14 +45,14 @@ const settings = {
     "load_memory": false, // load memory from previous session
     "init_message": "Respond with hello world and your name", // sends to all on spawn
     "only_chat_with": [], // users that the bots listen to and send general messages to. if empty it will chat publicly
-    "known_bot_peers": ["Andy"], // usernames reserved for peer bots; they are not command issuers
+    "known_bot_peers": ["Alice", "Andy"], // usernames reserved for peer bots; they are not command issuers
     "trusted_command_senders": ["Sunny26639"], // Sole observed human operator; explicitly add other trusted players. Offline names can be spoofed.
 
     // "speak": false,
     "speak": "system",
-    // allows all bots to speak through text-to-speech. 
+    // allows all bots to speak through text-to-speech.
     // specify speech model inside each profile with format: {provider}/{model}/{voice}.
-    // if set to "system" it will use basic system text-to-speech. 
+    // if set to "system" it will use basic system text-to-speech.
     // Works on windows and mac, but linux requires you to install the espeak package through your package manager eg: `apt install espeak` `pacman -S espeak`.
 
     "chat_ingame": true, // bot responses are shown in minecraft chat
@@ -74,7 +75,7 @@ const settings = {
 
     "spawn_timeout": 30, // num seconds allowed for the bot to spawn before throwing error. Increase when spawning takes a while.
     "block_place_delay": 0, // delay between placing blocks (ms) if using newAction. helps avoid bot being kicked by anti-cheat mechanisms on servers.
-  
+
     "log_all_prompts": false, // log ALL prompts to file
 };
 

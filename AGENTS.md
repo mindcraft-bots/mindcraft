@@ -28,3 +28,7 @@ This is the canonical root location for shared repository guidance. Some agents 
 - Independently validate complete affected assets and report exactly what ran. Distinguish reader/voxel agreement, registry validation, build-plan support, live-server placement and visual fidelity; never claim an unrun check or a stronger result than the evidence supports.
 - Human-facing scripts in `scripts/` should have meaningful action_scope names with an extension, correct shebang and executable mode, and updated references. Preserve safety and compatibility, document and test the intended workflow and requirements, and do not blindly rename historical records.
 - When the user specifically requests initial analysis and final review, create them at the requested locations and record evidence, source/credit/license limitations, accepted versus deferred items and honest gaps. Do not require review files for every task.
+
+## Mandatory schematic E2E gate
+
+- Whenever code related to bot actions, settings, building, schematics, or task execution is modified, you MUST run `task test:schematics` in the terminal and ensure it exits with code `0` before completing your task. If infrastructure prevents this, explicitly report the blocker and do not claim the gate passed.

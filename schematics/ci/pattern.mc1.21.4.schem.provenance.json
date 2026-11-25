@@ -1,0 +1,12 @@
+{
+  "artifact": "pattern.mc1.21.4.schem",
+  "blueprint": "schematics/blueprints/ci/pattern.json",
+  "blueprintSha256": "5fbe95b70074f3a84e997cc9768c7f24c03467d5e0b481d600136d5c4aaa9278",
+  "convertTo": null,
+  "packReport": null,
+  "packReportSha256": null,
+  "schemaVersion": 1,
+  "sha256": "8afd134689c31a4c6225efa37138681e59408040e7e5d4ba377e0ced56438b34",
+  "targetVersion": "1.21.4",
+  "validation": "STRICT_VALIDATED"
+}

@@ -3,6 +3,8 @@ import { executeCommand } from '../commands/index.js';
 import { getPosition } from '../library/world.js';
 import { ConstructionTaskValidator, Blueprint } from './construction_tasks.js';
 import { CookingTaskInitiator } from './cooking_tasks.js';
+import { SchematicTaskValidator } from './schematic_task.js';
+import { prepareSchematicTask } from './schematic_setup.js';
 
 const PROGRESS_FILE = './hells_kitchen_progress.json';
 
@@ -273,7 +275,11 @@ export class Task {
             //     await executeCommand(this.agent, `!goal("${agentGoal}")`);
             // }
 
-            if (this.task_type === 'construction') {
+            if (this.task_type === 'schematic') {
+                this.validator = new SchematicTaskValidator(this.data, this.agent);
+                this.schematicReady = false;
+                this.schematicBuildCompleted = false;
+            } else if (this.task_type === 'construction') {
                 this.validator = new ConstructionTaskValidator(this.data, this.agent);
             } else if (this.task_type === 'cooking' || this.task_type === 'techtree') {
                 this.validator = new CookingCraftingTaskValidator(this.data, this.agent);
@@ -363,12 +369,21 @@ export class Task {
     }
 
     isDone() {
+        if (this.task_type === 'schematic') {
+            if (this.schematicSetupFailed) return { message: 'Schematic setup failed', score: 0, error: this.schematicSetupFailed };
+            if (Date.now() - this.taskStartTime >= this.taskTimeout * 1000) {
+                this.schematicSetupFailed = 'Task timeout reached';
+                return { message: 'Task timeout reached', score: 0 };
+            }
+            if (!this.schematicReady) return false;
+        }
         let res = null;
         if (this.validator)
             res = this.validator.validate();
-        if (res && res.valid) {
+        if (res && res.valid && (this.task_type !== 'schematic' || (this.schematicBuildCompleted && !this.agent.actions.executing))) {
             // Find all the agents and clear their inventories
-            for (let agent of this.available_agents) {
+            if (this.task_type === 'schematic') this.agent.bot.chat(`/clear ${this.name}`);
+            else for (let agent of this.available_agents) {
                 this.agent.bot.chat(`/clear ${agent}`);
             }
             // this.agent.bot.chat(`/clear @a`);
@@ -386,7 +401,7 @@ export class Task {
             if (elapsedTime >= this.taskTimeout) {
                 console.log('Task timeout reached. Task unsuccessful.');
                 if (res) {
-                    return {"message": 'Task timeout reached', "score": res.score};
+                    return {"message": 'Task timeout reached', "score": res.score, "mismatches": res.mismatches};
                 } else {
                     return {"message": 'Task timeout reached', "score": 0};
                 }
@@ -406,6 +421,19 @@ export class Task {
     }
 
     async initBotTask() {
+        if (this.task_type === 'schematic') {
+            try {
+                await prepareSchematicTask(this);
+                if (this.schematicSetupFailed || Date.now() - this.taskStartTime >= this.taskTimeout * 1000) throw new Error('Task timeout reached before goal');
+                this.schematicReady = true;
+                await this.setAgentGoal();
+            } catch (error) {
+                this.schematicSetupFailed = error.message;
+                console.error('Schematic setup failed:', error);
+                throw error;
+            }
+            return;
+        }
         await this.agent.bot.chat(`/clear ${this.name}`);
         console.log(`Cleared ${this.name}'s inventory.`);
 

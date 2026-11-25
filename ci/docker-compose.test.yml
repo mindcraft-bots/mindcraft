@@ -1,0 +1,71 @@
+services:
+  purpur:
+    image: itzg/minecraft-server:java21
+    networks:
+      - test-internal
+      - server-egress
+    environment:
+      EULA: "TRUE"
+      TYPE: PURPUR
+      VERSION: "1.21.4"
+      PURPUR_BUILD: "2416"
+      ONLINE_MODE: "FALSE"
+      ENFORCE_SECURE_PROFILE: "FALSE"
+      LEVEL_TYPE: FLAT
+      GENERATOR_SETTINGS: >-
+        {"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}
+      SPAWN_PROTECTION: "0"
+      MODE: creative
+      DIFFICULTY: peaceful
+      OPS_FILE: /config/ops.json
+      MEMORY: 2G
+    volumes:
+      - world:/data
+      - ./configs/ops.json:/config/ops.json:ro
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 10s
+      timeout: 5s
+      retries: 36
+      start_period: 60s
+  mock-llm:
+    image: node:22-bookworm-slim
+    networks:
+      - test-internal
+    working_dir: /app
+    volumes:
+      - ./mock-llm/server.js:/app/server.mjs:ro
+    command: ["node", "/app/server.mjs"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  bot-tester:
+    networks:
+      - test-internal
+    build:
+      context: ..
+      dockerfile: Tasks.Dockerfile
+    depends_on:
+      purpur:
+        condition: service_healthy
+      mock-llm:
+        condition: service_healthy
+    environment:
+      MINECRAFT_HOST: purpur
+      MINECRAFT_PORT: "25565"
+      PROFILES: '["./ci/configs/test_profile.json"]'
+      OPENAI_API_KEY: test-only
+      SETTINGS_JSON: '{"init_message":null,"speak":false,"allow_insecure_coding":false,"allow_vision":false,"require_strict_schematic_validation":true,"num_examples":0,"chat_ingame":false,"spawn_timeout":60}'
+    volumes:
+      - ./configs/test_profile.json:/app/ci/configs/test_profile.json:ro
+      - ../schematics:/app/schematics:ro
+    command: ["python3", "tasks/run_task_file.py", "--task_path", "tasks/schematics_test.json"]
+volumes:
+  world:
+networks:
+  # Keep both application containers offline; only the server needs egress to download artifacts.
+  test-internal:
+    internal: true
+  server-egress: {}

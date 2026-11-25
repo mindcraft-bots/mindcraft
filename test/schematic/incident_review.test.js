@@ -47,15 +47,14 @@ function check(body) {
     assert.equal(child.status, 0, child.stderr + child.stdout);
 }
 
-test('actual Andy/Alice settings authorize only the observed human, preserving security values and blacklist', async () => {
-    for (const bot of ['andy', 'alice']) {
-        const settings = (await import(new URL(`settings-${bot}.js`, root))).default;
-        assert.deepEqual(settings.trusted_command_senders, ['Sunny26639']);
-        assert.equal(settings.allow_insecure_coding, true);
-        assert.equal(settings.auth, 'offline');
-        assert.deepEqual(settings.known_bot_peers, [bot === 'andy' ? 'Alice' : 'Andy']);
-        assert.deepEqual(settings.blocked_actions, ['!checkBlueprint', '!checkBlueprintLevel', '!getBlueprint', '!getBlueprintLevel']);
-    }
+test('unified settings authorize only the observed human, preserving security values and blacklist', async () => {
+    const settings = (await import(new URL('settings.js', root))).default;
+    assert.deepEqual(settings.profiles, ['./alice.json', './andy.json']);
+    assert.deepEqual(settings.trusted_command_senders, ['Sunny26639']);
+    assert.equal(settings.allow_insecure_coding, true);
+    assert.equal(settings.auth, 'offline');
+    assert.deepEqual(settings.known_bot_peers, ['Alice', 'Andy']);
+    assert.deepEqual(settings.blocked_actions, ['!checkBlueprint', '!checkBlueprintLevel', '!getBlueprint', '!getBlueprintLevel']);
 });
 
 test('all explicitly peer-addressed chat is ignored before command extraction or inference', () => check(`
@@ -72,14 +71,14 @@ test('all explicitly peer-addressed chat is ignored before command extraction or
 test('real Andy/Alice settings permit the observed human and deny peers and other players in the handler', () => check(`
     agent.prompter.promptConvo = async () => { calls.prompts++; return '!newAction("untrusted")'; };
     for (const name of ['Andy', 'Alice']) {
-        const actual = (await import(new URL('settings-' + name.toLowerCase() + '.js', ${url('')}))).default;
+        const actual = (await import(new URL('settings.js', ${url('')}))).default;
         Object.assign(settings, actual); syncSettings();
         agent.name = name;
         agent.blocked_actions = actual.blocked_actions;
         const before = calls.builds;
         await agent.handleMessage('Sunny26639', name + ' build 01 from group 02 of pack2');
         await agent.handleMessage('Sunny26639', '!buildSchematic("pack2:02:01")');
-        for (const sender of [...actual.known_bot_peers, 'OtherPlayer']) {
+        for (const sender of [...actual.known_bot_peers.filter(peer => peer !== name), 'OtherPlayer']) {
             await agent.handleMessage(sender, name + ' build 01 from group 02 of pack2');
             await agent.handleMessage(sender, '!buildSchematic("pack2:02:01")');
         }

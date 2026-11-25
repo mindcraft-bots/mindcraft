@@ -1,41 +1,17 @@
 services:
-  bot-andy:
-    network_mode: "host" # Змушує Docker використовувати мережу вашої системи
+  bots:
+    network_mode: "host"
     build: .
-#    environment:
-#      SETTINGS_JSON: |
-#        {"auto_open_ui": false}
     volumes:
-      - ./settings-andy.js:/app/settings.js
-      - ./andy.json:/app/andy.json
-      - ./keys.json:/app/keys.json
-      - ./profiles:/app/profiles
+      - ./settings.js:/app/settings.js:ro
+      - ./alice.json:/app/alice.json:ro
+      - ./andy.json:/app/andy.json:ro
+      - ./keys.json:/app/keys.json:ro
+      - ./profiles:/app/profiles:ro
       - ./bots:/app/bots
-      - ./schematics:/app/schematics
-    ports:
-      - "13000-13003:3000-3003" # see the view from the camera mounted on your bot head: http://localhost:3000/
-      - "18080:8080" # Mindserver port
+      - ./schematics:/app/schematics:ro
     extra_hosts:
-    - "host.docker.internal:host-gateway"
-
-  bot-alice:
-    network_mode: "host" # Змушує Docker використовувати мережу вашої системи
-    build: .
-#    environment:
-#      SETTINGS_JSON: |
-#        {"auto_open_ui": false}
-    volumes:
-      - ./settings-alice.js:/app/settings.js
-      - ./alice.json:/app/alice.json
-      - ./keys.json:/app/keys.json
-      - ./profiles:/app/profiles
-      - ./bots:/app/bots
-      - ./schematics:/app/schematics
-    ports:
-      - "23000-23003:3000-3003" # see the view from the camera mounted on your bot head: http://localhost:3000/
-      - "28080:8080" # Mindserver port
-    extra_hosts:
-    - "host.docker.internal:host-gateway"
+      - "host.docker.internal:host-gateway"
 
   viaproxy: #use this service to connect to an unsupported minecraft server versions. more info: ./services/viaproxy/README.md
     image: ghcr.io/viaversion/viaproxy:latest

@@ -1,6 +1,7 @@
 boto3==1.37.11
 botocore==1.37.11
+nbtlib==2.0.4
 pandas==2.2.3
 prettytable==3.16.0
 tqdm==4.62.3
-python-socketio[client] 
+python-socketio[client]

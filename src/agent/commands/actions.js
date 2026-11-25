@@ -541,7 +541,11 @@ export const actionsList = [
         }, false, -1, {
             run: (agent, [filename, x, y, z, options], session) => {
                 skills.setSchematicResumeSession?.(agent.bot, session);
-                return skills.buildSchematic(agent.bot, filename, x, y, z, options);
+                if (agent.task?.task_type === 'schematic') agent.task.schematicBuildCompleted = false;
+                return skills.buildSchematic(agent.bot, filename, x, y, z, options).then(success => {
+                    if (agent.task?.task_type === 'schematic') agent.task.schematicBuildCompleted = success === true;
+                    return success;
+                });
             },
             shouldResume: (agent, interruption, _filename, _x, _y, _z, _options, session) =>
                 session?.context != null

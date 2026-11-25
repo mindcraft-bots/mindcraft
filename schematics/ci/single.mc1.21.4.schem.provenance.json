@@ -1,0 +1,12 @@
+{
+  "artifact": "single.mc1.21.4.schem",
+  "blueprint": "schematics/blueprints/ci/single.json",
+  "blueprintSha256": "7e8f4a84aef0fc22446f052d8dd44db2a2531d4e717ed9be337ef3b96cfc1410",
+  "convertTo": null,
+  "packReport": null,
+  "packReportSha256": null,
+  "schemaVersion": 1,
+  "sha256": "19f89f6db48bb7f227056fca5ab786d4687f69b1ee85bc8c7bb35dfd29ebcde2",
+  "targetVersion": "1.21.4",
+  "validation": "STRICT_VALIDATED"
+}

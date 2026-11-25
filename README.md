@@ -301,3 +301,7 @@ This work is published in the paper [Collaborating Action by Action: A Multi-age
 Thanks to everyone who has submitted issues on and off Github, made suggestions, and generally helped make this a better project.
 
 ![Contributors](https://contrib.rocks/image?repo=mindcraft-bots/mindcraft)
+
+### Local schematic end-to-end test
+
+Run `task test:schematics` (or `make test-schematics`) to build the local bot image and exercise the schematic suite against a disposable Purpur world and deterministic mock model. See [the local test guide](ci/README.md) for host and Docker prerequisites, the unresolved Mineflayer patch failure, safety, and task format.

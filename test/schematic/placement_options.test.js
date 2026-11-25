@@ -62,10 +62,8 @@ test('example settings and UI schema agree with runtime defaults', async () => {
     assert.equal(schema.schematic_balanced_threshold.default, 9);
     for (const [key, value] of Object.entries({ schematic_balanced_strategy: 'stepped', schematic_balanced_step: 2, schematic_balanced_policy: 'first_valid', schematic_balanced_bisect_depth: 2 }))
         assert.equal(schema[key].default, value);
-    for (const name of ['andy', 'alice']) {
-        const sample = (await import(new URL(`../../settings-${name}.js`, import.meta.url))).default;
-        assert.deepEqual(resolvePlacementOptions(sample), { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });
-    }
+    const sample = (await import(new URL('../../settings.js', import.meta.url))).default;
+    assert.deepEqual(resolvePlacementOptions(sample), { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });
 });
 
 test('balanced search options validate settings, overrides and resolved snapshots', () => {

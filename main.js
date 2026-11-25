@@ -3,6 +3,7 @@ import settings from './settings.js';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { readFileSync } from 'fs';
+import process from 'node:process';
 import { resolvePlacementOptions } from './src/utils/schematic/placement_options.js';
 import { validateTrustedCommandSenders } from './src/utils/command_trust.js';
 
@@ -40,11 +41,14 @@ if (args.task_path) {
 }
 
 // these environment variables override certain settings
+if (process.env.MINECRAFT_HOST) {
+    settings.host = process.env.MINECRAFT_HOST;
+}
 if (process.env.MINECRAFT_PORT) {
-    settings.port = process.env.MINECRAFT_PORT;
+    settings.port = Number(process.env.MINECRAFT_PORT);
 }
 if (process.env.MINDSERVER_PORT) {
-    settings.mindserver_port = process.env.MINDSERVER_PORT;
+    settings.mindserver_port = Number(process.env.MINDSERVER_PORT);
 }
 if (process.env.PROFILES && JSON.parse(process.env.PROFILES).length > 0) {
     settings.profiles = JSON.parse(process.env.PROFILES);

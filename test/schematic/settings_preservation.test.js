@@ -99,7 +99,7 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
 
     test('real UI placement edit preserves restrictive trust and all hidden settings through restart loading', async t => {
         const original = {
-            ...(await import('../../settings-andy.js')).default,
+            ...(await import('../../settings.js')).default,
             profile: { name: 'PreservedUI', extra: { prompt: 'keep' } },
             future_security_option: { enabled: true, nested: ['opaque'] },
             future_null: null, future_false: false,

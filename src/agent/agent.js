@@ -1,3 +1,4 @@
+import process from 'node:process';
 import { History } from './history.js';
 import { Coder } from './coder.js';
 import { VisionInterpreter } from './vision/vision_interpreter.js';
@@ -190,7 +191,9 @@ export class Agent {
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
               
-                if (!load_mem) {
+                if (settings.task && this.task.task_type === 'schematic') {
+                    await this.task.initBotTask();
+                } else if (!load_mem) {
                     if (settings.task) {
                         this.task.initBotTask();
                         this.task.setAgentGoal();
@@ -207,7 +210,7 @@ export class Agent {
 
             } catch (error) {
                 console.error('Error in spawn event:', error);
-                process.exit(0);
+                process.exit(settings.task?.type === 'schematic' ? 2 : 0);
             }
         });
     }
@@ -710,7 +713,12 @@ export class Agent {
                 await this.history.add('system', `Task ended with score : ${res.score}`);
                 await this.history.save();
                 // await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 second for save to complete
-                console.log('Task finished:', res.message);
+                console.log('Task finished:', res.message, JSON.stringify(res));
+                if (this.task.task_type === 'schematic' && process.env.TASK_RESULT_FILE) {
+                    const { writeFileSync } = await import('node:fs');
+                    writeFileSync(process.env.TASK_RESULT_FILE, JSON.stringify({ task_id: this.task.data.task_id, ...res }));
+                }
+                if (this.task.task_type === 'schematic' && res.message !== 'Task successful') process.exit(2);
                 this.killAll();
             }
         }
