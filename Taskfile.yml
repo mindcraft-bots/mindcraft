@@ -4,3 +4,11 @@ tasks:
     desc: Run the isolated schematic end-to-end suite and remove its world
     cmds:
       - ./ci/run_schematics.sh
+  quality:fast:
+    desc: Run offline checks only (not the mandatory full gate)
+    cmds:
+      - ./ci/run_quality_gate.sh fast
+  quality:gate:
+    desc: Run offline checks and mandatory local live schematic CI
+    cmds:
+      - ./ci/run_quality_gate.sh full

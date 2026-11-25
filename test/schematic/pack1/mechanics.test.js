@@ -65,11 +65,15 @@ function inventory(dir) {
     return [name,createHash('sha256').update(fs.readFileSync(file)).digest('hex')];
   }));
 }
-test('CLI is reproducible and never changes any blueprints or schematics', () => {
+test('CLI is reproducible apart from recorded lock provenance and never changes assets', () => {
   const blueprints=inventory(base), schematics=inventory('schematics/schems/pack1');
   const output=execFileSync(process.execPath,['schematics/tooling/audit_pack_mechanics.mjs','--pack','pack1'],{encoding:'utf8',maxBuffer:10*1024*1024});
   assert.deepEqual(JSON.parse(output),report);
-  assert.equal(output,fs.readFileSync('schematics/tooling/validation/pack1/mechanics_audit.json','utf8'));
+  const historical=JSON.parse(fs.readFileSync('schematics/tooling/validation/pack1/mechanics_audit.json','utf8'));
+  assert.equal(report.registry_dependency.path, 'package-lock.json');
+  assert.equal(report.registry_dependency.sha256, createHash('sha256').update(fs.readFileSync('package-lock.json')).digest('hex'));
+  assert.match(historical.registry_dependency.sha256, /^[0-9a-f]{64}$/);
+  assert.deepEqual({ ...report, registry_dependency: historical.registry_dependency }, historical);
   assert.deepEqual(inventory(base),blueprints);
   assert.deepEqual(inventory('schematics/schems/pack1'),schematics);
 });

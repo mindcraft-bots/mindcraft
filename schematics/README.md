@@ -203,15 +203,15 @@ From the repository root, only after reviewing and backing up the destination:
 
 ```sh
 scripts/update_project.sh --apply \
-&& docker compose build bot-andy bot-alice \
-&& docker compose up -d --force-recreate bot-andy bot-alice
+&& docker compose build bots \
+&& docker compose up -d --force-recreate bots
 ```
 
 The `&&` chain stops before Docker if update is blocked or fails. Then check status and inspect recent startup logs locally:
 
 ```sh
-docker compose ps bot-andy bot-alice
-docker compose logs --tail=100 bot-andy bot-alice
+docker compose ps bots
+docker compose logs --tail=100 bots
 ```
 
 For an offline preflight, run `scripts/update_project.sh --check`; it compares with the locally cached upstream-tracking ref only, does not refresh the index, and makes no network request, so it cannot tell whether the remote has newer commits. It does not inspect incoming content/collisions or certify deployment readiness. A missing cached ref blocks this check; `--apply` can fetch the configured branch to create that ref. `--apply` fetches without force and only fast-forwards a clean, non-bare, named, non-shallow, non-sparse, non-partial checkout with no Git operation in progress, unsafe index flags, submodules, configured checkout filters, or untracked files. Both existing and incoming gitlinks are refused. Ahead/diverged branches, conflicts, fetch failures and ignored incoming-path collisions are refused. It never runs `reset`, `clean`, `stash`, rebase, force, or a merge commit. Fetch disables tag updates, pruning, submodule recursion, automatic maintenance, commit-graph writes, and opportunistic configured ref mappings; it may still write fetched objects, the selected tracking ref, reflogs, and FETCH_HEAD even if a later safety check fails.

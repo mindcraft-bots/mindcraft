@@ -6,12 +6,12 @@ the interpreter. Shell, Python, and Node entry points are executable and have sh
 
 | Previous name | Current name | Purpose |
 | --- | --- | --- |
-| `build.sh` | [`build_bots.sh`](build_bots.sh) | Build the two bot Compose images. |
+| `build.sh` | [`build_bots.sh`](build_bots.sh) | Build the unified bots Compose image. |
 | `get-logs.sh` | [`get_logs.sh`](get_logs.sh) | Show bot Compose status and recent logs. |
 | `collect_bot_diagnostics.sh`, `collect_diagnostics.sh` | [`collect_diagnostics.py`](collect_diagnostics.py) | Collect Compose logs, selected metadata, and sensitive bot history and prompt logs. |
-| `start.sh` | [`start_bots.sh`](start_bots.sh) | Recreate and start the two bot services in the foreground. |
+| `start.sh` | [`start_bots.sh`](start_bots.sh) | Recreate and start the unified bots Compose service in the foreground. |
 | `update.sh` | [`update_project.sh`](update_project.sh) | Safely check or fast-forward a checkout; see the [deployment guide](../schematics/README.md#safe-code-updates-and-docker-redeployment). |
-| `verify-schematic-patch.js` | [`verify_patch.js`](verify_patch.js) | Verify the installed mineflayer-schem cancellation-safety patch. |
+| `verify-schematic-patch.js` | [`verify_patch.js`](verify_patch.js) | Verify the installed Mineflayer digging and mineflayer-schem cancellation-safety patches. |
 
 Update external shell aliases, automation, and direct invocations to the current
 names. Old paths are removed rather than retained as nonconforming wrappers; an
@@ -20,8 +20,8 @@ next invocation must use the new path. The `npm run postinstall`, `npm start`,
 and test command names remain unchanged. The verifier remains runnable with
 Node and is also executable directly; run it from the project root so it checks
 that checkout's installed dependencies. The shell helpers provide `--help`
-without invoking Docker or changing the checkout. Normal Docker helper calls
-still operate on the Compose project selected by the caller's working directory.
+without invoking Docker or changing the checkout. The start helper selects its
+checkout's Compose project; the build and logs helpers use the caller's working directory.
 
 ## Collect bot incident diagnostics on the Docker host
 

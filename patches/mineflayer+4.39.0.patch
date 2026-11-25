@@ -1,0 +1,124 @@
+diff --git a/node_modules/mineflayer/lib/plugins/digging.js b/node_modules/mineflayer/lib/plugins/digging.js
+index 5ae5552..be8e185 100644
+--- a/node_modules/mineflayer/lib/plugins/digging.js
++++ b/node_modules/mineflayer/lib/plugins/digging.js
+@@ -3,6 +3,105 @@ const { createDoneTask, createTask } = require('../promise_utils')
+ const BlockFaces = require('prismarine-world').iterators.BlockFace
+ const { Vec3 } = require('vec3')
+ 
++// Direct members of Java 1.21.4's mineable/pickaxe tag that minecraft-data
++// labels incorrect_for_wooden_tool. Do not infer tool tags for other releases.
++// Source: misode/mcmeta 277751c76153ac1a084813188ac7ceea2028b625.
++const mindcraftPickaxeBlocks1214 = new Set([
++  'ancient_debris',
++  'chiseled_copper',
++  'copper_block',
++  'copper_bulb',
++  'copper_grate',
++  'copper_ore',
++  'copper_trapdoor',
++  'crafter',
++  'crying_obsidian',
++  'cut_copper',
++  'cut_copper_slab',
++  'cut_copper_stairs',
++  'deepslate_copper_ore',
++  'deepslate_diamond_ore',
++  'deepslate_emerald_ore',
++  'deepslate_gold_ore',
++  'deepslate_iron_ore',
++  'deepslate_lapis_ore',
++  'deepslate_redstone_ore',
++  'diamond_block',
++  'diamond_ore',
++  'emerald_block',
++  'emerald_ore',
++  'exposed_chiseled_copper',
++  'exposed_copper',
++  'exposed_copper_bulb',
++  'exposed_copper_grate',
++  'exposed_copper_trapdoor',
++  'exposed_cut_copper',
++  'exposed_cut_copper_slab',
++  'exposed_cut_copper_stairs',
++  'gold_block',
++  'gold_ore',
++  'iron_block',
++  'iron_ore',
++  'lapis_block',
++  'lapis_ore',
++  'lightning_rod',
++  'netherite_block',
++  'obsidian',
++  'oxidized_chiseled_copper',
++  'oxidized_copper',
++  'oxidized_copper_bulb',
++  'oxidized_copper_grate',
++  'oxidized_copper_trapdoor',
++  'oxidized_cut_copper',
++  'oxidized_cut_copper_slab',
++  'oxidized_cut_copper_stairs',
++  'raw_copper_block',
++  'raw_gold_block',
++  'raw_iron_block',
++  'redstone_ore',
++  'respawn_anchor',
++  'waxed_chiseled_copper',
++  'waxed_copper_block',
++  'waxed_copper_bulb',
++  'waxed_copper_grate',
++  'waxed_copper_trapdoor',
++  'waxed_cut_copper',
++  'waxed_cut_copper_slab',
++  'waxed_cut_copper_stairs',
++  'waxed_exposed_chiseled_copper',
++  'waxed_exposed_copper',
++  'waxed_exposed_copper_bulb',
++  'waxed_exposed_copper_grate',
++  'waxed_exposed_copper_trapdoor',
++  'waxed_exposed_cut_copper',
++  'waxed_exposed_cut_copper_slab',
++  'waxed_exposed_cut_copper_stairs',
++  'waxed_oxidized_chiseled_copper',
++  'waxed_oxidized_copper',
++  'waxed_oxidized_copper_bulb',
++  'waxed_oxidized_copper_grate',
++  'waxed_oxidized_copper_trapdoor',
++  'waxed_oxidized_cut_copper',
++  'waxed_oxidized_cut_copper_slab',
++  'waxed_oxidized_cut_copper_stairs',
++  'waxed_weathered_chiseled_copper',
++  'waxed_weathered_copper',
++  'waxed_weathered_copper_bulb',
++  'waxed_weathered_copper_grate',
++  'waxed_weathered_copper_trapdoor',
++  'waxed_weathered_cut_copper',
++  'waxed_weathered_cut_copper_slab',
++  'waxed_weathered_cut_copper_stairs',
++  'weathered_chiseled_copper',
++  'weathered_copper',
++  'weathered_copper_bulb',
++  'weathered_copper_grate',
++  'weathered_copper_trapdoor',
++  'weathered_cut_copper',
++  'weathered_cut_copper_slab',
++  'weathered_cut_copper_stairs',
++])
++
+ module.exports = inject
+ 
+ function inject (bot) {
+@@ -245,7 +344,12 @@ function inject (bot) {
+     }
+ 
+     const creative = bot.game.gameMode === 'creative'
+-    return block.digTime(
++    // Keep the world's block unchanged; only the dig-time receiver needs the
++    // corrected tag. Harvestability and all other properties remain intact.
++    const digBlock = bot.version === '1.21.4' && block.material === 'incorrect_for_wooden_tool' && mindcraftPickaxeBlocks1214.has(block.name)
++      ? Object.assign(Object.create(block), { material: 'mineable/pickaxe' })
++      : block
++    return digBlock.digTime(
+       type,
+       creative,
+       ['water', 'flowing_water'].includes(bot._getBlockAtEyeLevel()?.name),

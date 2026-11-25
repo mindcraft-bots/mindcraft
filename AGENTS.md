@@ -31,4 +31,5 @@ This is the canonical root location for shared repository guidance. Some agents 
 
 ## Mandatory schematic E2E gate
 
+- Quality-Gate mode must run `task quality:gate` (or `make quality-gate`) from the repository root after implementation, inspect the printed private log directory and the diff, and report each failure and blocker. The full gate runs offline checks, verifies both dependency patches, and invokes the mandatory local live schematic CI. `task quality:fast` / `make quality-fast` is an offline iteration aid only; it cannot replace the full gate. Follow [local CI prerequisites and isolated install instructions](ci/README.md); do not replace a user's ignored dependencies or lockfile. Never commit or publish unless explicitly requested.
 - Whenever code related to bot actions, settings, building, schematics, or task execution is modified, you MUST run `task test:schematics` in the terminal and ensure it exits with code `0` before completing your task. If infrastructure prevents this, explicitly report the blocker and do not claim the gate passed.

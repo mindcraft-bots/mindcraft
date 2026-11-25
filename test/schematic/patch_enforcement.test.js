@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -18,6 +19,67 @@ test('postinstall verifier accepts the patched installed package', () => {
     const result = runNode([verifier]);
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.match(result.stdout, /Verified mineflayer-schem cancellation-safety patch/);
+    assert.match(result.stdout, /Verified mineflayer 4\.39\.0 digging patch/);
+    assert.match(result.stdout, /Verified Minecraft 1\.21\.6 unsigned chat checksums/);
+});
+
+test('postinstall verifier rejects signed or missing 1.21.6 chat checksums', (t) => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'mindcraft-protocol-check-'));
+    t.after(() => rmSync(tempRoot, { recursive: true, force: true }));
+    const packageDir = join(tempRoot, 'node_modules/minecraft-data');
+    mkdirSync(packageDir, { recursive: true });
+    const env = { ...process.env, NODE_PATH: join(projectRoot, 'node_modules') };
+    for (const [packet, fields] of [
+        ['packet_chat_command_signed', [{ name: 'checksum', type: 'i8' }]],
+        ['packet_chat_message', []],
+    ]) {
+        const types = {
+            packet_chat_command_signed: ['container', [{ name: 'checksum', type: 'u8' }]],
+            packet_chat_message: ['container', [{ name: 'checksum', type: 'u8' }]],
+        };
+        types[packet] = ['container', fields];
+        const data = { version: { minecraftVersion: '1.21.6' }, protocol: { play: { toServer: { types } } } };
+        writeFileSync(join(packageDir, 'index.js'), `module.exports = () => (${JSON.stringify(data)});\n`);
+        const result = runNode([verifier], { cwd: tempRoot, env });
+        assert.notEqual(result.status, 0);
+        assert.match(result.stderr, new RegExp(`${packet} checksum must be unsigned u8`));
+    }
+});
+
+test('Minecraft 1.21.6 chat packets round-trip the full unsigned checksum range', async () => {
+    const { createRequire } = await import('node:module');
+    const require = createRequire(import.meta.url);
+    const protocol = require('minecraft-protocol');
+    const options = { state: 'play', version: '1.21.6' };
+    const serializer = protocol.createSerializer({ ...options, isServer: false });
+    const parser = protocol.createDeserializer({ ...options, isServer: true });
+    for (const checksum of [0, 127, 128, 255]) {
+        const common = { timestamp: 0n, salt: 0n, acknowledged: Buffer.alloc(3), checksum };
+        const packets = [
+            ['chat_message', { ...common, message: 'hello', signature: null, offset: 0 }],
+            ['chat_command_signed', { ...common, command: 'test', argumentSignatures: [], messageCount: 0 }],
+        ];
+        for (const [name, params] of packets) {
+            const buffer = serializer.createPacketBuffer({ name, params });
+            const decoded = parser.parsePacketBuffer(buffer).data;
+            assert.equal(decoded.name, name);
+            assert.equal(decoded.params.checksum, checksum);
+        }
+    }
+});
+
+test('postinstall verifier rejects an unpatched Mineflayer even with the schematic patch present', (t) => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'mindcraft-mineflayer-unpatched-'));
+    t.after(() => rmSync(tempRoot, { recursive: true, force: true }));
+    const packageDir = join(tempRoot, 'node_modules/mineflayer');
+    mkdirSync(join(packageDir, 'lib/plugins'), { recursive: true });
+    writeFileSync(join(packageDir, 'package.json'), '{"name":"mineflayer","version":"4.39.0"}');
+    writeFileSync(join(packageDir, 'lib/plugins/digging.js'), '// unpatched\n');
+    const env = { ...process.env, NODE_PATH: join(projectRoot, 'node_modules'), CI: 'true' };
+    const result = runNode([verifier], { cwd: tempRoot, env });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stdout, /Verified mineflayer-schem/);
+    assert.match(result.stderr, /patched digging implementation does not match/);
 });
 
 test('patch verifier is directly executable', () => {
@@ -54,7 +116,7 @@ test('an unpatched package fails install verification and runtime loading before
     };
     const installCheck = runNode([verifier], { cwd: tempRoot, env });
     assert.notEqual(installCheck.status, 0);
-    assert.match(installCheck.stderr, /cancellation-safety patch verification failed/);
+    assert.match(installCheck.stderr, /Patch verification failed:.*cancellation-safety/s);
 
     const loaderUrl = pathToFileURL(join(projectRoot, 'src/utils/schematic/builder_compat.js')).href;
     const stubPath = join(packageDir, 'index.js');

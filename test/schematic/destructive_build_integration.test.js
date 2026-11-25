@@ -422,6 +422,11 @@ test("native digs require an action-correlated acknowledgement, including after 
     };
     f.dependencies.onWrite = (name, packet) => {
       if (name === "block_dig" && packet.status === 0 && update !== "pre-write") setImmediate(inbound);
+      // A zero-delay native finish may be sent before the start reply. Respond
+      // to both actions in the positive cases; negative cases remain unacknowledged.
+      if (name === "block_dig" && packet.status === 2 && ["single", "multi"].includes(update)) {
+        setImmediate(() => f.acknowledge(position, { status: 2 }));
+      }
     };
     if (update === "pre-write") f.dependencies.onAim = inbound;
     const result = directDig(f, { position });

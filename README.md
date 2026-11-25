@@ -189,14 +189,14 @@ The script is not available in an old target clone until its first update. For t
 From the repository root, after reviewing and backing up the destination state, the update/build/recreate chain for the two Compose bot services is:
 
 ```sh
-scripts/update_project.sh --apply && docker compose build bot-andy bot-alice && docker compose up -d --force-recreate bot-andy bot-alice
+scripts/update_project.sh --apply && docker compose build bots && docker compose up -d --force-recreate bots
 ```
 
 Because the commands use `&&`, a blocked or failed update stops the chain before Docker build/deployment. Verify the services and inspect fresh startup logs locally:
 
 ```sh
-docker compose ps bot-andy bot-alice
-docker compose logs --tail=100 bot-andy bot-alice
+docker compose ps bots
+docker compose logs --tail=100 bots
 ```
 
 [`scripts/update_project.sh --check`](scripts/update_project.sh) is an offline check against the locally cached upstream-tracking ref; it does not contact the remote, refresh the index, or establish whether that ref is fresh. It is not an incoming-file/deployment safety preview. `--apply` fetches only the configured branch into its tracking ref, disables opportunistic ref mappings, tag updates, pruning, submodule recursion, and automatic maintenance, and only permits a clean, non-shallow, non-sparse, non-partial named checkout to fast-forward exactly to the fetched upstream commit. It refuses local changes, untracked files, ahead/diverged history, configured checkout filters, and unsafe Git states; it does not clean, reset, stash, rebase, force-push, merge-commit, or intentionally overwrite ignored files. Git's no-overwrite-ignore protection refuses ignored-path collisions, including parent directory/file/symlink collisions tested with Git 2.53.0. A general filesystem/I/O failure or interruption can still leave partial checkout changes: failure is not proof of rollback. Inspect HEAD, index, and files before retrying; do not automatically reset/clean. This is not an atomic transaction and cannot protect against unrelated processes writing to the checkout concurrently; the advisory lock coordinates only this updater in that worktree. Inspect the script's documented limitations in [`schematics/README.md`](schematics/README.md#safe-code-updates-and-docker-redeployment).

@@ -44,10 +44,10 @@ test('script entry points provide safe help and Docker helpers preserve their co
         assert.equal(result.status, 0, result.error || result.stderr);
     }
     assert.equal(readFileSync(log, 'utf8'), [
-        'compose build bot-andy bot-alice',
-        'compose ps bot-andy bot-alice',
-        'compose logs --tail=100 bot-andy bot-alice',
-        'compose up --force-recreate bot-andy bot-alice',
+        'compose build bots',
+        'compose ps bots',
+        'compose logs --tail=100 bots',
+        'compose up --force-recreate bots',
         '',
     ].join('\n'));
 });
