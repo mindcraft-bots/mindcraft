@@ -19,7 +19,7 @@ test('pack1 documentation points to its real configuration, tests and evidence',
     'test/schematic/pack1/mechanics.test.js',
   ]) await access(path.join(root, name));
   const config = JSON.parse(await read('schematics/tooling/pack1/symmetry.json'));
-  assert.equal(config.archive, true);
+  assert.equal(config.archive, false);
   assert.deepEqual(config.targets, ['1.21.4', '26.1']);
   const index = await read('schematics/tooling/validation/pack1/README.md');
   assert.match(index, /batch_validation\.json[^\n]*historical snapshots/i);
@@ -30,26 +30,19 @@ test('pack1 documentation points to its real configuration, tests and evidence',
   assert.match(review, /historical diagnostic regression test[^\n]*wardrobe_reproducibility\.test\.js[^\n]*no longer present/i);
 });
 
-test('guide preserves the historical archive reference without claiming missing assets are present', async () => {
+test('documentation distinguishes current audits from unavailable historical originals', async () => {
   const guide = await read('schematics/README.md');
-  const targets = [...guide.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map(m => m[1])
-    .filter(target => /(?:^|\/)pack1(?:_originals)?(?:\/|#|$)/i.test(target));
-  assert(targets.some(target => target.includes('pack1_originals/README.md')));
-  assert(targets.some(target => target.includes('schems/pack1/index.json')));
-  const archiveTarget = targets.find(target => target.includes('pack1_originals/README.md'));
-  const archivePath = path.resolve(root, 'schematics', archiveTarget.replace(/:\d+(?:-\d+)?$/, '').split('#', 1)[0]);
-  let archiveAvailable = true;
-  try {
-    await access(archivePath);
-  } catch {
-    archiveAvailable = false;
-    assert.match(guide, /referenced `schematic-archive\/pack1_originals\/` directory is absent from this checkout/i);
-  }
-  for (const target of targets) {
-    const local = target.replace(/:\d+(?:-\d+)?$/, '').split('#', 1)[0];
-    if (!archiveAvailable && local.includes('pack1_originals/')) continue;
-    await access(path.resolve(root, 'schematics', local));
-  }
+  const index = await read('schematics/tooling/validation/pack1/README.md');
+  const symmetry = await read('schematics/tooling/validation/pack1/symmetry_audit.md');
+  const tooling = await read('schematics/tooling/SYMMETRY.md');
+  const rootReadme = await read('README.md');
+  assert.match(guide, /original bytes and their old encoding are unavailable/i);
+  assert.match(guide, /60 current variant streams/i);
+  assert.match(index, /immutable historical snapshots/i);
+  assert.match(index, /not expected to equal a fresh audit/i);
+  assert.match(symmetry, /not freshly reproduced/i);
+  assert.match(tooling, /optional archive support remains/i);
+  assert.match(rootReadme, /frozen symmetry and batch reports are historical snapshots/i);
 });
 
 test('command documentation retains the real pack1 selector examples', () => {

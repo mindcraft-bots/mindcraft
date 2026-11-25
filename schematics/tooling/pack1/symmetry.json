@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "targets": ["1.21.4", "26.1"],
-  "archive": true,
+  "archive": false,
   "builds": {
     "03_big_red_barn": {
       "planes": [

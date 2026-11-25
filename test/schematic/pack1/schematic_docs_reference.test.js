@@ -1,20 +1,16 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const loaderPath = fileURLToPath(new URL("../commands-loader.js", import.meta.url));
 
-async function read(relativePath) {
+function read(relativePath) {
   return readFile(path.join(root, relativePath), "utf8");
-}
-
-async function readBytes(relativePath) {
-  return readFile(path.join(root, relativePath));
 }
 
 function runDocumentedSelectorChecks() {
@@ -68,7 +64,7 @@ function runDocumentedSelectorChecks() {
   ], { cwd: root, encoding: "utf8" });
 }
 
-test("documented human and script selectors resolve through the real parsers", async () => {
+test("documented human and script selectors resolve through the real parsers", () => {
   const result = runDocumentedSelectorChecks();
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const data = JSON.parse(result.stdout.trim().split("\n").at(-1));
@@ -107,7 +103,7 @@ test("documented human and script selectors resolve through the real parsers", a
   assert.ok(data.resolved.every((resolved) => resolved.endsWith(".mc1.21.4.schem")));
 });
 
-test("pack1 generated audit agrees with historical structured mappings", async () => {
+test("pack1 historical batch snapshot agrees with preserved structured mappings", async () => {
   const manifest = JSON.parse(await read("schematics/schems/pack1/index.json"));
   assert.equal(manifest.schemaVersion, 2);
   const mappings = Object.entries(manifest.groups).flatMap(([group, ids]) =>
@@ -126,17 +122,17 @@ test("pack1 generated audit agrees with historical structured mappings", async (
   const validation = JSON.parse(await read("schematics/tooling/validation/pack1/batch_validation.json"));
   assert.equal(validation.schema_version, 2);
   assert.equal(validation.pack_index_schema_version, 2);
-  assert.equal(validation.builds.length, 30, "the regenerated machine report must cover all thirty assets");
+  assert.equal(validation.builds.length, 30, "the historical machine snapshot must cover all thirty records");
   assert.deepEqual(validation.builds.map(({ group, id, schematic }) => ({ group, id, filename: path.basename(schematic.path) }))
     .sort((left, right) => left.group - right.group || left.id - right.id),
   [...mappings].sort((left, right) => left.group - right.group || left.id - right.id));
+  const historical = JSON.parse(await read("schematics/tooling/historical_artifacts.v1.json")).artifacts;
   for (const { group, id, filename } of mappings) {
     const build = validation.builds.find((candidate) => candidate.group === group && candidate.id === id);
     assert.ok(build, `missing generated build record for ${group}:${id}`);
     assert.equal(path.basename(build.schematic.path), filename, `manifest target changed for ${group}:${id}`);
-    const archivedPath = build.schematic.path.replace("schematics/schems/pack1/", "schematic-archive/pack1_originals/");
-    const actualSha256 = createHash("sha256").update(await readBytes(archivedPath)).digest("hex");
-    assert.equal(actualSha256, build.schematic.sha256, `schematic asset hash changed for ${filename}`);
+    assert.equal(build.schematic.path, `schematics/schems/pack1/${filename}`);
+    assert.equal(build.schematic.sha256, historical[build.schematic.path], `historical records disagree for ${filename}`);
   }
 
   const historicalAudit = JSON.parse(await read("schematics/tooling/validation/pack1/integration_other_pack_audit.json"));

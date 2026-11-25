@@ -20,6 +20,8 @@ Defaults measure whole-volume X and Z midplanes and, for square footprints, both
 
 The model, dependency lock, configuration, manifest, sources, recognized photos, metadata and binaries are hashed. Exact authenticated source and target release profiles supply DataVersions, and every voxel is checked against the source or reviewed history conversion. Unsupported releases, unsupported transformations and unreviewed conversions are marked unsupported rather than matched; full NBT semantics, entities, physics and visual intent are not checked. Symlink components and unsafe labels are rejected, but path checks are not a sandbox against concurrent filesystem changes: use a trusted, stable workspace. See the [pack 1 audit](validation/pack1/symmetry_audit.md) for its explicitly configured historical choices.
 
+Pack1 sets `archive: false`: its reproducible audit checks current versioned binaries only. Frozen pack1 symmetry and batch reports are historical snapshots, not fresh-output baselines. Old original bytes and encoding are unavailable for verification; optional archive support remains available for independently supplied packs.
+
 ## Single-blueprint diagnosis
 
 Run from the repository root with the installed `minecraft-data` dependency. Inputs are explicit blueprint paths, not manifest IDs. A schema-version-2 pack manifest maps a group and separate ID to a schematic family. A group number does not imply a single build or any symmetry. These pack1 examples select explicit planes, not requirements for other builds:

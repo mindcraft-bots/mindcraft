@@ -62,31 +62,41 @@ test('approved bee repair replays the pinned historical source and matches both 
   }
 });
 
-test('unrelated historical pack sources and binaries retain their frozen pre-repair hashes', () => {
+test('current unrelated files match frozen hashes and retired original records agree', () => {
   const raw = read('test/schematic/pack1/fixtures/pre-bee-repair-inventory.json');
   assert.equal(sha(raw), '631f8927619ad6cab62c78401889d745a72ecaa3b7a32a0ea3314a79eaec6097');
   const files = JSON.parse(raw).files, names = Object.keys(files);
-  assert.equal(names.filter(n => n.startsWith('schematics/blueprints/')).length, 29);
-  assert.equal(names.filter(n => n.endsWith('.schem')).length, 88);
-  for (const name of names) assert.equal(sha(read(name)), files[name], name);
+  const blueprints = names.filter(n => n.startsWith('schematics/blueprints/pack1/') && n.endsWith('.json'));
+  const variants = names.filter(n => /^schematics\/schems\/pack1\/[^/]+\.mc(?:1\.21\.4|26\.1)\.schem$/.test(n));
+  const retired = names.filter(n => /^schematic-archive\/pack1_originals\/[^/]+\.schem$/.test(n));
+  assert.deepEqual([blueprints.length, variants.length, retired.length, names.length], [29, 58, 30, 117]);
+  for (const name of [...blueprints, ...variants]) assert.equal(sha(read(name)), files[name], name);
+  const historical = json('schematics/tooling/historical_artifacts.v1.json').artifacts;
+  for (const name of retired) {
+    const oldPath = name.replace('schematic-archive/pack1_originals/', 'schematics/schems/pack1/');
+    assert.equal(files[name], historical[oldPath], `historical records disagree: ${oldPath}`);
+  }
 });
 
 test('the real approval test rejects a tampered plan in a Git-free source copy', t => {
   if (process.env.BEE_APPROVAL_COPY === '1') {
     assert.equal(existsSync(path.join(fileURLToPath(root), '.git')), false);
+    assert.equal(existsSync(path.join(fileURLToPath(root), 'schematic-archive')), false);
+    assert.equal(existsSync(path.join(fileURLToPath(root), 'tmp/history')), false);
     return; // Child verifies the copy instead of recursively copying itself.
   }
   const dir = mkdtempSync(path.join(os.tmpdir(), 'bee-approval-copy-'));
   t.after(() => rmSync(dir, { recursive:true, force:true }));
   const project = fileURLToPath(root);
   cpSync(path.join(project, 'schematics'), path.join(dir, 'schematics'), { recursive:true });
-  cpSync(path.join(project, 'schematic-archive'), path.join(dir, 'schematic-archive'), { recursive:true });
   mkdirSync(path.join(dir, 'test/schematic/pack1'), { recursive:true });
   cpSync(path.join(project, 'test/schematic/pack1/bee_repair_history.test.js'), path.join(dir, 'test/schematic/pack1/bee_repair_history.test.js'));
   cpSync(path.join(project, 'test/schematic/pack1/fixtures'), path.join(dir, 'test/schematic/pack1/fixtures'), { recursive:true });
   cpSync(path.join(project, 'package.json'), path.join(dir, 'package.json'));
   symlinkSync(path.join(project, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
   assert.equal(existsSync(path.join(dir, '.git')), false);
+  assert.equal(existsSync(path.join(dir, 'schematic-archive')), false);
+  assert.equal(existsSync(path.join(dir, 'tmp/history')), false);
   const env = { ...process.env, BEE_APPROVAL_COPY:'1' };
   delete env.NODE_TEST_CONTEXT;
   const run = () => spawnSync(process.execPath, ['--test', 'test/schematic/pack1/bee_repair_history.test.js'], { cwd:dir, env, encoding:'utf8' });
