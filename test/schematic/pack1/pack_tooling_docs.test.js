@@ -63,6 +63,6 @@ test('command documentation retains the real pack1 selector examples', () => {
   assert.match(result.docs, /Andy build file id 01 from group 02 of pack1/i);
   assert.match(result.docs, /pack1:02:01/);
   assert.match(result.docs, /schema pack1\/02_bee_hot_air_balloon/i);
-  assert.deepEqual(result.indexed.args, ['pack1:02:01', null, null, null, null, null, null]);
-  assert.deepEqual(result.named.args, ['pack1:02_bee_hot_air_balloon', null, null, null, null, null, null]);
+  assert.deepEqual(result.indexed.args, ['pack1:02:01', ...Array(11).fill(null)]);
+  assert.deepEqual(result.named.args, ['pack1:02_bee_hot_air_balloon', ...Array(11).fill(null)]);
 });

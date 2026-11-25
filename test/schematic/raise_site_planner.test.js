@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import test from "node:test";
 import { performance } from "node:perf_hooks";
-import { planSafeSchematicSite, revalidateSafeSchematicSite, revalidateSafeSchematicSiteAtDispatch } from "../../src/utils/schematic/safe_site_planner.js";
+import { planRaiseSchematicSite, revalidateRaiseSchematicSite, revalidateRaiseSchematicSiteAtDispatch } from "../../src/utils/schematic/raise_site_planner.js";
 
 class Vec3 { constructor(x, y, z) { Object.assign(this, { x, y, z }); } }
 const key = p => `${p.x},${p.y},${p.z}`;
@@ -28,7 +28,7 @@ function fixture({ width = 2, height = 2, length = 1 } = {}) {
   });
   return { bot, build: { cells, dimensions: { width, height, length } }, options: { origin: { x: 0, y: 10, z: 0 }, worldBounds: { minY: -64, maxY: 319 }, Vec3Class: Vec3 }, values, reads, actions, ids };
 }
-const plan = f => planSafeSchematicSite(f.bot, f.build, f.options);
+const plan = f => planRaiseSchematicSite(f.bot, f.build, f.options);
 const refuse = (promise, code = "SCHEMATIC_SITE_UNSAFE") => assert.rejects(promise, { code });
 
 test("selects the lowest elevated fixed-X/Z site and freezes the complete transformed volume and bottom-up dirt", async () => {
@@ -49,7 +49,7 @@ test("retains the requested Y when a flat site is already suitable", async () =>
   const f = fixture(); const result = await plan(f);
   assert.deepEqual(result.origin, f.options.origin);
   assert.deepEqual(result.dirt, []);
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result), true);
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result), true);
   assert.deepEqual(f.actions, []);
 });
 
@@ -60,11 +60,11 @@ test("already-correct occupied targets are retained and excluded from the edit p
   const result = await plan(f);
   assert.deepEqual(result.origin, f.options.origin);
   assert.deepEqual(result.dirt, []);
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result), true);
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result), true);
   f.values.set("1,10,0", block("stone"));
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result, { completedVolume: 1 }), true);
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result, { completedVolume: 1 }), true);
   f.values.set("0,10,0", block("air"));
-  await refuse(revalidateSafeSchematicSite(f.bot, result, { completedVolume: 1 }));
+  await refuse(revalidateRaiseSchematicSite(f.bot, result, { completedVolume: 1 }));
   assert.deepEqual(f.actions, []);
 });
 
@@ -74,8 +74,8 @@ test("an already-correct passive non-terrain target is preserved, not mistaken f
   f.values.set("0,10,0", block("oak_planks"));
   const result = await plan(f);
   assert.equal(result.origin.y, 10);
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result), true);
-  await refuse(revalidateSafeSchematicSite(f.bot, result, { completedVolume: 1 }));
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result), true);
+  await refuse(revalidateRaiseSchematicSite(f.bot, result, { completedVolume: 1 }));
   assert.deepEqual(f.actions, []);
 });
 
@@ -193,13 +193,13 @@ test("takes a transformed-plan and requested-origin snapshot before asynchronous
 test("revalidates exact ordered dirt and volume prefixes without performing writes", async () => {
   const f = fixture(); f.values.set("0,10,0", block("dirt"));
   const result = await plan(f); assert.deepEqual(result.dirt, [{ x: 1, y: 10, z: 0 }]);
-  await refuse(revalidateSafeSchematicSite(f.bot, result, { completedVolume: 1 }));
-  await refuse(revalidateSafeSchematicSite(f.bot, result, { completedDirt: 1 }));
+  await refuse(revalidateRaiseSchematicSite(f.bot, result, { completedVolume: 1 }));
+  await refuse(revalidateRaiseSchematicSite(f.bot, result, { completedDirt: 1 }));
   f.values.set("1,10,0", block("dirt"));
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result, { completedDirt: 1 }), true);
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result, { completedDirt: 1 }), true);
   f.values.set(key(result.volume[0].position), block("stone"));
-  assert.equal(await revalidateSafeSchematicSite(f.bot, result, { completedDirt: 1, completedVolume: 1 }), true);
-  await refuse(revalidateSafeSchematicSite(f.bot, result, { completedDirt: 1 }));
+  assert.equal(await revalidateRaiseSchematicSite(f.bot, result, { completedDirt: 1, completedVolume: 1 }), true);
+  await refuse(revalidateRaiseSchematicSite(f.bot, result, { completedDirt: 1 }));
   assert.deepEqual(f.actions, []);
 });
 
@@ -207,7 +207,7 @@ test("dispatch revalidation synchronously enforces the same exact edit prefixes 
   const f = fixture();
   f.values.set("0,10,0", block("dirt"));
   const result = await plan(f);
-  const check = options => revalidateSafeSchematicSiteAtDispatch(f.bot, result, options);
+  const check = options => revalidateRaiseSchematicSiteAtDispatch(f.bot, result, options);
   assert.equal(check(), true);
   assert.throws(() => check({ completedDirt: 1 }), { code: "SCHEMATIC_SITE_UNSAFE" });
   f.values.set("1,10,0", block("dirt"));
@@ -231,8 +231,8 @@ test("revalidation rejects changed ground, air, halo, shape, entity, dimension a
     f => f.values.set("0,9,0", block("stone", { shapes: [] })),
     f => { f.bot.entities.other = { position: { x: 0, y: 10, z: 0 }, width: 1, height: 2 }; },
   ]) {
-    const f = fixture(); const result = await plan(f); mutate(f); await refuse(revalidateSafeSchematicSite(f.bot, result));
+    const f = fixture(); const result = await plan(f); mutate(f); await refuse(revalidateRaiseSchematicSite(f.bot, result));
   }
-  const f = fixture(); const result = await plan(f); await refuse(revalidateSafeSchematicSite(f.bot, { ...result }));
-  f.bot.game.dimension = "nether"; await refuse(revalidateSafeSchematicSite(f.bot, result), "SCHEMATIC_CLEAR_CANCELLED");
+  const f = fixture(); const result = await plan(f); await refuse(revalidateRaiseSchematicSite(f.bot, { ...result }));
+  f.bot.game.dimension = "nether"; await refuse(revalidateRaiseSchematicSite(f.bot, result), "SCHEMATIC_CLEAR_CANCELLED");
 });

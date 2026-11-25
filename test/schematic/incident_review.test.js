@@ -115,7 +115,7 @@ test('mode suffixes reach the build boundary without inference', () => check(`
         });
         assert.equal(result, false);
     };
-    for (const mode of ['balanced', 'safe', 'destructive']) {
+    for (const mode of ['delicate', 'balanced', 'raise', 'destructive']) {
         for (const connector of ['using', 'via']) {
             for (const options of mode === 'balanced' ? ['', ' radius=6 threshold=12'] : ['']) {
                 const text = 'Andy build id 01 from group 02 of pack2 ' + connector + ' ' + mode + ' mode' + options;
@@ -132,14 +132,89 @@ test('mode suffixes reach the build boundary without inference', () => check(`
             }
         }
     }
-    assert.equal(calls.builds, 6);
+    assert.equal(calls.builds, 8);
     assert.equal(calls.prompts, 0);
-    assert.equal(calls.lifecycle.length, 6);
+    assert.equal(calls.lifecycle.length, 8);
     for (const text of [
-        'Andy build id 01 from group 02 of pack2 !stop using safe mode',
-        'Andy build id 01 from group 02 of pack2 using safe mode !stop',
-        'Andy build id 01 from group 02 of pack2 using safe mode extra',
+        'Andy build id 01 from group 02 of pack2 !stop using raise mode',
+        'Andy build id 01 from group 02 of pack2 using raise mode !stop',
+        'Andy build id 01 from group 02 of pack2 using raise mode extra',
     ]) assert.ok(router.parseAddressedSchematicRequest(text, 'Andy')?.error, text);
+`));
+
+test('orientation clauses reach the real handler once, and ambiguous tails fail closed', () => check(`
+    const base = 'Andy build id 1 from group 2 of pack2';
+    for (const suffix of ['facing south', 'oriented south', 'rotated south', 'rotated to south',
+        'rotated to face south', 'rotated towards south', 'and rotate it south', 'then rotate to face south',
+        'rotating south', 'rotate south', 'oriented to face south', 'FACING S', 'RoTaTeD To FaCe SoUtH']) {
+        const message = base + ' ' + suffix;
+        const before = calls.builds;
+        assert.ok(!router.parseAddressedSchematicRequest(message, 'Andy').error, message);
+        await agent.handleMessage('Sunny26639', message);
+        assert.equal(calls.builds, before + 1, message);
+        assert.equal(globalThis.__buildSchematicArgs[5].orientation, 'south', message);
+        assert.ok(Object.isFrozen(globalThis.__buildSchematicArgs[5]));
+    }
+    for (const [direction, canonical] of [['N', 'north'], ['e', 'east'], ['W', 'west']]) {
+        await agent.handleMessage('Sunny26639', base + ' facing ' + direction);
+        assert.equal(globalThis.__buildSchematicArgs[5].orientation, canonical);
+    }
+    for (const suffix of ['facing east using balanced mode radius=6 threshold=12',
+        'via balanced mode threshold=12 radius=6 then rotate to face east']) {
+        await agent.handleMessage('Sunny26639', base + ' ' + suffix);
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius: 6, threshold: 12, orientation: 'east', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });
+    }
+    const before = calls.builds, prompts = calls.prompts;
+    for (const suffix of ['facing south facing south', 'facing south rotated north', 'facing south east',
+        'rotated', 'rotated to', 'rotate it', 'facing northeast', 'facing 90', 'facing south extra',
+        'facing south; !stop()', 'facing south !stop()', 'facing south\\nusing raise mode',
+        'facing south using unknown mode', 'using raise mode facing south using balanced mode',
+        'facing south via balanced mode radius=1.5', 'facing south via balanced mode radius=999']) {
+        const message = base + ' ' + suffix;
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        await agent.handleMessage('Sunny26639', message);
+    }
+    assert.equal(calls.builds, before); assert.equal(calls.prompts, prompts);
+    for (const message of ['Andy build facing south id 1 from group 2 of pack2',
+        'Andy build rotated north id 1 from group 2 of pack2 facing south']) {
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        await agent.handleMessage('Sunny26639', message);
+    }
+    assert.equal(calls.builds, before); assert.equal(calls.prompts, prompts);
+    for (const text of ['Andy build "facing south" id 1 from group 2 of pack2',
+        'Andy build file name facing_south.schem of pack2']) {
+        const parsed = router.parseAddressedSchematicRequest(text, 'Andy');
+        assert.ok(!parsed.error, text); assert.equal(parsed.placementOverrides, undefined);
+    }
+    assert.equal(router.parseAddressedSchematicRequest('Andy what is facing south?', 'Andy'), null);
+    await agent.handleMessage('Sunny26639', 'Alice build id 1 from group 2 of pack2 facing south');
+    await agent.handleMessage('Mallory', base + ' facing south');
+    agent.blocked_actions = ['!buildSchematic'];
+    await agent.handleMessage('Sunny26639', base + ' facing south');
+    assert.equal(calls.builds, before); assert.equal(calls.prompts, prompts);
+`));
+
+test('direct direction is strict and resolved with the complete settings', () => check(`
+    const prefix = '!buildSchematic("pack2:2:1", null, null, null, null, null, null, ';
+    const literal = commands.parseCommandMessage('!buildSchematic("facing south.schem")');
+    assert.equal(literal.args[0], 'facing south.schem');
+    assert.equal(literal.args[7], null);
+    for (const [input, expected] of [['"E"', 'east'], ['"SoUtH"', 'south'], ['null', 'north']]) {
+        const command = prefix + input + ')';
+        assert.equal(typeof commands.parseCommandMessage(command), 'object');
+        await agent.handleMessage('Sunny26639', command);
+        assert.equal(globalThis.__buildSchematicArgs[5].orientation, expected);
+    }
+    const before = calls.builds, prompts = calls.prompts;
+    for (const input of ['"northeast"', '"90"', '90', 'true', '"east west"', '"east" trailing', '"east", "west"']) {
+        const command = prefix + input + ')';
+        assert.equal(typeof commands.parseCommandMessage(command), 'string', command);
+        await agent.handleMessage('Sunny26639', command);
+    }
+    await agent.handleMessage('Sunny26639', '!buildSchematic("pack2:2:1", 1, null, 3, null, null, null, "east")');
+    (await import(${url('src/agent/settings.js')})).default.schematic_balanced_radius = -1;
+    await agent.handleMessage('Sunny26639', prefix + '"east")');
+    assert.equal(calls.builds, before); assert.equal(calls.prompts, prompts);
 `));
 
 test('mode parsing, overrides, trusted routing and malformed requests fail closed', () => check(`
@@ -147,7 +222,7 @@ test('mode parsing, overrides, trusted routing and malformed requests fail close
     settings.schematic_balanced_radius = 3;
     settings.schematic_balanced_threshold = 15;
     syncSettings();
-    for (const connector of ['USING', 'ViA']) for (const mode of ['SAFE', 'DESTRUCTIVE', 'BALANCED']) {
+    for (const connector of ['USING', 'ViA']) for (const mode of ['DELICATE', 'RAISE', 'DESTRUCTIVE', 'BALANCED']) {
         const text = 'Andy build file pack2/09_garden ' + connector + ' ' + mode + ' MoDe';
         assert.equal(router.parseAddressedSchematicRequest(text, 'Andy').placementOverrides.mode, mode.toLowerCase());
         await agent.handleMessage('Sunny26639', text);
@@ -155,30 +230,34 @@ test('mode parsing, overrides, trusted routing and malformed requests fail close
             assert.match(calls.routes.at(-1), /explicitly listed human sender/);
             continue;
         }
-        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: mode.toLowerCase(), radius: 3, threshold: 15 });
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: mode.toLowerCase(), radius: 3, threshold: 15, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });
     }
     for (const [suffix, radius, threshold] of [['radius=0', 0, 15], ['threshold=4097', 3, 4097], ['threshold=12 radius=16', 16, 12]]) {
         await agent.handleMessage('Sunny26639', 'Andy build id 1 from group 2 of pack2 using balanced mode ' + suffix);
-        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius, threshold });
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius, threshold, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });
     }
     const builds = calls.builds, prompts = calls.prompts;
+    const unknownMode = 'Andy build id 1 from group 2 of pack2 using unknown mode';
+    assert.match(router.parseAddressedSchematicRequest(unknownMode, 'Andy').error, /placement mode|valid schematic selector/i);
+    await agent.handleMessage('Sunny26639', unknownMode);
+    assert.equal(calls.builds, builds);
     for (const suffix of ['using balanced mode radius=17', 'via balanced mode radius=-1', 'using balanced mode threshold=0',
         'using balanced mode threshold=4098', 'using balanced mode radius=1.5', 'using balanced mode radius=2 radius=3',
-        'using balanced mode threshold=2 threshold=3', 'using safe mode radius=2', 'via destructive mode threshold=2',
+        'using balanced mode threshold=2 threshold=3', 'using raise mode radius=2', 'via destructive mode threshold=2',
         'using magic mode', 'using balanced mode radius=', 'using balanced mode extra',
-        'using safe mode via balanced mode', 'using balanced mode; !stop()', 'via balanced mode radius=6 !stop()',
+        'using raise mode via balanced mode', 'using balanced mode; !stop()', 'via balanced mode radius=6 !stop()',
         'using balanced mode\\n radius=6', 'using\\tbalanced mode']) {
         const message = 'Andy build id 1 from group 2 of pack2 ' + suffix;
         assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
         await agent.handleMessage('Sunny26639', message);
     }
-    assert.ok(router.parseAddressedSchematicRequest('Andy build using safe mode id 1 from group 2 of pack2 via balanced mode', 'Andy').error);
-    for (const text of ['Andy build a house using balanced', 'Andy build a house via safe mod', 'Andy build a house using mystery mode']) {
+    assert.ok(router.parseAddressedSchematicRequest('Andy build using raise mode id 1 from group 2 of pack2 via balanced mode', 'Andy').error);
+    for (const text of ['Andy build a house using balanced', 'Andy build a house via raise mod', 'Andy build a house using mystery mode']) {
         assert.ok(router.parseAddressedSchematicRequest(text, 'Andy')?.error, text);
         await agent.handleMessage('Sunny26639', text);
     }
-    await agent.handleMessage('OtherPlayer', 'Andy build id 1 from group 2 of pack2 using safe mode');
-    await agent.handleMessage('Sunny26639', 'Alice build id 1 from group 2 of pack2 using safe mode');
+    await agent.handleMessage('OtherPlayer', 'Andy build id 1 from group 2 of pack2 using raise mode');
+    await agent.handleMessage('Sunny26639', 'Alice build id 1 from group 2 of pack2 using raise mode');
     assert.equal(calls.builds, builds);
     assert.equal(calls.prompts, prompts);
 `));
@@ -198,10 +277,11 @@ test('direct mode commands validate entire input and carry effective options', (
     settings.schematic_balanced_threshold = 10;
     syncSettings();
     for (const [command, expected] of [
-        ['!buildSchematic("pack2:2:1")', { mode: 'balanced', radius: 5, threshold: 10 }],
-        ['!buildSchematic("pack2:2:1", 1, 2, 3, "SAFE")', { mode: 'safe', radius: 5, threshold: 10 }],
-        ['!buildSchematic("pack2:2:1", null, null, null, "balanced", 6, 12)', { mode: 'balanced', radius: 6, threshold: 12 }],
-        ['!buildSchematic("pack2:2:1", null, null, null, null, null, 1)', { mode: 'balanced', radius: 5, threshold: 1 }],
+        ['!buildSchematic("pack2:2:1")', { mode: 'balanced', radius: 5, threshold: 10, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }],
+        ['!buildSchematic("pack2:2:1", null, null, null, "delicate")', { mode: 'delicate', radius: 5, threshold: 10, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }],
+        ['!buildSchematic("pack2:2:1", 1, 2, 3, "RAISE")', { mode: 'raise', radius: 5, threshold: 10, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }],
+        ['!buildSchematic("pack2:2:1", null, null, null, "balanced", 6, 12)', { mode: 'balanced', radius: 6, threshold: 12, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }],
+        ['!buildSchematic("pack2:2:1", null, null, null, null, null, 1)', { mode: 'balanced', radius: 5, threshold: 1, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }],
     ]) {
         await agent.handleMessage('Sunny26639', command);
         assert.deepEqual(globalThis.__buildSchematicArgs[5], expected);
@@ -209,17 +289,21 @@ test('direct mode commands validate entire input and carry effective options', (
         assert.match(failures.at(-1), /Could not read schematic.*must not resolve/);
     }
     const builds = calls.builds, prompts = calls.prompts;
+    const unknownMode = '!buildSchematic("pack2:2:1", null, null, null, "unknown")';
+    await agent.handleMessage('Sunny26639', unknownMode);
+    assert.match(calls.routes.at(-1), /must be quoted delicate, raise, balanced, or destructive/i);
+    assert.equal(calls.builds, builds);
     for (const command of [
-        '!buildSchematic("pack2:2:1", 1, null, 3, "safe")',
-        '!buildSchematic("pack2:2:1", null, null, null, "safe", 2)',
+        '!buildSchematic("pack2:2:1", 1, null, 3, "raise")',
+        '!buildSchematic("pack2:2:1", null, null, null, "raise", 2)',
         '!buildSchematic("pack2:2:1", null, null, null, "balanced", 17)',
         '!buildSchematic("pack2:2:1", null, null, null, "balanced", 1.2)',
         '!buildSchematic("pack2:2:1", null, null, null, "balanced", "6")',
         '!buildSchematic("pack2:2:1", null, null, null, "null")',
         '!buildSchematic("pack2:2:1", null, null, null, "unknown")',
         '!buildSchematic("pack2:2:1", null, null, null, "balanced", 6, 12, 7)',
-        '!buildSchematic("pack2:2:1", null, null, null, "safe") trailing',
-        '!buildSchematic("pack2:2:1", null, null, null, "safe"; !stop())',
+        '!buildSchematic("pack2:2:1", null, null, null, "raise") trailing',
+        '!buildSchematic("pack2:2:1", null, null, null, "raise"; !stop())',
     ]) {
         await agent.handleMessage('Sunny26639', command);
         assert.equal(calls.builds, builds, command);
@@ -227,8 +311,75 @@ test('direct mode commands validate entire input and carry effective options', (
     assert.equal(calls.prompts, prompts);
 `));
 
+test('balanced search overrides reach both command routes and malformed suffixes fail closed', () => check(`
+    settings.schematic_placement_mode = 'balanced';
+    settings.schematic_balanced_strategy = 'all';
+    settings.schematic_balanced_step = 5;
+    settings.schematic_balanced_policy = 'exhaustive';
+    settings.schematic_balanced_bisect_depth = 1;
+    syncSettings();
+    const base = 'Andy build id 1 from group 2 of pack2';
+    for (const suffix of [
+        'FACING EAST USING BALANCED MODE POLICY=first_valid BISECT_DEPTH=0 STEP=16 STRATEGY=bisect',
+        'via balanced mode strategy=bisect step=16 bisect_depth=0 policy=first_valid facing east',
+    ]) {
+        await agent.handleMessage('Sunny26639', base + ' ' + suffix);
+        assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius: 4, threshold: 9, orientation: 'east', strategy: 'bisect', step: 16, policy: 'first_valid', bisectDepth: 0 });
+        assert.ok(Object.isFrozen(globalThis.__buildSchematicArgs[5]));
+    }
+    const direct = '!buildSchematic("pack2:2:1", null, null, null, "BALANCED", null, null, "W", "all", 1, "exhaustive", 3)';
+    await commands.executeCommand(agent, direct);
+    assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius: 4, threshold: 9, orientation: 'west', strategy: 'all', step: 1, policy: 'exhaustive', bisectDepth: 3 });
+    await agent.handleMessage('Sunny26639', direct);
+    assert.equal(globalThis.__buildSchematicArgs[5].bisectDepth, 3);
+    await agent.handleMessage('Sunny26639', base + ' using balanced mode step=2');
+    assert.deepEqual(globalThis.__buildSchematicArgs[5], { mode: 'balanced', radius: 4, threshold: 9, orientation: 'north', strategy: 'all', step: 2, policy: 'exhaustive', bisectDepth: 1 });
+    for (const strategy of ['all', 'stepped', 'bisect']) for (const policy of ['first_valid', 'exhaustive']) {
+        const message = base + ' USING BALANCED MODE STRATEGY=' + strategy + ' POLICY=' + policy;
+        await agent.handleMessage('Sunny26639', message);
+        assert.equal(globalThis.__buildSchematicArgs[5].strategy, strategy, message);
+        assert.equal(globalThis.__buildSchematicArgs[5].policy, policy, message);
+        const command = '!buildSchematic("pack2:2:1", null, null, null, "BALANCED", null, null, "E", "' + strategy + '", null, "' + policy + '")';
+        await agent.handleMessage('Sunny26639', command);
+        assert.equal(globalThis.__buildSchematicArgs[5].strategy, strategy, command);
+        assert.equal(globalThis.__buildSchematicArgs[5].policy, policy, command);
+    }
+    const before = calls.builds, prompts = calls.prompts;
+    for (const suffix of ['using balanced mode strategy=none', 'using balanced mode strategy=',
+        'using balanced mode strategy=ALL', 'using balanced mode strategy=STEPPED', 'using balanced mode STRATEGY=BiSeCt facing EAST',
+        'FACING EAST VIA BALANCED MODE POLICY=FIRST_VALID', 'using balanced mode policy=Exhaustive',
+        'using balanced mode strategy=all strategy=bisect', 'using balanced mode step=0',
+        'using balanced mode step=17', 'using balanced mode step=1.5', 'using balanced mode bisect_depth=-1',
+        'using balanced mode bisect_depth=4', 'using balanced mode policy=unknown',
+        'using balanced mode policy=first_valid policy=exhaustive', 'using raise mode strategy=all',
+        'using balanced mode strategy=all; !stop()', 'using balanced mode strategy=all extra']) {
+        const message = base + ' ' + suffix;
+        assert.ok(router.parseAddressedSchematicRequest(message, 'Andy')?.error, message);
+        await agent.handleMessage('Sunny26639', message);
+    }
+    for (const command of [
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, "ALL")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, "BiSeCt")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, null, null, "FIRST_VALID")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, null, null, "Exhaustive")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, "unknown")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, "all", 0)',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, null, null, "bad")',
+        '!buildSchematic("pack2:2:1", null, null, null, "balanced", null, null, null, null, null, null, 4)',
+        '!buildSchematic("pack2:2:1", null, null, null, "raise", null, null, null, "all")',
+    ]) {
+        await agent.handleMessage('Sunny26639', command);
+        assert.match(await commands.executeCommand(agent, command), /error/i);
+    }
+    assert.equal(calls.builds, before); assert.equal(calls.prompts, prompts);
+`));
+
 test('managed resume retains the original resolved options when settings change', () => check(`
     settings.schematic_balanced_radius = 6;
+    settings.schematic_balanced_strategy = 'bisect';
+    settings.schematic_balanced_step = 4;
+    settings.schematic_balanced_policy = 'exhaustive';
+    settings.schematic_balanced_bisect_depth = 3;
     syncSettings();
     const seen = [];
     let resume, session;
@@ -246,12 +397,22 @@ test('managed resume retains the original resolved options when settings change'
     // The loader does not implement session tracking, so retain the managed context here.
     // Capture the context through the stubbed session bridge.
     globalThis.__setSchematicSession = value => { session = value; };
-    await commands.executeCommand(agent, '!buildSchematic("pack2:2:1")');
-    settings.schematic_balanced_radius = 12; syncSettings();
+    await commands.executeCommand(agent, '!buildSchematic("pack2:2:1", null, null, null, null, null, null, "E")');
+    settings.schematic_balanced_radius = 12;
+    settings.schematic_balanced_strategy = 'all';
+    settings.schematic_balanced_step = 1;
+    settings.schematic_balanced_policy = 'first_valid';
+    settings.schematic_balanced_bisect_depth = 0;
+    syncSettings();
     await resume();
     assert.equal(seen.length, 2);
     assert.equal(seen[0], seen[1]);
     assert.equal(seen[1].radius, 6);
+    assert.equal(seen[1].orientation, 'east');
+    assert.equal(seen[1].strategy, 'bisect');
+    assert.equal(seen[1].step, 4);
+    assert.equal(seen[1].policy, 'exhaustive');
+    assert.equal(seen[1].bisectDepth, 3);
     assert.ok(Object.isFrozen(seen[1]));
 `));
 
@@ -429,7 +590,7 @@ test('all five incident requests parse and equivalent synthetic requests dispatc
         await agent.handleMessage('Sunny26639', synthetic);
         assert.equal(calls.builds, before + 1, synthetic);
         assert.equal(globalThis.__buildSchematicArgs[1], 'pack2:2:1', synthetic);
-        assert.deepEqual(globalThis.__buildSchematicArgs.slice(2), [null, null, null, { mode: null, radius: 4, threshold: 9 }], synthetic);
+        assert.deepEqual(globalThis.__buildSchematicArgs.slice(2), [null, null, null, { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }], synthetic);
         assert.deepEqual(calls.lifecycle.at(-1), [false, true], synthetic);
         if (index === 0) assert.match(calls.routes.slice(routesBefore).join(' '), /does not remove or replace.*normal nearby placement/i);
     }

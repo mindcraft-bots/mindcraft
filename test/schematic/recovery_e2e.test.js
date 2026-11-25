@@ -3,17 +3,21 @@ import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
 import { access, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 import test, { after } from "node:test";
 import { gzipSync } from "node:zlib";
 
 import { SCHEMATICS_DIR } from "../../src/utils/schematic/paths.js";
 import agentSettings from "../../src/agent/settings.js";
 import { writeFixtureProvenance } from "./provenance_fixture.js";
+import { syntheticSponge } from "./synthetic_sponge.js";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
 const minecraftData = require("minecraft-data");
 const Vec3 = require("vec3");
+const Block = require("prismarine-block")("1.20.4");
+const registry = minecraftData("1.20.4");
 const delay = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 const rootSettingsPath = path.resolve(SCHEMATICS_DIR, "../settings.js");
 let createdSettingsStub = false;
@@ -76,22 +80,25 @@ function makeLifecycle(fileName, { delayRestore = false } = {}) {
   if (delayRestore) calls.restoreStarted = new Promise((resolve) => { calls.onRestoreStarted = resolve; });
   const bot = Object.assign(events, {
     version: "1.20.4",
-    registry: minecraftData("1.20.4"),
+    registry,
     game: { gameMode: "survival", dimension: "overworld" },
     world: {},
     _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
-    entity: { position: new Vec3(0, 64, 0) },
+    entity: { position: new Vec3(100, 64, 100), width: 0.6, height: 1.8 },
     position: new Vec3(0, 64, 0),
     output: "",
     interrupt_code: false,
     inventory: { slots: Array(46).fill(null) },
     health: 20,
     blockAt(position) {
-      return world.get(key(position)) ?? { name: "air", getProperties: () => ({}) };
+      if (world.has(key(position))) return world.get(key(position));
+      const block = Block.fromStateId(registry.blocksByName[position.y === 63 ? "dirt" : "air"].defaultState, 0);
+      block.position = position;
+      return block;
     },
     async dig() {},
     async placeBlock() {},
-    async chat(message) {
+    chat(message) {
       const mode = message.split(" ").at(-1);
       this.game.gameMode = mode;
       calls.mode.push(mode);
@@ -141,6 +148,7 @@ function makeLifecycle(fileName, { delayRestore = false } = {}) {
       cancel() {},
     },
   });
+  bot.entities = { self: bot.entity };
   bot.modes.pause = () => {};
   const agent = {
     bot,
@@ -170,14 +178,14 @@ test("addressed balanced suffix and configured settings select an actual build o
   await mkdir(directory);
   const filePath = path.join(directory, "balanced.mc1.20.3.schem");
   const bytes = singleStoneSchematic();
-  const old = [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold];
+  const old = [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold, agentSettings.schematic_balanced_strategy];
   try {
     await writeFile(path.join(directory, "index.json"), JSON.stringify({ schemaVersion: 2, groups: { 2: { 1: "balanced.schem" } } }));
     await writeFile(filePath, bytes);
     writeFixtureProvenance(filePath, bytes);
     const { agent, bot, calls, world } = makeLifecycle("balanced.schem");
     const responses = [];
-    agent.routeResponse = async (_source, message) => { responses.push(message); };
+    agent.routeResponse = (_source, message) => { responses.push(message); };
     bot.position = new Vec3(-2, 64, -2);
     bot.entity.position = new Vec3(100, 64, 100);
     bot.entity.width = 0.6;
@@ -193,6 +201,7 @@ test("addressed balanced suffix and configured settings select an actual build o
     agentSettings.schematic_placement_mode = "balanced";
     agentSettings.schematic_balanced_radius = 0;
     agentSettings.schematic_balanced_threshold = 1;
+    agentSettings.schematic_balanced_strategy = "all";
     assert.equal(await dispatchAddressedSchematicRequest(agent, "trusted", `Builder build id 1 from group 2 of ${pack} using balanced mode radius=1`, { trusted: true }), true);
     assert.deepEqual(origins, [{ x: -1, y: 64, z: 0 }]);
     assert.match(responses.join(" "), /Balanced site: origin -1,64,0/);
@@ -201,6 +210,46 @@ test("addressed balanced suffix and configured settings select an actual build o
     assert.equal(await dispatchAddressedSchematicRequest(agent, "trusted", `Builder build id 1 from group 2 of ${pack}`, { trusted: true }), true);
     assert.deepEqual(origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
     assert.deepEqual(calls.mode, ["creative", "survival", "creative", "survival"]);
+  } finally {
+    [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold, agentSettings.schematic_balanced_strategy] = old;
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("addressed orientation reaches the real skill and produces rotated build cells", async () => {
+  await loadProjectModules();
+  const pack = `pack${2000000 + process.pid}`;
+  const directory = path.join(SCHEMATICS_DIR, "schems", pack);
+  await mkdir(directory);
+  const filePath = path.join(directory, "oriented.mc1.20.3.schem");
+  const bytes = syntheticSponge("1.20.3", ["minecraft:stone", "minecraft:air", "minecraft:glass"]);
+  const old = [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold];
+  try {
+    await writeFile(path.join(directory, "index.json"), JSON.stringify({ schemaVersion: 2, groups: { 2: { 1: "oriented.schem" } } }));
+    await writeFile(filePath, bytes);
+    writeFixtureProvenance(filePath, bytes);
+    const { agent, bot, world } = makeLifecycle("oriented.schem");
+    bot.position = new Vec3(-2, 64, -2);
+    agentSettings.schematic_placement_mode = "balanced";
+    agentSettings.schematic_balanced_radius = 0;
+    agentSettings.schematic_balanced_threshold = 9;
+    let cells, dimensions;
+    bot.builder.build = build => {
+      cells = build.cells.map(cell => ({ name: cell.name, position: { ...cell.position } }));
+      dimensions = build.dimensions;
+      for (const cell of build.cells) world.set(`${cell.position.x},${cell.position.y},${cell.position.z}`, { name: cell.name, stateId: cell.stateId, getProperties: () => cell.properties });
+      build.actions.length = 0;
+      return Promise.resolve();
+    };
+    const responses = [];
+    agent.routeResponse = (_source, message) => responses.push(message);
+    assert.equal(await dispatchAddressedSchematicRequest(agent, "trusted", `Builder build id 1 from group 2 of ${pack} rotated to face E`, { trusted: true }), true);
+    assert.deepEqual(dimensions, { width: 1, height: 1, length: 3 }, responses.join(' | ') + bot.output);
+    assert.deepEqual(cells.map(cell => cell.name), ["stone", "air", "glass"]);
+    assert.equal(cells[2].position.x, cells[0].position.x);
+    assert.equal(cells[2].position.z - cells[0].position.z, 2);
+    assert.equal(world.get(`${cells[2].position.x},${cells[2].position.y},${cells[2].position.z}`).name, "glass");
+    assert.match(responses.join(" "), /Successfully built and verified/);
   } finally {
     [agentSettings.schematic_placement_mode, agentSettings.schematic_balanced_radius, agentSettings.schematic_balanced_threshold] = old;
     await rm(directory, { recursive: true, force: true });
@@ -228,7 +277,7 @@ test("public build command retains eligible interrupted session across repeated 
   writeFixtureProvenance(filePath, singleStoneSchematic());
   const { agent, calls } = makeLifecycle(fileName);
   try {
-    const command = `!buildSchematic("${fileName}", 0, 64, 0)`;
+    const command = `!buildSchematic("${fileName}", 0, 64, 0, "balanced", 0)`;
     const first = executeCommand(agent, command);
     await waitFor(() => calls.builds === 1, "first real schematic builder invocation");
     const firstMode = agent.actions.runAction("mode:self_defense", async () => { await delay(10); });
@@ -263,7 +312,7 @@ test("trusted stop during schematic cleanup cancels the not-yet-registered recov
   const { agent, calls } = makeLifecycle(fileName, { delayRestore: true });
   Object.setPrototypeOf(agent, Agent.prototype);
   try {
-    const build = executeCommand(agent, `!buildSchematic("${fileName}", 0, 64, 0)`);
+    const build = executeCommand(agent, `!buildSchematic("${fileName}", 0, 64, 0, "balanced", 0)`);
     await waitFor(() => calls.builds === 1, "schematic builder invocation before stop");
     const mode = agent.actions.runAction("mode:self_defense", async () => { await delay(10); });
     await calls.restoreStarted;
@@ -289,7 +338,7 @@ test("replacement action cancels a managed schematic session before resume regis
   writeFixtureProvenance(filePath, singleStoneSchematic());
   const { agent, calls } = makeLifecycle(fileName, { delayRestore: true });
   try {
-    const build = executeCommand(agent, `!buildSchematic("${fileName}", 0, 64, 0)`);
+    const build = executeCommand(agent, `!buildSchematic("${fileName}", 0, 64, 0, "balanced", 0)`);
     await waitFor(() => calls.builds === 1, "schematic builder invocation before replacement");
     const mode = agent.actions.runAction("mode:self_defense", async () => { await delay(10); });
     await calls.restoreStarted;
@@ -310,6 +359,7 @@ test("replacement action cancels a managed schematic session before resume regis
 test("mode polling reserves an interrupt transition and treats temporary not-ready as retryable", async () => {
   await loadProjectModules();
   const { agent, bot } = makeLifecycle("unused.schem");
+  bot.entity.position = new Vec3(0, 64, 0);
   let resolvePath;
   let findEnemy = true;
   bot.nearestEntity = (predicate) => {
@@ -334,7 +384,7 @@ test("mode polling reserves an interrupt transition and treats temporary not-rea
   await waitFor(() => agent.actions.transitionReservations > 0, "combat mode readiness reservation");
   bot.interrupt_code = true;
   await build;
-  agent.actions.registerResume("action:buildSchematic", async () => { attempts++; }, {
+  agent.actions.registerResume("action:buildSchematic", () => { attempts++; }, {
     guard: () => true,
     cancelOnReplacement: true,
   });

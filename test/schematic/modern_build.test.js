@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import test from "node:test";
 
-import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
+import { createModernBuild, translateModernBuild } from "../../src/utils/schematic/modern_build.js";
 
 const require = createRequire(import.meta.url);
 const { Schematic } = require("prismarine-schematic");
@@ -133,4 +133,44 @@ test("rejects invalid and oversized dimensions before decoding block data", () =
 
   const invalid = new Schematic(VERSION, new Vec3(1, 1, 1), new Vec3(0, 0, 0), [0], []);
   assert.throws(() => createModernBuild(invalid, bot(), new Vec3(0, 0, 0)), /palette\/blocks/i);
+});
+
+test("production adapter rotates asymmetric full volumes and exact destination states once", () => {
+  const stair = { facing: "north", half: "bottom", shape: "straight", waterlogged: false };
+  const ids = [stateId("stone"), stateId("oak_stairs", stair), stateId("air"),
+    stateId("oak_log", { axis: "x" }), stateId("glass"), stateId("dirt")];
+  const source = new Schematic(VERSION, new Vec3(3, 1, 2), new Vec3(7, -2, 9), ids, [0, 1, 2, 3, 4, 5]);
+  let reads = 0;
+  const originalGetBlock = source.getBlock.bind(source);
+  source.getBlock = pos => { reads++; return originalGetBlock(pos); };
+  const expected = {
+    north: ["stone", "oak_stairs", "air", "oak_log", "glass", "dirt"],
+    east: ["oak_log", "stone", "glass", "oak_stairs", "dirt", "air"],
+    south: ["dirt", "glass", "oak_log", "air", "oak_stairs", "stone"],
+    west: ["air", "dirt", "oak_stairs", "glass", "stone", "oak_log"],
+  };
+  for (const orientation of Object.keys(expected)) {
+    const build = createModernBuild(source, bot(), new Vec3(10, 20, -4), { orientation });
+    assert.deepEqual(build.cells.map(c => c.name), expected[orientation]);
+    const odd = orientation === "east" || orientation === "west";
+    assert.deepEqual(build.dimensions, { width: odd ? 2 : 3, height: 1, length: odd ? 3 : 2 });
+    assert.deepEqual(build.max, new Vec3(10 + (odd ? 2 : 3), 21, -4 + (odd ? 3 : 2)));
+    const log = build.plan.find(c => c.name === "oak_log");
+    assert.equal(log.stateId, stateId("oak_log", { axis: odd ? "z" : "x" }));
+    assert.equal(log.properties.axis, odd ? "z" : "x");
+    const stairs = build.plan.find(c => c.name === "oak_stairs");
+    assert.equal(stairs.stateId, stateId("oak_stairs", { ...stair, facing: orientation }));
+    const action = build.actions.find(a => a.blockName === "oak_stairs");
+    assert.equal(action.stateId, stairs.stateId);
+    assert.equal(action.metadata, { north: 1, east: 2, south: 0, west: 3 }[orientation]);
+    assert.equal(build.getItemForState(action.state).name, "oak_stairs");
+    const before = reads;
+    const moved = translateModernBuild(build, new Vec3(-5, 30, 6));
+    assert.equal(reads, before, "translation must not decode or rotate again");
+    assert.deepEqual(moved.cells.map(c => [c.position.x, c.position.y, c.position.z, c.stateId]),
+      build.cells.map(c => [c.position.x - 15, c.position.y + 10, c.position.z + 10, c.stateId]));
+    assert.equal(Object.isFrozen(moved.cells[0].properties), true);
+  }
+  assert.equal(reads, 24);
+  assert.deepEqual(createModernBuild(source, bot(), new Vec3(0, 0, 0)).cells.map(c => c.stateId), ids);
 });

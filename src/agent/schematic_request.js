@@ -223,6 +223,13 @@ function parseSchematicSelector(text, addressedTo, { replacementOnly = false } =
     const selected = uniqueMatches[0];
     const description = normalized.slice(0, selected.start);
     const descriptionScan = scanRequestWords(description);
+    const unquotedDescription = description.split('').map((character, index) =>
+        descriptionScan.quotedSpans.some(([start, end]) => index >= start && index < end) ? ' ' : character).join('');
+    // Descriptions remain inert, but a recognizable direction instruction here
+    // must not silently disappear or conflict with a terminal orientation.
+    if (/\b(?:facing|oriented|rotate|rotated|rotating)\s+(?:it\s+)?(?:(?:to|towards)\s+)?(?:face\s+)?(?:north|east|south|west|n|e|s|w|northeast|northwest|southeast|southwest)\b/i.test(unquotedDescription)) {
+        return { addressedTo, error: 'Put exactly one orientation clause after the complete schematic selector; no build was started.' };
+    }
     if (descriptionScan.invalid || hasSelectorCue(descriptionScan.words, description)
         || descriptionScan.words.some(word => /^(?:file|id|offset|group|pack[1-9]\d*|schema|schem|scheme|schematic)$/i.test(word.value))
         || /^\s*\d+\s*$/.test(description)
@@ -261,37 +268,56 @@ export function parseAddressedSchematicRequest(message, agentName, knownBotPeers
     if (!build && !/^(?:replace|rebuild|demolish|destroy|remove|raze|clear|overwrite|tear|knock|take|pull|get\s+rid\s+of)\b/i.test(text)) return null;
     let requestText = (build ? text.replace(/^build\b/i, '') : text).trim();
     const normalized = stripRequestPunctuation(requestText);
-    const modeSuffix = /\s+(?:using|via)\s+(balanced|safe|destructive)\s+mode((?:\s+(?:radius|threshold)=\d+)*)$/i.exec(normalized);
+    requestText = normalized;
     const scan = scanRequestWords(normalized);
-    const suffixIsQuoted = modeSuffix && scan.quotedSpans.some(([start, end]) => modeSuffix.index >= start && modeSuffix.index < end);
-    // The suffix is removed before selector parsing, so inspect the complete input
-    // first; in particular, whitespace in the suffix must not hide control bytes.
+    const overrides = {};
+    let suffixCount = 0;
+    // Peel only complete, unquoted terminal clauses. The remainder must still be
+    // exactly one complete selector; malformed or extra tails cannot be recovered.
+    while (build && !scan.invalid) {
+        const modeSuffix = /\s+(?:using|via)\s+(delicate|raise|balanced|destructive)\s+mode((?:\s+(?:(?:radius|threshold|step|bisect_depth)=\d+|strategy=(?:all|stepped|bisect)|policy=(?:first_valid|exhaustive)))*)$/i.exec(requestText);
+        const orientationSuffix = /\s+(?:(?:and|then)\s+)?(?:facing|oriented|rotate|rotated|rotating)\s+(?:it\s+)?(?:(?:to|towards)\s+)?(?:face\s+)?(north|east|south|west|n|e|s|w)$/i.exec(requestText);
+        const suffix = modeSuffix || orientationSuffix;
+        if (!suffix || scan.quotedSpans.some(([start, end]) => suffix.index >= start && suffix.index < end)) break;
+        if (modeSuffix) {
+            if (Object.hasOwn(overrides, 'mode')) return { addressedTo, error: 'Duplicate placement mode; no build was started.' };
+            overrides.mode = modeSuffix[1].toLowerCase();
+            for (const token of modeSuffix[2].trim().split(/\s+/).filter(Boolean)) {
+                const [rawKey, value] = token.split('=');
+                const normalizedKey = rawKey.toLowerCase();
+                const key = normalizedKey === 'bisect_depth' ? 'bisectDepth' : normalizedKey;
+                if (Object.hasOwn(overrides, key)) return { addressedTo, error: `Duplicate ${key} placement option; no build was started.` };
+                overrides[key] = ['strategy', 'policy'].includes(key) ? value : Number(value);
+            }
+        } else {
+            if (Object.hasOwn(overrides, 'orientation')) return { addressedTo, error: 'Duplicate orientation; no build was started.' };
+            overrides.orientation = orientationSuffix[1];
+        }
+        suffixCount++;
+        requestText = requestText.slice(0, suffix.index);
+    }
+    // Inspect the complete input before removing any suffix, including controls
+    // that might otherwise disappear with a clause.
     // eslint-disable-next-line no-control-regex -- reject control characters before suffix extraction.
-    if (modeSuffix && !suffixIsQuoted && /[\u0000-\u001f\u007f-\u009f\u2028\u2029;&|`$<>()[\]{}]|!(?=[A-Za-z0-9_])/i.test(normalized))
+    if (suffixCount && /[\u0000-\u001f\u007f-\u009f\u2028\u2029;&|`$<>()[\]{}]|!(?=[A-Za-z0-9_])/i.test(normalized))
         return { addressedTo, error: 'I could not safely identify that schematic request; command fragments and control characters are not allowed.' };
-    if (modeSuffix && !scan.invalid && !suffixIsQuoted) requestText = normalized.slice(0, modeSuffix.index);
+    if (!suffixCount) requestText = normalized;
     const baseScan = scanRequestWords(requestText);
     const unquotedBase = requestText.split('').map((character, index) =>
         baseScan.quotedSpans.some(([start, end]) => index >= start && index < end) ? ' ' : character).join('');
-    if (build && (/\b(?:using|via)\s+(?:safe|destructive|balanced)\b/i.test(unquotedBase)
+    if (build && (/\b(?:using|via)\s+(?:delicate|raise|destructive|balanced)\b/i.test(unquotedBase)
         || /\b(?:using|via)\s+\S+\s+mode\b/i.test(unquotedBase)
-        || /\b(?:radius|threshold)\s*=/i.test(unquotedBase)))
+        || /\b(?:radius|threshold|strategy|step|policy|bisect_depth)\s*=/i.test(unquotedBase)))
         return { addressedTo, error: 'Malformed or duplicate placement mode/options; no build was started.' };
     const parsed = parseSchematicSelector(requestText, addressedTo, { replacementOnly: !build });
     if (!parsed) {
         if (build && scan.words.some((word, index) => /^(?:using|via)$/i.test(word.value)
-            && /^(?:safe|destructive|balanced|\w+)$/i.test(scan.words[index + 1]?.value ?? '')
+            && /^(?:delicate|raise|destructive|balanced|\w+)$/i.test(scan.words[index + 1]?.value ?? '')
             && /^mode$/i.test(scan.words[index + 2]?.value ?? '')))
             return { addressedTo, error: 'A placement mode requires exactly one valid schematic selector.' };
         return null;
     }
-    if (build && modeSuffix && !scan.invalid && !suffixIsQuoted && !parsed.error) {
-        const overrides = { mode: modeSuffix[1].toLowerCase() };
-        for (const token of modeSuffix[2].trim().split(/\s+/).filter(Boolean)) {
-            const [key, value] = token.toLowerCase().split('=');
-            if (Object.hasOwn(overrides, key)) return { addressedTo, error: `Duplicate ${key} placement option; no build was started.` };
-            overrides[key] = Number(value);
-        }
+    if (build && suffixCount && !parsed.error) {
         try { resolvePlacementOptions({}, overrides); }
         catch (error) { return { addressedTo, error: `${error.message}; no build was started.` }; }
         return { ...parsed, placementOverrides: overrides };
@@ -333,7 +359,7 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
 
     const override = request.placementOverrides;
-    const args = override ? [request.selector, null, null, null, override.mode, override.radius ?? null, override.threshold ?? null] : [request.selector];
+    const args = override ? [request.selector, null, null, null, override.mode ?? null, override.radius ?? null, override.threshold ?? null, override.orientation ?? null, override.strategy ?? null, override.step ?? null, override.policy ?? null, override.bisectDepth ?? null] : [request.selector];
     const command = `!buildSchematic(${args.map(value => JSON.stringify(value)).join(', ')})`;
     const refusal = checkBuild(command);
     if (refusal) {

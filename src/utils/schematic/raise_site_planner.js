@@ -125,7 +125,7 @@ function snapshotBuild(build, origin, limits) {
  * state IDs to prove their properties. Returns an immutable advisory plan; it
  * does not authorize or perform writes.
  */
-export async function planSafeSchematicSite(bot, build, { origin, worldBounds, Vec3Class, limits: requestedLimits, isInterrupted = () => false, lifecycle = null } = {}) {
+export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, Vec3Class, limits: requestedLimits, isInterrupted = () => false, lifecycle = null } = {}) {
   if (!bot || typeof bot.blockAt !== "function" || typeof Vec3Class !== "function" || typeof isInterrupted !== "function") throw new TypeError("Block reader, vector and interruption check required");
   if (!worldBounds || !Number.isSafeInteger(worldBounds.minY) || !Number.isSafeInteger(worldBounds.maxY) || worldBounds.minY > worldBounds.maxY) throw new TypeError("Inclusive dimension Y bounds required");
   const limits = limitsFor(requestedLimits);
@@ -141,7 +141,7 @@ export async function planSafeSchematicSite(bot, build, { origin, worldBounds, V
   const ctx = context(bot, identity, build, isInterrupted, limits, Vec3Class);
   ctx.check();
   assertBalancedTargets(bot, copied);
-  if (copied.cells.some(cell => Object.keys(cell.properties).length !== 0)) throw unsafe("Stateful targets are not supported by safe planning");
+  if (copied.cells.some(cell => Object.keys(cell.properties).length !== 0)) throw unsafe("Stateful targets are not supported by raise planning");
   if (!isSupportedBalancedPassiveState(bot.registry, { name: "dirt", properties: {} })) throw unsafe("Dirt state unavailable in registry");
   for (let rise = 0; rise <= limits.rise; rise++) {
     const y = min.y + rise;
@@ -218,9 +218,9 @@ export async function planSafeSchematicSite(bot, build, { origin, worldBounds, V
  * This detects unexpected changes but cannot make inspection and a later write
  * atomic. Call again after every transition and verify the final write too.
  */
-function* inspectSafeSchematicSite(bot, plan, { completedDirt = 0, completedVolume = 0 } = {}) {
+function* inspectRaiseSchematicSite(bot, plan, { completedDirt = 0, completedVolume = 0 } = {}) {
   const saved = plans.get(plan);
-  if (!saved || saved.bot !== bot) throw unsafe("Unknown or foreign safe site plan");
+  if (!saved || saved.bot !== bot) throw unsafe("Unknown or foreign raise site plan");
   if (!Number.isSafeInteger(completedDirt) || completedDirt < 0 || completedDirt > plan.dirt.length
       || !Number.isSafeInteger(completedVolume) || completedVolume < 0 || completedVolume > saved.solidTargets.length
       || (completedVolume && completedDirt !== plan.dirt.length)) throw unsafe("Invalid completed edit prefix");
@@ -242,15 +242,15 @@ function* inspectSafeSchematicSite(bot, plan, { completedDirt = 0, completedVolu
   return true;
 }
 
-export async function revalidateSafeSchematicSite(bot, plan, options = {}) {
-  const inspection = inspectSafeSchematicSite(bot, plan, options);
+export async function revalidateRaiseSchematicSite(bot, plan, options = {}) {
+  const inspection = inspectRaiseSchematicSite(bot, plan, options);
   for (let step = inspection.next(); !step.done; step = inspection.next()) await step.value.tick();
   return true;
 }
 
 /** Synchronous, bounded full-site check for a final gameplay packet authorization. */
-export function revalidateSafeSchematicSiteAtDispatch(bot, plan, options = {}) {
-  const inspection = inspectSafeSchematicSite(bot, plan, options);
+export function revalidateRaiseSchematicSiteAtDispatch(bot, plan, options = {}) {
+  const inspection = inspectRaiseSchematicSite(bot, plan, options);
   for (let step = inspection.next(); !step.done; step = inspection.next()) { /* Do not yield before dispatch. */ }
   return true;
 }

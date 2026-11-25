@@ -133,6 +133,25 @@ test('authenticated player ingress reaches the production engine; absent or untr
       await setup(); f.world.set('0,64,0', 'air'); f.world.set('2,64,0', 'stone');
       await signedPlayerChat(direct); assert.equal(calls.length, 1); assert.equal(calls[0].x, 0);
       assert.deepEqual(f.writes, [['place', '0,64,0']]);
+      await setup();
+      let rotatedCells;
+      f.dependencies.onBuilder = build => { rotatedCells = build.cells.map(cell => [cell.name, cell.position.x, cell.position.y, cell.position.z]); };
+      const rotatedDirect = '!buildSchematic("pack2:2:1", 0, 64, 0, "destructive", null, null, "E")';
+      await signedPlayerChat(rotatedDirect);
+      assert.equal(calls.length, 1, routes.join(' | '));
+      assert.equal(calls[0].options.placementOptions.orientation, 'east');
+      assert.ok(Object.isFrozen(calls[0].options.placementOptions));
+      assert.deepEqual(rotatedCells, [['cobblestone', 0, 64, 0], ['air', 0, 64, 1], ['stone', 0, 64, 2], ['air', 0, 64, 3]]);
+      assert.equal(f.world.get('0,64,0'), 'cobblestone'); assert.equal(f.world.get('0,64,2'), 'stone');
+      assert.match(routes.join(' '), /completed and verified/i);
+      await setup();
+      f.dependencies.onBuilder = build => { rotatedCells = build.cells.map(cell => [cell.name, cell.position.x, cell.position.z]); };
+      await signedPlayerChat(selector + ' then rotate to face east via destructive mode');
+      assert.equal(calls.length, 1, routes.join(' | '));
+      assert.equal(calls[0].options.placementOptions.orientation, 'east');
+      assert.equal(rotatedCells[2][1], rotatedCells[0][1]);
+      assert.equal(rotatedCells[2][2] - rotatedCells[0][2], 2);
+      await setup(); await f.bot.listeners('chat')[0]('Builder', rotatedDirect); noEffects();
       await setup(); await playerChat('Builder', selector); assert.equal(calls.length, 1);
       assert.equal(calls[0].options.placementOptions.mode, 'destructive');
       await setup(); await playerChat('Builder', '!buildSchematic("pack2:2:1", 0, 64, 0)');
@@ -152,8 +171,8 @@ test('authenticated player ingress reaches the production engine; absent or untr
       globalThis.__schematicBuild = async (...args) => { globalThis.__balanced = args[5]; };
       await playerChat('Builder', selector + ' using balanced mode');
       assert.equal(calls.length, 0); assert.equal(globalThis.__balanced.mode, 'balanced');
-      await setup(); await playerChat('Builder', selector + ' using safe mode');
-      assert.equal(actions, 1); assert.equal(globalThis.__balanced.mode, 'safe');
+      await setup(); await playerChat('Builder', selector + ' using raise mode');
+      assert.equal(actions, 1); assert.equal(globalThis.__balanced.mode, 'raise');
 
       for (const allow of [null, undefined, [], ['Other'], ['Builder', null]]) {
         await setup(); const store = (await import(${url('src/agent/settings.js')})).default;

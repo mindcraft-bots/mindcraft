@@ -4,7 +4,7 @@ import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
 import agentSettings from '../settings.js';
-import { resolvePlacementOptions } from '../../utils/schematic/placement_options.js';
+import { resolvePlacementOptions, validateResolvedPlacementOptions } from '../../utils/schematic/placement_options.js';
 import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
 import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
@@ -34,6 +34,12 @@ export async function buildSchematic(bot, fileName, x = null, y = null, z = null
      * @example
      * await skills.buildSchematic(bot, "pack1:01:01");
      **/
+    try {
+        placementOptions = validateResolvedPlacementOptions(placementOptions);
+    } catch (error) {
+        log(bot, `Schematic placement rejected: ${error.message}`);
+        return false;
+    }
     const resumeSession = schematicResumeSessions.get(bot) ?? null;
     const result = await buildSchematicImplementation(bot, fileName, x, y, z, {
         resumeSession,

@@ -108,7 +108,7 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         client.emit('connect-agent-process', original.profile.name);
         const loaded = await snapshot(original.profile.name);
         const form = editor(loaded);
-        form.input('schematic_placement_mode').value = 'safe';
+        form.input('schematic_placement_mode').value = 'raise';
         const outgoing = form.read();
         t.diagnostic(`Editor retained hidden allowlist: ${Object.hasOwn(outgoing, 'trusted_command_senders')}`);
         assert.deepEqual(outgoing.trusted_command_senders, original.trusted_command_senders);
@@ -117,12 +117,12 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         assert.deepEqual(await emit('set-agent-settings', original.profile.name, outgoing), { success: true });
         await restarted;
         const saved = await snapshot(original.profile.name);
-        assert.equal(saved.schematic_placement_mode, 'safe');
+        assert.equal(saved.schematic_placement_mode, 'raise');
         for (const key of ['profile', 'trusted_command_senders', 'future_security_option', 'future_null', 'future_false']) {
             assert.deepEqual(saved[key], original[key], key);
         }
         await assertUntrustedDenied(saved);
-        assert.deepEqual(original.schematic_placement_mode, null, 'editor did not mutate original');
+        assert.equal(original.schematic_placement_mode, 'delicate', 'editor did not mutate original');
     });
 
     test('schema-only and partial API updates preserve hidden fields; validate merged settings atomically', async t => {
@@ -145,12 +145,28 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         saved = await snapshot(name);
         assert.equal(saved.schematic_balanced_threshold, 12);
         assert.equal(saved.schematic_placement_mode, 'balanced');
+        assert.equal((await emit('set-agent-settings', name, { schematic_balanced_strategy: 'bisect', schematic_balanced_step: 16,
+            schematic_balanced_policy: 'exhaustive', schematic_balanced_bisect_depth: 0 })).success, true);
+        saved = await snapshot(name);
+        assert.equal(saved.schematic_balanced_strategy, 'bisect');
+        assert.equal(saved.schematic_balanced_step, 16);
+        assert.equal(saved.schematic_balanced_policy, 'exhaustive');
+        assert.equal(saved.schematic_balanced_bisect_depth, 0);
         let restarts = 0;
         const onRestart = () => restarts++;
         client.on('restart-agent', onRestart);
+        const invalidMode = await emit('set-agent-settings', name, { schematic_placement_mode: 'unknown-mode' });
+        assert.equal(invalidMode.success, false);
+        assert.match(invalidMode.error, /schematic_placement_mode.*delicate.*raise.*balanced.*destructive/i);
+        assert.deepEqual(await snapshot(name), saved);
         const rejected = await emit('set-agent-settings', name, { schematic_balanced_radius: 999, trusted_command_senders: null });
         assert.equal(rejected.success, false);
         assert.deepEqual(await snapshot(name), saved, 'invalid update must not partially change settings');
+        for (const invalid of [{ schematic_balanced_strategy: 'other' }, { schematic_balanced_step: 0 },
+            { schematic_balanced_policy: 'other' }, { schematic_balanced_bisect_depth: 4 }]) {
+            assert.equal((await emit('set-agent-settings', name, { ...invalid, trusted_command_senders: null })).success, false);
+            assert.deepEqual(await snapshot(name), saved);
+        }
         assert.equal(restarts, 0);
         client.off('restart-agent', onRestart);
     });
@@ -158,7 +174,7 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
     test('explicit API replacements, empty lists, null reset and falsy/unknown values remain intentional', async () => {
         const name = 'ExplicitValues';
         registerAgent({ profile: { name }, trusted_command_senders: ['Builder'],
-            schematic_placement_mode: 'safe', future: { old: true } }, 3012);
+            schematic_placement_mode: 'raise', future: { old: true } }, 3012);
         client.emit('connect-agent-process', name);
         assert.equal((await emit('set-agent-settings', name, {
             trusted_command_senders: [], schematic_placement_mode: null,
@@ -190,12 +206,12 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         const name = 'CreatedRestricted';
         assert.equal((await emit('create-agent', {
             profile: { name }, trusted_command_senders: ['Builder'],
-            future: { restriction: true }, schematic_placement_mode: 'safe',
+            future: { restriction: true }, schematic_placement_mode: 'raise',
         })).success, true);
         const saved = await snapshot(name);
         assert.deepEqual(saved.trusted_command_senders, ['Builder']);
         assert.deepEqual(saved.future, { restriction: true });
-        assert.equal(saved.schematic_placement_mode, 'safe');
+        assert.equal(saved.schematic_placement_mode, 'raise');
         assert.equal(saved.schematic_balanced_radius, schema.schematic_balanced_radius.default);
         await assertUntrustedDenied(saved);
         // A newly created agent may not have connected its process yet.
@@ -205,9 +221,13 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         assert.equal((await emit('create-agent', { profile: { name: 'CreatedDefaults' } })).success, true);
         const defaults = await snapshot('CreatedDefaults');
         assert.equal(Object.hasOwn(defaults, 'trusted_command_senders'), false, 'do not introduce a new trust default');
-        assert.equal(defaults.schematic_placement_mode, null);
+        assert.equal(defaults.schematic_placement_mode, 'delicate');
         assert.equal(defaults.schematic_balanced_radius, 4);
         assert.equal(defaults.schematic_balanced_threshold, 9);
+        assert.equal(defaults.schematic_balanced_strategy, 'stepped');
+        assert.equal(defaults.schematic_balanced_step, 2);
+        assert.equal(defaults.schematic_balanced_policy, 'first_valid');
+        assert.equal(defaults.schematic_balanced_bisect_depth, 2);
         assert.equal((await emit('create-agent', {
             profile: { name: 'InvalidCreate' }, schematic_balanced_radius: 999,
         })).success, false);
@@ -221,7 +241,7 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
         form.input('schematic_placement_mode').value = 'destructive';
         form.discard();
         const restored = form.read();
-        assert.equal(restored.schematic_placement_mode, null);
+        assert.equal(restored.schematic_placement_mode, 'delicate');
         assert.deepEqual(restored.trusted_command_senders, ['Builder']);
         assert.deepEqual(restored.future, original.future);
         setSettings(original);
@@ -235,7 +255,7 @@ if (!process.env.MINDCRAFT_SETTINGS_TEST_LOADER) {
     test('malformed trust API updates reject atomically without restarting or losing the original list', async t => {
         const name = 'TrustAtomic';
         registerAgent({ profile: { name }, trusted_command_senders: ['Builder'],
-            future: { keep: true }, schematic_placement_mode: 'safe' }, 3013);
+            future: { keep: true }, schematic_placement_mode: 'raise' }, 3013);
         client.emit('connect-agent-process', name);
         const original = await snapshot(name);
         let restarts = 0;

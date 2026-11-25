@@ -12,6 +12,7 @@ import minecraftData from "minecraft-data";
 import nbt from "prismarine-nbt";
 import { SCHEMATICS_DIR, listSchematicEntries, listSchematics, resolveSchematicPath, conservativeBotVersion } from "../../../src/utils/schematic/paths.js";
 import { buildSchematic } from "../../../src/utils/schematic/build_schematic.js";
+import { createModernBuild } from "../../../src/utils/schematic/modern_build.js";
 import { readSchematic } from "../../../src/utils/schematic/reader.js";
 
 const source = path.join(SCHEMATICS_DIR, "schems/pack1/02_bee_hot_air_balloon.mc1.21.4.schem");
@@ -72,7 +73,7 @@ test("real pack selects and reads the native bee variant for each engine", async
   }
 });
 
-test("real bee blueprint mock-builds explicitly selected nonvalidated variants", async () => {
+test("real bee blueprint selects and plans nonvalidated variants before delicate rejects them", async () => {
   await fixture(async (root, pack) => {
     const base = path.join(pack, "02_bee_hot_air_balloon.schem");
     await copyFile(source, base);
@@ -85,32 +86,27 @@ test("real bee blueprint mock-builds explicitly selected nonvalidated variants",
     }
     const canonical = await readFile(source);
     for (const [version, chain] of [["1.21.4", "chain"], ["26.1", "iron_chain"]]) {
-      const world = new Map();
-      const key = p => `${p.x},${p.y},${p.z}`;
       const bot = Object.assign(new EventEmitter(), { version, registry: minecraftData(version),
         game: { gameMode: "survival", dimension: "overworld" }, entity: {}, world: {}, _client: new EventEmitter(),
-        blockAt: p => world.get(key(p)) ?? { name: "air", getProperties: () => ({}) } });
+        blockAt: () => ({ name: "air", stateId: 0, getProperties: () => ({}) }) });
       const logs = [];
-      let selected;
+      let selected, plannedBuild, mutations = 0;
       const success = await buildSchematic(bot, "pack1:2:1", 100, 64, -20, {
         allowNonvalidatedSchematic: true,
         resolvePath: async (_selector, _directory, options) => (selected = await resolveSchematicPath(
           `pack1:02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`, root, options)),
-        changeGameMode: async (_bot, mode) => { bot.game.gameMode = mode; return true; },
-        clearObstructions: async () => ({ cleared: 0 }),
-        guardDestruction: async (_bot, _build, _Vec3, run) => run(),
-        startSupply: () => async () => {},
-        executeBuild: async (_bot, build) => {
-          assert.equal(build.plan.filter(entry => entry.name === chain).length, 24);
-          for (const entry of build.plan) world.set(key(entry.position), { name: entry.name, getProperties: () => entry.properties });
-          return { status: "finished", errors: [] };
-        },
+        makeBuild: (schematic, candidate, origin) => (plannedBuild = createModernBuild(schematic, candidate, origin)),
+        changeGameMode: () => { mutations++; },
+        startSupply: () => { mutations++; },
+        executeBuild: () => { mutations++; },
         writeLog: message => logs.push(message),
       });
-      assert.equal(success, true, logs.join("\n"));
+      assert.equal(success, false, logs.join("\n"));
+      assert.equal(plannedBuild.plan.filter(entry => entry.name === chain).length, 24);
+      assert.match(logs.join("\n"), /unsupported balanced target/i);
+      assert.equal(mutations, 0);
       assert.equal(selected, path.join(pack, `02_bee_hot_air_balloon.mc${version}.nonvalidated.schem`));
     }
     assert.deepEqual(await readFile(base), canonical);
   });
 });
-

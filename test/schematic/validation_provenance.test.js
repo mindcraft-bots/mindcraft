@@ -28,6 +28,12 @@ test('new compiler provenance gates real selectors, listings, build, reader comp
   const folder = path.join(SCHEMATICS_DIR, 'schems', packName);
   await mkdir(folder);
   try {
+    // Use a passive single-cell blueprint so the default delicate mode can
+    // verify a real, already-matching site without invoking the old builder.
+    const sourceBlueprint = path.join(folder, 'garden.json');
+    await writeFile(sourceBlueprint, JSON.stringify({ minecraft_version: '1.21.4', data_version: 4189,
+      width_x: 1, height_y: 1, length_z: 1, legend: { a: 'minecraft:stone' }, layers: [['a']],
+      expected_counts: { 'minecraft:stone': 1 }, non_air_count: 1, spot_checks: [{ x: 0, y: 0, z: 0, char: 'a' }] }));
     const file = path.join(folder, 'garden.mc1.21.4.nonvalidated.schem');
     const result = run(python, [compiler, 'compile', sourceBlueprint, path.join(folder, 'garden.schem'), '--convert-to', '1.21.4', '--allow-unverified']);
     assert.equal(result.status, 0, result.stderr);
@@ -50,26 +56,27 @@ test('new compiler provenance gates real selectors, listings, build, reader comp
     assert.equal(report.validationStatus, 'NONVALIDATED');
     assert.equal(report.legalCombinationProof, 'NOT_PERFORMED_BY_READER_COMPARISON');
 
-    const world = new Map(), key = p => `${p.x},${p.y},${p.z}`;
-    const bot = Object.assign(new EventEmitter(), { version: '1.21.4', registry: minecraftData('1.21.4'),
-      game: { gameMode: 'survival', dimension: 'overworld' }, entity: {}, world: {}, _client: new EventEmitter(),
-      blockAt: p => world.get(key(p)) ?? { name: 'air', getProperties: () => ({}) } });
+    const registry = minecraftData('1.21.4');
+    const entity = { position: { x: 100, y: 64, z: 100 }, width: 0.6, height: 1.8 };
+    const bot = Object.assign(new EventEmitter(), { version: '1.21.4', registry,
+      game: { gameMode: 'survival', dimension: 'overworld' }, entity, entities: { self: entity }, world: {}, _client: new EventEmitter(),
+      blockAt: p => {
+        const name = p.x === 0 && p.y === 64 && p.z === 0 ? 'stone' : p.y === 63 ? 'dirt' : 'air';
+        return { name, stateId: registry.blocksByName[name].defaultState, shapes: name === 'air' ? [] : [[0, 0, 0, 1, 1, 1]], getProperties: () => ({}) };
+      } });
     const logs = [];
+    let mutations = 0;
     const dependencies = {
       writeLog: msg => logs.push(msg),
-      changeGameMode: (_bot, mode) => { bot.game.gameMode = mode; return true; },
-      clearObstructions: () => ({ cleared: 0 }),
-      guardDestruction: (_bot, _build, _Vec3, callback) => callback(),
-      startSupply: () => async () => {},
-      executeBuild: (_bot, build) => {
-        for (const cell of build.plan) world.set(key(cell.position), { name: cell.name, getProperties: () => cell.properties });
-        return { status: 'finished', errors: [] };
-      },
+      changeGameMode: () => { mutations++; },
+      startSupply: () => { mutations++; },
+      executeBuild: () => { mutations++; },
     };
     assert.equal(await buildSchematic(bot, selector, 0, 64, 0, dependencies), false);
     assert.match(logs.join('\n'), /NONVALIDATED/);
     assert.equal(await buildSchematic(bot, selector, 0, 64, 0, { ...dependencies, allowNonvalidatedSchematic: true }), true, logs.join('\n'));
     assert.match(logs.join('\n'), /WARNING.*NONVALIDATED/);
+    assert.equal(mutations, 0);
 
     const sidecar = `${file}.provenance.json`, original = await readFile(sidecar, 'utf8');
     const altered = JSON.parse(original); altered.artifact = 'elsewhere.schem';

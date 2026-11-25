@@ -7,8 +7,9 @@ import { gzipSync } from "node:zlib";
 
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
-import { clearSchematicObstructions } from "../../src/utils/schematic/obstruction_policy.js";
+import { clearSchematicObstructions, inspectSchematicCell } from "../../src/utils/schematic/obstruction_policy.js";
 import { acquireBuildLifecycle } from "../../src/utils/schematic/run_build.js";
+import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
@@ -58,13 +59,13 @@ class FakeVec3 {
 }
 
 function fixture(overrides = {}) {
-  const calls = { logs: [], modes: [], positions: [], paused: false, cancelled: 0, cleaned: 0, aborted: 0 };
+  const calls = { logs: [], modes: [], positions: [], planReadCounts: [], paused: false, cancelled: 0, cleaned: 0, aborted: 0 };
   const bot = Object.assign(new EventEmitter(), {
     version: "1.20.4",
     registry: minecraftData("1.20.4"),
     game: { gameMode: "survival", dimension: "overworld" },
     position: new FakeVec3(1.2, 64.9, -3.2),
-    entity: { position: new FakeVec3(1.2, 64.9, -3.2) },
+    entity: { position: new FakeVec3(1000, 64, 1000), width: 0.6, height: 1.8 },
     world: {},
     _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
     interrupt_code: false,
@@ -76,7 +77,7 @@ function fixture(overrides = {}) {
     },
     blockAt(position) {
       calls.positions.push(position);
-      return { name: "stone", getProperties: () => ({ axis: "y" }) };
+      return { name: "stone", getProperties: () => ({}) };
     },
     dig: async () => {},
     placeBlock: async () => {},
@@ -89,17 +90,43 @@ function fixture(overrides = {}) {
   });
   const build = {
     dimensions: { width: 1, height: 1, length: 1 },
-    plan: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: { axis: "y" } }],
-    cells: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: { axis: "y" } }],
+    plan: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: {} }],
+    cells: [{ position: { x: 3, y: 64, z: 5 }, name: "stone", properties: {} }],
   };
+  bot.entities = { self: bot.entity };
+  // Model the passive neighborhood and a solid floor independently of the
+  // per-test target-volume observations.
+  let readVolume = bot.blockAt.bind(bot);
+  Object.defineProperty(bot, "blockAt", {
+    configurable: true,
+    get: () => position => {
+      const inVolume = build.cells.some(cell => cell.position.x === position.x && cell.position.y === position.y && cell.position.z === position.z);
+      if (inVolume) {
+        const block = readVolume(position);
+        if (block && block.stateId === undefined && bot.registry.blocksByName[block.name]) {
+          const decoded = Block.fromProperties(block.name, block.getProperties?.() ?? {}, 0);
+          return { ...block, stateId: decoded.stateId };
+        }
+        return block;
+      }
+      const name = position.y === Math.min(...build.cells.map(cell => cell.position.y)) - 1 ? "dirt" : "air";
+      const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+      block.position = position;
+      return block;
+    },
+    set: fn => { readVolume = fn; },
+  });
   const dependencies = {
     resolvePath: (filename) => `/schematics/${filename}`,
     fsAccess: () => {},
     fsReadFile: () => Buffer.from("schematic"),
     SchematicClass: { read: () => ({ parsed: true }) },
     Vec3Class: FakeVec3,
+    placementOptions: resolvePlacementOptions({}, { mode: "balanced", radius: 0 }),
     makeBuild: (_schematic, _bot, position) => {
       calls.startPosition = position;
+      calls.planReadCounts.push(calls.positions.length);
+      for (const cell of build.cells) cell.stateId ??= bot.registry.blocksByName[cell.name]?.defaultState;
       return build;
     },
     startSupply: () => {
@@ -108,8 +135,12 @@ function fixture(overrides = {}) {
       cleanup.abort = () => { calls.aborted++; };
       return cleanup;
     },
-    executeBuild: () => ({ status: "finished", errors: [] }),
+    executeBuild: () => {
+      calls.readsBeforeExecute = calls.positions.length;
+      return { status: "finished", errors: [] };
+    },
     changeGameMode: (_bot, mode, timeout, options) => {
+      if (mode === "creative") calls.readsBeforeCreative = calls.positions.length;
       calls.modes.push({ mode, timeout, force: options?.force ?? false });
       return true;
     },
@@ -209,8 +240,8 @@ test("production schematic builder rejects boundary-crossing door, bed, and doub
     });
     candidate.bot.blockAt = (position) => world.get(`${position.x},${position.y},${position.z}`)
       ?? { name: "air", getProperties: () => ({}) };
-    candidate.bot.dig = async () => { mutations++; };
-    candidate.bot.placeBlock = async () => { mutations++; };
+    candidate.bot.dig = () => { mutations++; };
+    candidate.bot.placeBlock = () => { mutations++; };
 
     assert.equal(await buildSchematic(candidate.bot, "boundary.schem", 3, 64, 5, candidate.dependencies), false, state);
     assert.deepEqual(candidate.calls.modes, [], `${state} must fail before Creative mode`);
@@ -284,11 +315,15 @@ test("Creative permission denial aborts the build and still restores mode and un
 });
 
 test("build success is verified and cleans supply, restores game mode and prior unstuck state", async () => {
-  const { bot, calls, dependencies } = fixture();
+  const { bot, build, calls, dependencies } = fixture();
   assert.equal(await buildSchematic(bot, "house.schem", null, null, null, dependencies), true);
   assert.equal(calls.cleaned, 1);
   assert.equal(calls.cancelled, 1);
-  assert.equal(calls.positions.length, 3, "early inspection, guarded preflight, and final verification inspect the target");
+  assert.equal(calls.planReadCounts.length, 2, "the target plan is reconstructed once after candidate selection");
+  assert.ok(calls.planReadCounts[1] > calls.planReadCounts[0], "candidate selection reads the target before rebuilding the selected plan");
+  assert.ok(calls.readsBeforeCreative > calls.planReadCounts[1], "pre-Creative obstruction preflight rereads the selected target");
+  assert.ok(calls.readsBeforeExecute > calls.readsBeforeCreative, "post-Creative guarded preflight rereads the target before builder dispatch");
+  assert.equal(calls.positions.length - calls.readsBeforeExecute, build.cells.length, "final verification reads every planned cell exactly once");
   assert.deepEqual(calls.modes.map(({ mode }) => mode), ["creative", "survival"]);
   assert.equal(calls.modes[1].force, true);
   assert.equal(calls.paused, false);
@@ -300,7 +335,7 @@ test("build success is verified and cleans supply, restores game mode and prior 
   assert.equal(alreadyPaused.calls.paused, true);
 });
 
-test("blocked barn-sized early inspection reports bounds and recovery without any setup or edits", async () => {
+test("balanced rejects a blocked barn-sized volume without setup or edits", async () => {
   const { bot, build, calls, dependencies } = fixture();
   bot.username = "Alice";
   build.dimensions = { width: 18, height: 17, length: 19 };
@@ -309,9 +344,11 @@ test("blocked barn-sized early inspection reports bounds and recovery without an
     build.cells.push({ position: { x, y, z }, name: "air", properties: {} });
   }
   let reads = 0;
+  const readPositions = [];
   const edits = [];
   bot.blockAt = (position) => {
     reads++;
+    readPositions.push({ x: position.x, y: position.y, z: position.z });
     const name = position.x === 35 && position.y === 103 && position.z === 65 ? "birch_leaves" : "air";
     return { name, position, diggable: true, getProperties: () => ({}) };
   };
@@ -324,14 +361,21 @@ test("blocked barn-sized early inspection reports bounds and recovery without an
   dependencies.executeBuild = () => { edits.push("build"); };
   assert.equal(await buildSchematic(bot, "barn.schem", 20, 103, 64, dependencies), false);
   assert.deepEqual(calls.startPosition, new FakeVec3(20, 103, 64));
-  assert.equal(reads, 18 * 17 * 19, "a rejection still inspects the entire available volume");
+  const obstructionIndex = 15 * 17 * 19 + 1;
+  assert.equal(reads, obstructionIndex + 1, "candidate inspection stops immediately after reading the first obstruction");
+  assert.deepEqual(readPositions.at(-1), { x: 35, y: 103, z: 65 }, "the early refusal reaches the exact obstructed cell");
   assert.deepEqual(edits, []);
   assert.deepEqual(calls.modes, []);
   const message = calls.logs.join(" ");
-  assert.match(message, /birch_leaves at 35,103,65/);
-  assert.match(message, /decay outside the volume.*structures\/data are protected/);
-  assert.match(message, /20,103,64 to 37,119,82 \(18x17x19\)/);
-  assert.match(message, /Move Alice to open level ground; retry or use the trusted coordinate build command/);
+  assert.match(message, /No fully inspected balanced candidate met the strict obstruction threshold \(complete search\)/);
+  assert.throws(() => inspectSchematicCell({ ...bot, blockAt: position => ({
+    name: position.x === 35 && position.y === 103 && position.z === 65 ? "birch_leaves" : "air",
+    position, diggable: true, getProperties: () => ({}),
+  }) }, { position: { x: 35, y: 103, z: 65 }, name: "air", properties: {} }, FakeVec3), error => {
+    assert.equal(error.code, "SCHEMATIC_OBSTRUCTION");
+    assert.match(error.message, /birch_leaves at 35,103,65: block is not on the conservative natural-obstruction allowlist/);
+    return true;
+  });
   assert.ok(message.length < 256, "representative guidance stays short enough for chat");
   const lease = acquireBuildLifecycle(bot);
   assert.ok(lease, "rejection releases the lifecycle");
@@ -345,8 +389,10 @@ test("protected, unloaded, and interrupted early scans never start mutation setu
     build.cells = [0, 1].map(x => ({ position: { x, y: 64, z: 0 }, name: "air", properties: {} }));
     const events = [];
     let reads = 0;
+    const readPositions = [];
     bot.blockAt = (position) => {
       reads++;
+      readPositions.push({ x: position.x, y: position.y, z: position.z });
       if (scenario === "interrupted" && reads === 1) bot.interrupt_code = true;
       if (scenario === "unloaded" && position.x === 0) return null;
       return { name: scenario === "chest" && position.x === 0 ? "chest" : "air", position, diggable: true };
@@ -361,9 +407,20 @@ test("protected, unloaded, and interrupted early scans never start mutation setu
     assert.equal(await buildSchematic(bot, "house.schem", null, null, null, dependencies), false, scenario);
     assert.deepEqual(events, [], scenario);
     assert.deepEqual(calls.modes, [], scenario);
-    assert.equal(reads, scenario === "interrupted" ? 1 : 2, scenario);
-    assert.match(calls.logs.join(" "), scenario === "chest" ? /chest.*protected/i
-      : scenario === "unloaded" ? /unloaded cell.*0,64,0/i : /cancelled/i);
+    assert.equal(reads, 1, scenario);
+    assert.deepEqual(readPositions, [{ x: 0, y: 64, z: 0 }], `${scenario} is identified at the exact first target cell`);
+    assert.match(calls.logs.join(" "), scenario === "interrupted" ? /cancelled/i
+      : /No fully inspected balanced candidate met the strict obstruction threshold \(complete search\)/);
+    if (scenario === "chest") {
+      const protectedPosition = { x: 0, y: 64, z: 0 };
+      assert.throws(() => inspectSchematicCell({ ...bot, blockAt: position => ({
+        name: "chest", position, diggable: false, getProperties: () => ({}),
+      }) }, { position: protectedPosition, name: "air", properties: {} }, FakeVec3), error => {
+        assert.equal(error.code, "SCHEMATIC_OBSTRUCTION");
+        assert.match(error.message, /chest at 0,64,0: valuable, interactive, or structural block is protected/);
+        return true;
+      });
+    }
     const lease = acquireBuildLifecycle(bot);
     assert.ok(lease, scenario);
     lease.release();
@@ -395,6 +452,7 @@ test("guarded clearing rescans the world after early inspection and before any e
 test("early interruption preserves a resumable origin, but an identity change cancels it", async () => {
   for (const boundary of ["interrupt", "world change"]) {
     const { bot, calls, dependencies } = fixture();
+    delete dependencies.placementOptions; // Exercise the fixed-origin default delicate path.
     const session = { cancelled: false };
     let reads = 0;
     let runs = 0;
@@ -405,7 +463,7 @@ test("early interruption preserves a resumable origin, but an identity change ca
         if (boundary === "interrupt") bot.interrupt_code = true;
         else bot._client.emit("respawn");
       }
-      return { name: "stone", getProperties: () => ({ axis: "y" }) };
+      return { name: "stone", stateId: bot.registry.blocksByName.stone.defaultState, getProperties: () => ({}) };
     };
     dependencies.executeBuild = () => { runs++; return { status: "finished", errors: [] }; };
     assert.equal(await buildSchematic(bot, "house.schem", 10, 70, 20, { ...dependencies, resumeSession: session }), false);
@@ -420,7 +478,7 @@ test("early interruption preserves a resumable origin, but an identity change ca
       bot.position = new FakeVec3(100, 80, 100);
       assert.equal(await buildSchematic(bot, "ignored.schem", null, null, null, { ...dependencies, resumeSession: session }), true);
       assert.deepEqual(calls.startPosition, new FakeVec3(10, 70, 20));
-      assert.equal(runs, 1);
+      assert.equal(runs, 0, "delicate verifies an already-matching cell without invoking the legacy builder");
     }
   }
 });
@@ -454,12 +512,22 @@ test("verification mismatch, cleanup rejection, and hanging cleanup never claim 
   const mismatch = fixture();
   mismatch.bot.blockAt = () => ({ name: "dirt", getProperties: () => ({}) });
   assert.equal(await buildSchematic(mismatch.bot, "house.schem", null, null, null, mismatch.dependencies), false);
-  assert.match(mismatch.calls.logs.join(" "), /Blocked: dirt.*unsafe blocks/i);
+  assert.match(mismatch.calls.logs.join(" "), /No fully inspected balanced candidate/i);
 
   const wrongProperty = fixture();
-  wrongProperty.bot.blockAt = () => ({ name: "stone", getProperties: () => ({ axis: "x" }) });
+  wrongProperty.build.plan[0].name = wrongProperty.build.cells[0].name = "oak_log";
+  wrongProperty.build.plan[0].properties = wrongProperty.build.cells[0].properties = { axis: "y" };
+  wrongProperty.bot.blockAt = () => ({ name: "oak_log", getProperties: () => ({ axis: "x" }) });
   assert.equal(await buildSchematic(wrongProperty.bot, "house.schem", null, null, null, wrongProperty.dependencies), false);
-  assert.match(wrongProperty.calls.logs.join(" "), /Blocked: stone.*protected/i);
+  assert.match(wrongProperty.calls.logs.join(" "), /No fully inspected balanced candidate/i);
+
+  const changedAfterBuild = fixture();
+  changedAfterBuild.dependencies.executeBuild = () => {
+    changedAfterBuild.bot.blockAt = () => ({ name: "dirt", getProperties: () => ({}) });
+    return { status: "finished", errors: [] };
+  };
+  assert.equal(await buildSchematic(changedAfterBuild.bot, "house.schem", null, null, null, changedAfterBuild.dependencies), false);
+  assert.match(changedAfterBuild.calls.logs.join(" "), /verification failed.*expected stone, found dirt/i);
 
   const cleanupError = fixture({ startSupply: () => {
     const cleanup = () => { throw new Error("slot restore failed"); };
@@ -500,12 +568,12 @@ test("clears foliage only inside the transformed volume and verifies intended-ai
     const found = world.get(`${position.x},${position.y},${position.z}`);
     return found ? { ...found, position } : { name: "air", diggable: false, position, getProperties: () => ({}) };
   };
-  bot.dig = async (target) => {
+  bot.dig = (target) => {
     calls.positions.push(target.position);
     world.set(`${target.position.x},${target.position.y},${target.position.z}`, { name: "air", getProperties: () => ({}) });
   };
-  dependencies.executeBuild = async () => {
-    world.set("3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) });
+  dependencies.executeBuild = () => {
+    world.set("3,64,5", { name: "stone", getProperties: () => ({}) });
     return { status: "finished", errors: [] };
   };
 
@@ -521,11 +589,11 @@ test("clears foliage only inside the transformed volume and verifies intended-ai
   ];
   obstructedAir.build.dimensions.width = 2;
   const verifyWorld = new Map([
-    ["3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) }],
+    ["3,64,5", { name: "stone", getProperties: () => ({}) }],
     ["4,64,5", { name: "air", getProperties: () => ({}) }],
   ]);
   obstructedAir.bot.blockAt = (position) => verifyWorld.get(`${position.x},${position.y},${position.z}`);
-  obstructedAir.dependencies.executeBuild = async () => {
+  obstructedAir.dependencies.executeBuild = () => {
     verifyWorld.set("4,64,5", { name: "dirt", getProperties: () => ({}) });
     return { status: "finished", errors: [] };
   };
@@ -571,7 +639,7 @@ test("combat interruption resumes with the captured source and origin after the 
   assert.equal(await buildSchematic(bot, "house.schem", null, null, null, { ...dependencies, resumeSession: session }), false);
   assert.equal(session.resumeEligible, true);
   assert.deepEqual(session.context.origin, { x: 3, y: 64, z: -2 });
-  assert.deepEqual(session.context.placementOptions, { mode: null, radius: 4, threshold: 9 });
+  assert.deepEqual(session.context.placementOptions, { mode: "balanced", radius: 0, threshold: 9, orientation: "north", strategy: "stepped", step: 2, policy: "first_valid", bisectDepth: 2 });
   assert.ok(Object.isFrozen(session.context.placementOptions));
   const firstSchematic = session.context.schematic;
   bot.position = new FakeVec3(100.7, 80.2, 200.9);
@@ -638,15 +706,15 @@ test("interrupted recovery accepts only already-cleared natural cells and preser
     const found = world.get(`${position.x},${position.y},${position.z}`);
     return found ? { ...found, position } : { name: "air", position, getProperties: () => ({}) };
   };
-  bot.dig = async (target) => world.set(`${target.position.x},${target.position.y},${target.position.z}`, {
+  bot.dig = (target) => world.set(`${target.position.x},${target.position.y},${target.position.z}`, {
     name: "air", getProperties: () => ({}),
   });
   const session = { cancelled: false };
   let attempts = 0;
-  dependencies.executeBuild = async () => {
+  dependencies.executeBuild = () => {
     attempts++;
     if (attempts === 1) return { status: "interrupted", errors: [] };
-    world.set("3,64,5", { name: "stone", getProperties: () => ({ axis: "y" }) });
+    world.set("3,64,5", { name: "stone", getProperties: () => ({}) });
     return { status: "finished", errors: [] };
   };
 

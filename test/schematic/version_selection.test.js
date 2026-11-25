@@ -13,6 +13,7 @@ import minecraftData from "minecraft-data";
 import nbt from "prismarine-nbt";
 import { SCHEMATICS_DIR, listSchematicEntries, listSchematics, resolveSchematicPath, conservativeBotVersion } from "../../src/utils/schematic/paths.js";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
+import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
 import { readSchematic } from "../../src/utils/schematic/reader.js";
 
 import { syntheticSponge } from "./synthetic_sponge.js";
@@ -38,7 +39,7 @@ async function manifest(pack, groups) {
   await writeFile(path.join(pack, "index.json"), JSON.stringify({ schemaVersion: 2, groups }));
 }
 
-test("synthetic pack3 builds selected 1.21.4 and 26.1 chain derivatives", async () => {
+test("synthetic pack3 selects and plans 1.21.4 and 26.1 chain derivatives before delicate rejects them", async () => {
   await fixture(async (root, pack) => {
     await manifest(pack, { 8: { 13: "observatory.schem" } });
     const base = path.join(pack, "observatory.schem");
@@ -47,27 +48,24 @@ test("synthetic pack3 builds selected 1.21.4 and 26.1 chain derivatives", async 
       const result = spawnSync(process.env.HISTORY_TEST_PYTHON || "python3", [compiler, "compile",
         path.join(path.dirname(SCHEMATICS_DIR), fixtureBlueprint), base, "--convert-to", version, "--allow-unverified"], { encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
-      const world = new Map();
-      const key = p => `${p.x},${p.y},${p.z}`;
       const bot = Object.assign(new EventEmitter(), { version, registry: minecraftData(version),
         game: { gameMode: "survival", dimension: "overworld" }, entity: {}, world: {}, _client: new EventEmitter(),
-        blockAt: p => world.get(key(p)) ?? { name: "air", getProperties: () => ({}) } });
+        blockAt: () => ({ name: "air", stateId: 0, getProperties: () => ({}) }) });
       const logs = [];
+      let plannedBuild, mutations = 0;
       const success = await buildSchematic(bot, "pack3:8:13", 0, 64, 0, {
         allowNonvalidatedSchematic: true,
         resolvePath: (_selector, _directory, options) => resolveSchematicPath(`pack3:observatory.mc${version}.nonvalidated.schem`, root, options),
-        changeGameMode: (_bot, mode) => { bot.game.gameMode = mode; return true; },
-        clearObstructions: () => ({ cleared: 0 }),
-        guardDestruction: (_bot, _build, _Vec3, run) => run(),
-        startSupply: () => async () => {},
-        executeBuild: (_bot, build) => {
-          assert.equal(build.plan.filter(entry => entry.name === chain).length, 1);
-          for (const entry of build.plan) world.set(key(entry.position), { name: entry.name, getProperties: () => entry.properties });
-          return { status: "finished", errors: [] };
-        },
+        makeBuild: (schematic, candidate, origin) => (plannedBuild = createModernBuild(schematic, candidate, origin)),
+        changeGameMode: () => { mutations++; },
+        startSupply: () => { mutations++; },
+        executeBuild: () => { mutations++; },
         writeLog: message => logs.push(message),
       });
-      assert.equal(success, true, logs.join("\n"));
+      assert.equal(success, false, logs.join("\n"));
+      assert.equal(plannedBuild.plan.filter(entry => entry.name === chain).length, 1);
+      assert.match(logs.join("\n"), /unsupported balanced target/i);
+      assert.equal(mutations, 0);
     }
   });
 });
@@ -152,7 +150,7 @@ test("recovery cancels legacy sessions, changed assets, changed family picks and
     const dependencies = { allowNonvalidatedSchematic: true, writeLog: message => logs.push(message),
       resolvePath: (selector, _dir, options) => resolveSchematicPath(selector, root, options) };
     const makeSession = async (resolvedPath = older) => ({ cancelled: false, resumeEligible: true, context: {
-      selector: "pack3:1:1", resolvedPath, source: await readFile(older), schematic: {}, origin: { x: 0, y: 0, z: 0 },
+      planContract: 'rotated-local-v1', placementOptions: { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north' }, selector: "pack3:1:1", resolvedPath, source: await readFile(older), schematic: {}, origin: { x: 0, y: 0, z: 0 },
     } });
     const legacy = await makeSession(path.join(pack, "recover.schem"));
     assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: legacy }), false);

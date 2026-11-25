@@ -68,7 +68,7 @@ export function fixture(names = ["cobblestone", "air", "stone", "air"], width = 
     },
   });
   const palette = names.map(name => data.blocksByName[name].defaultState);
-  const schematic = { size: new Vec3(width, 1, names.length / width), offset: new Vec3(0, 0, 0), palette,
+  const schematic = { version, size: new Vec3(width, 1, names.length / width), offset: new Vec3(0, 0, 0), palette,
     blocks: names.map((_, i) => i), getBlock: p => Block.fromStateId(palette[p.x + p.z * width], 0) };
   const dependencies = provenanceFixtureDependencies({
     resolvePath: () => `/schematics/test.mc${version}.schem`, fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),

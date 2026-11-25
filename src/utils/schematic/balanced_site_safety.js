@@ -21,13 +21,14 @@ export function captureBalancedBlockState(block, position) {
   return { position: { ...position }, name: block.name, properties: { ...properties }, attached, diggable: block.diggable };
 }
 
-function read(bot, position, Vec3Class) {
+function read(bot, position, Vec3Class, beforeRead = () => {}) {
+  beforeRead();
   try { return bot.blockAt(new Vec3Class(position.x, position.y, position.z)); }
   catch { throw unsafe(`Cannot inspect ${key(position)}`); }
 }
 
-function foundation(bot, position, Vec3Class) {
-  const block = read(bot, position, Vec3Class);
+function foundation(bot, position, Vec3Class, beforeRead) {
+  const block = read(bot, position, Vec3Class, beforeRead);
   const snapshot = captureBalancedBlockState(block, position);
   const definition = bot.registry?.blocksByName?.[block.name];
   const definitions = definition?.states;
@@ -64,8 +65,8 @@ function assertVolumeState(bot, snapshot) {
   }
 }
 
-function passiveNeighbor(bot, position, Vec3Class) {
-  const block = read(bot, position, Vec3Class);
+function passiveNeighbor(bot, position, Vec3Class, beforeRead) {
+  const block = read(bot, position, Vec3Class, beforeRead);
   const snapshot = captureBalancedBlockState(block, position);
   if (!isSupportedBalancedPassiveState(bot.registry, snapshot)
       || block.entity || block.blockEntity || block._blockEntity || block.nbt) {
@@ -117,20 +118,27 @@ function entities(bot, box) {
 }
 
 /** Candidate inspection is read-only and yields during large footprints. */
-export async function inspectBalancedCandidate(bot, build, offset, states, Vec3Class, check) {
-  assertBalancedTargets(bot, build);
-  for (const state of states) { check(); assertVolumeState(bot, state); }
+export async function inspectBalancedCandidate(bot, build, offset, states, Vec3Class, check, beforeRead = () => {}) {
+  for (let i = 0; i < build.cells.length; i += 128) {
+    check();
+    assertBalancedTargets(bot, { cells: build.cells.slice(i, i + 128) });
+    if (i + 128 < build.cells.length) { await yieldToEvents(); check(); }
+  }
+  for (let i = 0; i < states.length; i++) {
+    check(); assertVolumeState(bot, states[i]);
+    if ((i + 1) % 128 === 0) { await yieldToEvents(); check(); }
+  }
   const box = bounds(build, offset.dx, offset.dz);
   const support = [];
   for (let x = box.min.x; x < box.max.x; x++) for (let z = box.min.z; z < box.max.z; z++) {
     check();
-    support.push(foundation(bot, { x, y: box.min.y - 1, z }, Vec3Class));
+    support.push(foundation(bot, { x, y: box.min.y - 1, z }, Vec3Class, beforeRead));
     if (support.length % 128 === 0) { await yieldToEvents(); check(); }
   }
   const neighbors = [];
   for (const position of neighborPositions(box)) {
     check();
-    neighbors.push(passiveNeighbor(bot, position, Vec3Class));
+    neighbors.push(passiveNeighbor(bot, position, Vec3Class, beforeRead));
     if (neighbors.length % 128 === 0) { await yieldToEvents(); check(); }
   }
   entities(bot, box);

@@ -112,7 +112,7 @@ test("all 1.21.4 pack1 variants read and preflight against 26.1 using only the v
   console.log("PACK1_26_1_PREFLIGHT " + JSON.stringify({ passed: files.length - unsupported.length, unsupported }));
 });
 
-test("production buildSchematic reader and planner pass migrated bee-chain items downstream", async () => {
+test("production reader and planner preserve migrated bee-chain items before delicate rejects unsupported targets", async () => {
   const registry = require("minecraft-data")("26.1");
   const world = new Map();
   const key = ({ x, y, z }) => `${x},${y},${z}`;
@@ -125,35 +125,28 @@ test("production buildSchematic reader and planner pass migrated bee-chain items
     _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
     entity: { position: new Vec3(0, 64, 0) },
     blockAt(position) {
-      return world.get(key(position)) ?? { name: "air", getProperties: () => ({}) };
+      return world.get(key(position)) ?? { name: "air", stateId: registry.blocksByName.air.defaultState, getProperties: () => ({}) };
     },
   });
   let plannedBuild;
+  let mutations = 0;
   const success = await buildSchematic(bot, "pack1:2:1", 100, 64, -20, {
-    changeGameMode: async (_bot, mode) => { bot.game.gameMode = mode; return true; },
-    clearObstructions: async () => ({ cleared: 0 }),
-    guardDestruction: async (_bot, _build, _Vec3, run) => run(),
-    startSupply: () => async () => {},
-    executeBuild: async (_bot, build) => {
-      plannedBuild = build;
-      const chainEntries = build.plan.filter(entry => entry.name === "iron_chain");
-      assert.equal(chainEntries.length, 24);
-      for (const action of build.actions.filter(entry => entry.blockName === "iron_chain")) {
-        assert.equal(build.items[action.state].name, "iron_chain");
-        assert.deepEqual(action.properties, { axis: "y", waterlogged: false });
-      }
-      for (const entry of build.plan) {
-        world.set(key(entry.position), { name: entry.name, getProperties: () => entry.properties });
-      }
-      return { status: "finished", errors: [] };
-    },
+    makeBuild: (schematic, candidate, origin) => (plannedBuild = createModernBuild(schematic, candidate, origin)),
+    changeGameMode: () => { mutations++; return true; },
+    startSupply: () => { mutations++; },
+    executeBuild: () => { mutations++; },
     writeLog: message => logs.push(message),
   });
-  assert.equal(success, true, logs.join("\n"));
+  assert.equal(success, false, logs.join("\n"));
   assert.doesNotMatch(logs.join("\n"), /WARNING: schematic validation status HISTORICAL_UNKNOWN/);
   assert.equal(plannedBuild.plan.filter(entry => entry.name === "iron_chain").length, 24);
+  for (const action of plannedBuild.actions.filter(entry => entry.blockName === "iron_chain")) {
+    assert.equal(plannedBuild.items[action.state].name, "iron_chain");
+    assert.deepEqual(action.properties, { axis: "y", waterlogged: false });
+  }
+  assert.match(logs.join("\n"), /unsupported balanced target/i);
+  assert.equal(mutations, 0);
   assert.equal(bot.game.gameMode, "survival");
-  assert.equal(logs.at(-1), "Successfully built and verified schematic 02_bee_hot_air_balloon.mc26.1.schem.");
 });
 
 test("real listing and public wardrobe selectors reach preflight and fail closed for multi-block doors", () => {

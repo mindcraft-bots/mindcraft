@@ -564,8 +564,8 @@
                 switch (cfg.type) {
                     case 'placementMode':
                         input = document.createElement('select');
-                        for (const value of ['', 'safe', 'destructive', 'balanced']) input.add(new Option(value || 'legacy (null)', value));
-                        input.value = cfg.default ?? '';
+                        for (const value of ['delicate', 'raise', 'balanced', 'destructive']) input.add(new Option(value, value));
+                        input.value = cfg.default ?? 'delicate';
                         break;
                     case 'boolean':
                         input = document.createElement('input');
@@ -791,8 +791,15 @@
                 switch (cfg.type) {
                     case 'placementMode':
                         input = document.createElement('select');
-                        for (const value of ['', 'safe', 'destructive', 'balanced']) input.add(new Option(value || 'legacy (null)', value));
-                        input.value = settings[key] ?? '';
+                        for (const value of ['delicate', 'raise', 'balanced', 'destructive']) input.add(new Option(value, value));
+                        const configured = settings[key] ?? 'delicate';
+                        const normalized = typeof configured === 'string' ? configured.toLowerCase() : String(configured);
+                        if (!['delicate', 'raise', 'balanced', 'destructive'].includes(normalized)) {
+                            const invalid = new Option(`Invalid mode: ${normalized} (choose a valid mode)`, normalized);
+                            invalid.disabled = true;
+                            input.add(invalid);
+                        }
+                        input.value = normalized;
                         break;
                     case 'boolean':
                         input = document.createElement('input');

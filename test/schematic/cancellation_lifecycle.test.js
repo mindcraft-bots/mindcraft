@@ -7,6 +7,7 @@ import test from "node:test";
 import { beginCreativeSupply, loadSchematicBuilder } from "../../src/utils/schematic/builder_compat.js";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { runBuild } from "../../src/utils/schematic/run_build.js";
+import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 
 const require = createRequire(import.meta.url);
@@ -18,6 +19,7 @@ const VERSION = "1.20.4";
 const registry = minecraftData(VERSION);
 const Item = prismarineItem(VERSION);
 const stoneState = registry.blocksByName.stone.defaultState;
+const Block = require("prismarine-block")(VERSION);
 
 function deferred() {
   let resolve;
@@ -45,7 +47,7 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
     game: { gameMode, dimension: "overworld" },
     world: {},
     _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
-    entity: { position: new Vec3(0, 64, 2) },
+    entity: { position: new Vec3(0, 64, 2), width: 0.6, height: 1.8 },
     position: new Vec3(0, 64, 2),
     interrupt_code: false,
     modes: {
@@ -72,13 +74,10 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
     },
     loadPlugin(plugin) { plugin(bot); },
     blockAt(position) {
-      if (position.x === support.x && position.y === support.y && position.z === support.z) {
-        return { name: "stone", position: support, boundingBox: "block", diggable: false };
-      }
-      if (position.x === target.x && position.y === target.y && position.z === target.z && blockPlaced) {
-        return { name: "stone", position: target, boundingBox: "block", diggable: true };
-      }
-      return { name: "air", position, boundingBox: "empty", diggable: false };
+      const name = position.y === support.y || (position.x === target.x && position.y === target.y && position.z === target.z && blockPlaced) ? "stone" : "air";
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+      block.position = position;
+      return block;
     },
     async lookAt(position) {
       calls.look.push(position);
@@ -92,6 +91,7 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
     dig(block) { calls.dig.push(block); },
     setControlState() {},
   });
+  bot.entities = { self: bot.entity };
 
   if (realCreative) {
     bot.supportFeature = () => false;
@@ -127,10 +127,12 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
 }
 
 const tinySchematic = {
+  version: VERSION,
   size: new Vec3(1, 1, 1),
   palette: [stoneState],
   blocks: [0],
   offset: new Vec3(0, 0, 0),
+  getBlock: () => require("prismarine-block")(VERSION).fromStateId(stoneState, 0),
 };
 
 function dependencies(calls) {
@@ -139,6 +141,7 @@ function dependencies(calls) {
     fsAccess: async () => {},
     fsReadFile: () => Buffer.from("tiny schematic fixture"),
     SchematicClass: { read: () => tinySchematic },
+    placementOptions: resolvePlacementOptions({}, { mode: "balanced", radius: 0 }),
     executeBuild: (bot, build, options) => runBuild(bot, build, {
       ...options,
       pollMs: 5,

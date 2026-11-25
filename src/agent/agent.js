@@ -33,8 +33,8 @@ function prepareHumanBuild(agent, source, capability, message) {
     if (typeof parsed === 'string') return { error: parsed };
     if (parsed.commandName !== '!buildSchematic') return { error: 'Invalid schematic command; no build was started.' };
     try {
-        const [filename, x, y, z, mode, radius, threshold] = parsed.args;
-        const options = resolvePlacementOptions(settings, { mode, radius, threshold });
+        const [filename, x, y, z, mode, radius, threshold, orientation, strategy, step, policy, bisectDepth] = parsed.args;
+        const options = resolvePlacementOptions(settings, { mode, radius, threshold, orientation, strategy, step, policy, bisectDepth });
         if (options.mode === 'destructive') {
             // Generated code receives the mutable bot, including its event emitter.
             // It can forge native chat events; do not treat them as human ingress

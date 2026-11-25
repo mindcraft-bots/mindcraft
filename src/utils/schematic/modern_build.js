@@ -1,10 +1,12 @@
 import { createRequire } from "node:module";
+import { createStateTransformer, transformSchematic } from "./schematic_transform.js";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
 const Build = require("mineflayer-schem/lib/build.js");
 const MAX_DIMENSION = 256;
 const MAX_BLOCKS = 1_000_000;
+const LOCAL_PLANS = new WeakMap();
 
 const ITEM_NAME_OVERRIDES = Object.freeze({
   cocoa: "cocoa_beans",
@@ -23,10 +25,6 @@ const DOUBLE_PLANT_NAMES = new Set([
   "small_dripleaf",
   "pitcher_plant",
 ]);
-
-function isFiniteInteger(value) {
-  return Number.isSafeInteger(value) && value >= 0;
-}
 
 function copyProperties(properties) {
   return Object.freeze({ ...properties });
@@ -117,11 +115,46 @@ class ModernBuild extends Build {
   initializeBlocks() {}
 }
 
-/** Adapt a prismarine-schematic Schematic into mineflayer-schem's Build action contract. */
-export function createModernBuild(schematic, bot, startPos) {
+/** Decode and rotate once at a local minimum corner; relocation only translates this snapshot. */
+export function createModernBuild(schematic, bot, startPos, { orientation = "north" } = {}) {
   if (!bot || typeof bot.version !== "string") throw new TypeError("A Mineflayer bot with a version is required");
+  validateSchematic(schematic, startPos);
+  const registry = bot.registry ?? require("minecraft-data")(bot.version);
+  if (!registry?.blocksByStateId || !registry?.itemsByName) {
+    throw new TypeError(`No block/item registry is available for Minecraft ${bot.version}`);
+  }
+  const codec = createStateTransformer({ version: bot.version, registry });
+  const transformed = transformSchematic(schematic, { orientation, origin: { x: 0, y: 0, z: 0 }, codec });
+  const local = Object.freeze({
+    schematic, bot, registry, orientation,
+    size: Object.freeze({ ...transformed.size }),
+    cells: Object.freeze(transformed.cells.map(cell => Object.freeze({
+      index: cell.index, position: Object.freeze({ ...cell.position }), name: cell.name,
+      stateId: cell.stateId, properties: copyProperties(cell.properties),
+    }))),
+  });
+  return buildFromLocal(local, startPos);
+}
 
-  const { width, height, length, volume } = validateSchematic(schematic, startPos);
+/** Return a fresh builder backed by the same immutable transformed local cells. */
+export function translateModernBuild(build, startPos) {
+  const local = LOCAL_PLANS.get(build);
+  if (!local) throw new TypeError("Cannot translate an unverified schematic build");
+  return buildFromLocal(local, startPos);
+}
+
+export function isModernBuild(build) {
+  return LOCAL_PLANS.has(build);
+}
+
+function buildFromLocal(local, startPos) {
+  if (!startPos || ![startPos.x, startPos.y, startPos.z].every(Number.isSafeInteger)
+      || !["x", "y", "z"].every(key => Number.isSafeInteger(startPos[key] + local.size[key]))) {
+    throw new TypeError("Invalid translated schematic bounds");
+  }
+  const { schematic, bot, registry, orientation } = local;
+  const { x: width, y: height, z: length } = local.size;
+  const volume = local.cells.length;
   const at = new Vec3(startPos.x, startPos.y, startPos.z);
   const dimensions = Object.freeze({ width, height, length });
   // Build 1.5.2 expects legacy width/height/length fields and invokes initializeBlocks().
@@ -135,11 +168,8 @@ export function createModernBuild(schematic, bot, startPos) {
   build.cells = [];
   build.unsupported = [];
   build.skippedDependencies = [];
-
-  const registry = bot.registry ?? require("minecraft-data")(bot.version);
-  if (!registry?.blocksByStateId || !registry?.itemsByName) {
-    throw new TypeError(`No block/item registry is available for Minecraft ${bot.version}`);
-  }
+  build.orientation = orientation;
+  LOCAL_PLANS.set(build, local);
 
   const plan = [];
   const unsupported = [];
@@ -147,21 +177,10 @@ export function createModernBuild(schematic, bot, startPos) {
   const skippedDependencies = [];
 
   for (let index = 0; index < volume; index++) {
-    const paletteIndex = schematic.blocks[index];
-    if (!isFiniteInteger(paletteIndex) || paletteIndex >= schematic.palette.length) {
-      throw new TypeError(`Invalid palette index ${paletteIndex} at block index ${index}`);
-    }
-
-    const stateId = schematic.palette[paletteIndex];
-    if (!isFiniteInteger(stateId)) throw new TypeError(`Invalid block state ID ${stateId} at block index ${index}`);
-
-    const x = index % width;
-    const z = Math.floor(index / width) % length;
-    const y = Math.floor(index / (width * length));
-    const relative = new Vec3(x, y, z).plus(schematic.offset ?? new Vec3(0, 0, 0));
-    const decoded = typeof schematic.getBlock === "function" ? schematic.getBlock(relative) : null;
+    const cell = local.cells[index];
+    const { stateId, name, properties } = cell;
+    const { x, y, z } = cell.position;
     const registryState = registry.blocksByStateId[stateId];
-    const name = decoded?.name ?? registryState?.name;
 
     if (!name || !registryState || registryState.name !== name) {
       unsupported.push({
@@ -173,7 +192,6 @@ export function createModernBuild(schematic, bot, startPos) {
       });
       continue;
     }
-    const properties = copyProperties(decoded?.getProperties?.() ?? {});
     const position = Object.freeze({ x: startPos.x + x, y: startPos.y + y, z: startPos.z + z });
     const entry = Object.freeze({ position, name, properties, stateId });
     build.cells.push(entry);

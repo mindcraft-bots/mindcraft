@@ -72,14 +72,14 @@ test("command parser preserves fixed arity and supports build schematic coordina
   assert.match(results.stayNegativeExponent, /given 0 args, but requires 1 args/);
   assert.deepEqual(results.stayDecimal.args, [1]);
 
-  assert.deepEqual(results.buildNear.args, ["house.schem", null, null, null, null, null, null]);
-  assert.deepEqual(results.buildIndexedSelector.args, ["pack2:02:01", null, null, null, null, null, null]);
-  assert.deepEqual(results.buildIndexedSelectorUnpadded.args, ["pack2:2:1", null, null, null, null, null, null]);
-  assert.deepEqual(results.buildPackFilename.args, ["pack2:07_garden", null, null, null, null, null, null]);
-  assert.deepEqual(results.buildNulls.args, ["house.schem", null, null, null, null, null, null]);
-  assert.deepEqual(results.buildCoordinates.args, ["house.schem", -1.25, 64, 20, null, null, null]);
-  assert.deepEqual(results.buildExponents.args, ["house.schem", 100, -0.25, 30, null, null, null]);
-  assert.deepEqual(results.buildQuotedExponents.args, ["house.schem", 100, -0.25, 30, null, null, null]);
+  assert.deepEqual(results.buildNear.args, ["house.schem", ...Array(11).fill(null)]);
+  assert.deepEqual(results.buildIndexedSelector.args, ["pack2:02:01", ...Array(11).fill(null)]);
+  assert.deepEqual(results.buildIndexedSelectorUnpadded.args, ["pack2:2:1", ...Array(11).fill(null)]);
+  assert.deepEqual(results.buildPackFilename.args, ["pack2:07_garden", ...Array(11).fill(null)]);
+  assert.deepEqual(results.buildNulls.args, ["house.schem", ...Array(11).fill(null)]);
+  assert.deepEqual(results.buildCoordinates.args, ["house.schem", -1.25, 64, 20, ...Array(8).fill(null)]);
+  assert.deepEqual(results.buildExponents.args, ["house.schem", 100, -0.25, 30, ...Array(8).fill(null)]);
+  assert.deepEqual(results.buildQuotedExponents.args, ["house.schem", 100, -0.25, 30, ...Array(8).fill(null)]);
   assert.match(results.buildPartial, /must be provided together/);
   assert.match(results.buildBadCoordinate, /finite number or null/);
   assert.match(results.buildNonFinite, /finite number or null/);
@@ -101,9 +101,9 @@ test("command parser preserves fixed arity and supports build schematic coordina
   assert.equal(results.executionPackResult, "wrapped");
   assert.equal(results.executionIndexedResult, "wrapped");
   assert.match(results.invalidExecutionResult, /finite number or null/);
-  assert.deepEqual(results.executionArgs, [{}, "house.schem", null, null, null, { mode: null, radius: 4, threshold: 9 }]);
-  assert.deepEqual(results.executionPackArgs, [{}, "pack2:07_garden", null, null, null, { mode: null, radius: 4, threshold: 9 }]);
-  assert.deepEqual(results.executionIndexedArgs, [{}, "pack2:02:01", null, null, null, { mode: null, radius: 4, threshold: 9 }]);
+  assert.deepEqual(results.executionArgs, [{}, "house.schem", null, null, null, { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }]);
+  assert.deepEqual(results.executionPackArgs, [{}, "pack2:07_garden", null, null, null, { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }]);
+  assert.deepEqual(results.executionIndexedArgs, [{}, "pack2:02:01", null, null, null, { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 }]);
   assert.deepEqual(results.actionCalls, [
     { name: "action:buildSchematic", options: { timeout: -1, resume: false } },
     { name: "action:buildSchematic", options: { timeout: -1, resume: false } },

@@ -134,7 +134,7 @@ test('build consumes selected bytes despite replacement and recovery rejects cha
     assert.equal(mutations, 0);
     assert.match(logs.join(' '), /stop before mutation/);
     await artifact(file, '1.21.4', {}, 'minecraft:dirt');
-    const session = { cancelled: false, resumeEligible: true, context: { selector: 'race.schem', resolvedPath: file,
+    const session = { cancelled: false, resumeEligible: true, context: { planContract: 'rotated-local-v1', placementOptions: { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north' }, selector: 'race.schem', resolvedPath: file,
       source: original, schematic: {}, origin: { x: 0, y: 0, z: 0 } } };
     assert.equal(await buildSchematic(bot, 'race.schem', 0, 0, 0, { ...dependencies, resumeSession: session,
       resolvePath: (selector, _directory, options) => resolveSchematicPath(selector, root, options) }), false);
@@ -144,7 +144,7 @@ test('build consumes selected bytes despite replacement and recovery rejects cha
 
     const current = await readFile(file);
     const provenance = await schematicProvenance(file, current);
-    const makeSession = () => ({ cancelled: false, resumeEligible: true, context: { selector: 'race.schem', resolvedPath: file,
+    const makeSession = () => ({ cancelled: false, resumeEligible: true, context: { planContract: 'rotated-local-v1', placementOptions: { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north' }, selector: 'race.schem', resolvedPath: file,
       source: Buffer.from(current), sourceSha256: sha(current), provenanceIdentity: provenance.identity, schematic: {}, origin: { x: 0, y: 0, z: 0 } } });
     const changedReport = JSON.parse(await readFile(`${file}.provenance.json`, 'utf8'));
     changedReport.targetVersion = '1.21.4';

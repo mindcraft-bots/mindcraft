@@ -180,8 +180,8 @@ export function parseCommandMessage(message) {
                 break;
             case 'placementMode':
                 if (args[i] === 'null' || args[i] === null) arg = null;
-                else if (typeof args[i] !== 'string' || !/^"(?:safe|destructive|balanced)"$/i.test(args[i].trim()))
-                    return `Error: Param '${paramNames[i]}' must be a quoted placement mode or null.`;
+                else if (typeof args[i] !== 'string' || !/^"(?:delicate|raise|destructive|balanced)"$/i.test(args[i].trim()))
+                    return `Error: Param '${paramNames[i]}' must be quoted delicate, raise, balanced, or destructive, or null.`;
                 else arg = arg.toLowerCase();
                 break;
             case 'placementInteger':
@@ -190,6 +190,19 @@ export function parseCommandMessage(message) {
                     return `Error: Param '${paramNames[i]}' must be an integer or null.`;
                 else arg = Number(arg);
                 break;
+            case 'placementOrientation':
+                if (args[i] === 'null' || args[i] === null) arg = null;
+                else if (typeof args[i] !== 'string' || !/^"(?:north|east|south|west|n|e|s|w)"$/i.test(args[i].trim()))
+                    return `Error: Param '${paramNames[i]}' must be a quoted cardinal direction or null.`;
+                break;
+            case 'placementStrategy':
+            case 'placementPolicy': {
+                const pattern = param.type === 'placementStrategy' ? /^"(?:all|stepped|bisect)"$/ : /^"(?:first_valid|exhaustive)"$/;
+                if (args[i] === 'null' || args[i] === null) arg = null;
+                else if (typeof args[i] !== 'string' || !pattern.test(args[i].trim()))
+                    return `Error: Param '${paramNames[i]}' must be a quoted exact lowercase ${param.type === 'placementStrategy' ? 'strategy' : 'policy'} or null.`;
+                break;
+            }
             case 'BlockName':
             case 'BlockOrItemName':
             case 'ItemName':
@@ -200,7 +213,7 @@ export function parseCommandMessage(message) {
             default:
                 throw new Error(`Command '${commandName}' parameter '${paramNames[i]}' has an unknown type: ${param.type}`);
         }
-        if((arg === null && !['coordinate', 'placementMode', 'placementInteger'].includes(param.type)) || Number.isNaN(arg))
+        if((arg === null && !['coordinate', 'placementMode', 'placementInteger', 'placementOrientation', 'placementStrategy', 'placementPolicy'].includes(param.type)) || Number.isNaN(arg))
             return `Error: Param '${paramNames[i]}' must be of type ${param.type}.`
 
         if(typeof arg === 'number') { //Check the domain of numbers
@@ -292,8 +305,8 @@ export async function executeCommand(agent, message) {
             let args = parsed.args;
             if (parsed.commandName === '!buildSchematic') {
                 try {
-                    const [filename, x, y, z, mode, radius, threshold] = args;
-                    const options = resolvePlacementOptions(settings, { mode, radius, threshold });
+                    const [filename, x, y, z, mode, radius, threshold, orientation, strategy, step, policy, bisectDepth] = args;
+                    const options = resolvePlacementOptions(settings, { mode, radius, threshold, orientation, strategy, step, policy, bisectDepth });
                     if (options.mode === 'destructive')
                         return 'Destructive schematic mode requires an explicitly listed human sender through authenticated public player chat; no build was started.';
                     args = [filename, x, y, z, options];

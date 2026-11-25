@@ -48,8 +48,8 @@
     },
     "schematic_placement_mode": {
         "type": "placementMode",
-        "description": "Legacy (null), bounded safe, balanced, or destructive for explicitly listed humans via authenticated public Minecraft chat.",
-        "default": null
+        "description": "Delicate (default, no clearing), raise (bounded dirt foundation), balanced, or destructive for explicitly listed humans via authenticated public Minecraft chat.",
+        "default": "delicate"
     },
     "schematic_balanced_radius": {
         "type": "number",
@@ -60,6 +60,26 @@
         "type": "number",
         "description": "Strict balanced full-volume mismatch threshold, integer 1–4097.",
         "default": 9
+    },
+    "schematic_balanced_strategy": {
+        "type": "string",
+        "description": "Balanced search strategy (exact lowercase): all, stepped, or bisect.",
+        "default": "stepped"
+    },
+    "schematic_balanced_step": {
+        "type": "number",
+        "description": "Balanced search step, integer 1–16.",
+        "default": 2
+    },
+    "schematic_balanced_policy": {
+        "type": "string",
+        "description": "Balanced selection policy (exact lowercase): first_valid or exhaustive.",
+        "default": "first_valid"
+    },
+    "schematic_balanced_bisect_depth": {
+        "type": "number",
+        "description": "Balanced bisect depth, integer 0–3.",
+        "default": 2
     },
     "speak": {
         "type": "boolean",

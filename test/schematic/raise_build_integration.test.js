@@ -44,12 +44,12 @@ function fixture(names = ["stone", "stone"]) {
   });
   loadSchematicBuilder(bot);
   const palette = names.map(name => data.blocksByName[name].defaultState);
-  const schematic = { size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
+  const schematic = { version: "1.20.4", size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
     blocks: names.map((_, i) => i), getBlock: p => Block.fromStateId(palette[p.x], 0) };
   const dependencies = provenanceFixtureDependencies({
-    resolvePath: () => "/schematics/safe.mc1.20.4.schem", fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
+    resolvePath: () => "/schematics/raise.mc1.20.4.schem", fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
     validateSource: () => {}, SchematicClass: { read: () => schematic },
-    placementOptions: resolvePlacementOptions({ schematic_placement_mode: "safe" }),
+    placementOptions: resolvePlacementOptions({ schematic_placement_mode: "raise" }),
     changeGameMode: async (_bot, mode) => { modes.push(mode); bot.game.gameMode = mode; await dependencies.onTransition?.(mode); return true; },
     writeLog: message => logs.push(message),
   });
@@ -59,7 +59,7 @@ function fixture(names = ["stone", "stone"]) {
     bot._client.emit("block_change", { location: position, type: block.stateId });
   }
   bot._client.write = (name, packet) => {
-    if (name === "block_dig") throw new Error("Safe build must not dig");
+    if (name === "block_dig") throw new Error("Raise build must not dig");
     if (name === "set_creative_slot") {
       slots.push(null);
       setImmediate(() => inventory.emit(`updateSlot:${packet.slot}`, null, null));
@@ -76,11 +76,11 @@ function fixture(names = ["stone", "stone"]) {
       dependencies.onConfirm?.(target);
     });
   };
-  return { bot, world, writes, modes, logs, slots, dependencies,
-    run: () => buildSchematic(bot, "safe.schem", 0, 64, 0, dependencies) };
+  return { bot, world, writes, modes, logs, slots, dependencies, schematic,
+    run: () => buildSchematic(bot, "raise.schem", 0, 64, 0, dependencies) };
 }
 
-test("production safe path raises the origin, fills dirt first, places and restores supply", async () => {
+test("production raise path raises the origin, fills dirt first, places and restores supply", async () => {
   const f = fixture();
   f.world.set("0,64,0", "dirt");
   assert.equal(await f.run(), true, f.logs.join("; "));
@@ -91,14 +91,28 @@ test("production safe path raises the origin, fills dirt first, places and resto
   assert.match(f.logs.join(" "), /origin 0,65,0/);
 });
 
-test("flat safe build skips an already correct target", async () => {
+test("flat raise build skips an already correct target", async () => {
   const f = fixture(); f.world.set("0,64,0", "stone");
   // Both columns are already at the requested height; first is correct.
   assert.equal(await f.run(), true, f.logs.join("; "));
   assert.deepEqual(f.writes, [["1,64,0", "stone"]]);
 });
 
-test("safe mode refuses unverified bounds, unsafe neighbors and unreachable placement before Creative", async () => {
+test("raise translates a rotated footprint and its air cells without decoding twice", async () => {
+  const f = fixture(["stone", "air"]);
+  f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+  let reads = 0;
+  const getBlock = f.schematic.getBlock;
+  f.schematic.getBlock = p => { reads++; return getBlock(p); };
+  f.world.set("0,64,0", "dirt");
+  assert.equal(await f.run(), true, f.logs.join("; "));
+  assert.equal(reads, 2);
+  assert.deepEqual(f.writes, [["0,64,1", "dirt"], ["0,65,0", "stone"]]);
+  assert.match(f.logs.join(" "), /origin 0,65,0/);
+  assert.equal(f.bot.blockAt(new Vec3(0, 65, 1)).name, "air");
+});
+
+test("raise mode refuses unverified bounds, unsafe neighbors and unreachable placement before Creative", async () => {
   for (const change of [f => { delete f.bot.registry.dimensionsByName.overworld; },
     f => { f.bot.game.height = 256; },
     f => { f.bot.game.height = 130; f.bot.registry.dimensionsByName.overworld.height = 130; },
@@ -109,7 +123,7 @@ test("safe mode refuses unverified bounds, unsafe neighbors and unreachable plac
   }
 });
 
-test("safe mode rechecks site after Creative transition before any placement", async () => {
+test("raise mode rechecks site after Creative transition before any placement", async () => {
   const f = fixture();
   f.dependencies.onTransition = mode => { if (mode === "creative") f.world.set("-1,64,0", "chest"); };
   assert.equal(await f.run(), false);
@@ -117,7 +131,7 @@ test("safe mode rechecks site after Creative transition before any placement", a
   assert.deepEqual(f.modes, ["creative", "survival"]);
 });
 
-test("safe final packet authorization refuses a site changed during native aiming", async () => {
+test("raise final packet authorization refuses a site changed during native aiming", async () => {
   const f = fixture();
   f.dependencies.onAim = () => { f.world.set("-1,64,0", "chest"); };
   assert.equal(await f.run(), false);
@@ -126,7 +140,7 @@ test("safe final packet authorization refuses a site changed during native aimin
   assert.match(f.logs.join(" "), /site changed|unsupported/i);
 });
 
-test("safe confirmation revalidates the exact prefix before further writes", async () => {
+test("raise confirmation revalidates the exact prefix before further writes", async () => {
   const f = fixture(); f.world.set("0,64,0", "dirt");
   f.dependencies.onConfirm = () => { f.world.set("1,65,0", "stone"); };
   assert.equal(await f.run(), false);
@@ -135,7 +149,7 @@ test("safe confirmation revalidates the exact prefix before further writes", asy
   assert.deepEqual(f.modes, ["creative", "survival"]);
 });
 
-test("safe interruption never enables managed auto-resume", async () => {
+test("raise interruption never enables managed auto-resume", async () => {
   const f = fixture();
   const session = { cancelled: false, resumeEligible: false };
   f.dependencies.resumeSession = session;
@@ -147,7 +161,7 @@ test("safe interruption never enables managed auto-resume", async () => {
   assert.equal(session.context, null);
 });
 
-test("an unconfirmed safe placement quarantines subsequent authorized writes", async () => {
+test("an unconfirmed raise placement quarantines subsequent authorized writes", async () => {
   const f = fixture(["stone"]); f.dependencies.noConfirmation = true;
   assert.equal(await f.run(), false);
   assert.deepEqual(f.writes, [["0,64,0", "stone"]]);

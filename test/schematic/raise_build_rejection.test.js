@@ -3,7 +3,7 @@ import test from "node:test";
 import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 
-const options = resolvePlacementOptions({ schematic_placement_mode: "safe" });
+const options = resolvePlacementOptions({ schematic_placement_mode: "raise" });
 
 function fixture(world, session = undefined) {
   const calls = [];
@@ -25,7 +25,7 @@ function fixture(world, session = undefined) {
   return { bot, calls, logs, run: () => buildSchematic(bot, "synthetic.schem", 0, 64, 0, dependencies) };
 }
 
-test("safe recovery is disabled and a saved session is cancelled before any operation", async () => {
+test("raise recovery is disabled and a saved session is cancelled before any operation", async () => {
   const session = { cancelled: false, resumeEligible: true, context: { placementOptions: options, origin: { x: 0, y: 64, z: 0 } } };
   const f = fixture({}, session);
   assert.equal(await f.run(), false);

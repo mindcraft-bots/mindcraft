@@ -16,9 +16,13 @@ const settings = {
     "auto_open_ui": false, // opens UI in browser on startup
 
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
-    "schematic_placement_mode": null, // null keeps legacy; destructive requires explicitly listed human Minecraft chat ingress
+    "schematic_placement_mode": "delicate", // default: no clearing; destructive requires explicitly listed human Minecraft chat ingress
     "schematic_balanced_radius": 4, // integer 0-16
     "schematic_balanced_threshold": 9, // strict obstruction count limit, integer 1-4097
+    "schematic_balanced_strategy": "stepped", // all (full disk), stepped or bisect (sampled)
+    "schematic_balanced_step": 2, // integer 1-16
+    "schematic_balanced_policy": "first_valid", // first_valid or exhaustive over generated candidates
+    "schematic_balanced_bisect_depth": 2, // integer 0-3
     // "base_profile": "_default", // survival, assistant, creative, or god_mode
     "profiles": [
         "./andy.json",

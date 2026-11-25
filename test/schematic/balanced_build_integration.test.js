@@ -45,7 +45,7 @@ function fixture(names = ["stone"], options = {}) {
     builder: { clearArea: async () => {} },
   });
   const palette = names.map(name => data.blocksByName[name].defaultState);
-  const schematic = { size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
+  const schematic = { version: "1.20.4", size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
     blocks: names.map((_, i) => i), getBlock: position => Block.fromStateId(palette[position.x], 0) };
   const dependencies = provenanceFixtureDependencies({
     resolvePath: () => "/schematics/test.mc1.20.4.schem", fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
@@ -124,12 +124,12 @@ test("balanced rejects incomplete, extra, fluid-bearing and invalid passive targ
   for (const [name, properties] of [["stone", { waterlogged: true }], ["stone", { powered: true }],
     ["oak_log", {}], ["oak_log", { axis: "diagonal" }], ["grass_block", { snowy: "false" }]]) {
     const f = fixture([name], { radius: 0 });
-    f.schematic.getBlock = () => ({ name, getProperties: () => properties });
+    f.schematic.getBlock = () => ({ name, stateId: f.schematic.palette[0], getProperties: () => properties });
     assert.equal(await f.run(), false, `${name}: ${JSON.stringify(properties)}`);
     assert.deepEqual(f.calls.modes, []);
     assert.deepEqual(f.calls.writes, []);
     assert.equal(f.calls.supply, 0);
-    assert.match(f.calls.logs.join(" "), /unsupported balanced target/i);
+    assert.match(f.calls.logs.join(" "), /state ID\/properties mismatch|unclassified|unsupported balanced target/i);
   }
 });
 
@@ -276,18 +276,18 @@ test("balanced resumes recheck neighboring physics at the frozen origin before C
   assert.equal(f.calls.supply, 0);
 });
 
-test("the new target policy is balanced-only, preserving legacy single-block admission", async () => {
+test("the delicate default also refuses active targets before Creative", async () => {
   for (const name of ["redstone_block", "sponge", "piston"]) {
     const f = fixture([name]);
     f.dependencies.placementOptions = resolvePlacementOptions({});
-    assert.equal(await f.run(), true, name);
-    assert.equal(f.calls.writes.length, 1);
-    assert.deepEqual(f.calls.modes, ["creative", "survival"]);
+    assert.equal(await f.run(), false, name);
+    assert.equal(f.calls.writes.length, 0);
+    assert.deepEqual(f.calls.modes, []);
   }
 });
 
 test("balanced ranks exact mismatches, honors explicit anchor and edits only after planning", async () => {
-  const f = fixture(["stone"], { radius: 1, threshold: 2 });
+  const f = fixture(["stone"], { radius: 1, threshold: 2, strategy: "all", policy: "exhaustive" });
   f.world.set("-1,64,0", "stone");
   f.world.set("0,64,-1", "stone");
   assert.equal(await f.run(), true);
@@ -339,9 +339,7 @@ test("changes after Creative transition abort without approving new blocks, supp
 
 test("budget and cancellation abort without writes or Creative transition", async () => {
   const big = fixture(Array(160).fill("air"), { radius: 16 });
-  assert.equal(await big.run(), false);
-  assert.match(big.calls.logs.join(" "), /budget/);
-  assert.deepEqual(big.calls.writes, []);
+  assert.equal(await big.run(), true); // Actual reads, not a pessimistic full-search estimate.
   const cancelled = fixture(["stone"], { radius: 1 });
   cancelled.bot.interrupt_code = true;
   assert.equal(await cancelled.run(), false);
@@ -380,7 +378,7 @@ test("a different safe obstruction appearing during navigation is not newly appr
 });
 
 test("eligible resume retains selected origin and options without searching again", async () => {
-  const f = fixture(["stone"], { radius: 1 });
+  const f = fixture(["stone"], { radius: 1, strategy: "all", policy: "exhaustive" });
   const session = { cancelled: false };
   f.dependencies.resumeSession = session;
   f.world.set("-1,64,0", "stone");
@@ -394,4 +392,92 @@ test("eligible resume retains selected origin and options without searching agai
   assert.equal(await f.run(99, 70, 99), true);
   assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
   assert.ok(!f.calls.reads.includes("99,70,99"));
+});
+
+test("rotated balanced selection translates one full local plan and resumes at its frozen origin", async () => {
+  const f = fixture(["stone", "air", "air", "air", "air", "air"], { radius: 1, strategy: "all", policy: "exhaustive" });
+  f.schematic.size = new Vec3(3, 1, 2);
+  f.schematic.offset = new Vec3(4, -2, 8);
+  let decodes = 0;
+  f.schematic.getBlock = p => {
+    decodes++;
+    const index = (p.z - 8) * 3 + p.x - 4;
+    return Block.fromStateId(f.schematic.palette[index], 0);
+  };
+  f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+  const session = { cancelled: false };
+  f.dependencies.resumeSession = session;
+  f.world.set("0,64,0", "stone");
+  let captured;
+  f.dependencies.onBuild = build => { captured = build; return { status: "interrupted", errors: [] }; };
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.equal(decodes, 6, "site relocation does not rotate or decode again");
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(session.context.origin, { x: -1, y: 64, z: 0 });
+  assert.equal(session.context.placementOptions.orientation, "east");
+  assert.deepEqual(captured.dimensions, { width: 2, height: 1, length: 3 });
+  assert.deepEqual(captured.cells.map(c => [key(c.position), c.name]), [
+    ["-1,64,0", "air"], ["0,64,0", "stone"], ["-1,64,1", "air"],
+    ["0,64,1", "air"], ["-1,64,2", "air"], ["0,64,2", "air"],
+  ]);
+  assert.ok(Object.isFrozen(session.context.placementOptions));
+  f.dependencies.onBuild = () => ({ status: "finished", errors: [] });
+  assert.equal(await f.run(99, 80, 99), true, f.calls.logs.join("; "));
+  assert.equal(decodes, 12);
+  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+});
+
+test("balanced recovery refuses changed orientation, changed rotated source, and legacy sessions before edits", async () => {
+  for (const mutation of ["orientation", "source", "legacy"]) {
+    const f = fixture(["stone", "air"], { radius: 0 });
+    f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "south" };
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false);
+    assert.equal(session.resumeEligible, true);
+    if (mutation === "orientation") f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "west" };
+    if (mutation === "source") f.schematic.blocks.reverse();
+    if (mutation === "legacy") delete session.context.planContract;
+    f.calls.modes.length = 0; f.calls.writes.length = 0; f.calls.supply = 0;
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.modes, []); assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.supply, 0);
+    assert.equal(session.context, null);
+  }
+});
+
+test("final verification rejects a matching name and properties with a wrong state ID", async () => {
+  const f = fixture(["stone"], { radius: 0 });
+  f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+  f.world.set("0,64,0", "stone");
+  const read = f.bot.blockAt.bind(f.bot);
+  f.dependencies.onBuild = () => {
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "0,64,0") block.stateId++;
+      return block;
+    };
+    return { status: "finished", errors: [] };
+  };
+  assert.equal(await f.run(), false);
+  assert.match(f.calls.logs.join(" "), /verification failed.*expected state/i);
+  assert.deepEqual(f.calls.writes, []);
+});
+
+test("balanced forwards search settings and reports sampled versus complete selection", async () => {
+  for (const [options, origin, status] of [
+    [{ radius: 1, strategy: "all", policy: "exhaustive" }, -1, /sampled search \(all\/exhaustive, 2\/5 candidates/],
+    [{ radius: 1, strategy: "all", policy: "first_valid" }, 0, /sampled search \(all\/first_valid/],
+    [{ radius: 1, strategy: "stepped", step: 2, policy: "exhaustive" }, 0, /sampled search \(stepped\/exhaustive/],
+    [{ radius: 1, strategy: "bisect", bisectDepth: 0, policy: "exhaustive" }, 0, /sampled search \(bisect\/exhaustive/],
+  ]) {
+    const f = fixture(["stone"], options);
+    f.world.set("-1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.equal(f.calls.origins[0].x, origin);
+    assert.match(f.calls.logs.join(" "), status);
+  }
+  const complete = fixture(["stone"], { radius: 1, strategy: "all", policy: "exhaustive" });
+  assert.equal(await complete.run(), true, complete.calls.logs.join("; "));
+  assert.equal(complete.calls.origins[0].x, 0);
+  assert.match(complete.calls.logs.join(" "), /complete search \(all\/exhaustive, 5\/5 candidates/);
 });
