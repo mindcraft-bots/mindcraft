@@ -140,7 +140,10 @@ export function isHuntable(mob) {
 
 export function isHostile(mob) {
     if (!mob || !mob.name) return false;
-    return  (mob.type === 'mob' || mob.type === 'hostile') && mob.name !== 'iron_golem' && mob.name !== 'snow_golem';
+    const name = String(mob.name).toLowerCase();
+    // Endermen and zombified piglins are neutral unless provoked.
+    const neutral = ['iron_golem', 'snow_golem', 'enderman', 'zombified_piglin'];
+    return (mob.type === 'mob' || mob.type === 'hostile') && !neutral.includes(name);
 }
 
 // blocks that don't work with collectBlock, need to be manually collected
