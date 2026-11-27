@@ -1,5 +1,29 @@
 import { strictFormat } from '../utils/text.js';
 
+// The answer is what a thinking model leaves outside its reasoning trace. Some
+// models put the whole answer inside the trace, and newer Ollama versions send the
+// trace in message.thinking, so fall back to the trace rather than returning ''.
+export function selectResponseText(content, thinking = '') {
+    const text = typeof content === 'string' ? content : '';
+    const answer = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    if (answer) {
+        return answer;
+    }
+
+    const trace = [];
+    text.replace(/<think>([\s\S]*?)<\/think>/g, (_, inner) => {
+        trace.push(inner.trim());
+        return '';
+    });
+    const fromTrace = trace.filter(Boolean).join('\n').trim();
+    if (fromTrace) {
+        return fromTrace;
+    }
+
+    const separate = typeof thinking === 'string' ? thinking.trim() : '';
+    return separate || text.trim();
+}
+
 export class Ollama {
     static prefix = 'ollama';
     constructor(model_name, url, params) {
@@ -22,6 +46,7 @@ export class Ollama {
             attempt++;
             console.log(`Awaiting local response... (model: ${model}, attempt: ${attempt})`);
             let res = null;
+            let thinking = '';
             try {
                 let apiResponse = await this.send(this.chat_endpoint, {
                     model: model,
@@ -31,6 +56,7 @@ export class Ollama {
                 });
                 if (apiResponse) {
                     res = apiResponse['message']['content'];
+                    thinking = apiResponse['message']['thinking'];
                 } else {
                     res = 'No response data.';
                 }
@@ -54,9 +80,7 @@ export class Ollama {
             if (hasCloseTag && !hasOpenTag) {
                 res = '<think>' + res;
             }
-            if (hasOpenTag && hasCloseTag) {
-                res = res.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-            }
+            res = selectResponseText(res, thinking);
             finalRes = res;
             break;
         }
