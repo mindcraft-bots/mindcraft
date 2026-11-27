@@ -7,10 +7,20 @@ import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { discoverSchematicTests } from '../run_schematic_tests.mjs';
+import { discoverSchematicTests, selectSchematicTests } from '../run_schematic_tests.mjs';
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url));
 const runner = path.join(projectRoot, 'test/run_schematic_tests.mjs');
+
+test('fixed schematic selections are disjoint and exhaustive', () => {
+    const files = discoverSchematicTests(path.join(projectRoot, 'test/schematic'));
+    const generic = selectSchematicTests(files, 'generic-isolation');
+    const other = selectSchematicTests(files, 'other');
+    assert.equal(generic.length, 1);
+    assert.deepEqual([...generic, ...other].sort(), files);
+    assert.throws(() => selectSchematicTests(other, 'generic-isolation'));
+    assert.throws(() => selectSchematicTests(files, 'unknown'));
+});
 
 function fixture(t) {
     const root = mkdtempSync(path.join(os.tmpdir(), 'schematic discovery '));

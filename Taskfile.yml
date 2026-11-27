@@ -1,5 +1,29 @@
 version: '3'
 tasks:
+  ci:isolated:install:
+    desc: Create a private CI-lock snapshot and install
+    cmds:
+      - python3 scripts/run_isolatedci.py install
+  ci:isolated:live:
+    desc: Run live schematic CI in a private snapshot
+    cmds:
+      - python3 scripts/run_isolatedci.py live
+  ci:isolated:full:
+    desc: Run and time the full gate in a private snapshot
+    cmds:
+      - python3 scripts/run_isolatedci.py full --jobs 2
+  ci:isolated:cache-tests:
+    desc: Run focused cache and build tests in a private snapshot
+    cmds:
+      - python3 scripts/run_isolatedci.py cache-tests
+  schematics:list:
+    desc: List available blueprint packs
+    cmds:
+      - python3 schematics/tooling/build_pack.py list
+  schematics:build:
+    desc: Build an isolated pack (PACK and VERSION required; BACKEND defaults to host)
+    cmds:
+      - set -- build --pack "$PACK" --target-version "$VERSION" --backend "${BACKEND:-host}"; case "${ALLOW_UNVERIFIED:-}" in 1) set -- "$@" --allow-unverified ;; ''|0) ;; *) echo 'ALLOW_UNVERIFIED must be 0 or 1' >&2; exit 2 ;; esac; if [ -n "${IMAGE:-}" ]; then set -- "$@" --image "$IMAGE"; fi; python3 schematics/tooling/build_pack.py "$@"
   test:schematics:
     desc: Run the isolated schematic end-to-end suite and remove its world
     cmds:
@@ -8,7 +32,35 @@ tasks:
     desc: Run offline checks only (not the mandatory full gate)
     cmds:
       - ./ci/run_quality_gate.sh fast
-  quality:gate:
+  quality:full:
     desc: Run offline checks and mandatory local live schematic CI
     cmds:
       - ./ci/run_quality_gate.sh full
+  quality:gate:
+    desc: Compatibility alias for the full quality gate
+    cmds:
+      - task: quality:full
+  quality:fast:serial:
+    desc: Run offline checks with one worker for comparison
+    cmds:
+      - ./ci/run_quality_gate.sh fast --jobs 1
+  quality:full:serial:
+    desc: Run the full gate with one worker for comparison
+    cmds:
+      - ./ci/run_quality_gate.sh full --jobs 1
+  quality:fast:2:
+    desc: Run offline checks with two workers
+    cmds:
+      - ./ci/run_quality_gate.sh fast --jobs 2
+  quality:full:2:
+    desc: Run the full gate with two workers
+    cmds:
+      - ./ci/run_quality_gate.sh full --jobs 2
+  quality:fast:3:
+    desc: Run offline checks with three workers (requires headroom)
+    cmds:
+      - ./ci/run_quality_gate.sh fast --jobs 3
+  quality:full:3:
+    desc: Run the full gate with three workers (requires headroom)
+    cmds:
+      - ./ci/run_quality_gate.sh full --jobs 3

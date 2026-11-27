@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SRC_DIR="pack2Source"
-DST_DIR="pack2"
+SRC_DIR="packSource"
+DST_DIR="packTarget"
 
 mkdir -p "$DST_DIR"
 
 shopt -s nullglob
-for file in "$SRC_DIR"/*-2.jpg; do
+for file in "$SRC_DIR"/*.jpg; do
   base_name=$(basename "$file" .jpg)
   tmp_file="$DST_DIR/${base_name}_tmp.jpg"
   

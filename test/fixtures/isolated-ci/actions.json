@@ -1,0 +1,6 @@
+{
+  "install": ["node", "git", "git", "npm"],
+  "live": ["node", "git", "git", "npm", "python", "python", "compose-setup", "sh:live"],
+  "full": ["node", "git", "git", "npm", "python", "python", "compose-setup", "sh:full"],
+  "cache-tests": ["node", "git", "git", "npm", "python", "python", "python:cache", "node:cache"]
+}

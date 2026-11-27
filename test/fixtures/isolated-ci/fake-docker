@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+"""Small Compose fixture for exercising the actual shell cleanup trap."""
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+directory = Path(os.environ['TMPDIR'])
+if 'up' in sys.argv:
+    def stop(_signum, _frame):
+        sys.exit(143)
+    signal.signal(signal.SIGINT, stop)
+    signal.signal(signal.SIGTERM, stop)
+    subprocess.Popen([sys.executable, '-c',
+                      'import signal,time; signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+                      'signal.signal(signal.SIGINT,signal.SIG_IGN); time.sleep(30)'])
+    (directory / 'compose-ready').touch()
+    while True:
+        time.sleep(1)
+elif 'down' in sys.argv:
+    (directory / 'compose-down').touch()
+    sys.exit(1)  # The runner must log this cleanup failure.
+else:
+    sys.exit(2)

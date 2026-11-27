@@ -3,6 +3,16 @@
 Scripts in this directory use `<action>_<scope>.<extension>`: the first component
 is a verb, the second identifies what it acts on, and the extension identifies
 the interpreter. Shell, Python, and Node entry points are executable and have shebangs.
+Related quality-check identifiers instead use scope-first hyphenated names; see
+the [quality-gate guide](../ci/README.md#quality-gate-automation).
+
+[`time_schematics.py`](time_schematics.py) times the mandatory live suite and
+[`experiment_nodegyp.py`](experiment_nodegyp.py) runs an isolated dependency
+experiment. Their explicit arguments, prerequisites and cleanup are documented
+in the [CI guide](../ci/README.md#explicit-timing-and-dependency-experiments).
+[`run_isolatedci.py`](run_isolatedci.py) provides fresh CI-lock installs,
+focused cache tests, live CI, and a timed full gate; see the
+[isolated workflow guide](../ci/README.md#preconfigured-isolated-workflows).
 
 | Previous name | Current name | Purpose |
 | --- | --- | --- |

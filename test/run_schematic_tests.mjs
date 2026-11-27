@@ -21,11 +21,21 @@ export function discoverSchematicTests(root) {
     return files.sort();
 }
 
-export function runSchematicTests(root = path.join(projectRoot, 'test', 'schematic')) {
+export function selectSchematicTests(files, selection = 'all') {
+    if (selection === 'all') return files;
+    if (selection !== 'generic-isolation' && selection !== 'other') throw new Error('Invalid schematic test selection');
+    const generic = files.filter(file => path.basename(file) === 'generic_pack_isolation.test.js');
+    if (generic.length !== 1) throw new Error('Expected exactly one generic pack isolation test');
+    const selected = files.filter(file => (file === generic[0]) === (selection === 'generic-isolation'));
+    if (!selected.length) throw new Error('Empty schematic test selection');
+    return selected;
+}
+
+export function runSchematicTests(root = path.join(projectRoot, 'test', 'schematic'), selection = 'all') {
     if (process.env.NODE_TEST_CONTEXT) {
         throw new Error('Cannot run the schematic suite recursively from a Node test');
     }
-    const files = discoverSchematicTests(root);
+    const files = selectSchematicTests(discoverSchematicTests(root), selection);
     if (files.length === 0) throw new Error(`No schematic tests found under ${root}`);
 
     return new Promise((resolve, reject) => {
@@ -55,7 +65,9 @@ export function runSchematicTests(root = path.join(projectRoot, 'test', 'schemat
 
 async function main() {
     try {
-        const { code, signal } = await runSchematicTests();
+        const args = process.argv.slice(2);
+        if (args.length > 1 || (args.length && !['--generic-isolation', '--other'].includes(args[0]))) throw new Error('Usage: node test/run_schematic_tests.mjs [--generic-isolation|--other]');
+        const { code, signal } = await runSchematicTests(undefined, args.length ? args[0].slice(2) : 'all');
         if (signal) {
             // Preserve signal termination for callers; use the conventional code as a fallback.
             process.exitCode = 128 + (constants.signals[signal] || 1);

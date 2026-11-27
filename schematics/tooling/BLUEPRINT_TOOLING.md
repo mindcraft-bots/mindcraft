@@ -68,6 +68,89 @@ Pack discovery is not restricted to pack1, but pack names must be a positive dec
 
 ## Pack validation and regeneration
 
+### Isolated pack builds and opt-in local container reuse
+
+List packs with `make schematics-list` or `task schematics:list`. Build a
+specific pack with either `make schematics-build PACK=pack1 VERSION=1.21.4`
+or `PACK=pack1 VERSION=1.21.4 task schematics:build`. Both accept
+`ALLOW_UNVERIFIED=1` for the compiler's explicit NONVALIDATED policy; unset or
+0 means strict. The underlying `python3 schematics/tooling/build_pack.py --help`
+describes the equivalent CLI. Host builds need Python with nbtlib and Node on
+PATH as above; the container backend supplies its own compiler dependencies.
+
+The default `host` backend always rebuilds: installed runtimes and transitive
+dependencies are not hermetically fingerprinted. Its input key is diagnostic
+and its manifests are never reusable. If the container runtime is unavailable,
+use the default host backend explicitly; an opted-in container failure is an
+error, not a silent host fallback.
+
+For opt-in reuse, first provision the dedicated image separately. The recipe
+pins the reviewed Node base manifest and direct Python/numpy/nbtlib versions;
+the nbtlib wheel is SHA-256 verified. The final locally inspected image/config
+ID identifies all resulting layers, including transitive Debian packages and
+native libraries. It is not a promised registry digest. Provisioning needs
+network access for the pinned packages and requires the pinned base image to
+be present locally; obtain that base explicitly from a trusted source if needed.
+The Dockerfile is passed on standard input: no repository, credentials, or
+other build context is sent to Docker. Image build cache/layers remain in the
+daemon until explicitly removed by their owner.
+
+```sh
+IMAGE=$(docker --host unix:///var/run/docker.sock --config /nonexistent build --pull=false -q - < schematics/tooling/compiler-image/Dockerfile)
+docker --host unix:///var/run/docker.sock --config /nonexistent image inspect "$IMAGE" --format '{{.Id}}'
+make schematics-build PACK=pack1 VERSION=1.21.4 BACKEND=container IMAGE="$IMAGE"
+PACK=pack1 VERSION=1.21.4 BACKEND=container IMAGE="$IMAGE" task schematics:build
+```
+
+Use the full inspected `sha256:` image ID, not a mutable tag; the build never
+pulls or provisions images. Linux, a trusted local root Docker daemon reachable
+directly at the default Unix socket, a non-root invoking user, native matching
+image architecture, and identifiable CPU/kernel are required. Docker context,
+host and TLS overrides, remote or unidentifiable socket peers, and CPUs
+advertising a hypervisor are rejected. Some valid local configurations, such
+as rootless or forwarded Docker sockets, therefore cannot use this backend.
+Docker access itself grants powerful privileges: use only a daemon and image
+you trust. Each cold build runs one container, by immutable image ID, with no
+network, a sanitized environment, dropped capabilities, non-root UID, read-only
+root/input mounts and an isolated writable output mount. A failed run is not cached.
+
+The container key covers exact selected source names and bytes, compiler,
+history and generated registry inputs, wrapper/schema, build policy, image ID,
+and daemon, CPU, kernel and execution policy scope. A warm hit rechecks the
+complete receipt and file/directory inventory, digests, report and provenance,
+and rejects links, malformed data, missing or extra files. It checks source and
+runtime identities before and after verification. Cache snapshots are made
+read-only; edit the original blueprints, not a snapshot. Reverting an edit may
+reuse an earlier verified snapshot. These are **pack compilation results only**:
+CI, tests, audits and live worlds are never cached.
+
+For an optional real Docker integration and benchmark, run
+`python3 -B test/schematic/pack_cache_docker_integration.py --image "$IMAGE"`.
+It compiles pack1 in disposable copies, compares independent output bytes,
+tests invalidation and checks Docker events for zero warm container creations.
+It removes its private copies afterward; it does not replace published files.
+
+Results are retained under the ignored `.schematic-builds/<pack>/` directory,
+owned by the invoking user. Each new directory contains a private snapshot of
+source and compiler/history inputs, compiler output with provenance and report,
+a digest inventory, and a compiler log. Provenance paths are relative to that
+snapshot root; it is not a publication into the selectable schematics tree.
+The wrapper checks source names and bytes and relevant tool/history bytes both
+before and after compilation, checks the snapshot and generated sidecars, and
+fails on changes. It serializes builds per pack and atomically publishes a new
+directory without replacement; Linux with `flock` and `renameat2` is required.
+The compiler continues to enforce its own version and no-overwrite policy.
+Use a trusted local user, workspace, daemon and kernel: this is not protection
+against hostile same-user receipt forgery, concurrent filesystem renames, edits
+reverted between checks, malicious daemon/kernel behavior, or an untrusted image.
+Host mode additionally cannot protect against mutable runtime files.
+Failed private staging directories are removed; successful builds and lock files
+are never automatically pruned. Inspect and remove only your own retained
+builds explicitly when no build is running (make the selected read-only build
+directory writable first); never run a global Docker prune. Existing published schematics,
+audits, and historical evidence are not modified. A crash can leave a staging
+directory for manual inspection. Build logs can contain sensitive information.
+
 The batch audit requires an explicit pack, source-release target and a fresh output directory under `tmp/`; it never overwrites historical reports or logs. Pack1 is an example, not a default:
 
 ```sh
