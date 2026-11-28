@@ -5,7 +5,7 @@ import Vec3 from 'vec3';
 import settings from "../../../settings.js";
 import agentSettings from '../settings.js';
 import { resolvePlacementOptions, validateResolvedPlacementOptions } from '../../utils/schematic/placement_options.js';
-import { buildSchematic as buildSchematicImplementation } from "../../utils/schematic/build_schematic.js";
+import { buildSchematic as buildSchematicImplementation, discardSchematicRecovery } from "../../utils/schematic/build_schematic.js";
 import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
@@ -18,6 +18,8 @@ export function log(bot, message) {
 
 export function setSchematicResumeSession(bot, session) {
     if (!bot || (typeof bot !== 'object' && typeof bot !== 'function')) return;
+    const previous = schematicResumeSessions.get(bot);
+    if (previous && previous !== session) discardSchematicRecovery(previous);
     if (session) schematicResumeSessions.set(bot, session);
     else schematicResumeSessions.delete(bot);
 }

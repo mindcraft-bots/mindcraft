@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import { performance } from "node:perf_hooks";
-import { assertAuthorizedGameplaySupport, authorizedGameplayEdit } from "./authorized_gameplay_edit.js";
+import { authorizedGameplayEdit } from "./authorized_gameplay_edit.js";
 
 const require = createRequire(import.meta.url);
 const { goals } = require("mineflayer-pathfinder");
@@ -442,7 +442,7 @@ function cloneMovements(movements) {
 }
 
 /** Temporarily prevent implicit builder digs and pathfinder excavation/scaffolding. */
-export async function withSchematicDestructionGuards(bot, build, Vec3Class, operation, getPendingSettlement = () => null, attemptIdentity = captureSchematicAttemptIdentity(bot), clearingQualification = null, finalWriteAuthorization = false) {
+export async function withSchematicDestructionGuards(bot, build, Vec3Class, operation, getPendingSettlement = () => null, attemptIdentity = captureSchematicAttemptIdentity(bot), clearingQualification = null, finalWriteAuthorization = false, onPlacement = () => {}, editTracker = null) {
   const cells = requireSchematicCells(build);
   const volume = new Map(cells.map((cell) => [positionKey(cell.position), cell]));
   const priorDig = bot.dig;
@@ -457,8 +457,6 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
   }
   let operationEnded = false;
   const assertAttempt = () => assertAttemptIdentity(bot, attemptIdentity, () => Boolean(operationEnded || build?.isCancelled || bot.interrupt_code), "Schematic builder");
-  if (finalWriteAuthorization) assertAuthorizedGameplaySupport(bot);
-
   bot.dig = async function guardedSchematicDig(block, ...args) {
     assertAttempt();
     build.beforeSchematicEdit?.();
@@ -493,13 +491,23 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
       }
       assertAttempt();
     };
-    const result = finalWriteAuthorization
-      ? await authorizedGameplayEdit(bot, { kind: "dig", block: current, target: position,
-        authorize, assertCurrent: assertAttempt, identity: attemptIdentity })
-      : await priorDig.call(this, current, ...args);
-    assertAttempt();
-    build.afterSchematicEdit?.(position);
-    return result;
+    editTracker?.start();
+    let completed = false;
+    try {
+      const pending = finalWriteAuthorization
+        ? authorizedGameplayEdit(bot, { kind: "dig", block: current, target: position,
+          authorize, assertCurrent: assertAttempt, identity: attemptIdentity,
+          onOutcome: outcome => editTracker?.outcome(outcome, "dig") })
+        : Promise.resolve(priorDig.call(this, current, ...args));
+      if (!finalWriteAuthorization) attemptIdentity.lifecycle?.hold?.(pending);
+      const result = await pending;
+      assertAttempt();
+      build.afterSchematicEdit?.(position);
+      completed = true;
+      return result;
+    } finally {
+      editTracker?.finish(completed);
+    }
   };
   bot.placeBlock = async function guardedSchematicPlace(reference, face, ...args) {
     assertAttempt();
@@ -543,14 +551,27 @@ export async function withSchematicDestructionGuards(bot, build, Vec3Class, oper
       }
       assertAttempt();
     };
-    const result = finalWriteAuthorization
-      ? await authorizedGameplayEdit(bot, { kind: "place", block: referenceBefore, face, target,
-        expectedStateId: volume.get(positionKey(target)).stateId,
-        authorize, assertCurrent: assertAttempt, identity: attemptIdentity })
-      : await priorPlaceBlock.call(this, reference, face, ...args);
-    assertAttempt();
-    build.afterSchematicEdit?.(target);
-    return result;
+    // Track private as well as legacy writers: a detached native placement can
+    // outlive the builder result before its outcome callback has fired.
+    editTracker?.start();
+    let completed = false;
+    try {
+      const pending = finalWriteAuthorization
+        ? authorizedGameplayEdit(bot, { kind: "place", block: referenceBefore, face, target,
+          expectedStateId: volume.get(positionKey(target)).stateId,
+          authorize, assertCurrent: assertAttempt, identity: attemptIdentity,
+          onOutcome: outcome => editTracker?.outcome(outcome) })
+        : Promise.resolve(priorPlaceBlock.call(this, reference, face, ...args));
+      if (!finalWriteAuthorization) attemptIdentity.lifecycle?.hold?.(pending);
+      const result = await pending;
+      assertAttempt();
+      build.afterSchematicEdit?.(target);
+      onPlacement(target);
+      completed = true;
+      return result;
+    } finally {
+      editTracker?.finish(completed);
+    }
   };
   if (builder) builder.clearArea = () => {
     return Promise.reject(new Error("The mineflayer-schem clearArea operation is disabled; only preflighted in-volume natural obstructions may be cleared"));

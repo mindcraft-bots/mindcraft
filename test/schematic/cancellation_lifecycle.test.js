@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
+import { setImmediate } from "node:timers";
 import test from "node:test";
 
 import { beginCreativeSupply, loadSchematicBuilder } from "../../src/utils/schematic/builder_compat.js";
@@ -57,7 +58,10 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
       unpause(name) { calls.events.push({ type: "unstuck", action: "unpause", name }); unstuckPaused = false; },
     },
     inventory,
-    equip(item, destination) { calls.equip.push({ item, destination }); },
+    equip(item, destination) { calls.equip.push({ item, destination }); bot.heldItem = item; },
+    supportFeature(name) { return ["usesMultiblockSingleLong", "usesMultiblock3DChunkCoords", "blockPlaceHasInsideBlock"].includes(name); },
+    digTime() { return 0; },
+    swingArm() {},
     chat(...args) {
       calls.chat.push(args);
       const match = /^\/gamemode (survival|creative|adventure|spectator)$/.exec(args[0]);
@@ -93,10 +97,25 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
   });
   bot.entities = { self: bot.entity };
 
+  const placementWrite = (packetName, packet) => {
+    if (packetName !== "block_place") return false;
+    calls.place.push(packet);
+    setImmediate(() => {
+      const reference = bot.blockAt(packet.location);
+      bot._client.emit("block_change", { location: packet.location, type: reference.stateId });
+      bot.emit(`blockUpdate:${packet.location}`, reference, reference);
+      const old = bot.blockAt(target);
+      blockPlaced = true;
+      const placed = bot.blockAt(target);
+      bot._client.emit("block_change", { location: target, type: placed.stateId });
+      bot.emit(`blockUpdate:${target}`, old, placed);
+    });
+    return true;
+  };
   if (realCreative) {
-    bot.supportFeature = () => false;
     bot._client = Object.assign(new EventEmitter(), {
       write(packetName, packet) {
+        if (placementWrite(packetName, packet)) return;
         assert.equal(packetName, "set_creative_slot");
         const appliedItem = packet.item == null ? null : Item.fromNotch(packet.item);
         calls.serverSlot = appliedItem;
@@ -113,6 +132,7 @@ function createBot({ realCreative = false, gameMode = "survival", supplyAckDelay
     });
     realCreativePlugin(bot);
   } else {
+    bot._client.write = placementWrite;
     bot.creative = {
       setInventorySlot(slot, item) {
         calls.supply.push({ slot, item });

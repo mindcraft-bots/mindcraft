@@ -10,6 +10,10 @@ import { provenanceFixtureDependencies } from "./provenance_fixture.js";
 import { authorizedGameplayEdit } from "../../src/utils/schematic/authorized_gameplay_edit.js";
 import { captureSchematicAttemptIdentity, isSchematicAttemptIdentityCurrent } from "../../src/utils/schematic/obstruction_policy.js";
 import { acquireBuildLifecycle, runBuild } from "../../src/utils/schematic/run_build.js";
+import agentSettings from "../../src/agent/settings.js";
+
+// Exercise legacy destructive guards independently of continuation detection.
+agentSettings.schematic_continuation_policy = "off";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
@@ -141,6 +145,52 @@ function fixture(names = ["cobblestone", "air", "stone", "air"], width = names.l
     run: () => buildTrustedDestructiveSchematic(bot, "test.schem", 0, 64, 0, dependencies),
     publicRun: () => buildSchematic(bot, "test.schem", 0, 64, 0, dependencies) };
 }
+
+test("balanced clearing reauthorizes policy, identity, and target after native digging aim", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const change of ["policy", "interrupt", "world", "target", "neighbor"]) {
+      agentSettings.schematic_continuation_policy = "deny";
+      const f = fixture(["air"]);
+      f.dependencies.placementOptions = resolvePlacementOptions({ schematic_placement_mode: "balanced", schematic_balanced_radius: 0 });
+      f.world.set("0,64,0", "poppy");
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.dependencies.onAim = () => {
+        if (change === "policy") agentSettings.schematic_continuation_policy = "ask";
+        if (change === "interrupt") f.bot.interrupt_code = true;
+        if (change === "world") f.bot._client.emit("respawn");
+        if (change === "target") f.world.set("0,64,0", "stone");
+        if (change === "neighbor") f.world.set("1,64,0", "piston");
+      };
+      assert.equal(await f.publicRun(), false, `${change}: ${f.logs.join("; ")}`);
+      assert.deepEqual(f.writes, [], change);
+      assert.ok(phases.includes("rejected"), change);
+      assert.ok(!phases.includes("authorized"), change);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced clearing requires supported digging confirmation before Creative", async () => {
+  const f = fixture(["air"], 1, "1.20.4");
+  f.dependencies.placementOptions = resolvePlacementOptions({ schematic_placement_mode: "balanced", schematic_balanced_radius: 0 });
+  f.world.set("0,64,0", "poppy");
+  let aims = 0;
+  f.dependencies.onAim = () => { aims++; };
+  assert.equal(await f.publicRun(), false, f.logs.join("; "));
+  assert.match(f.logs.join(" "), /requires detailed acknowledgement/i);
+  assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.equal(aims, 0);
+  assert.equal(f.world.get("0,64,0"), "poppy");
+});
+
+test("balanced clearing permits a fully confirmed authorized dig on a supported protocol", async () => {
+  const f = fixture(["air"]);
+  f.dependencies.placementOptions = resolvePlacementOptions({ schematic_placement_mode: "balanced", schematic_balanced_radius: 0 });
+  f.world.set("0,64,0", "poppy");
+  assert.equal(await f.publicRun(), true, f.logs.join("; "));
+  assert.deepEqual(f.writes, [["dig", "0,64,0"]]);
+  assert.equal(f.world.get("0,64,0"), "air");
+});
 
 test("trusted fixed-anchor build clears reviewed mismatches and places while preserving exact matches and outside", async () => {
   const f = fixture();

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import process from 'node:process';
 import test from 'node:test';
 
 const root = new URL('../../', import.meta.url);
@@ -46,6 +47,23 @@ function check(body) {
     const child = spawnSync(process.execPath, ['--experimental-loader', loader, '--input-type=module', '-e', script], { encoding: 'utf8', env: { ...process.env, MINDCRAFT_SCHEMATIC_FIXTURE_ROOT: fixtureRoot } });
     assert.equal(child.status, 0, child.stderr + child.stdout);
 }
+
+test('explicit and malformed continuation never fall back to inference', () => check(`
+    const continuation = 'Andy continue schematic file name gazebo of pack2 at 120 64 -30 facing east';
+    const parsed = router.parseAddressedSchematicRequest(continuation, 'Andy');
+    assert.equal(parsed.selector, 'pack2:gazebo');
+    assert.deepEqual(parsed.coordinates, [120, 64, -30]);
+    assert.equal(parsed.orientation, 'east');
+    for (const message of ['Andy continue schematic file name gazebo of pack2', 'Andy finish building id 1 from group 2 of pack2', 'Andy build to continue id 1 from group 2 of pack2']) {
+        assert.match(router.parseAddressedSchematicRequest(message, 'Andy').error, /Continuation requires/);
+        await agent.handleMessage('Sunny26639', message);
+    }
+    assert.equal(calls.builds, 0);
+    assert.equal(calls.prompts, 0);
+    assert.match(calls.routes.join(' '), /Continuation requires/i);
+    assert.equal(router.parseAddressedSchematicRequest('Andy continue the story', 'Andy'), null);
+    assert.equal(router.parseAddressedSchematicRequest('Andy build new schematic file name gazebo of pack2', 'Andy').selector, 'pack2:gazebo');
+`));
 
 test('unified settings authorize only the observed human, preserving security values and blacklist', async () => {
     const settings = (await import(new URL('settings.js', root))).default;

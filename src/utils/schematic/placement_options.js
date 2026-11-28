@@ -42,6 +42,7 @@ export function resolvePlacementOptions(settings = {}, overrides = {}) {
         || !overrides || typeof overrides !== 'object' || Array.isArray(overrides)
         || Object.keys(overrides).some(key => !OPTION_KEYS.includes(key)))
         throw new TypeError('Invalid schematic placement configuration or overrides');
+    resolveContinuationPolicy(settings);
     const configuredMode = mode(settings.schematic_placement_mode, 'schematic_placement_mode') ?? 'delicate';
     const radius = integer(settings.schematic_balanced_radius === undefined ? DEFAULT_BALANCED_RADIUS : settings.schematic_balanced_radius, 'schematic_balanced_radius', 0, 16);
     const threshold = integer(settings.schematic_balanced_threshold === undefined ? DEFAULT_BALANCED_THRESHOLD : settings.schematic_balanced_threshold, 'schematic_balanced_threshold', 1, 4097);
@@ -62,6 +63,13 @@ export function resolvePlacementOptions(settings = {}, overrides = {}) {
         policy: overrides.policy == null ? policy : choice(overrides.policy, 'policy', POLICIES),
         bisectDepth: overrides.bisectDepth == null ? bisectDepth : integer(overrides.bisectDepth, 'bisectDepth', 0, 3),
     });
+}
+
+// Keep this separate from per-request placement options: requests must not be
+// able to override the administrator's setting.
+export function resolveContinuationPolicy(settings = {}) {
+    return choice(settings.schematic_continuation_policy === undefined ? 'ask' : settings.schematic_continuation_policy,
+        'schematic_continuation_policy', ['ask', 'allow', 'deny', 'off']);
 }
 
 export function validateResolvedPlacementOptions(options) {

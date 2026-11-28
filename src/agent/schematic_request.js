@@ -262,6 +262,18 @@ export function parseAddressedSchematicRequest(message, agentName, knownBotPeers
     if (!address) return null;
     const { addressedTo } = address;
     const text = address.text.replace(/^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?/i, '');
+    if (/^continue\s+(?:the\s+)?story\s*[.!?]*$/i.test(text)) return null;
+    // Continuation is a separate, fixed-origin operation, never an inert build description.
+    const continuationIntent = /^(?:continue|resume|finish|complete)\b/i.test(text)
+        || (/^build\b/i.test(text) && /\b(?:continue|continuing|continuation|resume|resuming|finish|finishing|complete|completing)\b/i.test(text));
+    if (continuationIntent) {
+        const match = /^continue\s+(.+?)\s+at\s+(-?\d+)\s*,?\s+(-?\d+)\s*,?\s+(-?\d+)(?:\s+facing\s+(north|east|south|west))?\s*[.!?]*$/i.exec(text);
+        const selector = match && selectorAt(match[1].trim(), 0);
+        const coordinates = match && match.slice(2, 5).map(Number);
+        if (!selector || selector.inertReplacementPhrase || !coordinates.every(Number.isSafeInteger))
+            return { addressedTo, error: 'Continuation requires exactly “continue <schematic selector> at <x> <y> <z>”, optionally followed by “facing north/east/south/west”; no build was started.' };
+        return { addressedTo, ...selector, continuation: true, coordinates, orientation: match[5]?.toLowerCase() };
+    }
     const build = /^build\b/i.test(text);
     // Anchoring keeps questions/discussion about replacement out of deterministic routing.
     // Only imperative openings are refusal-only aliases; noun-led discussion is chat.
@@ -339,6 +351,7 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     trusted = false,
     checkBuild = () => null,
     executeBuild = executeCommand,
+    executeContinuation = null,
 } = {}) {
     const request = parseAddressedSchematicRequest(message, agentName, knownBotPeers);
     if (!request) return false;
@@ -359,7 +372,8 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
 
     const override = request.placementOverrides;
-    const args = override ? [request.selector, null, null, null, override.mode ?? null, override.radius ?? null, override.threshold ?? null, override.orientation ?? null, override.strategy ?? null, override.step ?? null, override.policy ?? null, override.bisectDepth ?? null] : [request.selector];
+    const args = request.continuation ? [request.selector, ...request.coordinates, 'delicate', null, null, request.orientation ?? null]
+        : override ? [request.selector, null, null, null, override.mode ?? null, override.radius ?? null, override.threshold ?? null, override.orientation ?? null, override.strategy ?? null, override.step ?? null, override.policy ?? null, override.bisectDepth ?? null] : [request.selector];
     const command = `!buildSchematic(${args.map(value => JSON.stringify(value)).join(', ')})`;
     const refusal = checkBuild(command);
     if (refusal) {
@@ -385,7 +399,9 @@ export async function dispatchAddressedSchematicRequest(agent, source, message, 
     }
     agent.self_prompter?.handleUserPromptedCmd(false, true);
     await agent.routeResponse(source, `*${source} requested a schematic build*`);
-    const result = await executeBuild(agent, command);
+    const result = request.continuation
+        ? (executeContinuation ? await executeContinuation(agent, command, request) : 'Explicit continuation ingress is unavailable; no build was started.')
+        : await executeBuild(agent, command);
     if (result) await agent.routeResponse(source, result);
     return true;
 }

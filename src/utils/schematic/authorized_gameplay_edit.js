@@ -69,7 +69,7 @@ export function assertAuthorizedGameplaySupport(bot, kind) {
  */
 export async function authorizedGameplayEdit(bot, {
   kind, block, face, target, expectedStateId, authorize, assertCurrent,
-  identity, timeoutMs = 5_000,
+  identity, timeoutMs = 5_000, onOutcome,
 }) {
   assertAuthorizedGameplaySupport(bot, kind);
   if (!["dig", "place"].includes(kind) || !Number.isFinite(timeoutMs) || timeoutMs <= 0) {
@@ -491,6 +491,7 @@ export async function authorizedGameplayEdit(bot, {
     return result[0];
   } finally {
     revoked = true;
+    try { onOutcome?.({ sent, completed }); } catch { /* observer must not affect cleanup */ }
     confirmationState = "revoked";
     diagnostic("revoked");
     clearTimeout(timer);

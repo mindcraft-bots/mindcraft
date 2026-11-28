@@ -51,6 +51,11 @@
         "description": "Delicate (default, no clearing), raise (bounded dirt foundation), balanced, or destructive for explicitly listed humans via authenticated public Minecraft chat.",
         "default": "delicate"
     },
+    "schematic_continuation_policy": {
+        "type": "string",
+        "description": "ask fails closed (no approval prompt); allow permits explicit authenticated fixed-origin delicate continuation; deny refuses it; off disables continuation detection and uses legacy new-build behavior.",
+        "default": "ask"
+    },
     "schematic_balanced_radius": {
         "type": "number",
         "description": "Balanced horizontal search radius, integer 0–16.",

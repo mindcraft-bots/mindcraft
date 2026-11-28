@@ -18,7 +18,7 @@ export function captureBalancedBlockState(block, position) {
   }
   catch { throw unsafe(`Unreadable block state at ${key(position)}`); }
   if (!properties || typeof properties !== "object" || Array.isArray(properties)) throw unsafe(`Unreadable block state at ${key(position)}`);
-  return { position: { ...position }, name: block.name, properties: { ...properties }, attached, diggable: block.diggable };
+  return { position: { ...position }, name: block.name, stateId: block.stateId, properties: { ...properties }, attached, diggable: block.diggable };
 }
 
 function read(bot, position, Vec3Class, beforeRead = () => {}) {
@@ -163,30 +163,40 @@ export async function inspectBalancedResume(bot, build, Vec3Class, check, cleari
 
 /** Compare against the selected snapshot, never silently approve a changed site. */
 export function revalidateBalancedSite(bot, build, safety, Vec3Class, attemptIdentity, clearingQualification = null) {
-  const deadline = clearingQualification ? performance.now() + 2_000 : Infinity;
+  const deadline = clearingQualification || safety.protectionEvidence ? performance.now() + 2_000 : Infinity;
   const check = () => {
     if (bot.interrupt_code || build.isCancelled || !isSchematicAttemptIdentityCurrent(bot, attemptIdentity)) {
       throw Object.assign(new Error("Balanced site validation cancelled or world changed"), { code: "SCHEMATIC_CLEAR_CANCELLED" });
     }
-    if (clearingQualification && performance.now() > deadline) throw unsafe("Site revalidation timed out");
+    if (performance.now() > deadline) throw unsafe("Site revalidation timed out");
+  };
+  let reads = 0;
+  const beforeRead = () => {
+    check();
+    if (safety.protectionEvidence && ++reads > 250_000) throw unsafe("Site revalidation exceeded the world-read budget");
   };
   check();
   assertBalancedTargets(bot, build);
+  for (const original of safety.protectionEvidence?.values() ?? []) {
+    check();
+    const current = captureBalancedBlockState(read(bot, original.position, Vec3Class, beforeRead), original.position);
+    if (current.stateId !== original.stateId || !equal(original, current)) throw unsafe(`Selected site changed or candidate protection evidence changed at ${key(original.position)}`);
+  }
   inspectSchematicObstructions(bot, build, { Vec3Class, attemptIdentity, collectSnapshots: false, clearingQualification,
-    inspectionCheck: clearingQualification ? check : null });
+    inspectionCheck: safety.protectionEvidence ? beforeRead : clearingQualification ? check : null });
   for (const original of safety.states) {
     check();
-    const current = captureBalancedBlockState(read(bot, original.position, Vec3Class), original.position);
+    const current = captureBalancedBlockState(read(bot, original.position, Vec3Class, beforeRead), original.position);
     assertVolumeState(bot, current);
     if (!equal(original, current)) throw unsafe(`Selected site changed at ${key(original.position)}`);
   }
   for (const original of safety.support) {
     check();
-    if (!equal(original, foundation(bot, original.position, Vec3Class))) throw unsafe(`Selected foundation changed at ${key(original.position)}`);
+    if (!equal(original, foundation(bot, original.position, Vec3Class, beforeRead))) throw unsafe(`Selected foundation changed at ${key(original.position)}`);
   }
   for (const original of safety.neighbors) {
     check();
-    if (!equal(original, passiveNeighbor(bot, original.position, Vec3Class))) throw unsafe(`Selected balanced neighbor changed at ${key(original.position)}`);
+    if (!equal(original, passiveNeighbor(bot, original.position, Vec3Class, beforeRead))) throw unsafe(`Selected balanced neighbor changed at ${key(original.position)}`);
   }
   entities(bot, safety.box);
   check();
@@ -199,4 +209,5 @@ export function recordBalancedEdit(bot, safety, position, Vec3Class) {
   const current = captureBalancedBlockState(read(bot, position, Vec3Class), position);
   assertVolumeState(bot, current);
   safety.states[index] = current;
+  if (safety.protectionEvidence?.has(key(position))) safety.protectionEvidence.set(key(position), current);
 }

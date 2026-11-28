@@ -62,7 +62,7 @@ export async function planBalancedSchematicSite(bot, build, {
   Vec3Class, radius = 4, threshold = 9, strategy = "stepped", step = 2,
   policy = "first_valid", bisectDepth = 2,
   attemptIdentity = captureSchematicAttemptIdentity(bot),
-  isInterrupted = () => Boolean(bot.interrupt_code), inspectCandidate = null,
+  isInterrupted = () => Boolean(bot.interrupt_code), inspectCandidate = null, excludeMatches = false, diagnostic = () => {},
 } = {}) {
   const offsets = balancedCandidateOffsets({ radius, strategy, step, bisectDepth });
   if (!Number.isInteger(threshold) || threshold < 1 || threshold > 4097) throw new RangeError("Balanced threshold must be an integer from 1 to 4097");
@@ -74,6 +74,11 @@ export async function planBalancedSchematicSite(bot, build, {
   const cells = build.cells.map(cell => ({ ...cell, position: { ...cell.position }, properties: { ...cell.properties } }));
   const snapshot = { dimensions, cells };
   requireSchematicCells(snapshot);
+  const min = cells.reduce((p, cell) => ({ x: Math.min(p.x, cell.position.x), y: Math.min(p.y, cell.position.y), z: Math.min(p.z, cell.position.z) }), { x: Infinity, y: Infinity, z: Infinity });
+  const boxAt = offset => ({ min: { x: min.x + offset.dx, y: min.y, z: min.z + offset.dz },
+    max: { x: min.x + offset.dx + dimensions.width, y: min.y + dimensions.height, z: min.z + offset.dz + dimensions.length } });
+  const overlaps = (a, b) => ["x", "y", "z"].every(axis => a.min[axis] < b.max[axis] && b.min[axis] < a.max[axis]);
+  const protectedBoxes = [];
   let reads = 0;
   const check = () => {
     if (isInterrupted() || build.isCancelled || !isSchematicAttemptIdentityCurrent(bot, attemptIdentity)) throw planningError("SCHEMATIC_CLEAR_CANCELLED", "Balanced search cancelled or world identity changed");
@@ -84,9 +89,60 @@ export async function planBalancedSchematicSite(bot, build, {
     if (reads >= MAX_READS) throw planningError("SCHEMATIC_SITE_BUDGET", "Balanced search exceeded the world-read budget; no site was selected");
     reads++;
   };
+  // Protect every possible anchor in the declared radius, even when ranking
+  // uses a sampled strategy. A single matching target is only evidence of a
+  // possible continuation, not proof of ownership or structure identity.
+  let evidence;
+  if (excludeMatches) {
+    evidence = new Map();
+    let inspected = 0;
+    for (const offset of balancedCandidateOffsets({ radius, strategy: "all", step, bisectDepth })) {
+      let matched = false;
+      for (const cell of cells) {
+        const position = { x: cell.position.x + offset.dx, y: cell.position.y, z: cell.position.z + offset.dz };
+        if (![position.x, position.y, position.z].every(Number.isSafeInteger)) throw planningError("SCHEMATIC_SITE_UNSAFE", "Candidate evidence exceeds safe coordinates");
+        const key = `${position.x},${position.y},${position.z}`;
+        let state = evidence.get(key);
+        if (!state) {
+          beforeRead();
+          let block;
+          try { block = bot.blockAt(new Vec3Class(position.x, position.y, position.z)); }
+          catch { throw planningError("SCHEMATIC_SITE_UNSAFE", `Cannot inspect candidate evidence at ${key}`); }
+          state = captureBalancedBlockState(block, position);
+          if (!Number.isSafeInteger(state.stateId) || state.stateId < 0 || !/^[a-z0-9_]+$/.test(state.name)
+              || (bot.registry?.blocksByStateId && bot.registry.blocksByStateId[state.stateId]?.name !== state.name)
+              || Object.values(state.properties).some(value => !["string", "boolean", "number"].includes(typeof value)
+                || (typeof value === "number" && !Number.isFinite(value)))) {
+            throw planningError("SCHEMATIC_SITE_UNSAFE", `Uncertain candidate evidence at ${key}`);
+          }
+          evidence.set(key, state);
+        }
+        const expected = cell.properties ?? {};
+        const sameProperties = Object.keys(state.properties).length === Object.keys(expected).length
+          && Object.entries(expected).every(([name, value]) => Object.hasOwn(state.properties, name) && state.properties[name] === value);
+        if (!isSchematicAirName(cell.name) && state.name === cell.name && (sameProperties || state.stateId === cell.stateId)) {
+          if (!sameProperties || state.attached !== "[null,null,null,null]" || state.stateId !== cell.stateId) {
+            throw planningError("SCHEMATIC_SITE_UNSAFE", `Uncertain matching candidate evidence at ${key}`);
+          }
+          matched = true;
+        }
+        if (++inspected % 128 === 0) { await yieldToEvents(); check(); }
+      }
+      if (matched) {
+        protectedBoxes.push(boxAt(offset));
+        diagnostic(`Balanced candidate ${offset.dx},${offset.dz} contains existing matches; its entire volume is protected.`);
+      }
+      check();
+    }
+  }
   let best = null, firstUnsafeReason, visited = 0;
   for (const offset of offsets) {
     check(); visited++;
+    const candidateBox = boxAt(offset);
+    if (excludeMatches && protectedBoxes.some(box => overlaps(candidateBox, box))) {
+      diagnostic(`Balanced candidate ${offset.dx},${offset.dz} overlaps a protected matching volume.`);
+      continue;
+    }
     let count = 0, rejected = false, pruned = false;
     const states = inspectCandidate ? [] : null;
     for (let index = 0; index < cells.length; index++) {
@@ -104,6 +160,8 @@ export async function planBalancedSchematicSite(bot, build, {
           const matches = isSchematicAirName(cell.name) ? isSchematicAirName(block.name)
             : block.name === cell.name && Object.keys(properties).length === Object.keys(expected).length
               && Object.entries(expected).every(([key, value]) => properties[key] === value);
+          // A match appearing after discovery means that evidence has changed.
+          if (excludeMatches && !isSchematicAirName(cell.name) && matches) throw planningError("SCHEMATIC_SITE_CHANGED", "Matching candidate appeared after protection discovery");
           if (!matches) count++;
           if (states) states.push(captureBalancedBlockState(block, shifted.position));
         });
@@ -117,7 +175,10 @@ export async function planBalancedSchematicSite(bot, build, {
       check();
       // Partial scans are never eligible: pruning only discards candidates that
       // cannot beat the strict threshold or the fully qualified incumbent.
-      if (rejected || count >= threshold || (best && count >= best.obstructions)) { pruned = true; break; }
+      if (rejected || count >= threshold || (best && count >= best.obstructions)) {
+        pruned = true;
+        break;
+      }
       if ((index + 1) % 128 === 0) { await yieldToEvents(); check(); }
     }
     if (!pruned) {
@@ -141,6 +202,7 @@ export async function planBalancedSchematicSite(bot, build, {
   const allCount = balancedCandidateOffsets({ radius, strategy: "all", step, bisectDepth }).length;
   if (!best && firstUnsafeReason) throw planningError("SCHEMATIC_SITE_UNSAFE", `No threshold-eligible balanced candidate passed safety inspection; first safety refusal: ${firstUnsafeReason}`);
   if (!best) throw planningError("SCHEMATIC_NO_SITE", `No fully inspected balanced candidate met the strict obstruction threshold (${offsets.length < allCount ? "sampled" : "complete"} search)`);
+  if (evidence && best.safety) best.safety.protectionEvidence = evidence;
   Object.defineProperty(best, "plan", { value: snapshot });
   Object.defineProperty(best, "search", { value: Object.freeze({ strategy, policy, sampled: offsets.length < allCount || visited < offsets.length, visited, candidates: offsets.length, reads }) });
   return Object.freeze(best);

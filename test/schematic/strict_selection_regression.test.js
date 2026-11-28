@@ -139,7 +139,7 @@ test('build consumes selected bytes despite replacement and recovery rejects cha
     assert.equal(await buildSchematic(bot, 'race.schem', 0, 0, 0, { ...dependencies, resumeSession: session,
       resolvePath: (selector, _directory, options) => resolveSchematicPath(selector, root, options) }), false);
     assert.equal(session.cancelled, true);
-    assert.match(logs.at(-1), /asset changed/);
+    assert.match(logs.at(-1), /not an eligible unmodified session/);
     assert.equal(mutations, 0);
 
     const current = await readFile(file);
@@ -152,11 +152,11 @@ test('build consumes selected bytes despite replacement and recovery rejects cha
     const tampered = makeSession();
     const resolvePath = (selector, _directory, options) => resolveSchematicPath(selector, root, options);
     assert.equal(await buildSchematic(bot, 'race.schem', 0, 0, 0, { ...dependencies, resolvePath, resumeSession: tampered }), false);
-    assert.match(logs.at(-1), /snapshot identity changed/);
+    assert.match(logs.at(-1), /not an eligible unmodified session/);
     assert.equal(tampered.cancelled, true);
     const revoked = makeSession();
     assert.equal(await buildSchematic(bot, 'race.schem', 0, 0, 0, { ...dependencies, resolvePath, resumeSession: revoked, allowNonvalidatedSchematic: false }), false);
-    assert.match(logs.at(-1), /NONVALIDATED/);
+    assert.match(logs.at(-1), /not an eligible unmodified session/);
     assert.equal(revoked.cancelled, true);
     assert.equal(mutations, 0);
   });

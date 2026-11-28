@@ -24,7 +24,10 @@ import { schematicProvenance, provenanceAllowed } from "./provenance.js";
 import { getBotWorldGeneration, trackBotWorldLifecycle } from "./world_lifecycle.js";
 import { readSchematic as readProductionSchematic, validateSchematicSource } from "./reader.js";
 import { acquireBuildLifecycle, runBuild } from "./run_build.js";
-import { resolvePlacementOptions, validateResolvedPlacementOptions } from "./placement_options.js";
+import { resolveContinuationPolicy, resolvePlacementOptions, validateResolvedPlacementOptions } from "./placement_options.js";
+import { analyzeContinuationAsync } from "./continuation_analysis.js";
+import { createTrustedStateReader, hasObservedBlockEntity } from "./trusted_block_state.js";
+import agentSettings from "../../agent/settings.js";
 import { planBalancedSchematicSite } from "./balanced_site_planner.js";
 import { inspectBalancedCandidate, inspectBalancedResume, recordBalancedEdit, revalidateBalancedSite } from "./balanced_site_safety.js";
 import { assertBalancedTargets, balancedCandidateExtraReads } from "./balanced_physics_policy.js";
@@ -35,6 +38,39 @@ const require = createRequire(import.meta.url);
 const { Schematic } = require("prismarine-schematic");
 const Vec3 = require("vec3");
 const CLEANUP_TIMEOUT_MS = 1_500;
+const recoveryRecords = new WeakMap();
+
+function recoveryDigest(context) {
+  return createHash("sha256").update(JSON.stringify([
+    context.selector, context.resolvedPath, context.sourceSha256,
+    Buffer.isBuffer(context.source) ? createHash("sha256").update(context.source).digest("hex") : null,
+    context.provenanceIdentity, context.placementOptions, context.planContract,
+    context.planIdentity, context.origin, context.originalStates,
+  ])).digest("hex");
+}
+
+function rememberRecovery(bot, session, policy) {
+  const context = session.context;
+  const identity = context.worldIdentity;
+  recoveryRecords.set(session, { bot, context, schematic: context.schematic,
+    world: identity.world, client: identity.client, registry: identity.registry,
+    dimension: identity.dimension, version: identity.version, generation: identity.worldGeneration,
+    digest: recoveryDigest(context), policy, preflightPassed: false, eligible: false, placements: new Set() });
+}
+
+function authenticRecovery(bot, session) {
+  try {
+    const record = recoveryRecords.get(session), context = session?.context, identity = context?.worldIdentity;
+    return Boolean(record && record.bot === bot && record.context === context && record.schematic === context.schematic
+      && identity?.world === record.world && identity.client === record.client && identity.registry === record.registry
+      && identity.dimension === record.dimension && identity.version === record.version
+      && identity.worldGeneration === record.generation && recoveryDigest(context) === record.digest);
+  } catch { return false; }
+}
+
+export function discardSchematicRecovery(session) {
+  if (session && typeof session === "object") recoveryRecords.delete(session);
+}
 
 // Mineflayer falls back to 0/256 when codec lookup fails. Never mistake that
 // fallback for verified dimension metadata, including on custom dimensions.
@@ -130,7 +166,7 @@ function inspectDelicateVolume(bot, build, Vec3Class) {
   return targets;
 }
 
-async function placeDelicateTargets(bot, build, targets, safety, Vec3Class, identity, lifecycle, interrupted) {
+async function placeDelicateTargets(bot, build, targets, safety, Vec3Class, identity, lifecycle, interrupted, recordPlacement, assertRecoveryWorld, editOutcome) {
   const current = () => {
     if (interrupted() || build.isCancelled || !isSchematicAttemptIdentityCurrent(bot, identity)
         || normalizeGameMode(bot.game?.gameMode) !== "creative") {
@@ -139,6 +175,7 @@ async function placeDelicateTargets(bot, build, targets, safety, Vec3Class, iden
   };
   const check = () => {
     current();
+    assertRecoveryWorld();
     revalidateBalancedSite(bot, build, safety, Vec3Class, identity);
     inspectDelicateVolume(bot, build, Vec3Class);
   };
@@ -163,9 +200,12 @@ async function placeDelicateTargets(bot, build, targets, safety, Vec3Class, iden
           || !placementReach(bot, position)) throw new Error(`Delicate reference, target, or reach changed at ${position}`);
     };
     await authorizedGameplayEdit(bot, { kind: "place", block: reference, face: new Vec3Class(0, 1, 0), target: position,
-      expectedStateId: entry.stateId, authorize, assertCurrent: current, identity });
-    if (bot.blockAt(position)?.stateId !== entry.stateId) throw new Error(`Delicate placement cache does not match confirmed state at ${position}`);
+      expectedStateId: entry.stateId, authorize, assertCurrent: current, identity, onOutcome: editOutcome });
+    const placed = bot.blockAt(position);
+    if (placed?.name !== entry.name || placed.stateId !== entry.stateId || !sameProperties(propertiesFor(placed), entry.properties))
+      throw new Error(`Delicate placement cache does not match confirmed state at ${position}`);
     recordBalancedEdit(bot, safety, position, Vec3Class);
+    recordPlacement(position);
     check();
   }
 }
@@ -228,6 +268,11 @@ function sameProperties(left, right) {
     && leftKeys.every((key, index) => key === rightKeys[index] && left[key] === right[key]);
 }
 
+function consistentAirStates(a, b) {
+  return !(isSchematicAirName(a.name) || isSchematicAirName(b.name))
+    || (a.name === b.name) === (a.stateId === b.stateId);
+}
+
 // The legacy builder does not select a placement face for an axis, and its
 // look/metadata handling cannot prove arbitrary directional states. The
 // delicate/raise adapters always click an upward face, which can realize a
@@ -251,18 +296,35 @@ function planIdentity(build, options) {
   return createHash("sha256").update(JSON.stringify([options.orientation, build.dimensions, build.cells])).digest("hex");
 }
 
+// Ordinary builds are never implicit continuations. This check is applied to
+// both the requested anchor and the actual selected plan, including plans whose
+// existing matches are invisible to obstruction detection. The only exception
+// is the separately validated managed interruption recovery path.
+async function rejectImplicitContinuation(bot, build, Vec3Class, policy, report, site, check) {
+  const analysis = await analyzeContinuationAsync(bot, build, Vec3Class, check);
+  const { exact, missing, air, conflicts, unloaded, blockEntities } = analysis.counts;
+  if (!exact && !unloaded) return;
+  const state = unloaded ? "unknown" : conflicts ? "conflict" : exact && missing ? "partial" : exact ? "complete" : "empty";
+  const details = analysis.cells.filter(cell => cell.category === "exact" || cell.category === "unloaded" || cell.category === "conflicts")
+    .slice(0, 8).map(cell => `${cell.position.x},${cell.position.y},${cell.position.z}:${cell.category}${cell.name ? `(${cell.name})` : ""}`).join("; ");
+  report(`Schematic ${site} continuation analysis: ${state}; exact=${exact}, missing=${missing}, air=${air}, conflicts=${conflicts}, unknown=${unloaded}, block entities=${blockEntities}. ${details}`);
+  if (unloaded) throw new Error("Cannot safely rule out existing matching blocks in an unloaded or unreadable schematic volume");
+  throw new Error(`Existing matching blocks cannot be reused by a new build (continuation policy ${policy}). Choose a non-overlapping site`);
+}
+
 function inspectBuildWorld(bot, build, Vec3Class) {
   const states = [];
+  let reader;
+  try { reader = createTrustedStateReader(bot); } catch { return null; }
   for (const expected of build.cells ?? build.plan ?? []) {
     const { x, y, z } = expected.position;
-    let block;
     try {
-      block = bot.blockAt(new Vec3Class(x, y, z));
+      const block = bot.blockAt(new Vec3Class(x, y, z));
+      reader.validate(expected.name, expected.stateId, expected.properties);
+      states.push({ position: expected.position, ...reader.read(block) });
     } catch {
       return null;
     }
-    if (!block) return null;
-    states.push({ position: expected.position, name: block.name, properties: { ...propertiesFor(block) } });
   }
   return states;
 }
@@ -290,28 +352,36 @@ function isSameWorld(bot, identity) {
   return true;
 }
 
-function canContinuePlan(bot, build, originalStates, Vec3Class) {
-  if (!originalStates) return false;
+function canContinuePlan(bot, build, originalStates, Vec3Class, recovery, validateOnly = false) {
+  if (!Array.isArray(originalStates)) return false;
+  let reader;
+  try { reader = createTrustedStateReader(bot); } catch { return false; }
   const originalByPosition = new Map(originalStates.map((state) => [
     `${state.position.x},${state.position.y},${state.position.z}`,
     state,
   ]));
   for (const expected of build.cells ?? build.plan ?? []) {
     const { x, y, z } = expected.position;
-    let actual;
+    const original = originalByPosition.get(`${x},${y},${z}`);
+    let actual, properties, attached;
     try {
-      actual = bot.blockAt(new Vec3Class(x, y, z));
+      const block = bot.blockAt(new Vec3Class(x, y, z));
+      attached = hasObservedBlockEntity(block);
+      actual = reader.read(block);
+      properties = actual.properties;
+      reader.read(original, true);
+      reader.validate(expected.name, expected.stateId, expected.properties);
+      if (!consistentAirStates(actual, original) || !consistentAirStates(actual, expected)
+          || !consistentAirStates(original, expected)) return false;
     } catch {
       return false;
     }
-    if (!actual) return false;
-    const properties = propertiesFor(actual);
+    if (validateOnly) continue;
     const expectedAir = isSchematicAirName(expected.name);
     const alreadyPlaced = expectedAir
       ? isSchematicAirName(actual.name)
       : actual.name === expected.name && actual.stateId === expected.stateId
       && sameProperties(properties, expected.properties);
-    const original = originalByPosition.get(`${x},${y},${z}`);
     if (original && isKnownNaturalObstructionName(original.name, bot.version)
         && !isSafeNaturalObstruction({ name: original.name, properties: original.properties }, bot.version)) {
       return false;
@@ -319,6 +389,21 @@ function canContinuePlan(bot, build, originalStates, Vec3Class) {
     const unchanged = original && actual.name === original.name && sameProperties(properties, original.properties);
     const naturallyCleared = isSchematicAirName(actual.name)
       && isSafeNaturalObstruction({ name: original?.name, properties: original?.properties }, bot.version);
+    if (recovery?.policy !== "off") {
+      if (!original || !Number.isSafeInteger(original.stateId) || !Number.isSafeInteger(actual.stateId)
+          || attached) return false;
+      const exactOriginal = unchanged && actual.stateId === original.stateId;
+      const currentPlacement = alreadyPlaced && !expectedAir && recovery?.preflightPassed
+        && recovery.placements.has(`${x},${y},${z}`);
+      // Neither a changed air state nor an absent natural obstruction proves
+      // which actor performed the edit during the interrupted attempt.
+      if (!exactOriginal && !currentPlacement) return false;
+    }
+    // A passed detection-policy preflight had no exact matches. The set only
+    // tracks observations in the current attempt; it is cleared before retry
+    // because even an ordered server reply does not identify the placing actor.
+    if (alreadyPlaced && !expectedAir && recovery?.preflightPassed
+        && recovery.policy !== "off" && !recovery.placements.has(`${x},${y},${z}`)) return false;
     if (!alreadyPlaced && !unchanged && !naturallyCleared) return false;
   }
   return true;
@@ -375,7 +460,13 @@ function boundedCleanup(cleanup, timeoutMs) {
 
 /** Build one supported schematic with bounded supply cleanup and guaranteed mode restoration. */
 export function buildSchematic(bot, fileName, x = null, y = null, z = null, dependencies = {}) {
-  return buildSchematicAttempt(bot, fileName, x, y, z, dependencies, false);
+  return buildSchematicAttempt(bot, fileName, x, y, z, dependencies, false, false);
+}
+
+// Only the explicit human continuation ingress calls this path. It never permits
+// destructive mode, site relocation, inferred coordinates, or managed recovery.
+export function continueSchematic(bot, fileName, x, y, z, dependencies = {}) {
+  return buildSchematicAttempt(bot, fileName, x, y, z, dependencies, false, true);
 }
 
 // Internal handoff only: the native human ingress must authorize before calling it.
@@ -384,7 +475,7 @@ export function buildTrustedDestructiveSchematic(bot, fileName, x = null, y = nu
   return buildSchematicAttempt(bot, fileName, x, y, z, dependencies, true);
 }
 
-async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trustedDestructive) {
+async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trustedDestructive, continuation = false) {
   const {
     resolvePath = resolveSchematicPath,
     fsAccess = access,
@@ -404,13 +495,39 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
     resumeSession,
     allowNonvalidatedSchematic = false,
     requireStrictSchematicValidation = false,
+    continuationGrant,
   } = dependencies;
   const report = (message) => logSafely(writeLog, message);
 
   let placementOptions;
+  let continuationPolicy;
+  let continuationAuthorizationCurrent = () => false;
+  const assertContinuationAuthorization = () => {
+    if (continuation && (resolveContinuationPolicy(agentSettings) !== "allow" || !continuationAuthorizationCurrent()))
+      throw new Error("Continuation authorization or policy changed");
+  };
   try {
+    continuationPolicy = resolveContinuationPolicy(agentSettings);
     placementOptions = validateResolvedPlacementOptions(Object.hasOwn(dependencies, 'placementOptions')
       ? dependencies.placementOptions : resolvePlacementOptions());
+    if (continuation && continuationPolicy !== "allow")
+      throw new Error(`Explicit continuation is unavailable under policy ${continuationPolicy}; no approval flow is available`);
+    if (continuation && (![x, y, z].every(Number.isSafeInteger) || placementOptions.mode !== "delicate" || resumeSession))
+      throw new Error("Explicit continuation requires integer coordinates, delicate mode, and no recovery session");
+    if (continuation) {
+      if (!continuationGrant || (typeof continuationGrant !== "object" && typeof continuationGrant !== "function"))
+        throw new Error("Continuation requires authenticated human authorization");
+      // Lazy import avoids initializing the agent's circular dependency graph for
+      // ordinary builds. Only the agent owns the private grant registry.
+      let checkHumanContinuationGrant;
+      try { ({ checkHumanContinuationGrant } = await import("../../agent/agent.js")); }
+      catch { throw new Error("Continuation authorization verifier unavailable"); }
+      const check = claim => checkHumanContinuationGrant(continuationGrant, bot, fileName, x, y, z,
+        placementOptions, allowNonvalidatedSchematic, requireStrictSchematicValidation, claim);
+      if (!check(true)) throw new Error("Continuation requires current, unused authenticated human authorization");
+      continuationAuthorizationCurrent = () => check(false);
+      assertContinuationAuthorization();
+    }
     if (trustedDestructive && placementOptions.mode !== "destructive")
       throw new Error("Trusted destructive build requires destructive placement mode");
     if (!trustedDestructive && !["delicate", "balanced", "raise"].includes(placementOptions.mode))
@@ -456,7 +573,36 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
     ...(snapshotSelection ? { returnSnapshot: true } : {}) };
   const saved = resumeSession?.context;
   const isResume = Boolean(saved && !resumeSession?.cancelled);
-  if (isResume) resumeSession.resumeEligible = false;
+  if (isResume) {
+    const record = recoveryRecords.get(resumeSession);
+    if (!record?.eligible || !authenticRecovery(bot, resumeSession)) {
+      discardSchematicRecovery(resumeSession);
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+      report(!/\.mc\d+(?:\.\d+)+(?:\.nonvalidated)?\.schem$/.test(saved.resolvedPath ?? "")
+        ? "Schematic recovery is unversioned or not an eligible unmodified session created by this builder; refusing reuse."
+        : "Schematic recovery is not an eligible unmodified session created by this builder; refusing reuse.");
+      return false;
+    }
+    if (record.policy !== continuationPolicy) {
+      discardSchematicRecovery(resumeSession);
+      resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
+      resumeSession.context = null;
+      report("Schematic continuation policy changed since the interrupted build; refusing recovery.");
+      return false;
+    }
+    // Ordered update pairs are not actor-attributed. Placements may support
+    // checks within their current attempt, but cannot authorize reuse in a
+    // later attempt under a continuation-detection policy.
+    if (continuationPolicy !== "off") {
+      if (record.placements.size) report("Schematic recovery cannot attribute prior placement updates to this bot; matching blocks will not be reused.");
+      record.placements.clear();
+    }
+    record.eligible = false;
+    resumeSession.resumeEligible = false;
+  }
   try {
     if (isResume) {
       if (!/\.mc\d+(?:\.\d+)+(?:\.nonvalidated)?\.schem$/.test(saved.resolvedPath ?? "")) {
@@ -482,14 +628,18 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
       }
     } else {
       const selection = await resolvePath(fileName, undefined, selectionOptions);
+      assertContinuationAuthorization();
       if (snapshotSelection && (!selection || typeof selection.path !== 'string' || !Buffer.isBuffer(selection.source))) throw new Error("Invalid schematic selection snapshot");
       resolvedPath = snapshotSelection ? selection.path : selection;
       if (snapshotSelection) source = Buffer.from(selection.source);
       else {
         await fsAccess(resolvedPath);
+        assertContinuationAuthorization();
         source = await fsReadFile(resolvedPath);
+        assertContinuationAuthorization();
       }
       const provenance = snapshotSelection ? selection.provenance : await schematicProvenance(resolvedPath, source);
+      assertContinuationAuthorization();
       if (!provenanceAllowed(provenance, { allowNonvalidatedSchematic, requireStrictSchematicValidation })) {
         throw new Error(`Validation status ${provenance.validationStatus}: ${provenance.reason ?? 'set allow_nonvalidated_schematic_builds=true to consent to NONVALIDATED output'}`);
       }
@@ -521,11 +671,13 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
   try {
     if (!isResume) {
       await validateSource(source, bot.version, bot.registry);
+      assertContinuationAuthorization();
       schematic = readSchematic
         ? await readSchematic(source, bot.version, undefined, bot.registry)
         : SchematicClass === Schematic
           ? await readProductionSchematic(source, bot.version, SchematicClass, bot.registry)
           : await SchematicClass.read(source, bot.version);
+      assertContinuationAuthorization();
       startPosition = createPosition(bot, x, y, z, Vec3Class);
     }
     // Preflight block support before changing the bot's game mode or inventory.
@@ -534,13 +686,15 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
     if (isResume && (typeof saved.planIdentity !== "string" || saved.planIdentity !== planIdentity(build, placementOptions))) {
       throw new Error("Schematic orientation, origin, or transformed plan changed during resume");
     }
-    if (isResume && !canContinuePlan(bot, build, saved.originalStates, Vec3Class)) {
+    if (isResume && !canContinuePlan(bot, build, saved.originalStates, Vec3Class, recoveryRecords.get(resumeSession))) {
       throw new Error("World blocks no longer match the interrupted schematic build; refusing unsafe resume");
     }
   } catch (error) {
     report(`Could not parse or build schematic ${fileName}: ${describeError(error)}. Supported formats are .schem and .schematic; .litematic must be converted first.`);
     if (resumeSession) {
+      discardSchematicRecovery(resumeSession);
       resumeSession.cancelled = true;
+      resumeSession.resumeEligible = false;
       resumeSession.context = null;
     }
     return false;
@@ -566,6 +720,7 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
     };
     resumeSession.isWorldValid = (candidateBot) => isSameWorld(candidateBot, resumeSession.context?.worldIdentity);
     resumeSession.resumeEligible = false;
+    rememberRecovery(bot, resumeSession, continuationPolicy);
   }
 
   const lifecycle = acquireBuildLifecycle(bot);
@@ -574,6 +729,7 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
     if (isResume && resumeSession && !resumeSession.cancelled
         && isSameWorld(bot, resumeSession.context?.worldIdentity)) {
       resumeSession.resumeEligible = true;
+      recoveryRecords.get(resumeSession).eligible = true;
     }
     return false;
   }
@@ -607,21 +763,63 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
   let success = false;
   let failed = false;
   let interruptedBuild = false;
+  // Do not advertise recovery while a legacy edit is unresolved or when an
+  // interrupted dispatched edit has not reached its normal confirmation path.
+  // A revoked, not-yet-dispatched private writer is safe to retry once its
+  // lifecycle lease settles; it cannot subsequently send an edit.
+  const editTracker = {
+    pending: 0, uncertain: false, completedDig: false,
+    start() { this.pending++; },
+    finish(completed) { this.pending--; if (!completed) this.uncertain = true; },
+    outcome({ sent, completed }, kind) {
+      if (sent && !completed) this.uncertain = true;
+      if (sent && completed && kind === "dig") this.completedDig = true;
+    },
+  };
 
   try {
     let balancedSafety;
     let balancedCheck;
     let raisePlan, raiseTargets, raiseBounds;
     let delicateTargets, delicateSafety;
+    const continuationCheck = () => {
+      if (bot.interrupt_code || build.isCancelled || resumeSession?.cancelled || !isSchematicAttemptIdentityCurrent(bot, attemptIdentity))
+        throw Object.assign(new Error("Continuation inspection cancelled or world changed"), { code: "SCHEMATIC_CLEAR_CANCELLED" });
+      if (resolveContinuationPolicy(agentSettings) !== continuationPolicy) throw new Error("Schematic continuation policy changed during preflight");
+      if (continuation && continuationAuthorizationCurrent() !== true) throw new Error("Continuation authorization changed");
+    };
+    const checkContinuationPolicy = () => {
+      if (resolveContinuationPolicy(agentSettings) !== continuationPolicy)
+        throw new Error("Schematic continuation policy changed during build or recovery");
+    };
+    const assertRecoveryWorld = () => {
+      const recovery = isResume && recoveryRecords.get(resumeSession);
+      if (recovery?.preflightPassed && !canContinuePlan(bot, build, saved.originalStates, Vec3Class, recovery))
+        throw new Error("World blocks changed during interrupted schematic recovery; refusing unsafe resume");
+    };
+    let continuationSnapshot;
+    if (isResume) {
+      if (!canContinuePlan(bot, build, saved.originalStates, Vec3Class, recoveryRecords.get(resumeSession)))
+        throw new Error("World blocks changed before interrupted schematic recovery; refusing unsafe resume");
+    } else if (continuation) {
+      continuationSnapshot = await analyzeContinuationAsync(bot, build, Vec3Class, continuationCheck);
+      const { exact, missing, conflicts, unloaded, blockEntities } = continuationSnapshot.counts;
+      report(`Continuation analysis: exact=${exact}, missing=${missing}, conflicts=${conflicts}, unknown=${unloaded}, block entities=${blockEntities}.`);
+      if (!exact || conflicts || unloaded || blockEntities) throw new Error("Continuation requires existing exact matches and no occupied mismatches, block entities, or unreadable cells");
+    }
     if (placementOptions.mode === "delicate") {
       const check = () => {
         if (bot.interrupt_code || build.isCancelled || resumeSession?.cancelled || !isSchematicAttemptIdentityCurrent(bot, attemptIdentity))
           throw Object.assign(new Error("Delicate inspection cancelled or world changed"), { code: "SCHEMATIC_CLEAR_CANCELLED" });
+        if (continuation) continuationCheck();
+        checkContinuationPolicy();
       };
       check();
+      assertRecoveryWorld();
       delicateTargets = inspectDelicateVolume(bot, build, Vec3Class);
       assertBalancedTargets(bot, build);
       delicateSafety = await inspectBalancedResume(bot, build, Vec3Class, check);
+      assertRecoveryWorld();
       revalidateBalancedSite(bot, build, delicateSafety, Vec3Class, attemptIdentity);
       inspectDelicateVolume(bot, build, Vec3Class);
       if (delicateTargets.length) assertAuthorizedGameplaySupport(bot, "place");
@@ -639,9 +837,9 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
       raiseBounds = raiseDimensionBounds(bot);
       assertAuthorizedGameplaySupport(bot, "place");
       const anchorBuild = build;
-      const interrupted = () => Boolean(bot.interrupt_code || resumeSession?.cancelled);
+      const interrupted = () => { checkContinuationPolicy(); return Boolean(bot.interrupt_code || resumeSession?.cancelled); };
       raisePlan = await planRaiseSchematicSite(bot, anchorBuild, { origin: startPosition, worldBounds: raiseBounds,
-        Vec3Class, lifecycle, isInterrupted: interrupted });
+        Vec3Class, lifecycle, isInterrupted: interrupted, excludeMatches: continuationPolicy !== "off", diagnostic: report });
       startPosition = new Vec3Class(raisePlan.origin.x, raisePlan.origin.y, raisePlan.origin.z);
       build = isModernBuild(anchorBuild) ? translateModernBuild(anchorBuild, startPosition) : makeBuild(schematic, bot, startPosition, { orientation: placementOptions.orientation });
       if (build.cells?.length !== raisePlan.volume.length || build.cells.some((cell, i) => {
@@ -682,15 +880,19 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
         if (bot.interrupt_code || build.isCancelled || resumeSession?.cancelled || !isSchematicAttemptIdentityCurrent(bot, attemptIdentity)) {
           throw Object.assign(new Error("Balanced site inspection cancelled or world changed"), { code: "SCHEMATIC_CLEAR_CANCELLED" });
         }
+        checkContinuationPolicy();
       };
       balancedCheck = check;
       if (isResume || trustedDestructive) {
+        assertRecoveryWorld();
         balancedSafety = await inspectBalancedResume(bot, build, Vec3Class, check, clearingQualification);
+        assertRecoveryWorld();
       } else {
         const anchorBuild = build;
         const selected = await planBalancedSchematicSite(bot, anchorBuild, {
           Vec3Class, radius: placementOptions.radius, threshold: placementOptions.threshold, attemptIdentity,
           strategy: placementOptions.strategy, step: placementOptions.step, policy: placementOptions.policy, bisectDepth: placementOptions.bisectDepth,
+          excludeMatches: continuationPolicy !== "off", diagnostic: report,
           isInterrupted: () => Boolean(bot.interrupt_code || resumeSession?.cancelled),
           inspectCandidate: (offset, states, plannerCheck, beforeRead, snapshot) => inspectBalancedCandidate(bot, snapshot, offset, states, Vec3Class, () => { check(); plannerCheck(); }, beforeRead),
         });
@@ -711,6 +913,7 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
       revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification);
       build.beforeSchematicEdit = () => {
         check();
+        assertRecoveryWorld();
         if (trustedDestructive && normalizeGameMode(bot.game?.gameMode) !== "creative") throw new Error("Destructive schematic editing requires Creative mode");
         revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification);
       };
@@ -729,22 +932,57 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
       };
       resumeSession.isWorldValid = candidateBot => isSameWorld(candidateBot, resumeSession.context?.worldIdentity);
       resumeSession.resumeEligible = false;
+      rememberRecovery(bot, resumeSession, continuationPolicy);
     }
+    const recovery = resumeSession && recoveryRecords.get(resumeSession);
+    const recordPlacement = position => {
+      if (recovery && recovery.preflightPassed && recoveryRecords.get(resumeSession) === recovery)
+        recovery.placements.add(`${position.x},${position.y},${position.z}`);
+    };
+    const expectedPlacements = recovery && new Map(build.cells.map(cell => [
+      `${cell.position.x},${cell.position.y},${cell.position.z}`, cell,
+    ]));
+    if (!isResume || !recovery?.preflightPassed) {
+      // Selection and safety inspection may have awaited world reads. Inspect the
+      // final translated plan immediately before any mode or inventory changes.
+      if (resolveContinuationPolicy(agentSettings) !== continuationPolicy)
+        throw new Error("Schematic continuation policy changed during preflight");
+      if (continuation) {
+        const current = await analyzeContinuationAsync(bot, build, Vec3Class, continuationCheck);
+        if (JSON.stringify(current) !== JSON.stringify(continuationSnapshot)) throw new Error("Continuation site changed during preflight");
+      } else if (continuationPolicy !== "off") {
+        await rejectImplicitContinuation(bot, build, Vec3Class, continuationPolicy, report, "selected site", continuationCheck);
+      }
+      continuationCheck();
+      if (recovery) {
+        if (!authenticRecovery(bot, resumeSession) || recovery.policy !== continuationPolicy)
+          throw new Error("Schematic recovery changed during preflight");
+        if (!canContinuePlan(bot, build, resumeSession.context.originalStates, Vec3Class, recovery, true))
+          throw new Error("Schematic recovery state is unavailable during preflight");
+        recovery.preflightPassed = true;
+      }
+    }
+    checkContinuationPolicy();
     // This is an early diagnostic only. Guarded clearing performs its own fresh
     // full-volume scan and never relies on these advisory snapshots.
-    const preflightObstructions = raisePlan || delicateSafety ? [] : inspectSchematicObstructions(bot, build, { Vec3Class, attemptIdentity, collectSnapshots: trustedDestructive, clearingQualification });
-    if (trustedDestructive) {
+    const preflightObstructions = raisePlan || delicateSafety ? [] : inspectSchematicObstructions(bot, build, { Vec3Class, attemptIdentity, collectSnapshots: true, clearingQualification });
+    if (trustedDestructive || (placementOptions.mode === "balanced" && build.cells.some(cell => !isSchematicAirName(cell.name)))) {
+      assertAuthorizedGameplaySupport(bot, "place");
+    }
+    if (trustedDestructive || placementOptions.mode === "balanced") {
       // Reject unsupported plans before changing mode, supplying items, or editing.
       // Modern digging additionally needs authenticated read-only server
       // confirmation; a sequence acknowledgement alone never authorizes it.
-      assertAuthorizedGameplaySupport(bot, "place");
       if (preflightObstructions.length) assertAuthorizedGameplaySupport(bot, "dig");
     }
     if (delicateSafety && delicateTargets.length === 0) {
+      if (continuation) continuationCheck();
+      assertRecoveryWorld();
       revalidateBalancedSite(bot, build, delicateSafety, Vec3Class, attemptIdentity);
       inspectDelicateVolume(bot, build, Vec3Class);
       success = true;
     } else {
+      if (continuation) continuationCheck();
       if (canManageUnstuck) {
         unstuckPauseStarted = true;
         modes.pause("unstuck");
@@ -761,15 +999,23 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
       } catch (error) {
         report(`Could not switch to Creative mode: ${describeError(error)}`);
       }
+      checkContinuationPolicy();
       if (!enteredCreative || (trustedDestructive && normalizeGameMode(bot.game?.gameMode) !== "creative")) {
         report("Schematic build requires Creative mode and permission to run /gamemode creative. Grant the bot operator permission (/op) or configure Creative mode.");
         failed = true;
       } else if (delicateSafety) {
+        if (continuation) continuationCheck();
+        assertRecoveryWorld();
         revalidateBalancedSite(bot, build, delicateSafety, Vec3Class, attemptIdentity);
         inspectDelicateVolume(bot, build, Vec3Class);
         supplyCleanup = startSupply(bot);
         await placeDelicateTargets(bot, build, delicateTargets, delicateSafety, Vec3Class, attemptIdentity, lifecycle,
-          () => Boolean(bot.interrupt_code || resumeSession?.cancelled));
+          () => {
+            checkContinuationPolicy();
+            return Boolean(bot.interrupt_code || resumeSession?.cancelled || (continuation
+              && (resolveContinuationPolicy(agentSettings) !== "allow" || continuationAuthorizationCurrent() !== true)));
+          }, recordPlacement, assertRecoveryWorld, outcome => editTracker.outcome(outcome));
+        assertRecoveryWorld();
         const mismatches = verifyBuild(bot, build, Vec3Class);
         if (mismatches.length) throw new Error(`Delicate schematic verification failed: ${mismatches.join("; ")}`);
         success = true;
@@ -777,21 +1023,21 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
         revalidateRaiseSchematicSiteAtDispatch(bot, raisePlan);
         supplyCleanup = startSupply(bot);
         await placeRaisePlan(bot, raisePlan, raiseTargets, Vec3Class, attemptIdentity, lifecycle, raiseBounds,
-          () => Boolean(bot.interrupt_code || resumeSession?.cancelled));
+          () => { checkContinuationPolicy(); return Boolean(bot.interrupt_code || resumeSession?.cancelled); });
         const mismatches = verifyBuild(bot, build, Vec3Class);
         if (mismatches.length) throw new Error(`Raise schematic verification failed: ${mismatches.join("; ")}`);
         success = true;
       } else {
         try {
           const clearing = await guardDestruction(bot, build, Vec3Class, () => {
-            if (balancedSafety) { balancedCheck(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
+            if (balancedSafety) { balancedCheck(); assertRecoveryWorld(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
             return clearObstructions(bot, build, {
               Vec3Class,
-              isInterrupted: () => Boolean(bot.interrupt_code || (balancedSafety && resumeSession?.cancelled)),
+              isInterrupted: () => { checkContinuationPolicy(); return Boolean(bot.interrupt_code || (balancedSafety && resumeSession?.cancelled)); },
               attemptIdentity,
               clearingQualification,
             });
-          }, undefined, attemptIdentity, clearingQualification, trustedDestructive);
+          }, undefined, attemptIdentity, clearingQualification, true, undefined, editTracker);
           if (clearing.cleared > 0) report(trustedDestructive
             ? `Cleared ${clearing.cleared} reviewed obstruction(s) inside the schematic volume.`
             : `Cleared ${clearing.cleared} allowlisted natural obstruction(s) inside the schematic volume.`);
@@ -804,23 +1050,29 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
         }
 
         if (!failed && !interruptedBuild) {
-          if (balancedSafety) { balancedCheck(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
+          if (balancedSafety) { balancedCheck(); assertRecoveryWorld(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
           supplyCleanup = startSupply(bot);
           let builderSettlement = null;
           const result = await guardDestruction(bot, build, Vec3Class, () => {
-            if (balancedSafety) { balancedCheck(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
+            if (balancedSafety) { balancedCheck(); assertRecoveryWorld(); revalidateBalancedSite(bot, build, balancedSafety, Vec3Class, attemptIdentity, clearingQualification); }
             return executeBuild(bot, build, {
               lifecycle,
               onCancel: () => supplyCleanup?.cancel?.(),
               onPendingSettlement: (pending) => { builderSettlement = pending; },
             });
-          }, () => builderSettlement, attemptIdentity, clearingQualification, trustedDestructive);
+          }, () => builderSettlement, attemptIdentity, clearingQualification, true, position => {
+            const expected = expectedPlacements?.get(`${position.x},${position.y},${position.z}`);
+            const actual = bot.blockAt(new Vec3Class(position.x, position.y, position.z));
+            if (expected && !isSchematicAirName(expected.name) && actual?.name === expected.name
+                && actual.stateId === expected.stateId && sameProperties(propertiesFor(actual), expected.properties)) recordPlacement(position);
+          }, editTracker);
           interruptedBuild ||= result?.status === "interrupted";
           if (result?.status !== "finished") {
             const details = result?.errors?.map(describeError).join("; ");
             report(`Schematic build ${result?.status ?? "failed"}${details ? `: ${details}` : "."}`);
             if (!interruptedBuild || details) failed = true;
           } else {
+            assertRecoveryWorld();
             const mismatches = verifyBuild(bot, build, Vec3Class);
             if (mismatches.length > 0) {
               report(`Schematic verification failed: ${mismatches.join("; ")}. Mineflayer-schem has limited orientation metadata; unsupported orientations are reported as state mismatches.`);
@@ -891,6 +1143,7 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
 
   if (success && !failed) {
     if (resumeSession) {
+      discardSchematicRecovery(resumeSession);
       resumeSession.cancelled = true;
       resumeSession.resumeEligible = false;
       resumeSession.context = null;
@@ -900,10 +1153,46 @@ async function buildSchematicAttempt(bot, fileName, x, y, z, dependencies, trust
   }
   if (resumeSession) {
     if (trustedDestructive && interruptedBuild) report("Destructive schematic recovery is unavailable; refusing ambiguous partial terrain resume.");
+    if (!trustedDestructive && interruptedBuild && (editTracker.pending || editTracker.uncertain
+        || (placementOptions.mode !== "delicate" && lifecycle.hasPending())))
+      report("Schematic recovery unavailable: an interrupted edit or builder is unresolved.");
+    const recovery = recoveryRecords.get(resumeSession);
+    const unattributedPlacements = continuationPolicy !== "off" && interruptedBuild
+      && authenticRecovery(bot, resumeSession) && recovery.placements.size > 0;
+    // Check the same volume that retry will inspect, without accepting any
+    // placement observations as ownership proof. Public edit callbacks only
+    // advance site safety snapshots and cannot authorize managed recovery.
+    let unsafeRecoveryWorld = false;
+    if (interruptedBuild && !failed && !resumeSession.cancelled
+        && resumeSession.context?.originalStates != null && authenticRecovery(bot, resumeSession)
+        && isSameWorld(bot, resumeSession.context.worldIdentity)) {
+      try {
+        unsafeRecoveryWorld = (continuationPolicy !== "off" && editTracker.completedDig) || !canContinuePlan(bot, build,
+          resumeSession.context.originalStates, Vec3Class, { ...recovery, placements: new Set() }, continuationPolicy === "off");
+      } catch {
+        unsafeRecoveryWorld = true;
+      }
+    }
+    if (unattributedPlacements) {
+      const message = "Schematic recovery refused: prior placement updates cannot be attributed to this bot. Review the original source, origin, orientation and world manually; explicit authenticated continuation requires policy allow. Policy ask has no approval flow; deny refuses continuation.";
+      report(message);
+      // Interrupted action output may be suppressed by the action manager.
+      console.warn(message);
+    }
+    if (unsafeRecoveryWorld && !unattributedPlacements) {
+      const message = "Schematic recovery refused: clearing occurred or the original volume changed or cannot be verified; changes cannot be safely attributed. Review the original source, origin, orientation and world manually; explicit authenticated continuation requires policy allow. Policy ask has no approval flow; deny refuses continuation.";
+      report(message);
+      console.warn(message);
+    }
     if (!trustedDestructive && placementOptions.mode !== "raise" && interruptedBuild && !failed && resumeSession.context?.originalStates != null && !resumeSession.cancelled
-        && isSameWorld(bot, resumeSession.context?.worldIdentity)) {
+        && !editTracker.pending && !editTracker.uncertain
+        && !unattributedPlacements && !unsafeRecoveryWorld
+        && (placementOptions.mode === "delicate" || !lifecycle.hasPending())
+        && isSameWorld(bot, resumeSession.context?.worldIdentity) && authenticRecovery(bot, resumeSession)) {
       resumeSession.resumeEligible = true;
+      recoveryRecords.get(resumeSession).eligible = true;
     } else if (!resumeSession.cancelled) {
+      discardSchematicRecovery(resumeSession);
       resumeSession.cancelled = true;
       resumeSession.resumeEligible = false;
       resumeSession.context = null;

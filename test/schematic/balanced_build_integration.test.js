@@ -8,6 +8,7 @@ import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { acquireBuildLifecycle } from "../../src/utils/schematic/run_build.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
+import agentSettings from "../../src/agent/settings.js";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
@@ -15,15 +16,22 @@ const data = require("minecraft-data")("1.20.4");
 const Block = require("prismarine-block")("1.20.4");
 const key = p => `${p.x},${p.y},${p.z}`;
 
-function fixture(names = ["stone"], options = {}) {
+function fixture(names = ["stone"], options = {}, version = "1.20.4") {
+  const data = require("minecraft-data")(version);
+  const Block = require("prismarine-block")(version);
   const world = new Map();
   const calls = { writes: [], modes: [], logs: [], origins: [], reads: [], supply: 0 };
-  let phase = "planning";
+  let phase = "planning", activeBuild;
   const entity = { position: new Vec3(100, 64, 100), width: 0.6, height: 1.8 };
   const bot = Object.assign(new EventEmitter(), {
-    version: "1.20.4", registry: data, game: { gameMode: "survival", dimension: "overworld" },
+    version, registry: data, game: { gameMode: "survival", dimension: "overworld" },
     world: {}, _client: Object.assign(new EventEmitter(), { socket: {} }), entity, entities: { 1: entity },
     position: new Vec3(-2, 64, -2), interrupt_code: false,
+    heldItem: { name: names.find(name => name !== "air") ?? "stone" },
+    supportFeature: name => ["usesMultiblockSingleLong", "usesMultiblock3DChunkCoords", "blockPlaceHasInsideBlock"].includes(name),
+    digTime: () => 0,
+    lookAt: async () => {},
+    swingArm: () => {},
     blockAt(position) {
       calls.reads.push(key(position));
       const name = world.has(key(position)) ? world.get(key(position)) : position.y === 63 ? "dirt" : "air";
@@ -37,18 +45,49 @@ function fixture(names = ["stone"], options = {}) {
     placeBlock(reference, face) {
       const target = reference.position.plus(face);
       calls.writes.push([phase, "place", key(target)]);
-      const name = names[target.x - calls.origins.at(-1).x];
+      const name = activeBuild.cells.find(cell => key(cell.position) === key(target))?.name;
       world.set(key(target), name);
       dependencies.onPlace?.(name, target);
     },
     pathfinder: { movements: {}, setMovements(movements) { this.movements = movements; }, goto: async () => {} },
     builder: { clearArea: async () => {} },
   });
+  bot._client.write = (packet, dataPacket) => {
+    if (packet === "block_dig" && [0, 2].includes(dataPacket.status)) {
+      const position = dataPacket.location;
+      if (dataPacket.status === 0) calls.writes.push([phase, "dig", key(position)]);
+      setImmediate(() => {
+        const old = bot.blockAt(position);
+        world.set(key(position), "air");
+        const air = bot.blockAt(position);
+        bot.emit(`blockUpdate:${position}`, old, air);
+        bot._client.emit("block_change", { location: position, type: air.stateId });
+        bot._client.emit("acknowledge_player_digging", { location: position, block: air.stateId, status: dataPacket.status, successful: true });
+      });
+      return;
+    }
+    if (packet !== "block_place") return;
+    const offsets = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+    const target = dataPacket.location.offset(...offsets[dataPacket.direction]);
+    const name = activeBuild.cells.find(cell => key(cell.position) === key(target))?.name;
+    calls.writes.push([phase, "place", key(target)]);
+    setImmediate(() => {
+      const reference = bot.blockAt(dataPacket.location);
+      bot._client.emit("block_change", { location: dataPacket.location, type: reference.stateId });
+      bot.emit(`blockUpdate:${dataPacket.location}`, reference, reference);
+      const old = bot.blockAt(target);
+      world.set(key(target), name);
+      dependencies.onPlace?.(name, target);
+      const placed = bot.blockAt(target);
+      bot._client.emit("block_change", { location: target, type: placed.stateId });
+      bot.emit(`blockUpdate:${target}`, old, placed);
+    });
+  };
   const palette = names.map(name => data.blocksByName[name].defaultState);
-  const schematic = { version: "1.20.4", size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
+  const schematic = { version, size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
     blocks: names.map((_, i) => i), getBlock: position => Block.fromStateId(palette[position.x], 0) };
   const dependencies = provenanceFixtureDependencies({
-    resolvePath: () => "/schematics/test.mc1.20.4.schem", fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
+    resolvePath: () => `/schematics/test.mc${version}.schem`, fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
     validateSource: () => {}, SchematicClass: { read: () => schematic },
     placementOptions: resolvePlacementOptions({ schematic_placement_mode: "balanced", schematic_balanced_radius: 1, schematic_balanced_threshold: 9 }, options),
     changeGameMode: async (_bot, mode) => {
@@ -58,10 +97,12 @@ function fixture(names = ["stone"], options = {}) {
     },
     startSupply: () => { calls.supply++; const cleanup = () => {}; cleanup.cancel = () => {}; return cleanup; },
     executeBuild: async (_bot, build) => {
+      activeBuild = build;
       calls.origins.push({ ...build.cells[0].position });
       if (dependencies.onBuild) return dependencies.onBuild(build);
       for (const cell of build.cells) {
         if (cell.name !== "air" && bot.blockAt(new Vec3(cell.position.x, cell.position.y, cell.position.z)).name === "air") {
+          bot.heldItem = { name: cell.name };
           await bot.placeBlock({ position: new Vec3(cell.position.x, cell.position.y - 1, cell.position.z) }, new Vec3(0, 1, 0));
         }
       }
@@ -71,6 +112,131 @@ function fixture(names = ["stone"], options = {}) {
   });
   return { bot, world, calls, dependencies, schematic, run: (x = 0, y = 64, z = 0) => buildSchematic(bot, "test.schem", x, y, z, dependencies) };
 }
+
+test("balanced selected-site exact match is refused before mutation", async () => {
+  const f = fixture(["stone"], { radius: 1, threshold: 1, strategy: "all" });
+  f.world.set("-1,64,0", "stone");
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.match(f.calls.logs.join(" "), /No fully inspected balanced candidate/);
+  assert.deepEqual(f.calls.modes, []); assert.deepEqual(f.calls.writes, []);
+  assert.equal(f.calls.supply, 0);
+});
+
+test("balanced searches past overlapping candidates without filling observed intended air", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["air", "stone"], { radius: 2, strategy: "all" });
+    f.world.set("1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.equal(f.bot.blockAt(new Vec3(0,64,0)).name, "air");
+    assert.equal(f.bot.blockAt(new Vec3(1,64,0)).name, "stone");
+    assert.ok(f.calls.writes.every(([, , position]) => !["0,64,0", "1,64,0"].includes(position)));
+    assert.match(f.calls.logs.join(" "), /overlaps a protected matching volume/);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced protects late candidate intended air before first-valid selection, including rotation", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    for (const [orientation, existing, protectedCells] of [
+      ["north", "-2,64,0", ["-2,64,0", "-1,64,0", "0,64,0"]],
+      ["east", "0,64,-2", ["0,64,-2", "0,64,-1", "0,64,0"]],
+    ]) {
+      const f = fixture(["stone", "air", "air"], { radius: 2, strategy: "all", policy: "first_valid", orientation });
+      f.world.set(existing, "stone");
+      assert.equal(await f.run(), true, f.calls.logs.join("; "));
+      assert.equal(f.world.get(existing), "stone");
+      assert.ok(f.calls.writes.every(([, , position]) => !protectedCells.includes(position)), f.calls.logs.join("; "));
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced exhaustive retains earliest equal-score alternative after a late match invalidates the incumbent", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air"], { radius: 2, strategy: "all", policy: "exhaustive" });
+    f.world.set("-2,64,0", "stone");
+    // Eliminate every candidate visited after the late matching anchor, while
+    // leaving the earlier equal-score alternative's own foundation intact.
+    for (const p of ["0,63,-2", "0,63,2", "4,63,0"]) f.world.set(p, "air");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: -1 }]);
+    assert.equal(f.world.get("-2,64,0"), "stone");
+    assert.ok(f.calls.writes.every(([, , position]) => !["-2,64,0", "-1,64,0", "0,64,0"].includes(position)));
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced protects unsampled candidate anchors within the declared radius", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air"], { radius: 2, step: 2, strategy: "stepped", policy: "first_valid" });
+    f.world.set("-1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.ok(f.calls.writes.every(([, , position]) => !["-1,64,0", "0,64,0", "1,64,0"].includes(position)));
+    assert.equal(f.world.get("-1,64,0"), "stone");
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced fails closed on late unavailable evidence and cancellation before any edit", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    for (const failure of ["unloaded", "cancelled", "uncertain"]) {
+      const f = fixture(["stone"], { radius: 2, strategy: "all" });
+      const read = f.bot.blockAt.bind(f.bot);
+      f.bot.blockAt = position => {
+        const block = read(position);
+        if (key(position) !== "-2,64,0") return block;
+        if (failure === "unloaded") return null;
+        if (failure === "cancelled") f.bot.interrupt_code = true;
+        if (failure === "uncertain") block.getProperties = () => { throw new Error("unreadable"); };
+        return block;
+      };
+      assert.equal(await f.run(), false, failure);
+      assert.deepEqual(f.calls.writes, [], failure);
+      assert.deepEqual(f.calls.modes, [], failure);
+      assert.equal(f.calls.supply, 0, failure);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced rechecks remote candidate evidence after the mode transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air", "air", "air"], { radius: 4, strategy: "all" });
+    f.dependencies.onTransition = () => f.world.set("-4,64,0", "stone");
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.writes, []);
+    assert.equal(f.world.get("-4,64,0"), "stone");
+    assert.match(f.calls.logs.join(" "), /protection evidence changed/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced discovery deadline cannot return an early site", async t => {
+  const { performance } = await import("node:perf_hooks");
+  let now = 0;
+  t.mock.method(performance, "now", () => now);
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone"], { radius: 2, strategy: "all" });
+    const read = f.bot.blockAt.bind(f.bot);
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "-2,64,0") now = 2001;
+      return block;
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.writes, []);
+    assert.deepEqual(f.calls.modes, []);
+    assert.match(f.calls.logs.join(" "), /timed out/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
 
 test("balanced refuses the radius-zero redstone/TNT induced-physics reproduction before Creative or supply", async () => {
   const f = fixture(["redstone_block"], { radius: 0 });
@@ -212,7 +378,7 @@ test("balanced positively classifies actual in-volume states, not just requested
 
 test("balanced rechecks unsafe neighbors after asynchronous navigation before a clearing dig", async () => {
   for (const name of ["redstone_wire", "piston", "water", "sand", "oak_leaves"]) {
-    const f = fixture(["air"], { radius: 0 });
+    const f = fixture(["air"], { radius: 0 }, "1.18.2");
     f.world.set("0,64,0", "poppy");
     f.bot.pathfinder.goto = async () => {
       await new Promise(resolve => setImmediate(resolve));
@@ -286,20 +452,19 @@ test("the delicate default also refuses active targets before Creative", async (
   }
 });
 
-test("balanced ranks exact mismatches, honors explicit anchor and edits only after planning", async () => {
+test("balanced ranking skips matching sites and selects an alternative", async () => {
   const f = fixture(["stone"], { radius: 1, threshold: 2, strategy: "all", policy: "exhaustive" });
   f.world.set("-1,64,0", "stone");
   f.world.set("0,64,-1", "stone");
-  assert.equal(await f.run(), true);
-  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }]);
-  assert.match(f.calls.logs.join(" "), /origin -1,64,0; bounds -1,64,0 to -1,64,0; 0 mismatches/);
-  assert.deepEqual(f.calls.writes, []);
+  assert.equal(await f.run(), true, f.calls.logs.join("; "));
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }]);
+  assert.equal(f.world.get("-1,64,0"), "stone");
   // Surrounding cells are now deliberately read, not ranked as extra origins.
   assert.ok(f.calls.reads.includes("-1,64,-1"));
 });
 
 test("threshold is strict and counts both empty solid targets and intended-air obstructions", async () => {
-  const f = fixture(["stone", "air"], { radius: 0, threshold: 2 });
+  const f = fixture(["stone", "air"], { radius: 0, threshold: 2 }, "1.18.2");
   f.world.set("1,64,0", "poppy");
   assert.equal(await f.run(), false);
   assert.match(f.calls.logs.join(" "), /strict obstruction threshold/);
@@ -369,7 +534,7 @@ test("planning holds the build lease and observes cancellation during a yielded 
 });
 
 test("a different safe obstruction appearing during navigation is not newly approved", async () => {
-  const f = fixture(["air", "air"], { radius: 0, threshold: 3 });
+  const f = fixture(["air", "air"], { radius: 0, threshold: 3 }, "1.18.2");
   f.world.set("0,64,0", "poppy");
   f.bot.pathfinder.goto = () => { f.world.set("1,64,0", "poppy"); };
   assert.equal(await f.run(), false);
@@ -381,20 +546,243 @@ test("eligible resume retains selected origin and options without searching agai
   const f = fixture(["stone"], { radius: 1, strategy: "all", policy: "exhaustive" });
   const session = { cancelled: false };
   f.dependencies.resumeSession = session;
-  f.world.set("-1,64,0", "stone");
   f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
   assert.equal(await f.run(), false);
   assert.equal(session.resumeEligible, true);
-  assert.deepEqual(session.context.origin, { x: -1, y: 64, z: 0 });
-  f.world.set("0,64,0", "stone");
-  f.dependencies.onBuild = () => ({ status: "finished", errors: [] });
+  assert.deepEqual(session.context.origin, { x: 0, y: 64, z: 0 });
+  delete f.dependencies.onBuild;
   f.calls.reads.length = 0;
   assert.equal(await f.run(99, 70, 99), true);
-  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }, { x: 0, y: 64, z: 0 }]);
   assert.ok(!f.calls.reads.includes("99,70,99"));
 });
 
-test("rotated balanced selection translates one full local plan and resumes at its frozen origin", async () => {
+test("balanced recovery rejects untracked matches after preflight and preserves off behavior", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true); assert.deepEqual(f.calls.writes, []);
+      f.world.set("0,64,0", "stone");
+      session.placements = new Set(["0,64,0"]);
+      delete f.dependencies.onBuild;
+      const modes = f.calls.modes.length, supply = f.calls.supply;
+      assert.equal(await f.run(), policy === "off", `${policy}: ${f.calls.logs.join("; ")}`);
+      if (policy === "off") assert.deepEqual(f.calls.writes, [["editing", "place", "1,64,0"]]);
+      else {
+        assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+        assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.modes.length, modes);
+        assert.equal(f.calls.supply, supply); assert.equal(session.resumeEligible, false);
+      }
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery refuses an externally cleared original obstruction", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "air"], { radius: 0 }, "1.18.2");
+      f.world.set("1,64,0", "poppy");
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onTransition = () => { f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.calls.logs.join("; "));
+      assert.equal(f.world.get("1,64,0"), "poppy");
+      f.world.set("1,64,0", "air");
+      f.bot.interrupt_code = false; delete f.dependencies.onTransition;
+      const modes = f.calls.modes.length;
+      assert.equal(await f.run(), false, policy);
+      assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+      assert.equal(f.calls.modes.length, modes);
+      assert.deepEqual(f.calls.writes, []);
+      assert.equal(session.cancelled, true);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced public safety callbacks cannot manufacture managed placement proof", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = build => {
+      const position = new Vec3(0, 64, 0);
+      f.world.set(key(position), "stone");
+      build.afterSchematicEdit(position);
+      return { status: "interrupted", errors: [] };
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(session.cancelled, true);
+    assert.equal(session.context, null);
+    assert.match(f.calls.logs.join(" "), /recovery refused: clearing occurred or the original volume changed/i);
+    assert.deepEqual(f.calls.writes, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced refuses recovery of even confirmed placements under detection policies", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone"], { radius: 0, threshold: 3 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = async () => {
+        await f.bot.placeBlock(f.bot.blockAt(new Vec3(0, 63, 0)), new Vec3(0, 1, 0));
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.equal(session.context, null, policy);
+      assert.match(f.calls.logs.join(" "), /recovery refused: prior placement updates cannot be attributed/i);
+      assert.deepEqual(f.calls.writes, [["editing", "place", "0,64,0"]]);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery rechecks placement proof after Creative transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone", "stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false); assert.equal(session.resumeEligible, true);
+    delete f.dependencies.onBuild;
+    f.dependencies.onTransition = () => f.world.set("0,64,0", "stone");
+    const supply = f.calls.supply;
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+    assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.supply, supply);
+    assert.equal(session.resumeEligible, false);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery inspection reads scale linearly with volume", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const counts = [];
+    for (const size of [64, 128]) {
+      const f = fixture(Array(size).fill("stone"), { radius: 0, threshold: size + 1 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true);
+      f.calls.reads.length = 0;
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.calls.logs.join("; "));
+      counts.push(f.calls.reads.length);
+    }
+    assert.ok(counts[1] < counts[0] * 2.5, `recovery reads: ${counts.join(", ")}`);
+    assert.ok(counts[1] < 25000, `recovery reads: ${counts.join(", ")}`);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery rechecks the plan after yielded inspection", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(Array(160).fill("stone"), { radius: 0, threshold: 161 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, true);
+    const blockAt = f.bot.blockAt;
+    let scheduled = false;
+    f.bot.blockAt = function (position) {
+      if (!scheduled) {
+        scheduled = true;
+        setImmediate(() => f.world.set("159,64,0", "stone"));
+      }
+      return blockAt.call(this, position);
+    };
+    const modes = f.calls.modes.length;
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(f.calls.modes.length, modes);
+    assert.deepEqual(f.calls.writes, []);
+    assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interrupted detached private placement is not eligible while unresolved", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      let settle;
+      f.bot.lookAt = () => new Promise(resolve => { settle = resolve; });
+      f.dependencies.onBuild = async () => {
+        f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0)).catch(() => {});
+        await new Promise(resolve => setImmediate(resolve));
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(typeof settle, "function");
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.equal(session.context, null, policy);
+      assert.equal(acquireBuildLifecycle(f.bot), null, "pending write keeps the bot quarantined");
+      settle();
+      await new Promise(resolve => setImmediate(resolve));
+      const lease = acquireBuildLifecycle(f.bot);
+      assert.ok(lease); lease.release();
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interruption before an unconfirmed edit returns revokes recovery", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.bot._client.write = packet => {
+      if (packet === "block_place") f.bot.interrupt_code = true;
+    };
+    f.dependencies.onBuild = async () => {
+      try { await f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0)); } catch { /* interrupted */ }
+      return { status: "interrupted", errors: [] };
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(session.cancelled, true);
+    assert.match(f.calls.logs.join(" "), /recovery unavailable.*unresolved/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interrupted builder settlement cannot advertise recovery", async () => {
+  const f = fixture(["stone"], { radius: 0 });
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  let settle;
+  const pending = new Promise(resolve => { settle = resolve; });
+  f.dependencies.executeBuild = (_bot, _build, { lifecycle, onPendingSettlement }) => {
+    lifecycle.hold(pending);
+    onPendingSettlement(pending);
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.equal(session.resumeEligible, false);
+  assert.equal(session.cancelled, true);
+  assert.equal(acquireBuildLifecycle(f.bot), null);
+  settle();
+  await new Promise(resolve => setImmediate(resolve));
+  const lease = acquireBuildLifecycle(f.bot);
+  assert.ok(lease); lease.release();
+});
+
+test("rotated balanced plan resumes at its frozen origin", async () => {
   const f = fixture(["stone", "air", "air", "air", "air", "air"], { radius: 1, strategy: "all", policy: "exhaustive" });
   f.schematic.size = new Vec3(3, 1, 2);
   f.schematic.offset = new Vec3(4, -2, 8);
@@ -407,24 +795,26 @@ test("rotated balanced selection translates one full local plan and resumes at i
   f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
   const session = { cancelled: false };
   f.dependencies.resumeSession = session;
-  f.world.set("0,64,0", "stone");
   let captured;
-  f.dependencies.onBuild = build => { captured = build; return { status: "interrupted", errors: [] }; };
+  f.dependencies.onBuild = build => {
+    captured = build;
+    return { status: "interrupted", errors: [] };
+  };
   assert.equal(await f.run(), false, f.calls.logs.join("; "));
   assert.equal(decodes, 6, "site relocation does not rotate or decode again");
   assert.equal(session.resumeEligible, true);
-  assert.deepEqual(session.context.origin, { x: -1, y: 64, z: 0 });
+  assert.deepEqual(session.context.origin, { x: 0, y: 64, z: 0 });
   assert.equal(session.context.placementOptions.orientation, "east");
   assert.deepEqual(captured.dimensions, { width: 2, height: 1, length: 3 });
   assert.deepEqual(captured.cells.map(c => [key(c.position), c.name]), [
-    ["-1,64,0", "air"], ["0,64,0", "stone"], ["-1,64,1", "air"],
-    ["0,64,1", "air"], ["-1,64,2", "air"], ["0,64,2", "air"],
+    ["0,64,0", "air"], ["1,64,0", "stone"], ["0,64,1", "air"],
+    ["1,64,1", "air"], ["0,64,2", "air"], ["1,64,2", "air"],
   ]);
   assert.ok(Object.isFrozen(session.context.placementOptions));
-  f.dependencies.onBuild = () => ({ status: "finished", errors: [] });
+  delete f.dependencies.onBuild;
   assert.equal(await f.run(99, 80, 99), true, f.calls.logs.join("; "));
   assert.equal(decodes, 12);
-  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }, { x: 0, y: 64, z: 0 }]);
 });
 
 test("balanced recovery refuses changed orientation, changed rotated source, and legacy sessions before edits", async () => {
@@ -448,9 +838,9 @@ test("balanced recovery refuses changed orientation, changed rotated source, and
 test("final verification rejects a matching name and properties with a wrong state ID", async () => {
   const f = fixture(["stone"], { radius: 0 });
   f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
-  f.world.set("0,64,0", "stone");
   const read = f.bot.blockAt.bind(f.bot);
   f.dependencies.onBuild = () => {
+    f.world.set("0,64,0", "stone");
     f.bot.blockAt = position => {
       const block = read(position);
       if (key(position) === "0,64,0") block.stateId++;
@@ -464,6 +854,9 @@ test("final verification rejects a matching name and properties with a wrong sta
 });
 
 test("balanced forwards search settings and reports sampled versus complete selection", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
   for (const [options, origin, status] of [
     [{ radius: 1, strategy: "all", policy: "exhaustive" }, -1, /sampled search \(all\/exhaustive, 2\/5 candidates/],
     [{ radius: 1, strategy: "all", policy: "first_valid" }, 0, /sampled search \(all\/first_valid/],
@@ -480,4 +873,115 @@ test("balanced forwards search settings and reports sampled versus complete sele
   assert.equal(await complete.run(), true, complete.calls.logs.join("; "));
   assert.equal(complete.calls.origins[0].x, 0);
   assert.match(complete.calls.logs.join(" "), /complete search \(all\/exhaustive, 5\/5 candidates/);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced searches past a matching anchor", async () => {
+  const f = fixture(["stone"], { radius: 1, threshold: 2, strategy: "all", policy: "first_valid" });
+  f.world.set("0,64,0", "stone");
+  assert.equal(await f.run(), true, f.calls.logs.join("; "));
+  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }]);
+  assert.equal(f.world.get("0,64,0"), "stone");
+});
+
+test("legacy rotated balanced relocation resumes at its frozen selected origin", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
+    const f = fixture(["stone", "air", "air", "air", "air", "air"], { radius: 1, strategy: "all", policy: "exhaustive" });
+    f.schematic.size = new Vec3(3, 1, 2);
+    f.schematic.offset = new Vec3(4, -2, 8);
+    let decodes = 0;
+    f.schematic.getBlock = p => { decodes++; return Block.fromStateId(f.schematic.palette[(p.z - 8) * 3 + p.x - 4], 0); };
+    f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.world.set("0,64,0", "stone");
+    let captured;
+    f.dependencies.onBuild = build => { captured = build; return { status: "interrupted", errors: [] }; };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(decodes, 6); assert.equal(session.resumeEligible, true);
+    assert.deepEqual(session.context.origin, { x: -1, y: 64, z: 0 });
+    assert.equal(session.context.placementOptions.orientation, "east");
+    assert.deepEqual(captured.dimensions, { width: 2, height: 1, length: 3 });
+    assert.deepEqual(captured.cells.map(c => [key(c.position), c.name]), [
+      ["-1,64,0", "air"], ["0,64,0", "stone"], ["-1,64,1", "air"],
+      ["0,64,1", "air"], ["-1,64,2", "air"], ["0,64,2", "air"],
+    ]);
+    assert.ok(Object.isFrozen(session.context.placementOptions));
+    f.dependencies.onBuild = () => ({ status: "finished", errors: [] });
+    assert.equal(await f.run(99, 80, 99), true, f.calls.logs.join("; "));
+    assert.equal(decodes, 12);
+    assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced rejects an unrelated destination update without a reference reply and refuses recovery", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "oak_planks"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      let packets = 0;
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.bot._client.write = (name, packet) => {
+        if (name !== "block_place") return;
+        packets++;
+        const target = packet.location.offset(0, 1, 0);
+        setImmediate(() => {
+          const old = f.bot.blockAt(target);
+          f.world.set(key(target), "stone");
+          const actual = f.bot.blockAt(target);
+          f.bot._client.emit("block_change", { location: target, type: actual.stateId });
+          f.bot.emit(`blockUpdate:${target}`, old, actual);
+          f.bot.interrupt_code = true;
+        });
+      };
+      require("mineflayer/lib/plugins/generic_place")(f.bot);
+      require("mineflayer/lib/plugins/place_block")(f.bot);
+      f.dependencies.onBuild = async () => {
+        try { await f.bot.placeBlock(f.bot.blockAt(new Vec3(0, 63, 0)), new Vec3(0, 1, 0)); } catch { /* interrupted */ }
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, policy);
+      assert.equal(packets, 1);
+      assert.ok(phases.includes("placement-target-before-reference-response"));
+      assert.ok(!phases.includes("server-confirmed"));
+      assert.equal(session.resumeEligible, false);
+      f.bot.interrupt_code = false;
+      delete f.dependencies.onBuild;
+      assert.equal(await f.run(), false);
+      assert.equal(packets, 1);
+      assert.equal(f.world.get("1,64,0"), undefined);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced reauthorizes policy, cancellation, and world state after native aiming before dispatch", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const change of ["policy", "interrupt", "world", "target", "reference", "neighbor", "heldItem"]) {
+      agentSettings.schematic_continuation_policy = "deny";
+      const f = fixture(["stone"], { radius: 0 });
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.bot.lookAt = () => {
+        if (change === "policy") agentSettings.schematic_continuation_policy = "ask";
+        if (change === "interrupt") f.bot.interrupt_code = true;
+        if (change === "world") f.bot._client.emit("respawn");
+        if (change === "target") f.world.set("0,64,0", "stone");
+        if (change === "reference") f.world.set("0,63,0", "stone");
+        if (change === "neighbor") f.world.set("1,64,0", "piston");
+        if (change === "heldItem") f.bot.heldItem = { name: "oak_planks" };
+        return Promise.resolve();
+      };
+      require("mineflayer/lib/plugins/generic_place")(f.bot);
+      require("mineflayer/lib/plugins/place_block")(f.bot);
+      assert.equal(await f.run(), false, `${change}: ${f.calls.logs.join("; ")}`);
+      assert.deepEqual(f.calls.writes, [], change);
+      assert.ok(phases.includes("rejected"), change);
+      assert.ok(!phases.includes("authorized"), change);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
 });

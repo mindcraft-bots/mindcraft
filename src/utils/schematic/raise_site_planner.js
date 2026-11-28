@@ -84,17 +84,29 @@ function context(bot, identity, build, interrupted, limits, Vec3Class) {
     }
     if (performance.now() > deadline) throw budget("Site inspection timed out");
   };
-  const read = position => {
+  const readBlock = position => {
     check();
     if (++reads > limits.reads) throw budget("Site read limit exceeded");
     let block;
     try { block = bot.blockAt(new Vec3Class(position.x, position.y, position.z)); }
     catch { throw unsafe(`Cannot inspect ${key(position)}`); }
     check();
+    return block;
+  };
+  const read = position => {
+    const block = readBlock(position);
     return { block, snapshot: state(bot, block, position) };
   };
+  const evidence = position => {
+    const block = readBlock(position);
+    if (!block || typeof block.name !== "string" || !/^[a-z0-9_]+$/.test(block.name)
+        || !Number.isSafeInteger(block.stateId) || block.stateId < 0
+        || (bot.registry?.blocksByStateId && bot.registry.blocksByStateId[block.stateId]?.name !== block.name)) throw unsafe(`Uncertain candidate evidence at ${key(position)}`);
+    return { position: frozenPosition(position), name: block.name, stateId: block.stateId, properties: propertiesOf(block),
+      attached: block.entity != null || block.blockEntity != null || block._blockEntity != null || block.nbt != null };
+  };
   const tick = async () => { if (reads && reads % 128 === 0) { await yieldToEvents(); check(); } };
-  return { check, read, tick };
+  return { check, read, evidence, tick };
 }
 
 function snapshotBuild(build, origin, limits) {
@@ -125,7 +137,7 @@ function snapshotBuild(build, origin, limits) {
  * state IDs to prove their properties. Returns an immutable advisory plan; it
  * does not authorize or perform writes.
  */
-export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, Vec3Class, limits: requestedLimits, isInterrupted = () => false, lifecycle = null } = {}) {
+export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, Vec3Class, limits: requestedLimits, isInterrupted = () => false, lifecycle = null, excludeMatches = false, diagnostic = () => {} } = {}) {
   if (!bot || typeof bot.blockAt !== "function" || typeof Vec3Class !== "function" || typeof isInterrupted !== "function") throw new TypeError("Block reader, vector and interruption check required");
   if (!worldBounds || !Number.isSafeInteger(worldBounds.minY) || !Number.isSafeInteger(worldBounds.maxY) || worldBounds.minY > worldBounds.maxY) throw new TypeError("Inclusive dimension Y bounds required");
   const limits = limitsFor(requestedLimits);
@@ -143,6 +155,36 @@ export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, 
   assertBalancedTargets(bot, copied);
   if (copied.cells.some(cell => Object.keys(cell.properties).length !== 0)) throw unsafe("Stateful targets are not supported by raise planning");
   if (!isSupportedBalancedPassiveState(bot.registry, { name: "dirt", properties: {} })) throw unsafe("Dirt state unavailable in registry");
+  // Discover all bounded candidate volumes before accepting any site. A match
+  // is conservative evidence, not proof of ownership or structure identity.
+  const protectedRanges = [];
+  const protectedAt = p => protectedRanges.some(range => p.y >= range.minY && p.y < range.maxY
+    && p.x >= min.x && p.x < min.x + width && p.z >= min.z && p.z < min.z + length);
+  const evidence = excludeMatches ? new Map() : null;
+  if (evidence) {
+    let inspected = 0;
+    for (let rise = 0; rise <= limits.rise; rise++) {
+      const y = min.y + rise;
+      if (y < minY || y + height - 1 > maxY) continue;
+      let matched = false;
+      for (const cell of copied.cells) {
+        const position = { x: cell.position.x, y: cell.position.y + rise, z: cell.position.z };
+        const k = key(position);
+        if (!evidence.has(k)) evidence.set(k, ctx.evidence(position));
+        const observed = evidence.get(k);
+        if (!AIR.has(cell.name) && cell.name === observed.name && (sameState(cell, observed) || observed.stateId === cell.stateId)) {
+          if (!sameState(cell, observed) || observed.attached || observed.stateId !== cell.stateId) throw unsafe(`Uncertain matching candidate evidence at ${k}`);
+          matched = true;
+        }
+        if (++inspected % 128 === 0) { await yieldToEvents(); ctx.check(); }
+      }
+      if (matched) {
+        protectedRanges.push({ minY: y, maxY: y + height });
+        diagnostic(`Raise candidate Y ${y} contains existing matches; its entire volume is protected.`);
+      }
+      ctx.check();
+    }
+  }
   for (let rise = 0; rise <= limits.rise; rise++) {
     const y = min.y + rise;
     if (y < minY) continue;
@@ -157,6 +199,10 @@ export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, 
     let obstructed = false;
     for (const cell of cells) {
       const { block, snapshot } = observe(cell.position);
+      if (excludeMatches && !AIR.has(cell.name) && sameState(cell, snapshot)) {
+        if (!protectedAt(cell.position)) throw unsafe("Matching candidate appeared after protection discovery");
+        obstructed = true;
+      }
       if (!AIR.has(snapshot.name) && !(!AIR.has(cell.name) && sameState(cell, snapshot))) {
         if (!GROUND.has(snapshot.name) || !fullCube(block)) throw unsafe(`Non-terrain obstruction at ${key(cell.position)}`);
         obstructed = true;
@@ -164,14 +210,19 @@ export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, 
       await ctx.tick();
     }
     if (obstructed) continue;
+    if (cells.some(cell => protectedAt(cell.position))) {
+      diagnostic(`Raise candidate Y ${y} overlaps a protected matching volume.`);
+      continue;
+    }
     const dirt = [];
     let lowest = y;
-    let groundMissing = false;
+    let groundMissing = false, protectedFoundation = false;
     for (let x = min.x; x < min.x + width; x++) for (let z = min.z; z < min.z + length; z++) {
       let found = false;
       for (let depth = 1; depth <= limits.depth; depth++) {
         const p = { x, y: y - depth, z };
         if (p.y < minY) break;
+        if (protectedAt(p)) { protectedFoundation = true; break; }
         const { block, snapshot } = observe(p);
         if (AIR.has(snapshot.name)) dirt.push(frozenPosition(p));
         else {
@@ -182,7 +233,8 @@ export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, 
       }
       if (!found) groundMissing = true;
     }
-    if (groundMissing) continue;
+    if (protectedFoundation) diagnostic(`Raise candidate Y ${y} would use or fill a protected matching volume as foundation.`);
+    if (groundMissing || protectedFoundation) continue;
     const solidTargets = cells.filter(c => !AIR.has(c.name) && AIR.has(observations.get(key(c.position)).snapshot.name));
     if (dirt.length + solidTargets.length > limits.edits) throw budget("Planned edits exceed site limit");
     dirt.sort((a, b) => a.y - b.y || a.x - b.x || a.z - b.z);
@@ -202,7 +254,7 @@ export async function planRaiseSchematicSite(bot, build, { origin, worldBounds, 
     ctx.check();
     const plan = Object.freeze({ origin: frozenPosition({ x: origin.x, y: origin.y + rise, z: origin.z }), requestedOrigin: frozenPosition(origin), dimensions: copied.dimensions,
       volume: Object.freeze(cells), dirt: Object.freeze(dirt) });
-    plans.set(plan, { bot, build, identity, isInterrupted, Vec3Class, limits, box, observations: [...observations.values()].map(v => v.snapshot),
+    plans.set(plan, { bot, build, identity, isInterrupted, Vec3Class, limits, box, evidence, observations: [...observations.values()].map(v => v.snapshot),
       ground: new Set([...observations.values()].filter(v => GROUND.has(v.snapshot.name) && !volumeKeys.has(key(v.snapshot.position))).map(v => key(v.snapshot.position))),
       solidTargets });
     return plan;
@@ -230,6 +282,15 @@ function* inspectRaiseSchematicSite(bot, plan, { completedDirt = 0, completedVol
   const expected = new Map();
   for (const p of plan.dirt.slice(0, completedDirt)) expected.set(key(p), { name: "dirt", properties: {} });
   for (const cell of saved.solidTargets.slice(0, completedVolume)) expected.set(key(cell.position), cell);
+  for (const previous of saved.evidence?.values() ?? []) {
+    const current = ctx.evidence(previous.position);
+    const wanted = expected.get(key(previous.position)) ?? previous;
+    if (!sameState(wanted, current)
+        || (wanted === previous && (current.stateId !== previous.stateId || current.attached !== previous.attached))
+        || (wanted !== previous && current.attached)
+        || (wanted.stateId != null && current.stateId !== wanted.stateId)) throw unsafe(`Site changed: candidate protection evidence changed at ${key(previous.position)}`);
+    yield ctx;
+  }
   for (const previous of saved.observations) {
     const current = ctx.read(previous.position);
     const wanted = expected.get(key(previous.position)) ?? previous;

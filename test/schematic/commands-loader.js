@@ -19,10 +19,15 @@ export function resolve(specifier, context, nextResolve) {
       && context.parentURL?.endsWith('/src/agent/agent.js')
       && specifier === '../utils/schematic/build_schematic.js') {
     const actual = new URL('../utils/schematic/build_schematic.js', context.parentURL).href;
-    const module = `import { buildTrustedDestructiveSchematic as real } from ${JSON.stringify(actual)};
+    const module = `import { buildTrustedDestructiveSchematic as real, continueSchematic as realContinue } from ${JSON.stringify(actual)};
       export function buildTrustedDestructiveSchematic(bot, name, x, y, z, options) {
         globalThis.__ingressCalls.push({ name, x, y, z, options });
         return real(bot, name, x, y, z, { ...globalThis.__destructiveDependencies, ...options });
+      }
+      export async function continueSchematic(bot, name, x, y, z, options) {
+        globalThis.__ingressCalls.push({ name, x, y, z, options, continuation: true });
+        await globalThis.__beforeContinuation?.(realContinue, bot, name, x, y, z, options);
+        return realContinue(bot, name, x, y, z, { ...globalThis.__destructiveDependencies, ...options });
       }`;
     return { url: `data:text/javascript,${encodeURIComponent(module)}`, shortCircuit: true };
   }
@@ -32,6 +37,14 @@ export function resolve(specifier, context, nextResolve) {
   if (process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT && context.parentURL?.endsWith('/src/agent/schematic_request.js')
       && specifier === '../utils/schematic/paths.js') {
     const actual = new URL('../utils/schematic/paths.js', context.parentURL).href;
+    const module = `import { resolveSchematicPath as real, conservativeBotVersion } from ${JSON.stringify(actual)};
+      export { conservativeBotVersion };
+      export const resolveSchematicPath = (name, directory, options) => real(name, directory ?? process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, options);`;
+    return { url: `data:text/javascript,${encodeURIComponent(module)}`, shortCircuit: true };
+  }
+  if (process.env.MINDCRAFT_DESTRUCTIVE_INGRESS_FIXTURE === '1'
+      && context.parentURL?.endsWith('/src/utils/schematic/build_schematic.js') && specifier === './paths.js') {
+    const actual = new URL('./paths.js', context.parentURL).href;
     const module = `import { resolveSchematicPath as real, conservativeBotVersion } from ${JSON.stringify(actual)};
       export { conservativeBotVersion };
       export const resolveSchematicPath = (name, directory, options) => real(name, directory ?? process.env.MINDCRAFT_SCHEMATIC_FIXTURE_ROOT, options);`;

@@ -4,11 +4,12 @@ import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
 import test from "node:test";
 import { setImmediate } from "node:timers";
-import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
+import { buildSchematic, continueSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { loadSchematicBuilder } from "../../src/utils/schematic/builder_compat.js";
 import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { createModernBuild } from "../../src/utils/schematic/modern_build.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
+import agentSettings from "../../src/agent/settings.js";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
@@ -107,19 +108,94 @@ test("delicate rejects a matching block name with a different state and missing 
   assert.deepEqual(support.modes, []); assert.deepEqual(support.writes, []); assert.deepEqual(support.slots, []);
 });
 
-test("delicate retains matching blocks and places only into air at fixed origin", async () => {
+test("ordinary delicate build refuses a partial match before mode or inventory changes", async () => {
   const f = fixture(["stone", "stone", "air"]); f.world.set("0,64,0", "stone");
-  assert.equal(await f.run(), true, f.logs.join("; "));
-  assert.deepEqual(f.writes, [["1,64,0", "stone"]]);
+  assert.equal(await f.run(), false, f.logs.join("; "));
+  assert.deepEqual(f.writes, []);
   assert.equal(f.world.get("0,64,0"), "stone");
-  assert.deepEqual(f.modes, ["creative", "survival"]);
-  assert.deepEqual(f.slots, ["stone", null]);
+  assert.deepEqual(f.modes, []);
+  assert.deepEqual(f.slots, []);
   assert.equal(f.bot.inventory.slots[36], null);
+  assert.match(f.logs.join(" "), /partial; exact=1, missing=1, air=1/);
 });
 
-test("delicate all-matching build does not switch mode or supply inventory", async () => {
+test("ordinary delicate build refuses a complete match without mutation", async () => {
   const f = fixture(["stone", "air"]); f.world.set("0,64,0", "stone");
-  assert.equal(await f.run(), true, f.logs.join("; "));
+  assert.equal(await f.run(), false, f.logs.join("; "));
+  assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+  assert.match(f.logs.join(" "), /complete; exact=1/);
+});
+
+test("detection policies refuse implicit reuse, including rotated plans", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["ask", "allow", "deny"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["air", "stone"]);
+      f.dependencies.placementOptions = { ...resolvePlacementOptions(), orientation: "east" };
+      f.world.set("0,64,1", "stone");
+      assert.equal(await f.run(), false, `${policy}: ${f.logs.join("; ")}`);
+      assert.match(f.logs.join(" "), /exact=1/);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+    }
+  } finally {
+    if (previous === undefined) delete agentSettings.schematic_continuation_policy;
+    else agentSettings.schematic_continuation_policy = previous;
+  }
+});
+
+test("unloaded cells cannot conceal a match", async () => {
+  const f = fixture(["stone"]); f.world.set("0,64,0", null);
+  assert.equal(await f.run(), false);
+  assert.match(f.logs.join(" "), /cannot inspect|unknown/i);
+  assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+});
+
+test("off restores legacy match handling", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "off";
+    const f = fixture(["stone", "stone", "air"]); f.world.set("0,64,0", "stone");
+    assert.equal(await f.run(), true, f.logs.join("; "));
+    assert.deepEqual(f.writes, [["1,64,0", "stone"]]);
+    assert.equal(f.world.get("0,64,0"), "stone");
+    assert.deepEqual(f.modes, ["creative", "survival"]);
+    const complete = fixture(["stone", "air"]); complete.world.set("0,64,0", "stone");
+    assert.equal(await complete.run(), true, complete.logs.join("; "));
+    assert.deepEqual(complete.modes, []); assert.deepEqual(complete.slots, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("direct continuation and forged authorization fail closed", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["ask", "deny", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone"]); f.world.set("0,64,0", "stone");
+      assert.equal(await continueSchematic(f.bot, "delicate.schem", 0, 64, 0, f.dependencies), false);
+      assert.match(f.logs.join(" "), /policy/); assert.deepEqual(f.modes, []);
+    }
+    agentSettings.schematic_continuation_policy = "allow";
+    for (const forged of [undefined, {}, Object.freeze({}), () => true]) {
+      const f = fixture(["stone", "stone"]); f.world.set("0,64,0", "stone");
+      f.dependencies.continuationGrant = forged;
+      f.dependencies.continuationAuthorizationCurrent = () => true;
+      assert.equal(await continueSchematic(f.bot, "delicate.schem", 0, 64, 0, f.dependencies), false);
+      assert.match(f.logs.join(" "), /authorization/i);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+    }
+    const invalid = fixture(["stone"]); invalid.world.set("0,64,0", "stone");
+    assert.equal(await continueSchematic(invalid.bot, "delicate.schem", null, 64, 0, invalid.dependencies), false);
+    assert.deepEqual(invalid.modes, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("caller-supplied recovery data cannot authorize an existing match", async () => {
+  const f = fixture(["stone"]); f.world.set("0,64,0", "stone");
+  f.dependencies.resumeSession = { cancelled: false, resumeEligible: true,
+    context: { planContract: "rotated-local-v1", placementOptions: resolvePlacementOptions() } };
+  assert.equal(await f.run(), false);
+  assert.match(f.logs.join(" "), /not an eligible unmodified session/);
   assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
 });
 
@@ -210,6 +286,337 @@ test("delicate interruption cleans up and preserves an eligible fixed-origin res
   assert.equal(await f.run(), true, f.logs.join("; "));
   assert.deepEqual(f.writes, [["0,64,0", "stone"], ["1,64,0", "stone"]]);
   assert.equal(session.context, null);
+});
+
+test("early interrupted recovery still rejects matching sites under every detection policy", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture();
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.world.set("0,64,0", "stone");
+      f.bot.interrupt_code = true;
+      assert.equal(await f.run(), false, policy);
+      assert.equal(session.resumeEligible, true, policy);
+      assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+      // A public field cannot claim that the private preflight succeeded.
+      session.preflightPassed = true;
+      f.bot.interrupt_code = false;
+      assert.equal(await f.run(), false, `${policy}: ${f.logs.join("; ")}`);
+      assert.match(f.logs.join(" "), /existing matching blocks cannot be reused/i);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+      assert.equal(f.world.get("0,64,0"), "stone");
+      assert.equal(f.bot.blockAt(new Vec3(1, 64, 0)).name, "air");
+      assert.equal(session.resumeEligible, false);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("repeated early interruptions can recover an empty fixed-origin site", async () => {
+  const f = fixture();
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  f.bot.interrupt_code = true;
+  for (let i = 0; i < 2; i++) {
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.equal(session.resumeEligible, true);
+    assert.deepEqual(session.context.origin, { x: 0, y: 64, z: 0 });
+  }
+  assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+  f.bot.interrupt_code = false;
+  assert.equal(await f.run(), true, f.logs.join("; "));
+  assert.deepEqual(f.writes, [["0,64,0", "stone"], ["1,64,0", "stone"]]);
+});
+
+test("early recovery checks the live saved site, not only the original snapshot", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture();
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.bot.interrupt_code = true;
+    assert.equal(await f.run(), false);
+    assert.equal(session.resumeEligible, true);
+    f.world.set("0,64,0", "stone");
+    f.bot.interrupt_code = false;
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.match(f.logs.join(" "), /existing matching blocks cannot be reused|refusing unsafe resume/i);
+    assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("off policy permits repeated managed recovery of observed placements", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
+  const f = fixture();
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  let aims = 0;
+  f.dependencies.onAim = () => { if (++aims === 2) f.bot.interrupt_code = true; };
+  assert.equal(await f.run(), false, f.logs.join("; "));
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(f.writes, [["0,64,0", "stone"]]);
+  f.bot.interrupt_code = false;
+  f.dependencies.onAim = () => { f.bot.interrupt_code = true; };
+  assert.equal(await f.run(), false, f.logs.join("; "));
+  assert.equal(session.resumeEligible, true, f.logs.join("; "));
+  assert.deepEqual(f.writes, [["0,64,0", "stone"]]);
+  f.bot.interrupt_code = false;
+  delete f.dependencies.onAim;
+  assert.equal(await f.run(), true, f.logs.join("; "));
+  assert.deepEqual(f.writes, [["0,64,0", "stone"], ["1,64,0", "stone"]]);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("passed recovery preflight rejects externally placed matches but off retains legacy behavior", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture();
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onAim = () => { f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, policy);
+      assert.equal(session.resumeEligible, true, policy);
+      assert.deepEqual(f.writes, []);
+      f.world.set("0,64,0", "stone");
+      // Public fields cannot manufacture evidence in the private record.
+      session.placements = new Set(["0,64,0"]);
+      f.bot.interrupt_code = false; delete f.dependencies.onAim;
+      const modes = f.modes.length, slots = f.slots.length;
+      assert.equal(await f.run(), policy === "off", `${policy}: ${f.logs.join("; ")}`);
+      if (policy === "off") assert.deepEqual(f.writes, [["1,64,0", "stone"]]);
+      else {
+        assert.match(f.logs.join(" "), /refusing unsafe resume/i);
+        assert.deepEqual(f.writes, []);
+        assert.equal(f.modes.length, modes); assert.equal(f.slots.length, slots);
+        assert.equal(session.resumeEligible, false); assert.equal(session.cancelled, true);
+      }
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("detection policies refuse reuse of observed delicate placements from an earlier attempt", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone", "stone"]);
+      f.bot.entity.position = new Vec3(-1.31, 63.5, 0.5);
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      let aims = 0;
+      f.dependencies.onAim = () => { if (++aims === 2) f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.equal(session.context, null, policy);
+      assert.match(f.logs.join(" "), /recovery refused: prior placement updates cannot be attributed/i);
+      assert.match(f.logs.join(" "), /review the original source, origin, orientation and world/i);
+      assert.deepEqual(f.writes, [["0,64,0", "stone"]]);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("delicate recovery refuses another actor's post-reference matching update", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone"]);
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      const originalWrite = f.bot._client.write;
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.bot._client.write = (name, packet) => {
+        if (name !== "block_place" || f.writes.length) return originalWrite(name, packet);
+        const target = packet.location.offset(0, 1, 0);
+        f.writes.push([key(target), "packet"]);
+        setImmediate(() => {
+          const reference = f.bot.blockAt(packet.location);
+          f.bot.emit(`blockUpdate:${packet.location}`, reference, reference);
+          f.bot._client.emit("block_change", { location: packet.location, type: reference.stateId });
+          // A separate actor changes the destination after the reference reply.
+          const old = f.bot.blockAt(target);
+          f.world.set(key(target), "stone");
+          const actual = f.bot.blockAt(target);
+          f.bot.emit(`blockUpdate:${target}`, old, actual);
+          f.bot._client.emit("block_change", { location: target, type: actual.stateId });
+        });
+      };
+      let aims = 0;
+      f.dependencies.onAim = () => { if (++aims === 2) f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.ok(phases.includes("server-confirmed"), "ordered observations are not proof of actor ownership");
+      assert.match(f.logs.join(" "), /recovery refused: prior placement updates cannot be attributed/i);
+      assert.deepEqual(f.writes, [["0,64,0", "packet"]]);
+      assert.equal(f.world.get("1,64,0"), undefined);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("recovery rechecks placement proof after asynchronous Creative transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture();
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onAim = () => { f.bot.interrupt_code = true; };
+    assert.equal(await f.run(), false); assert.equal(session.resumeEligible, true);
+    f.bot.interrupt_code = false; delete f.dependencies.onAim;
+    f.dependencies.onTransition = mode => { if (mode === "creative") f.world.set("0,64,0", "stone"); };
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.match(f.logs.join(" "), /refusing unsafe resume/i);
+    assert.deepEqual(f.writes, []); assert.equal(session.resumeEligible, false);
+    assert.equal(f.bot.inventory.slots[36], null);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("delicate recovery inspection reads scale linearly with volume", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const counts = [];
+    for (const size of [64, 128]) {
+      const f = fixture(["stone", ...Array(size - 1).fill("air")]);
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onAim = () => { f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.logs.join("; "));
+      f.bot.interrupt_code = false;
+      let reads = 0;
+      const blockAt = f.bot.blockAt;
+      f.bot.blockAt = function (position) { reads++; return blockAt.call(this, position); };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.logs.join("; "));
+      counts.push(reads);
+    }
+    assert.ok(counts[1] < counts[0] * 2.5, `recovery reads: ${counts.join(", ")}`);
+    assert.ok(counts[1] < 25000, `recovery reads: ${counts.join(", ")}`);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("delicate interrupted dispatched but unconfirmed placement is not recoverable", async () => {
+  const f = fixture(["stone"]);
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  f.dependencies.noConfirmation = true;
+  const write = f.bot._client.write;
+  f.bot._client.write = (name, packet) => {
+    write(name, packet);
+    if (name === "block_place") f.bot.interrupt_code = true;
+  };
+  assert.equal(await f.run(), false, f.logs.join("; "));
+  assert.equal(f.writes.length, 1);
+  assert.equal(session.resumeEligible, false);
+  assert.equal(session.cancelled, true);
+  assert.equal(session.context, null);
+});
+
+test("delicate cancelled undelivered aim preserves recovery while its writer is revoked", async () => {
+  const f = fixture(["stone"]);
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  let started, release;
+  const aiming = new Promise(resolve => { started = resolve; });
+  const gate = new Promise(resolve => { release = resolve; });
+  f.dependencies.onAim = () => { started(); return gate; };
+  const first = f.run();
+  await aiming;
+  f.bot.interrupt_code = true;
+  assert.equal(await first, false, f.logs.join("; "));
+  assert.equal(session.resumeEligible, true, f.logs.join("; "));
+  assert.deepEqual(f.writes, []);
+  release();
+  await new Promise(resolve => setImmediate(resolve));
+  f.bot.interrupt_code = false;
+  delete f.dependencies.onAim;
+  assert.equal(await f.run(), true, f.logs.join("; "));
+  assert.deepEqual(f.writes, [["0,64,0", "stone"]]);
+});
+
+test("early recovery rejects tampering with the saved origin or world snapshot", async () => {
+  for (const mutate of [
+    session => { session.context.origin.x = 1; },
+    session => { session.context.originalStates[0].name = "air"; },
+  ]) {
+    const f = fixture(); f.world.set("0,64,0", "stone");
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.bot.interrupt_code = true;
+    assert.equal(await f.run(), false);
+    assert.equal(session.resumeEligible, true);
+    mutate(session);
+    f.bot.interrupt_code = false;
+    assert.equal(await f.run(), false);
+    assert.match(f.logs.join(" "), /not an eligible unmodified session/i);
+    assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []); assert.deepEqual(f.slots, []);
+  }
+});
+
+test("recovery is bound to its original continuation policy, including legacy off", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const [initial, next, phase] of [["off", "deny", "early"], ["off", "deny", "passed"], ["deny", "allow", "passed"]]) {
+      agentSettings.schematic_continuation_policy = initial;
+      const f = fixture();
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      if (initial === "off") f.world.set("0,64,0", "stone");
+      if (phase === "early") f.bot.interrupt_code = true;
+      else f.dependencies.onAim = () => { f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.equal(session.resumeEligible, true);
+      f.bot.interrupt_code = false; delete f.dependencies.onAim;
+      const writes = f.writes.length, modes = f.modes.length, slots = f.slots.length;
+      agentSettings.schematic_continuation_policy = next;
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.match(f.logs.join(" "), /policy changed since the interrupted build/i);
+      assert.equal(f.writes.length, writes); assert.equal(f.modes.length, modes); assert.equal(f.slots.length, slots);
+      assert.equal(session.resumeEligible, false);
+    }
+    agentSettings.schematic_continuation_policy = "off";
+    const legacy = fixture(); legacy.world.set("0,64,0", "stone");
+    const session = legacy.dependencies.resumeSession = { cancelled: false };
+    legacy.bot.interrupt_code = true;
+    assert.equal(await legacy.run(), false);
+    assert.equal(session.resumeEligible, true);
+    legacy.bot.interrupt_code = false;
+    assert.equal(await legacy.run(), true, legacy.logs.join("; "));
+    assert.deepEqual(legacy.writes, [["1,64,0", "stone"]]);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("policy changes during recovery stop placement and revoke the session", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const phase of ["onTransition", "onAim"]) {
+      agentSettings.schematic_continuation_policy = "off";
+      const f = fixture(); f.world.set("0,64,0", "stone");
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.bot.interrupt_code = true;
+      assert.equal(await f.run(), false);
+      f.bot.interrupt_code = false;
+      f.dependencies[phase] = () => { agentSettings.schematic_continuation_policy = "deny"; };
+      assert.equal(await f.run(), false, f.logs.join("; "));
+      assert.deepEqual(f.writes, []);
+      assert.equal(session.resumeEligible, false);
+      assert.equal(session.cancelled, true);
+      assert.match(f.logs.join(" "), /policy changed/i);
+      assert.equal(f.bot.inventory.slots[36], null);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("policy change after legacy preflight prevents the original build from placing", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "off";
+    const f = fixture(); f.world.set("0,64,0", "stone");
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onTransition = mode => { if (mode === "creative") agentSettings.schematic_continuation_policy = "deny"; };
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, ["creative", "survival"]);
+    assert.equal(session.resumeEligible, false);
+    assert.match(f.logs.join(" "), /policy changed/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
 });
 
 test("delicate cancellation during aim prevents final packet and restores inventory", async () => {

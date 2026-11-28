@@ -162,11 +162,11 @@ test("recovery cancels legacy sessions, changed assets, changed family picks and
     const modified = await makeSession();
     modified.context.source = Buffer.from("outdated bytes");
     assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: modified }), false);
-    assert.match(logs.at(-1), /asset changed/);
+    assert.match(logs.at(-1), /not an eligible unmodified session/);
     const changed = await makeSession();
     await syntheticArtifact(newer, "1.21.9");
     assert.equal(await buildSchematic(bot, "pack3:1:1", null, null, null, { ...dependencies, resumeSession: changed }), false);
     assert.equal(changed.cancelled, true);
-    assert.match(logs.at(-1), /selection changed/);
+    assert.match(logs.at(-1), /not an eligible unmodified session/);
   });
 });

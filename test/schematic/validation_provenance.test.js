@@ -15,6 +15,7 @@ import minecraftData from 'minecraft-data';
 import { SCHEMATICS_DIR, listSchematicEntries, resolveSchematicPath } from '../../src/utils/schematic/paths.js';
 import { schematicProvenance } from '../../src/utils/schematic/provenance.js';
 import { buildSchematic } from '../../src/utils/schematic/build_schematic.js';
+import agentSettings from '../../src/agent/settings.js';
 
 const root = path.dirname(SCHEMATICS_DIR);
 import { fixtureBlueprint, fixtureBlueprintHash } from './provenance_fixture.js';
@@ -74,7 +75,11 @@ test('new compiler provenance gates real selectors, listings, build, reader comp
     };
     assert.equal(await buildSchematic(bot, selector, 0, 64, 0, dependencies), false);
     assert.match(logs.join('\n'), /NONVALIDATED/);
-    assert.equal(await buildSchematic(bot, selector, 0, 64, 0, { ...dependencies, allowNonvalidatedSchematic: true }), true, logs.join('\n'));
+    const previousPolicy = agentSettings.schematic_continuation_policy;
+    agentSettings.schematic_continuation_policy = 'off';
+    try {
+      assert.equal(await buildSchematic(bot, selector, 0, 64, 0, { ...dependencies, allowNonvalidatedSchematic: true }), true, logs.join('\n'));
+    } finally { agentSettings.schematic_continuation_policy = previousPolicy; }
     assert.match(logs.join('\n'), /WARNING.*NONVALIDATED/);
     assert.equal(mutations, 0);
 

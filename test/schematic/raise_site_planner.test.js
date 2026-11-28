@@ -157,6 +157,21 @@ test("bounds footprint, height, rise, depth, edits and reads", async () => {
   const reads = fixture(); reads.options.limits = { reads: 4 }; await refuse(plan(reads), "SCHEMATIC_SITE_BUDGET"); assert.equal(reads.reads.length, 4);
 });
 
+test("protection discovery enforces the read budget before selecting a site", async () => {
+  const f = fixture({ width: 1, height: 1 });
+  f.options.excludeMatches = true;
+  f.options.limits = { reads: 4, rise: 8 };
+  const read = f.bot.blockAt.bind(f.bot);
+  f.bot.blockAt = p => {
+    const result = read(p);
+    result.stateId = f.ids[result.name];
+    return result;
+  };
+  await refuse(plan(f), "SCHEMATIC_SITE_BUDGET");
+  assert.equal(f.reads.length, 4);
+  assert.deepEqual(f.actions, []);
+});
+
 test("rejects invalid budgets and enforces the wall-clock deadline after a slow read", async () => {
   const invalid = fixture(); invalid.options.limits = { reads: 100001 }; await assert.rejects(plan(invalid), RangeError);
   const f = fixture(); f.options.limits = { milliseconds: 1 };

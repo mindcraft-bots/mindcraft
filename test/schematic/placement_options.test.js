@@ -4,9 +4,21 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { readFile } from 'node:fs/promises';
-import { resolvePlacementOptions, validateResolvedPlacementOptions } from '../../src/utils/schematic/placement_options.js';
+import { resolveContinuationPolicy, resolvePlacementOptions, validateResolvedPlacementOptions } from '../../src/utils/schematic/placement_options.js';
 import settings, { setSettings } from '../../src/agent/settings.js';
 import { buildSchematic } from '../../src/utils/schematic/build_schematic.js';
+
+test('continuation policy validates administrator settings without request overrides', () => {
+    assert.equal(resolveContinuationPolicy(), 'ask');
+    for (const policy of ['ask', 'allow', 'deny', 'off']) {
+        assert.equal(resolveContinuationPolicy({ schematic_continuation_policy: policy }), policy);
+        assert.doesNotThrow(() => resolvePlacementOptions({ schematic_continuation_policy: policy }));
+    }
+    for (const policy of [null, 'ASK', '', 'enabled', 1, {}]) {
+        assert.throws(() => resolvePlacementOptions({ schematic_continuation_policy: policy }), /schematic_continuation_policy/);
+    }
+    assert.throws(() => resolvePlacementOptions({}, { continuationPolicy: 'allow' }), /Invalid/);
+});
 
 test('settings and overrides resolve immutably, default to delicate, and validate complete configuration', () => {
     assert.deepEqual(resolvePlacementOptions(), { mode: 'delicate', radius: 4, threshold: 9, orientation: 'north', strategy: 'stepped', step: 2, policy: 'first_valid', bisectDepth: 2 });

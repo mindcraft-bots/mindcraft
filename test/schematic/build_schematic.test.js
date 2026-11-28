@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { createRequire } from "node:module";
 import { EventEmitter } from "node:events";
+import { setImmediate } from "node:timers";
 import test from "node:test";
 import { gzipSync } from "node:zlib";
 
@@ -11,6 +12,10 @@ import { clearSchematicObstructions, inspectSchematicCell } from "../../src/util
 import { acquireBuildLifecycle } from "../../src/utils/schematic/run_build.js";
 import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
+import agentSettings from "../../src/agent/settings.js";
+
+// These legacy lifecycle fixtures deliberately start with exact target blocks.
+agentSettings.schematic_continuation_policy = "off";
 
 const require = createRequire(import.meta.url);
 const nbt = require("prismarine-nbt");
@@ -53,21 +58,28 @@ class FakeVec3 {
     return new FakeVec3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
   }
 
+  clone() { return new FakeVec3(this.x, this.y, this.z); }
+  equals(other) { return this.x === other.x && this.y === other.y && this.z === other.z; }
+  toString() { return `(${this.x}, ${this.y}, ${this.z})`; }
+
   distanceTo(other) {
     return Math.hypot(this.x - other.x, this.y - other.y, this.z - other.z);
   }
 }
 
-function fixture(overrides = {}) {
+function fixture(overrides = {}, version = "1.20.4") {
+  const Block = require("prismarine-block")(version);
   const calls = { logs: [], modes: [], positions: [], planReadCounts: [], paused: false, cancelled: 0, cleaned: 0, aborted: 0 };
   const bot = Object.assign(new EventEmitter(), {
-    version: "1.20.4",
-    registry: minecraftData("1.20.4"),
+    version,
+    registry: minecraftData(version),
     game: { gameMode: "survival", dimension: "overworld" },
     position: new FakeVec3(1.2, 64.9, -3.2),
     entity: { position: new FakeVec3(1000, 64, 1000), width: 0.6, height: 1.8 },
     world: {},
-    _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false } }),
+    _client: Object.assign(new EventEmitter(), { ended: false, socket: { destroyed: false }, write() {} }),
+    supportFeature: name => ["usesMultiblockSingleLong", "usesMultiblock3DChunkCoords", "blockPlaceHasInsideBlock"].includes(name),
+    digTime: () => 0,
     interrupt_code: false,
     modes: {
       exists: (name) => name === "unstuck",
@@ -103,9 +115,13 @@ function fixture(overrides = {}) {
       const inVolume = build.cells.some(cell => cell.position.x === position.x && cell.position.y === position.y && cell.position.z === position.z);
       if (inVolume) {
         const block = readVolume(position);
-        if (block && block.stateId === undefined && bot.registry.blocksByName[block.name]) {
+        // Adapt these legacy fixture records into real Prismarine blocks; the
+        // recovery reader deliberately refuses arbitrary object getters.
+        if (block && Object.getPrototypeOf(block) === Object.prototype && typeof block.getProperties === "function"
+            && bot.registry.blocksByName[block.name]) {
           const decoded = Block.fromProperties(block.name, block.getProperties?.() ?? {}, 0);
-          return { ...block, stateId: decoded.stateId };
+          const { getProperties: ignored, ...fields } = block;
+          return Object.assign(decoded, fields);
         }
         return block;
       }
@@ -149,6 +165,22 @@ function fixture(overrides = {}) {
   };
   Object.assign(dependencies, overrides);
   return { bot, build, calls, dependencies: provenanceFixtureDependencies(dependencies) };
+}
+
+function simulateConfirmedDig(bot, onDig) {
+  bot.lookAt = async () => {};
+  bot.swingArm = () => {};
+  bot._client.write = (name, packet) => {
+    if (name !== "block_dig" || ![0, 2].includes(packet.status)) return;
+    setImmediate(() => {
+      const old = bot.blockAt(packet.location);
+      if (packet.status === 0) onDig(packet.location);
+      const air = bot.blockAt(packet.location);
+      bot.emit(`blockUpdate:${packet.location}`, old, air);
+      bot._client.emit("block_change", { location: packet.location, type: air.stateId });
+      bot._client.emit("acknowledge_player_digging", { location: packet.location, block: air.stateId, status: packet.status, successful: true });
+    });
+  };
 }
 
 test("rejects missing and escaping paths before reading or changing game mode", async () => {
@@ -268,7 +300,7 @@ test("obstruction navigation timeout restores guards, mode, and lifecycle before
     clearObstructions: (bot, build, options) => clearSchematicObstructions(bot, build, { ...options, navigationTimeoutMs: 20 }),
     startSupply: () => { supplyStarted = true; },
     executeBuild: () => { builderStarted = true; },
-  });
+  }, "1.18.2");
   const { bot, calls, dependencies } = candidate;
   let stops = 0;
   let digs = 0;
@@ -428,7 +460,7 @@ test("protected, unloaded, and interrupted early scans never start mutation setu
 });
 
 test("guarded clearing rescans the world after early inspection and before any edit", async () => {
-  const { bot, build, calls, dependencies } = fixture();
+  const { bot, build, calls, dependencies } = fixture({}, "1.18.2");
   build.dimensions = { width: 2, height: 1, length: 1 };
   build.cells = [0, 1].map(x => ({ position: { x, y: 64, z: 0 }, name: "air", properties: {} }));
   let changed = false;
@@ -552,7 +584,7 @@ test("verification mismatch, cleanup rejection, and hanging cleanup never claim 
 });
 
 test("clears foliage only inside the transformed volume and verifies intended-air cells", async () => {
-  const { bot, calls, dependencies, build } = fixture();
+  const { bot, calls, dependencies, build } = fixture({}, "1.18.2");
   const airPosition = { x: 4, y: 64, z: 5 };
   build.cells = [
     ...build.plan,
@@ -568,10 +600,10 @@ test("clears foliage only inside the transformed volume and verifies intended-ai
     const found = world.get(`${position.x},${position.y},${position.z}`);
     return found ? { ...found, position } : { name: "air", diggable: false, position, getProperties: () => ({}) };
   };
-  bot.dig = (target) => {
-    calls.positions.push(target.position);
-    world.set(`${target.position.x},${target.position.y},${target.position.z}`, { name: "air", getProperties: () => ({}) });
-  };
+  simulateConfirmedDig(bot, position => {
+    calls.positions.push(position);
+    world.set(`${position.x},${position.y},${position.z}`, { name: "air", getProperties: () => ({}) });
+  });
   dependencies.executeBuild = () => {
     world.set("3,64,5", { name: "stone", getProperties: () => ({}) });
     return { status: "finished", errors: [] };
@@ -655,6 +687,25 @@ test("combat interruption resumes with the captured source and origin after the 
   assert.equal(firstSchematic.parsed, true);
 });
 
+test("authentic interrupted recovery rejects changed source, selection and session tampering", async () => {
+  for (const change of ["source", "selection", "tamper", "consent"]) {
+    const f = fixture();
+    const session = { cancelled: false };
+    let builds = 0;
+    f.dependencies.executeBuild = () => { builds++; return { status: "interrupted", errors: [] }; };
+    assert.equal(await buildSchematic(f.bot, "house.schem", null, null, null, { ...f.dependencies, resumeSession: session }), false);
+    assert.equal(session.resumeEligible, true);
+    if (change === "source") f.dependencies.fsReadFile = () => Buffer.from("changed bytes");
+    if (change === "selection") f.dependencies.resolvePath = () => "/schematics/other.mc1.20.4.schem";
+    if (change === "tamper") session.context.origin.x++;
+    assert.equal(await buildSchematic(f.bot, "house.schem", null, null, null, { ...f.dependencies, resumeSession: session,
+      ...(change === "consent" ? { allowNonvalidatedSchematic: false } : {}) }), false);
+    assert.equal(builds, 1); assert.equal(session.cancelled, true);
+    assert.match(f.calls.logs.join(" "), change === "source" ? /asset changed/ : change === "selection" ? /selection changed/
+      : change === "consent" ? /NONVALIDATED/ : /not an eligible unmodified session/);
+  }
+});
+
 test("real Mineflayer respawn to a same-dimension named world cancels recovery with stable object references", async () => {
   const { bot, dependencies } = fixture();
   const session = { cancelled: false };
@@ -691,7 +742,7 @@ test("real Mineflayer respawn to a same-dimension named world cancels recovery w
 });
 
 test("interrupted recovery accepts only already-cleared natural cells and preserves the original volume snapshot", async () => {
-  const { bot, dependencies, build } = fixture();
+  const { bot, dependencies, build } = fixture({}, "1.18.2");
   const foliagePosition = { x: 4, y: 64, z: 5 };
   build.cells = [
     ...build.plan,
@@ -706,9 +757,9 @@ test("interrupted recovery accepts only already-cleared natural cells and preser
     const found = world.get(`${position.x},${position.y},${position.z}`);
     return found ? { ...found, position } : { name: "air", position, getProperties: () => ({}) };
   };
-  bot.dig = (target) => world.set(`${target.position.x},${target.position.y},${target.position.z}`, {
+  simulateConfirmedDig(bot, position => world.set(`${position.x},${position.y},${position.z}`, {
     name: "air", getProperties: () => ({}),
-  });
+  }));
   const session = { cancelled: false };
   let attempts = 0;
   dependencies.executeBuild = () => {

@@ -21,13 +21,84 @@ import { speak } from './speak.js';
 import { log, validateNameFormat, handleDisconnection } from './connection_handler.js';
 import { dispatchAddressedSchematicRequest, parseChatAddress, parseAddressedChatCommand, redactCommandFragments } from './schematic_request.js';
 import { resolvePlacementOptions } from '../utils/schematic/placement_options.js';
-import { buildTrustedDestructiveSchematic } from '../utils/schematic/build_schematic.js';
+import { buildTrustedDestructiveSchematic, continueSchematic } from '../utils/schematic/build_schematic.js';
 import { wasBotExposedToGeneratedCode } from '../utils/schematic/unsafe_code_history.js';
 import { authenticatedChatMessage, authenticatedPlayerName } from '../utils/authenticated_chat.js';
 
 // Capabilities require independent authenticated player-message metadata below.
 // Neither a sender label nor an object supplied to handleMessage grants one.
 const humanIngress = new WeakMap();
+// Only this module can create continuation grants. The builder can check and
+// consume them, but neither an exported function nor request data can mint one.
+const continuationGrants = new WeakMap();
+
+export function checkHumanContinuationGrant(grant, bot, filename, x, y, z, options, allowNonvalidated, strictValidation, claim = false) {
+    try {
+        const record = grant && continuationGrants.get(grant);
+        if (!record || record.bot !== bot || record.filename !== filename || record.x !== x || record.y !== y || record.z !== z
+            || record.options !== JSON.stringify(options) || record.allowNonvalidated !== allowNonvalidated
+            || record.strictValidation !== strictValidation || (claim ? record.claimed : !record.claimed)
+            || !record.current()) return false;
+        if (claim) record.claimed = true;
+        return true;
+    } catch { return false; }
+}
+
+function continuationIngressAllowed(agent, source, capability) {
+    const ingress = capability && humanIngress.get(capability);
+    const peers = [...(settings.known_bot_peers || []), ...convoManager.getInGameAgents()];
+    return settings.allow_insecure_coding !== true && !wasBotExposedToGeneratedCode(agent.bot)
+        && ingress?.agent === agent && ingress.source === source
+        && authenticatedPlayerName(agent.bot, ingress.sender, ingress.client) === source
+        && source !== 'system' && source !== agent.name && !peers.includes(source) && !convoManager.isOtherAgent(source)
+        && Array.isArray(settings.trusted_command_senders) && isTrustedCommandSender(settings.trusted_command_senders, source)
+        && Array.isArray(settings.only_chat_with) && (!settings.only_chat_with.length || settings.only_chat_with.includes(source));
+}
+
+async function executeHumanContinuation(agent, source, capability, message) {
+    if (!continuationIngressAllowed(agent, source, capability))
+        return 'Continuation requires an explicitly trusted authenticated human player and insecure code generation disabled; no build was started.';
+    const prepared = prepareHumanBuild(agent, source, capability, message);
+    if (prepared.error || prepared.options.mode !== 'delicate') return prepared.error || 'Continuation requires delicate mode.';
+    const result = await agent.actions.runAction('action:buildSchematic', async () => {
+        const current = prepareHumanBuild(agent, source, capability, message);
+        if (!continuationIngressAllowed(agent, source, capability) || current.error
+            || JSON.stringify(current.options) !== JSON.stringify(prepared.options)) {
+            agent.bot.output += 'Continuation authorization or settings changed; no build was started.\n';
+            return;
+        }
+        const allowNonvalidated = settings.allow_nonvalidated_schematic_builds === true;
+        const strictValidation = settings.require_strict_schematic_validation === true;
+        const bot = agent.bot;
+        const grant = {};
+        continuationGrants.set(grant, {
+            bot, filename: current.filename, x: current.x, y: current.y, z: current.z,
+            options: JSON.stringify(current.options), allowNonvalidated, strictValidation, claimed: false,
+            current: () => {
+                const latest = prepareHumanBuild(agent, source, capability, message);
+                return agent.bot === bot && continuationIngressAllowed(agent, source, capability) && !latest.error
+                    && latest.filename === current.filename && latest.x === current.x && latest.y === current.y && latest.z === current.z
+                    && JSON.stringify(latest.options) === JSON.stringify(current.options)
+                    && (settings.allow_nonvalidated_schematic_builds === true) === allowNonvalidated
+                    && (settings.require_strict_schematic_validation === true) === strictValidation
+                    && !agent.blocked_actions?.includes('!buildSchematic') && commandExists('!buildSchematic');
+            },
+        });
+        let success;
+        try {
+            success = await continueSchematic(bot, current.filename, current.x, current.y, current.z, {
+                placementOptions: current.options,
+                allowNonvalidatedSchematic: allowNonvalidated,
+                requireStrictSchematicValidation: strictValidation,
+                continuationGrant: grant,
+                writeLog: text => { bot.output += `${text}\n`; },
+            });
+        } finally { continuationGrants.delete(grant); }
+        agent.bot.output += success ? 'Schematic continuation completed and verified.\n' : 'Schematic continuation did not complete; see details above.\n';
+    }, { timeout: -1, resume: false });
+    if (result?.interrupted) return 'Schematic continuation interrupted; it will not automatically resume. Earlier confirmed edits are not rolled back.';
+    return result?.message || 'Schematic continuation stopped without a status report.';
+}
 
 function prepareHumanBuild(agent, source, capability, message) {
     const parsed = parseCommandMessage(message);
@@ -385,6 +456,7 @@ export class Agent {
                 trusted: trustedCommandSender,
                 checkBuild: command => prepareHumanBuild(this, source, capability, command).error,
                 executeBuild: (agent, command) => executeHumanBuild(agent, source, capability, command),
+                executeContinuation: (agent, command) => executeHumanContinuation(agent, source, capability, command),
             });
             if (routedSchematic) return true;
 

@@ -8,6 +8,7 @@ import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
 import { loadSchematicBuilder } from "../../src/utils/schematic/builder_compat.js";
 import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
 import { provenanceFixtureDependencies } from "./provenance_fixture.js";
+import agentSettings from "../../src/agent/settings.js";
 
 const require = createRequire(import.meta.url);
 const Vec3 = require("vec3");
@@ -92,10 +93,125 @@ test("production raise path raises the origin, fills dirt first, places and rest
 });
 
 test("flat raise build skips an already correct target", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
   const f = fixture(); f.world.set("0,64,0", "stone");
   // Both columns are already at the requested height; first is correct.
   assert.equal(await f.run(), true, f.logs.join("; "));
   assert.deepEqual(f.writes, [["1,64,0", "stone"]]);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise protects a matching anchor and its intended air through all candidate foundations", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]); f.world.set("0,64,0", "stone");
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.equal(f.bot.blockAt(new Vec3(0, 64, 0)).name, "stone");
+    assert.equal(f.bot.blockAt(new Vec3(1, 64, 0)).name, "air");
+    assert.deepEqual(f.writes, []);
+    assert.deepEqual(f.modes, []);
+    assert.match(f.logs.join(" "), /protected|no air-only site/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise discovers higher matching volumes before selecting a lower overlapping site", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["air", "stone"]);
+    const Block = require("prismarine-block")("1.20.4");
+    f.schematic.size = new Vec3(1, 2, 1);
+    f.schematic.getBlock = p => Block.fromStateId(f.schematic.palette[p.y], 0);
+    f.world.set("0,66,0", "stone");
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.equal(f.bot.blockAt(new Vec3(0, 65, 0)).name, "air");
+    assert.equal(f.bot.blockAt(new Vec3(0, 66, 0)).name, "stone");
+    assert.deepEqual(f.writes, []);
+    assert.deepEqual(f.modes, []);
+    assert.match(f.logs.join(" "), /protected|no air-only site/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise refuses unavailable evidence at a later elevation before mutation", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]);
+    f.world.set("0,90,0", null);
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.deepEqual(f.writes, []);
+    assert.deepEqual(f.modes, []);
+    assert.match(f.logs.join(" "), /candidate evidence|unavailable/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise rechecks a remote candidate match after the mode transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]);
+    f.dependencies.onTransition = mode => { if (mode === "creative") f.world.set("0,90,0", "stone"); };
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.deepEqual(f.writes, []);
+    assert.equal(f.bot.blockAt(new Vec3(0, 90, 0)).name, "stone");
+    assert.match(f.logs.join(" "), /protection evidence changed/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise observes cancellation during later-elevation discovery", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]);
+    const read = f.bot.blockAt.bind(f.bot);
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "0,90,0") f.bot.interrupt_code = true;
+      return block;
+    };
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.deepEqual(f.writes, []);
+    assert.deepEqual(f.modes, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise discovery deadline cannot return an early site", async t => {
+  const { performance } = await import("node:perf_hooks");
+  let now = 0;
+  t.mock.method(performance, "now", () => now);
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]);
+    const read = f.bot.blockAt.bind(f.bot);
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "0,90,0") now = 2001;
+      return block;
+    };
+    assert.equal(await f.run(), false, f.logs.join("; "));
+    assert.deepEqual(f.writes, []);
+    assert.deepEqual(f.modes, []);
+    assert.match(f.logs.join(" "), /timed out/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("raise can select a later site supported above a protected matching volume", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air"]);
+    f.world.set("0,64,0", "stone");
+    f.world.set("0,65,0", "dirt"); f.world.set("1,65,0", "dirt");
+    assert.equal(await f.run(), true, f.logs.join("; "));
+    assert.match(f.logs.join(" "), /origin 0,66,0/);
+    assert.deepEqual(f.writes, [["0,66,0", "stone"]]);
+    assert.equal(f.bot.blockAt(new Vec3(0,64,0)).name, "stone");
+    assert.equal(f.bot.blockAt(new Vec3(1,64,0)).name, "air");
+  } finally { agentSettings.schematic_continuation_policy = previous; }
 });
 
 test("raise translates a rotated footprint and its air cells without decoding twice", async () => {

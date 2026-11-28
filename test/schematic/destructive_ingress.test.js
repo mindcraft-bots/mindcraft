@@ -16,7 +16,7 @@ test('authenticated player ingress reaches the production engine; absent or untr
     mkdirSync(pack, { recursive: true });
     writeFileSync(path.join(pack, 'index.json'), JSON.stringify({ schemaVersion: 2, groups: { 2: { 1: 'garden.schem' } } }));
     for (const version of ['1.18.2', '1.21.4']) {
-      const bytes = syntheticSponge(version, ['minecraft:stone', 'minecraft:air']);
+      const bytes = syntheticSponge(version, ['minecraft:stone', 'minecraft:cobblestone', 'minecraft:air']);
       const file = path.join(pack, `garden.mc${version}.schem`);
       writeFileSync(file, bytes);
       writeFixtureProvenance(file, bytes, 'NONVALIDATED');
@@ -39,7 +39,7 @@ test('authenticated player ingress reaches the production engine; absent or untr
       const { setSettings } = await import(${url('src/agent/settings.js')});
       const settings = globalThis.__testSettings = { trusted_command_senders: ['Builder'], only_chat_with: [],
         known_bot_peers: ['Alice'], max_commands: 1, schematic_placement_mode: 'destructive', chat_ingame: true,
-        allow_nonvalidated_schematic_builds: true };
+        allow_nonvalidated_schematic_builds: true, schematic_continuation_policy: 'off' };
       const sync = () => setSettings(settings); sync();
       const { Agent } = await import(${url('src/agent/agent.js')});
       const commands = await import(${url('src/agent/commands/index.js')});
@@ -49,8 +49,10 @@ test('authenticated player ingress reaches the production engine; absent or untr
       const botId = '22222222-2222-4222-8222-222222222222';
       const playerSession = '33333333-3333-4333-8333-333333333333';
       let f, agent, routes, actions, prompts, lifecycle, delivery;
-      async function setup(version = '1.21.4', { auth = 'microsoft', authenticated = true } = {}) {
-        f = fixture(['cobblestone', 'air', 'stone', 'air'], 4, version);
+      async function setup(version = '1.21.4', { auth = 'microsoft', authenticated = true,
+        names = ['cobblestone', 'air', 'stone', 'air'] } = {}) {
+        globalThis.__beforeContinuation = null;
+        f = fixture(names, names.length, version);
         f.bot.position = new Vec3(-2, 64, -2); f.bot.output = ''; f.bot.autoEat = {};
         f.bot.modes = { flushBehaviorLog: () => '' };
         f.bot.players = {
@@ -125,6 +127,176 @@ test('authenticated player ingress reaches the production engine; absent or untr
       }
       const selector = 'Andy build id 1 from group 2 of pack2';
       const direct = '!buildSchematic("pack2:2:1", 0, 64, 0, "destructive")';
+      const continuation = 'Andy continue id 1 from group 2 of pack2 at 0 64 0';
+      settings.schematic_continuation_policy = 'allow'; sync();
+      await setup(); f.world.set('0,64,0', 'stone');
+      f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+      f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+      const skills = await import(${url('src/agent/library/skills.js')});
+      assert.equal(await skills.buildSchematic(f.bot, 'pack2:2:1', 0, 64, 0,
+        { ...f.dependencies.placementOptions, mode: 'delicate' }), false);
+      assert.match(f.bot.output, /partial; exact=1/i);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+      await setup(); f.world.set('2,64,0', 'stone');
+      await agent.handleMessage('Builder', continuation);
+      assert.equal(calls.length, 0); assert.deepEqual(f.writes, []);
+      assert.match(routes.join(' '), /authenticated human/i);
+      await setup(); f.world.set('2,64,0', 'stone');
+      f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+      f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+      await signedPlayerChat(continuation);
+      assert.equal(calls.length, 1, routes.join(' | ')); assert.equal(calls[0].continuation, true);
+      assert.deepEqual(f.writes, [['place', '0,64,0']]);
+      assert.match(routes.join(' '), /continuation completed and verified/i);
+      const savedCall = calls[0], savedBot = f.bot, savedDeps = f.dependencies;
+      const { continueSchematic: directContinue } = await import(${url('src/utils/schematic/build_schematic.js')});
+      const { checkHumanContinuationGrant } = await import(${url('src/agent/agent.js')});
+      const forged = {};
+      assert.equal(checkHumanContinuationGrant(forged, savedBot, savedCall.name, savedCall.x, savedCall.y, savedCall.z,
+        savedCall.options.placementOptions, true, false, true), false);
+      assert.equal(await directContinue(savedBot, savedCall.name, savedCall.x, savedCall.y, savedCall.z,
+        { ...savedDeps, ...savedCall.options, continuationGrant: forged, continuationAuthorizationCurrent: () => true }), false);
+      assert.equal(await directContinue(savedBot, savedCall.name, savedCall.x, savedCall.y, savedCall.z,
+        { ...savedDeps, ...savedCall.options }), false, 'a completed ingress grant cannot be replayed');
+      assert.deepEqual(f.writes, [['place', '0,64,0']]);
+
+      await setup(); f.world.set('2,64,0', 'stone');
+      f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+      f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+      let attempts = 0;
+      globalThis.__beforeContinuation = async (real, bot, name, x, y, z, options) => {
+        const deps = { ...f.dependencies, ...options };
+        for (const [candidateBot, candidateName, candidateX, candidateDeps] of [
+          [fixture().bot, name, x, deps],
+          [bot, 'another.schem', x, deps],
+          [bot, name, x + 1, deps],
+          [bot, name, x, { ...deps, placementOptions: { ...options.placementOptions, orientation: 'east' } }],
+          [bot, name, x, { ...deps, allowNonvalidatedSchematic: false }],
+          [bot, name, x, { ...deps, requireStrictSchematicValidation: true }],
+        ]) {
+          assert.equal(await real(candidateBot, candidateName, candidateX, y, z, candidateDeps), false);
+          attempts++;
+        }
+        f.dependencies.onTransition = async () => {
+          assert.equal(await real(bot, name, x, y, z, deps), false, 'an in-flight grant is single-use');
+          attempts++;
+        };
+      };
+      await playerChat('Builder', continuation);
+      assert.equal(attempts, 7); assert.deepEqual(f.writes, [['place', '0,64,0']]);
+      assert.match(routes.join(' '), /continuation completed and verified/i);
+
+      await setup(); f.world.set('2,64,0', 'stone');
+      globalThis.__beforeContinuation = async () => { delete f.bot.players.Builder; };
+      await playerChat('Builder', continuation);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+      assert.match(routes.join(' '), /authorization/i);
+      await setup(); f.world.set('2,64,0', 'stone');
+      const resolvePath = f.dependencies.resolvePath;
+      globalThis.__destructiveDependencies = { ...f.dependencies,
+        resolvePath: async (...args) => { const result = await resolvePath(...args); delete f.bot.players.Builder; return result; } };
+      await playerChat('Builder', continuation);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+      assert.match(routes.join(' '), /authorization/i);
+
+      // Exercise safety checks through genuine ingress, not a caller-provided
+      // authorization callback. Revocation must stop before any placement.
+      for (const mutate of [
+        () => { settings.schematic_continuation_policy = 'deny'; sync(); },
+        () => { settings.trusted_command_senders = []; sync(); },
+        () => { settings.allow_insecure_coding = true; sync(); },
+        () => { settings.allow_nonvalidated_schematic_builds = false; sync(); },
+        () => { settings.schematic_balanced_radius = 5; sync(); },
+        () => { agent.blocked_actions = ['!buildSchematic']; },
+        () => { delete f.bot.players.Builder; },
+        () => { f.bot._client.serverFeatures.enforcesSecureChat = false; },
+        () => { agent.bot = fixture().bot; },
+        () => { f.world.set('0,64,0', 'poppy'); },
+      ]) {
+        await setup(); f.world.set('2,64,0', 'stone');
+        f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+        f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+        f.dependencies.onTransition = mutate;
+        await playerChat('Builder', continuation);
+        assert.deepEqual(f.writes, []); assert.match(routes.join(' '), /did not complete|authorization changed/i);
+        Object.assign(settings, { schematic_continuation_policy: 'allow', trusted_command_senders: ['Builder'],
+          allow_insecure_coding: false, allow_nonvalidated_schematic_builds: true, schematic_balanced_radius: 4 }); sync();
+      }
+      for (const obstruction of ['poppy', null]) {
+        await setup(); f.world.set('2,64,0', 'stone'); f.world.set('0,64,0', obstruction);
+        await playerChat('Builder', continuation);
+        assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+        assert.match(routes.join(' '), /did not complete/i);
+      }
+      await setup(); f.world.set('2,64,0', 'stone');
+      const readBlock = f.bot.blockAt.bind(f.bot);
+      f.bot.blockAt = position => {
+        const block = readBlock(position);
+        if (position.x === 2 && position.y === 64 && position.z === 0) block.blockEntity = {};
+        return block;
+      };
+      await playerChat('Builder', continuation);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+      assert.match(routes.join(' '), /did not complete/i);
+      for (const kind of ['data', 'accessor']) {
+        await setup(); f.world.set('2,64,0', 'stone');
+        const read = f.bot.blockAt.bind(f.bot), writes = [];
+        const write = f.bot._client.write.bind(f.bot._client);
+        f.bot._client.write = (name, packet) => {
+          if (name === 'block_place' || name === 'block_dig') writes.push(name);
+          return write(name, packet);
+        };
+        let getterCalls = 0, observed;
+        const attached = { nested: { unchanged: true } };
+        f.bot.blockAt = position => {
+          const block = read(position);
+          if (position.x !== 0 || position.y !== 64 || position.z !== 0) return block;
+          if (!observed) {
+            const prototype = { getProperties: Object.getPrototypeOf(block).getProperties };
+            Object.defineProperty(prototype, 'entity', kind === 'data'
+              ? { value: attached } : { get() { getterCalls++; throw Error('unsafe getter'); } });
+            observed = Object.assign(Object.create(prototype), {
+              name: block.name, stateId: block.stateId, _properties: {}, computedStates: {},
+            });
+          }
+          return observed;
+        };
+        await signedPlayerChat(continuation);
+        assert.equal(calls.length, 1); assert.equal(calls[0].continuation, true);
+        assert.ok(observed); assert.equal(getterCalls, 0);
+        assert.deepEqual(attached, { nested: { unchanged: true } });
+        assert.deepEqual(observed._properties, {}); assert.deepEqual(observed.computedStates, {});
+        assert.deepEqual(writes, []); assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+        assert.match(routes.join(' '), /did not complete/i);
+      }
+      await setup(); f.world.set('2,64,0', 'stone');
+      f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+      f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+      f.dependencies.onAim = () => { settings.trusted_command_senders = []; sync(); };
+      await playerChat('Builder', continuation);
+      assert.deepEqual(f.writes, []); assert.match(routes.join(' '), /did not complete/i);
+      settings.trusted_command_senders = ['Builder']; sync();
+      await setup('1.21.4', { names: ['cobblestone', 'stone', 'stone', 'air'] });
+      f.world.set('2,64,0', 'stone');
+      f.bot.entity.position = new Vec3(-2.31, 63.5, 0.5);
+      f.bot.builder.equipItem = async id => { f.bot.heldItem = { name: f.bot.registry.items[id].name }; };
+      let confirmed = false;
+      f.bot.on('schematicEditAuthorization', event => {
+        if (event.phase === 'server-confirmed' && event.position === '0,64,0') {
+          confirmed = true; settings.trusted_command_senders = []; sync();
+        }
+      });
+      await playerChat('Builder', continuation);
+      assert.equal(confirmed, true); assert.equal(f.world.get('0,64,0'), 'cobblestone');
+      assert.deepEqual(f.writes, [['place', '0,64,0']]);
+      assert.match(routes.join(' '), /did not complete/i);
+      settings.trusted_command_senders = ['Builder']; sync();
+      settings.schematic_continuation_policy = 'ask'; sync();
+      await setup(); f.world.set('2,64,0', 'stone');
+      await signedPlayerChat(continuation);
+      assert.deepEqual(f.writes, []); assert.deepEqual(f.modes, []);
+      assert.match(routes.join(' '), /policy ask/i);
+      settings.schematic_continuation_policy = 'off'; sync();
       await setup(); f.world.set('0,64,0', 'air'); f.world.set('2,64,0', 'stone');
       await signedPlayerChat(selector + ' via destructive mode');
       assert.equal(calls.length, 1, routes.join(' | ')); assert.equal(calls[0].options.placementOptions.mode, 'destructive');

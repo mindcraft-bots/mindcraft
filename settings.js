@@ -17,6 +17,7 @@ const settings = {
 
     "base_profile": "assistant", // survival, assistant, creative, or god_mode
     "schematic_placement_mode": "delicate", // default: no clearing; destructive requires explicitly listed human Minecraft chat ingress
+    "schematic_continuation_policy": "ask", // ask fails closed; allow explicit safe continuation; deny refuses; off uses legacy new-build behavior
     "schematic_balanced_radius": 4, // integer 0-16
     "schematic_balanced_threshold": 9, // strict obstruction count limit, integer 1-4097
     "schematic_balanced_strategy": "stepped", // all (full disk), stepped or bisect (sampled)

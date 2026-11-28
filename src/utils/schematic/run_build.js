@@ -39,6 +39,9 @@ export function acquireBuildLifecycle(bot) {
     isCurrent() {
       return !owner.releaseRequested && !owner.released && buildLifecycles.get(bot) === owner;
     },
+    hasPending() {
+      return owner.holds > 0;
+    },
     hold(promise) {
       if (owner.released) return;
       owner.holds++;
