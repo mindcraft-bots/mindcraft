@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/12_scouting_tower.json schematics/12_scouting_tower.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/12_scouting_tower.json",
+  "schematic": "schematics/12_scouting_tower.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    13,
+    27,
+    13
+  ],
+  "volume": 4563,
+  "comparedVoxels": 4563,
+  "expectedNonAir": 872,
+  "parserDerivedAir": 3691,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 36,
+  "spotChecks": 25,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

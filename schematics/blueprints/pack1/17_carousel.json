@@ -1,0 +1,1004 @@
+{
+  "schema": "explicit-layer-matrix-v1",
+  "name": "17_carousel",
+  "folder": 17,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 17,
+  "height_y": 17,
+  "length_z": 17,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Minimum northwest corner of 17x17 base apron. +x east, +z south, +y up; front=south (z16). Zero schematic offset. Foundation y0, structural floor y1, track y2, carpet y3, core x6..10/z6..10/y3..7. Eave fascia y8..10, 13x13 sandstone pyramid x2..14/z2..14 begins y9; peak y15, glowstone y16. Overall height17 is inferred, not printed."
+  },
+  "source_images": [
+    "schematics/screenshots/pack1/17/IMG_20261115_160520-1536x1152.jpg",
+    "schematics/screenshots/pack1/17/IMG_20261115_160530-1536x1152.jpg"
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]",
+    "B": "minecraft:smooth_sandstone",
+    "C": "minecraft:prismarine_bricks",
+    "D": "minecraft:red_wool",
+    "E": "minecraft:mangrove_planks",
+    "F": "minecraft:yellow_wool",
+    "G": "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]",
+    "H": "minecraft:white_wool",
+    "I": "minecraft:red_carpet",
+    "J": "minecraft:yellow_carpet",
+    "K": "minecraft:prismarine_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "L": "minecraft:prismarine_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "M": "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "N": "minecraft:prismarine_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "O": "minecraft:rail[shape=south_east,waterlogged=false]",
+    "P": "minecraft:rail[shape=east_west,waterlogged=false]",
+    "Q": "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]",
+    "R": "minecraft:rail[shape=south_west,waterlogged=false]",
+    "S": "minecraft:rail[shape=north_east,waterlogged=false]",
+    "T": "minecraft:rail[shape=north_south,waterlogged=false]",
+    "U": "minecraft:powered_rail[powered=true,shape=north_south,waterlogged=false]",
+    "V": "minecraft:rail[shape=north_west,waterlogged=false]",
+    "W": "minecraft:redstone_torch[lit=true]",
+    "X": "minecraft:glowstone",
+    "Y": "minecraft:mangrove_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "Z": "minecraft:mangrove_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "a": "minecraft:mangrove_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "b": "minecraft:mangrove_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "c": "minecraft:mangrove_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "d": "minecraft:end_rod[facing=up]",
+    "e": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=inner_right,waterlogged=false]",
+    "f": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "g": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=inner_left,waterlogged=false]",
+    "h": "minecraft:smooth_sandstone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "i": "minecraft:smooth_sandstone_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]",
+    "j": "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=inner_left,waterlogged=false]",
+    "k": "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "l": "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=inner_right,waterlogged=false]",
+    "m": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "n": "minecraft:soul_lantern[hanging=true,waterlogged=false]"
+  },
+  "layers": [
+    [
+      ".....AAAAAAA.....",
+      "...AABBBBBBBAA...",
+      "..ABBBBBBBBBBBA..",
+      ".ABBBBBBBBBBBBBA.",
+      ".ABBBBBBBBBBBBBA.",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      "ABBBBBBBBBBBBBBBA",
+      ".ABBBBBBBBBBBBBA.",
+      ".ABBBBBBBBBBBBBA.",
+      "..ABBBBBBBBBBBA..",
+      "...AABBBBBBBAA...",
+      ".....AAAAAAA....."
+    ],
+    [
+      ".................",
+      ".....CECECEC.....",
+      "...ECHHHHHHHCE...",
+      "..EHHHHHHHHHHHE..",
+      "..CHHHFFFFFHHHC..",
+      ".CHHHFFFEFFFHHHC.",
+      ".EHHFFEEEEEFFHHE.",
+      ".CHHFFEEEEEFFHHC.",
+      ".EHHFEEEEEEEFHHE.",
+      ".CHHFFEEEEEFFHHC.",
+      ".EHHFFEEEEEFFHHE.",
+      ".CHHHFFFEFFFHHHC.",
+      "..CHHHFFFFFHHHC..",
+      "..EHHHHHHHHHHHE..",
+      "...ECHHHHHHHCE...",
+      ".....CECECEC.....",
+      "................."
+    ],
+    [
+      ".................",
+      ".....DKKKKKD.....",
+      "...COPPQQQPPRC...",
+      "..COV...W...SRC..",
+      "..OV.........SR..",
+      ".DT...........TD.",
+      ".MT...........TN.",
+      ".MU...........UN.",
+      ".MUW.........WUN.",
+      ".MU...........UN.",
+      ".MT...........TN.",
+      ".DT...........TD.",
+      "..SR.........OV..",
+      "..CSR...W...OVC..",
+      "...CSPPQQQPPVC...",
+      ".....DLLLLLD.....",
+      "................."
+    ],
+    [
+      ".................",
+      "......GGGGG......",
+      "...GGYIIJIIYGG...",
+      "..GIJIIIJIIIJIG..",
+      "..GJJJJJJJJJJJG..",
+      "..YIJIIIJIIIJIY..",
+      ".GIIJIEEEEEIJIIG.",
+      ".GIIJIE...EIJIIG.",
+      ".GJJJJE.X.EJJJJG.",
+      ".GIIJIE...EIJIIG.",
+      ".GIIJIEEEEEIJIIG.",
+      "..YIJIIIJIIIJIY..",
+      "..GJJJJJJJJJJJG..",
+      "..GIJIIIJIIIJIG..",
+      "...GGYIIJIIYGG...",
+      "......GGGGG......",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      ".................",
+      "..d...........d..",
+      "......EEYEE......",
+      "......E...E......",
+      "......Y.X.Y......",
+      "......E...E......",
+      "......EEYEE......",
+      "..d...........d..",
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      ".................",
+      "..d...........d..",
+      "......EEYEE......",
+      "......E...E......",
+      "......Y.X.Y......",
+      "......E...E......",
+      "......EEYEE......",
+      "..d...........d..",
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      ".................",
+      "..d...........d..",
+      "......EEYEE......",
+      "......E...E......",
+      "......Y.X.Y......",
+      "......E...E......",
+      "......EEYEE......",
+      "..d...........d..",
+      ".................",
+      ".................",
+      ".....d.....d.....",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".....m.m.m.m.....",
+      "...m.Y.....Y.m...",
+      "..m...........m..",
+      ".................",
+      ".mY...........Ym.",
+      "......EZEZE......",
+      ".n....b...c....n.",
+      "......E.X.E......",
+      ".m....b...c....m.",
+      "......EaEaE......",
+      ".nY...........Yn.",
+      ".................",
+      "..n...........n..",
+      "...n.Y.....Y.n...",
+      ".....n.n.n.n.....",
+      "................."
+    ],
+    [
+      ".................",
+      "....CKKKKKKKC....",
+      "...C.........C...",
+      "..C...........C..",
+      ".C.............C.",
+      ".M....EEEEE....N.",
+      ".M...EEEEEEE...N.",
+      ".M...EEXXXEE...N.",
+      ".M...EEXXXEE...N.",
+      ".M...EEXXXEE...N.",
+      ".M...EEEEEEE...N.",
+      ".M....EEEEE....N.",
+      ".C.............C.",
+      "..C...........C..",
+      "...C.........C...",
+      "....CLLLLLLLC....",
+      "................."
+    ],
+    [
+      ".................",
+      "....CEEEEEEEC....",
+      "..efffffffffffg..",
+      "..hBBBBBBBBBBBi..",
+      ".ChB.........BiC.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".EhB.........BiE.",
+      ".ChB.........BiC.",
+      "..hBBBBBBBBBBBi..",
+      "..jkkkkkkkkkkkl..",
+      "....CEEEEEEEC....",
+      "................."
+    ],
+    [
+      ".................",
+      "....GGGGGGGGG....",
+      "...G.........G...",
+      "..GefffffffffgG..",
+      ".G.hBBBBBBBBBi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hB.......Bi.G.",
+      ".G.hBBBBBBBBBi.G.",
+      "..GjkkkkkkkkklG..",
+      "...G.........G...",
+      "....GGGGGGGGG....",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "....efffffffg....",
+      "....hBBBBBBBi....",
+      "....hB.....Bi....",
+      "....hB.....Bi....",
+      "....hB.....Bi....",
+      "....hB.....Bi....",
+      "....hB.....Bi....",
+      "....hBBBBBBBi....",
+      "....jkkkkkkkl....",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".....efffffg.....",
+      ".....hBBBBBi.....",
+      ".....hB...Bi.....",
+      ".....hB...Bi.....",
+      ".....hB...Bi.....",
+      ".....hBBBBBi.....",
+      ".....jkkkkkl.....",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "......efffg......",
+      "......hBBBi......",
+      "......hB.Bi......",
+      "......hBBBi......",
+      "......jkkkl......",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".......efg.......",
+      ".......hBi.......",
+      ".......jkl.......",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "........B........",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "........X........",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ]
+  ],
+  "distinct_build_audit": "Carousel (КАРУСЕЛЬ), pages74-77, steps1-8 are one build. The separate strider bath on page77 is exported independently as 17_strider_bath. No duplicate export of construction steps or track close-up. Minecarts, striders, saddles, spawn eggs and riders are entities/items, omitted rather than represented by invented blocks.",
+  "printed_dimension_audit": [
+    {
+      "page": 75,
+      "step": 1,
+      "printed": "17 blocks by 17 blocks base, both dimension arrows.",
+      "realization": "Exact x0..16,z0..16 apron envelope; chamfered near-circular outline. Corner setbacks inferred from grid view."
+    },
+    {
+      "page": 76,
+      "step": 5,
+      "printed": "5x5 structure in centre.",
+      "realization": "Core walls x6..10,z6..10 inclusive, five blocks each axis. Cross-shaped cap extends to x5..11,z5..11 at y8 as visible in step5."
+    },
+    {
+      "page": 76,
+      "step": 6,
+      "printed": "13x13 sandstone roof made with smooth sandstone stairs; glowstone at spire.",
+      "realization": "Sandstone roof envelope x2..14,z2..14 =13x13, y9..15; glowstone(8,16,8). Added outer prismarine trim reaches15x15, separate from measured sandstone roof."
+    },
+    {
+      "page": 77,
+      "step": 7,
+      "printed": "One more circle of prismarine bricks, stairs and slabs around roof.",
+      "realization": "Chamfered15x15 fascia y8..10, cyan bottom ring, mangrove recesses and cyan cap. Ring half-levels and gap lengths inferred."
+    },
+    {
+      "page": 77,
+      "step": 8,
+      "printed": "Lanterns and End rods on mangrove fences; no heights or counts.",
+      "realization": "Eight decorative posts y3..7, each with three vertical rods y4..6 between fence sockets; 24 alternating ordinary/soul hanging lanterns y7. Counts and heights inferred."
+    }
+  ],
+  "printed_material_audit": [
+    {
+      "printed": "Step1: smooth sandstone slabs, mangrove planks and prismarine bricks.",
+      "used": [
+        "smooth_sandstone_slab",
+        "smooth_sandstone",
+        "mangrove_planks",
+        "prismarine_bricks"
+      ],
+      "notes": "Sandstone floor fill/support inferred from pale interior. Apron slabs bottom-half, interior floor full blocks for rail support; no printed numerical material list."
+    },
+    {
+      "printed": "Step2: prismarine blocks, white/red/yellow wool and mangrove planks.",
+      "used": [
+        "prismarine_bricks",
+        "prismarine_brick_stairs",
+        "prismarine_brick_slab",
+        "white_wool",
+        "red_wool",
+        "yellow_wool",
+        "mangrove_planks"
+      ],
+      "notes": "Brick variant from step1 and cyan brick seams in render. Red/yellow wall inlays on four straight sides. Yellow rounded centre outline is concealed by final core/carpet; white wool floor supports track."
+    },
+    {
+      "printed": "Step3: rails, powered rails and redstone torches.",
+      "used": [
+        "rail",
+        "powered_rail",
+        "redstone_torch"
+      ],
+      "notes": "One continuous chamfered loop at y2, twelve powered straight segments and four lit torches hidden by final carpet. Exact occluded routing/spacing inferred from top-down detail, not a claimed functional circuit replication."
+    },
+    {
+      "printed": "Step4: minecarts, strider spawn eggs, striders and saddles.",
+      "used": [],
+      "notes": "All excluded by no-entities/no-complex-NBT requirement; no substituted statues. Attraction exports as stationary block architecture with concealed track."
+    },
+    {
+      "printed": "Step5: red/yellow carpet; mangrove planks, stairs and fences; glowstone inside centre.",
+      "used": [
+        "red_carpet",
+        "yellow_carpet",
+        "mangrove_planks",
+        "mangrove_stairs",
+        "mangrove_fence",
+        "glowstone"
+      ],
+      "notes": "Striped carpet at y3 is one block above rails at y2, not substituted into rail voxels. Core includes recessed fence glyphs and internal glowstone. Carpet retention/clearance under game physics untested."
+    },
+    {
+      "printed": "Steps6-8: smooth sandstone stairs, summit glowstone; prismarine bricks/stairs/slabs; lanterns and End rods on mangrove fences.",
+      "used": [
+        "smooth_sandstone",
+        "smooth_sandstone_stairs",
+        "glowstone",
+        "prismarine_bricks",
+        "prismarine_brick_stairs",
+        "prismarine_brick_slab",
+        "lantern",
+        "soul_lantern",
+        "end_rod",
+        "mangrove_fence"
+      ],
+      "notes": "Both warm and cyan lanterns are unambiguous in master render. Stair faces/inner corners and rod facing=up specified explicitly; all slabs bottom-half. No doors or axis-bearing logs."
+    }
+  ],
+  "inferred_detail_uncertainty": [
+    "Best-effort voxel reconstruction from photographed perspectives, not a unique or certified exact hidden-block solution. Only17x17 base,5x5 core and13x13 sandstone roof are numerical structural callouts.",
+    "Foundation chamfers, apron half-level, floor support thickness, overall height17, final trim15x15 and eave10 high cap are inferred. Reference shows a circular/octagonal form implemented here with stepped chamfers, not a geometrically perfect circle.",
+    "The small track diagram is ambiguous at corners and where inner rails appear to overlap. This realization uses a single closed chamfered loop; exact hidden layout, powered-rail spacing, torch locations/rest states and redstone operation are not certified. Rails and torches remain below the carpet; no minecarts/striders/saddles/eggs are serialized.",
+    "Carpet y3 overlays rails y2 in separate voxels, as book says carpet does not stop carts. Some carpet is over air or torches; support/neighbor-update survival and cart clearances are not live-tested. No invented solid blocks replace concealed rails.",
+    "Pyramid has seven concentric levels, outward descending bottom stairs, explicit inner stair corners and smooth sandstone backing. It is hollow outside centre support; hidden structural fill and exact half-step rhythm cannot be recovered. Sandstone roof alone13x13; added cyan fascia extends15x15. Glowstone summit is a block, not an entity.",
+    "Core height5,7x7 cross cap, carvings, internal glowstone column, post spacing/3-rod shafts and24-lantern alternating rhythm are inferred from render; no printed material quantities. Fence connections are explicit initial states, potentially recomputed on placement. No doors or log axes occur.",
+    "No fluids, entities or complex block-entity NBT. No server connection, live placement, physics, working carousel/motion or exact render-fidelity test is claimed. Retain intended valid block states even if installed reader reports a conversion limitation."
+  ],
+  "geometry_notes": {
+    "track_cycle_xz": [
+      [
+        4,
+        2
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        6,
+        2
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        9,
+        2
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        12,
+        2
+      ],
+      [
+        12,
+        3
+      ],
+      [
+        13,
+        3
+      ],
+      [
+        13,
+        4
+      ],
+      [
+        14,
+        4
+      ],
+      [
+        14,
+        5
+      ],
+      [
+        14,
+        6
+      ],
+      [
+        14,
+        7
+      ],
+      [
+        14,
+        8
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        14,
+        10
+      ],
+      [
+        14,
+        11
+      ],
+      [
+        14,
+        12
+      ],
+      [
+        13,
+        12
+      ],
+      [
+        13,
+        13
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        12,
+        14
+      ],
+      [
+        11,
+        14
+      ],
+      [
+        10,
+        14
+      ],
+      [
+        9,
+        14
+      ],
+      [
+        8,
+        14
+      ],
+      [
+        7,
+        14
+      ],
+      [
+        6,
+        14
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        4,
+        13
+      ],
+      [
+        3,
+        13
+      ],
+      [
+        3,
+        12
+      ],
+      [
+        2,
+        12
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        2,
+        10
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        3
+      ]
+    ],
+    "powered_rail_count": 12,
+    "torch_count": 4,
+    "decorative_posts_xz": [
+      [
+        5,
+        2
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        14,
+        5
+      ],
+      [
+        14,
+        11
+      ],
+      [
+        11,
+        14
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    "lantern_count": 24,
+    "layer_order": "layers[y][z][x], x-fastest; every voxel explicit, no procedural geometry in saved artifact"
+  },
+  "expected_counts": {
+    "minecraft:air": 3630,
+    "minecraft:end_rod[facing=up]": 24,
+    "minecraft:glowstone": 15,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 12,
+    "minecraft:mangrove_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 28,
+    "minecraft:mangrove_planks": 173,
+    "minecraft:mangrove_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:mangrove_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:mangrove_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:mangrove_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]": 6,
+    "minecraft:powered_rail[powered=true,shape=north_south,waterlogged=false]": 6,
+    "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]": 80,
+    "minecraft:prismarine_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:prismarine_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:prismarine_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:prismarine_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 12,
+    "minecraft:prismarine_bricks": 56,
+    "minecraft:rail[shape=east_west,waterlogged=false]": 8,
+    "minecraft:rail[shape=north_east,waterlogged=false]": 5,
+    "minecraft:rail[shape=north_south,waterlogged=false]": 8,
+    "minecraft:rail[shape=north_west,waterlogged=false]": 5,
+    "minecraft:rail[shape=south_east,waterlogged=false]": 5,
+    "minecraft:rail[shape=south_west,waterlogged=false]": 5,
+    "minecraft:red_carpet": 64,
+    "minecraft:red_wool": 8,
+    "minecraft:redstone_torch[lit=true]": 4,
+    "minecraft:smooth_sandstone": 315,
+    "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]": 48,
+    "minecraft:smooth_sandstone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 36,
+    "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=inner_left,waterlogged=false]": 6,
+    "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=inner_right,waterlogged=false]": 6,
+    "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+    "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=inner_left,waterlogged=false]": 6,
+    "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=inner_right,waterlogged=false]": 6,
+    "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 36,
+    "minecraft:smooth_sandstone_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 36,
+    "minecraft:soul_lantern[hanging=true,waterlogged=false]": 12,
+    "minecraft:white_wool": 80,
+    "minecraft:yellow_carpet": 52,
+    "minecraft:yellow_wool": 40
+  },
+  "non_air_count": 1283,
+  "air_count": 3630,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Outside chamfer is air"
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "z": 0,
+      "char": "A",
+      "state": "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]",
+      "description": "Bottom smooth sandstone slab apron"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 8,
+      "char": "E",
+      "state": "minecraft:mangrove_planks",
+      "description": "Mangrove centre platform"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 2,
+      "char": "Q",
+      "state": "minecraft:powered_rail[powered=true,shape=east_west,waterlogged=false]",
+      "description": "Powered track concealed beneath carpet"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "z": 2,
+      "char": "R",
+      "state": "minecraft:rail[shape=south_west,waterlogged=false]",
+      "description": "Track corner explicit shape"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 3,
+      "char": "W",
+      "state": "minecraft:redstone_torch[lit=true]",
+      "description": "Hidden redstone torch"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 2,
+      "char": "J",
+      "state": "minecraft:yellow_carpet",
+      "description": "Yellow carpet above track"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "z": 2,
+      "char": "d",
+      "state": "minecraft:end_rod[facing=up]",
+      "description": "Lower rod shaft"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "z": 2,
+      "char": "d",
+      "state": "minecraft:end_rod[facing=up]",
+      "description": "Upper rod shaft"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "z": 2,
+      "char": "Y",
+      "state": "minecraft:mangrove_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+      "description": "Upper mangrove socket"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 8,
+      "char": "X",
+      "state": "minecraft:glowstone",
+      "description": "Internal centre glowstone"
+    },
+    {
+      "x": 8,
+      "y": 5,
+      "z": 6,
+      "char": "Y",
+      "state": "minecraft:mangrove_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+      "description": "Recessed fence carving"
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "z": 6,
+      "char": "E",
+      "state": "minecraft:mangrove_planks",
+      "description": "5x5 core corner"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "z": 8,
+      "char": "E",
+      "state": "minecraft:mangrove_planks",
+      "description": "Core cross cap"
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "z": 8,
+      "char": "X",
+      "state": "minecraft:glowstone",
+      "description": "Cap glowstone patch"
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "z": 1,
+      "char": "K",
+      "state": "minecraft:prismarine_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "description": "Prismarine stair fascia"
+    },
+    {
+      "x": 8,
+      "y": 9,
+      "z": 1,
+      "char": "E",
+      "state": "minecraft:mangrove_planks",
+      "description": "Mangrove fascia recess"
+    },
+    {
+      "x": 8,
+      "y": 10,
+      "z": 1,
+      "char": "G",
+      "state": "minecraft:prismarine_brick_slab[type=bottom,waterlogged=false]",
+      "description": "Bottom prismarine slab cap"
+    },
+    {
+      "x": 8,
+      "y": 9,
+      "z": 2,
+      "char": "f",
+      "state": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "description": "13x13 roof north edge stair"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "z": 2,
+      "char": "e",
+      "state": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=inner_right,waterlogged=false]",
+      "description": "Roof corner inner stair"
+    },
+    {
+      "x": 8,
+      "y": 10,
+      "z": 3,
+      "char": "f",
+      "state": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "description": "Second sandstone roof tier"
+    },
+    {
+      "x": 8,
+      "y": 11,
+      "z": 4,
+      "char": "f",
+      "state": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "description": "Third sandstone roof tier"
+    },
+    {
+      "x": 8,
+      "y": 14,
+      "z": 7,
+      "char": "f",
+      "state": "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "description": "Penultimate roof tier"
+    },
+    {
+      "x": 8,
+      "y": 15,
+      "z": 8,
+      "char": "B",
+      "state": "minecraft:smooth_sandstone",
+      "description": "Sandstone summit"
+    },
+    {
+      "x": 8,
+      "y": 16,
+      "z": 8,
+      "char": "X",
+      "state": "minecraft:glowstone",
+      "description": "Glowstone finial"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "z": 5,
+      "char": "m",
+      "state": "minecraft:lantern[hanging=true,waterlogged=false]",
+      "description": "Hanging lantern beneath eave"
+    },
+    {
+      "x": 8,
+      "y": 6,
+      "z": 4,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Clear interior air"
+    },
+    {
+      "x": 16,
+      "y": 16,
+      "z": 16,
+      "char": ".",
+      "state": "minecraft:air",
+      "description": "Air outside completed roof"
+    }
+  ]
+}

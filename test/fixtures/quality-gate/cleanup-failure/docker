@@ -1,0 +1,4 @@
+#!/bin/sh
+printf '%s\n' "$*"
+case " $* " in *' down '*) exit 8;; esac
+exit 0

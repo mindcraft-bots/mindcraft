@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/18_giant_grandfather_clock.json schematics/18_giant_grandfather_clock.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/18_giant_grandfather_clock.json",
+  "schematic": "schematics/18_giant_grandfather_clock.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    13,
+    33,
+    11
+  ],
+  "volume": 4719,
+  "comparedVoxels": 4719,
+  "expectedNonAir": 1309,
+  "parserDerivedAir": 3410,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 52,
+  "spotChecks": 19,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

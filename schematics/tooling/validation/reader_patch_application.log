@@ -1,0 +1,7 @@
+PASS: version-pinned patch applies cleanly to the original states.js in an isolated temporary directory and produces exactly the installed repaired file.
+
+Actual patch-package isolated fixture test:
+patch-package 8.0.1
+Applying patches...
+prismarine-schematic@1.3.0 ✔
+PASS: installed repaired bytes exactly match patch-package output.

@@ -3,7 +3,7 @@ import settings from '../settings.js';
 import convoManager from '../conversation.js';
 
 
-function runAsAction (actionFn, resume = false, timeout = -1) {
+function runAsAction (actionFn, resume = false, timeout = -1, interruptionResume = null) {
     let actionLabel = null;  // Will be set on first use
     
     const wrappedAction = async function (agent, ...args) {
@@ -13,16 +13,47 @@ function runAsAction (actionFn, resume = false, timeout = -1) {
             actionLabel = actionObj.name.substring(1); // Remove the ! prefix
         }
 
+        const resumeContext = interruptionResume?.createContext?.(agent, ...args);
+        const contextualArgs = resumeContext == null ? args : [...args, resumeContext];
+        const managedSession = interruptionResume
+            ? agent.actions.beginManagedResume?.(() => interruptionResume.cancel?.(agent, ...contextualArgs), `action:${actionLabel}`)
+            : null;
         const actionFnWithAgent = async () => {
-            await actionFn(agent, ...args);
+            if (interruptionResume?.run) await interruptionResume.run(agent, args, resumeContext);
+            else await actionFn(agent, ...args);
         };
-        const code_return = await agent.actions.runAction(`action:${actionLabel}`, actionFnWithAgent, { timeout, resume });
+        const code_return = await agent.actions.runAction(`action:${actionLabel}`, actionFnWithAgent, { timeout, resume, managedSession });
+        if (code_return.interrupted && !code_return.timedout && interruptionResume) {
+            const interruption = agent.actions.lastInterruption;
+            if (!managedSession?.cancelled && interruptionResume.shouldResume(agent, interruption, ...contextualArgs)) {
+                agent.actions.registerResume(`action:${actionLabel}`, actionFnWithAgent, {
+                    guard: () => interruptionResume.canResume(agent, ...contextualArgs),
+                    cancelOnSuccess: true,
+                    cancelOnReplacement: true,
+                    managedSession,
+                });
+            } else {
+                interruptionResume.cancel?.(agent, ...contextualArgs);
+                agent.actions.finishManagedResume?.(managedSession);
+            }
+        } else if (managedSession) {
+            if (!code_return.success || code_return.timedout) {
+                agent.actions.cancelManagedSession?.(managedSession);
+            } else {
+                agent.actions.finishManagedResume?.(managedSession);
+            }
+        }
         if (code_return.interrupted && !code_return.timedout)
             return;
         return code_return.message;
     }
 
     return wrappedAction;
+}
+
+function isSchematicCombatInterruption(interruption) {
+    return interruption?.interruptedLabel === 'action:buildSchematic'
+        && ['mode:self_preservation', 'mode:cowardice', 'mode:self_defense'].includes(interruption.byActionLabel);
 }
 
 export const actionsList = [
@@ -34,7 +65,7 @@ export const actionsList = [
         },
         perform: async function(agent, prompt) {
             // just ignore prompt - it is now in context in chat history
-            if (!settings.allow_insecure_coding) { 
+            if (settings.allow_insecure_coding !== true) {
                 agent.openChat('newAction is disabled. Enable with allow_insecure_coding=true in settings.js');
                 return "newAction not allowed! Code writing is disabled in settings. Notify the user.";
             }
@@ -486,6 +517,54 @@ export const actionsList = [
         params: {},
         perform: runAsAction(async (agent) => {
             await skills.goToSurface(agent.bot);
+        })
+    },
+    {
+        name: '!buildSchematic',
+        description: 'Build a version-suffixed schematic by family name or by pack, group, and stable file ID. Family selectors choose the newest compatible compiled variant; an explicit versioned filename pins that variant. Unversioned files and alternate formats are never selected. Addressed typed chat permits inert descriptive text before one terminal selector and optional “using”/“via”. A numeric selector may end with the exact inert phrase “instead of this unfinished building”; it does not locate, remove, or replace a building or choose its position. Normal nearby placement and safety checks apply. Terminology: “file id” (short “id”, also “offset”) selects the stable numeric file ID within a group; “file name” (short “file”) selects a family or an explicit versioned filename. The aliases “schema”, “schem”, “scheme”, and conventional “schematic” can prefix either selector, or substitute for “file” before a full pack-qualified filename. Examples: “Andy build a balloon using schematic file id 01 from group 02 of pack1”; “Andy build file id 01 from group 02 of pack1”; “Andy build file name 02_bee_hot_air_balloon of pack1”; “Andy build schem id 01 from group 02 of pack1”; “Andy build schema file name 02_bee_hot_air_balloon of pack1”; “Andy build house via scheme 02_bee_hot_air_balloon of pack1”; “Andy build schema pack1/02_bee_hot_air_balloon”. A filename selector uses “file name <name> of packN”, “file <name> of packN”, or “file packN/<name>”; aliases support the corresponding “<alias> <name> of packN” and “<alias> packN/<name>” forms. Numeric selectors also accept “from <number> group of packN” in place of “from group <number> of packN”, and retain “offset <number> from group <number> of packN” and bare “<number> from group <number> of packN”. `file id` cannot be mistaken for `file name`: `id`/`offset` plus either group-order form is numeric, while explicit filename forms, pack/name slash form, or an extension select a literal filename. Quote reserved words in balanced double-quoted descriptive text; only escaped quotes and backslashes are permitted. `colour scheme` and `database schema` are ordinary chat unless a complete typed selector shape follows. Descriptions are inert and never verify asset content. After the complete selector, use one direction clause such as facing south, oriented south, rotated to face south, or then rotate it south, optionally before or after one using/via mode clause. Facing, oriented, rotate, rotated and rotating all specify the same absolute world-cardinal rotation, not an entrance or bot yaw; north is authored axes. Accept north/east/south/west or n/e/s/w case-insensitively. Quoted descriptions and filenames are not direction clauses; malformed, duplicate or extra tails fail closed. The optional eighth direct argument is a quoted direction or null, after mode, radius and threshold. Non-north stateful placement may be refused before edits. Require exactly one complete selector; ambiguity, duplicates, malformed/partial selectors, path traversal, injection, extra instructions, or unresolved targets fail closed without model inference. Numeric commands map pack, screenshot-folder group, and stable file ID to `!buildSchematic("pack1:02:01")` (pack:group:fileId); file IDs are explicit index mappings, not sorted filename positions. `!listSchematics` lists group, file ID, and exact file name separately. Direct commands preserve the existing positional filename, x, y, z interface and also accept pack-qualified stems/extensions or contained schematics-root-relative paths; root-level legacy files remain supported. Explicit coordinates are direct-command-only and require all three finite values; omit all three for nearby placement. Human requests and direct commands are restricted to configured trusted senders; a non-empty `only_chat_with` list must also allow the sender. The bot temporarily switches to Creative mode and restores its previous mode afterward. Rebuild/recreate the Docker image after source changes.',
+        params: {
+            'filename': { type: 'string', description: 'A fileName or pack-qualified selector (the legacy parameter key remains filename). Indexed syntax is packN:<group>:<fileId>, e.g. pack1:2:1 selects group 2, fileId 1 through index.json. Group and fileId are independently normalized positive safe integers. Pack-qualified literal fileNames/stems and contained schematics-root-relative fileNames are also supported. A base .schem selects its highest known release variant not newer than the bot; an explicit .mc<version>.schem selects that exact compatible variant. Use !listSchematics to see versions and picks.' },
+            'x': { type: 'coordinate', description: 'Optional x coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'y': { type: 'coordinate', description: 'Optional y coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'z': { type: 'coordinate', description: 'Optional z coordinate; provide x, y, and z together or omit all three.', optional: true, default: null, optionalGroup: 'coordinates' },
+            'mode': { type: 'placementMode', description: 'Optional quoted delicate, raise, balanced or destructive mode; null inherits settings. Destructive requires an explicitly allowlisted human using authenticated public player chat; whispers do not authorize it.', optional: true, default: null },
+            'radius': { type: 'placementInteger', description: 'Optional balanced radius, integer 0–16; null uses settings.', optional: true, default: null },
+            'threshold': { type: 'placementInteger', description: 'Optional balanced strict obstruction threshold, integer 1–4097; null uses settings.', optional: true, default: null },
+            'orientation': { type: 'placementOrientation', description: 'Optional quoted absolute world-cardinal rotation north/east/south/west or n/e/s/w, case-insensitive; null defaults to north (authored axes). This does not detect an entrance or use bot yaw.', optional: true, default: null },
+            'strategy': { type: 'placementStrategy', description: 'Optional balanced search strategy: quoted exact lowercase all, stepped, or bisect; null uses settings.', optional: true, default: null },
+            'step': { type: 'placementInteger', description: 'Optional balanced search step, integer 1–16; null uses settings.', optional: true, default: null },
+            'policy': { type: 'placementPolicy', description: 'Optional balanced selection policy: quoted exact lowercase first_valid or exhaustive; null uses settings.', optional: true, default: null },
+            'bisectDepth': { type: 'placementInteger', description: 'Optional balanced bisect depth, integer 0–3; null uses settings.', optional: true, default: null }
+        },
+        perform: runAsAction(async (agent, filename, x, y, z, options) => {
+            await skills.buildSchematic(agent.bot, filename, x, y, z, options);
+        }, false, -1, {
+            run: (agent, [filename, x, y, z, options], session) => {
+                skills.setSchematicResumeSession?.(agent.bot, session);
+                if (agent.task?.task_type === 'schematic') agent.task.schematicBuildCompleted = false;
+                return skills.buildSchematic(agent.bot, filename, x, y, z, options).then(success => {
+                    if (agent.task?.task_type === 'schematic') agent.task.schematicBuildCompleted = success === true;
+                    return success;
+                });
+            },
+            shouldResume: (agent, interruption, _filename, _x, _y, _z, _options, session) =>
+                session?.context != null
+                && session.resumeEligible === true
+                && !session.cancelled
+                && isSchematicCombatInterruption(interruption),
+            canResume: (agent, _filename, _x, _y, _z, _options, session) =>
+                Boolean(session?.context && session.resumeEligible && !session.cancelled
+                    && session.isWorldValid?.(agent.bot)
+                    && isSchematicCombatInterruption(agent.actions.lastInterruption)),
+            cancel: (_agent, _filename, _x, _y, _z, _options, session) => {
+                if (session) {
+                    session.cancelled = true;
+                    session.resumeEligible = false;
+                    session.context = null;
+                }
+                _agent?.bot && skills.setSchematicResumeSession?.(_agent.bot, null);
+            },
+            createContext: () => ({ cancelled: false }),
         })
     },
     {

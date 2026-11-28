@@ -2,6 +2,7 @@ import { createMindServer, registerAgent, numStateListeners } from './mindserver
 import { AgentProcess } from '../process/agent_process.js';
 import { getServer } from './mcserver.js';
 import open from 'open';
+import { validateTrustedCommandSenders } from '../utils/command_trust.js';
 
 let mindserver;
 let connected = false;
@@ -28,6 +29,12 @@ export async function init(host_public=false, port=8080, auto_open_ui=true) {
 }
 
 export async function createAgent(settings) {
+    // Validate before serialization/registration or any process startup side effects.
+    try {
+        validateTrustedCommandSenders(settings.trusted_command_senders);
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
     if (!settings.profile.name) {
         console.error('Agent name is required in profile');
         return {

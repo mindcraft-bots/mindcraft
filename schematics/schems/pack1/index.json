@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "groups": {
+    "1": {
+      "1": "01_wardrobe_nether_portal.schem"
+    },
+    "2": {
+      "1": "02_bee_hot_air_balloon.schem",
+      "2": "02_enderman_hot_air_balloon.schem",
+      "3": "02_pig_hot_air_balloon.schem"
+    },
+    "3": {
+      "1": "03_big_red_barn.schem",
+      "2": "03_storage_silo.schem"
+    },
+    "4": {
+      "1": "04_pagoda.schem"
+    },
+    "5": {
+      "1": "05_allay_statue.schem"
+    },
+    "6": {
+      "1": "06_wild_west_jail.schem"
+    },
+    "7": {
+      "1": "07_secret_island_base.schem"
+    },
+    "8": {
+      "1": "08_greenhouse.schem"
+    },
+    "9": {
+      "1": "09_river_steamboat.schem"
+    },
+    "10": {
+      "1": "10_pachinko_parkour.schem"
+    },
+    "11": {
+      "1": "11_grandstand.schem",
+      "2": "11_hairpin.schem",
+      "3": "11_safety_fence.schem",
+      "4": "11_starting_gate.schem",
+      "5": "11_starting_grid.schem",
+      "6": "11_turn.schem"
+    },
+    "12": {
+      "1": "12_scouting_tower.schem"
+    },
+    "13": {
+      "1": "13_skull_cave.schem"
+    },
+    "14": {
+      "1": "14_school_monster_bus.schem"
+    },
+    "15": {
+      "1": "15_potion_factory.schem"
+    },
+    "16": {
+      "1": "16_wishing_well.schem"
+    },
+    "17": {
+      "1": "17_carousel.schem",
+      "2": "17_strider_bath.schem"
+    },
+    "18": {
+      "1": "18_easter_island_head.schem",
+      "2": "18_giant_grandfather_clock.schem"
+    },
+    "19": {
+      "1": "19_hot_spring_chalet.schem",
+      "2": "19_thermal_springs.schem"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/03_big_red_barn.json schematics/03_big_red_barn.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/03_big_red_barn.json",
+  "schematic": "schematics/03_big_red_barn.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    18,
+    17,
+    19
+  ],
+  "volume": 5814,
+  "comparedVoxels": 5814,
+  "expectedNonAir": 1102,
+  "parserDerivedAir": 4712,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 26,
+  "spotChecks": 16,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

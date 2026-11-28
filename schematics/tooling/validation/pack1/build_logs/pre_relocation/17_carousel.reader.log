@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/17_carousel.json schematics/17_carousel.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/17_carousel.json",
+  "schematic": "schematics/17_carousel.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    17,
+    17,
+    17
+  ],
+  "volume": 4913,
+  "comparedVoxels": 4913,
+  "expectedNonAir": 1283,
+  "parserDerivedAir": 3630,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 41,
+  "spotChecks": 28,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

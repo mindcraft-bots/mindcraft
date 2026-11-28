@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/13_skull_cave.json schematics/schems/pack1/13_skull_cave.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/13_skull_cave.json",
+  "schematic": "schematics/schems/pack1/13_skull_cave.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    20,
+    16,
+    16
+  ],
+  "volume": 5120,
+  "comparedVoxels": 5120,
+  "expectedNonAir": 2639,
+  "parserDerivedAir": 2481,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 23,
+  "spotChecks": 32,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

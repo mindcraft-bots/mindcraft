@@ -30,6 +30,7 @@ WORKDIR /app
 
 COPY package*.json .
 COPY patches ./patches
+COPY scripts/verify_patch.js ./scripts/
 RUN npm install
 
 COPY . .

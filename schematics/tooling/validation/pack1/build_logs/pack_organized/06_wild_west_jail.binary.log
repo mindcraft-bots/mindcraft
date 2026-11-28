@@ -1,0 +1,3 @@
+$ python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/06_wild_west_jail.json schematics/schems/pack1/06_wild_west_jail.schem
+[exit code: 0]
+{"air": 607, "block_data_bytes": 1053, "bytes": 1019, "dimensions": [13, 9, 9], "non_air": 446, "palette_entries": 42, "sha256": "fd669b40f52d9346f7b91a0263e7335bb2b24eaef14ff932c80c2ac4dcb3b965", "spot_checks": 24, "volume": 1053}

@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/17_strider_bath.json schematics/17_strider_bath.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/17_strider_bath.json",
+  "schematic": "schematics/17_strider_bath.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    9,
+    8,
+    11
+  ],
+  "volume": 792,
+  "comparedVoxels": 792,
+  "expectedNonAir": 232,
+  "parserDerivedAir": 560,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 10,
+  "spotChecks": 17,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

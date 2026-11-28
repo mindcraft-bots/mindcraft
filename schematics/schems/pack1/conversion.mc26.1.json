@@ -1,0 +1,723 @@
+{
+  "entries": [
+    {
+      "air": 78,
+      "block_data_bytes": 168,
+      "blueprint": "01_wardrobe_nether_portal.json",
+      "bytes": 506,
+      "changes": [],
+      "dimensions": [
+        6,
+        7,
+        4
+      ],
+      "non_air": 90,
+      "palette_entries": 16,
+      "schematic": "01_wardrobe_nether_portal.mc26.1.schem",
+      "sha256": "3d567e812e6f13fc5d46fa26c3b22fa59db6bfebf365331ae96d2e43a6b36786",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 21,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 168
+    },
+    {
+      "air": 1090,
+      "block_data_bytes": 1530,
+      "blueprint": "02_bee_hot_air_balloon.json",
+      "bytes": 765,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=y,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=y,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        10,
+        17,
+        9
+      ],
+      "non_air": 440,
+      "palette_entries": 25,
+      "schematic": "02_bee_hot_air_balloon.mc26.1.schem",
+      "sha256": "0f7945a43f00d7e8a417de1e66f9db2da06e2fdd7fa6d474147c8cc3c0583f1a",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 18,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "validation": "STRICT_VALIDATED",
+      "volume": 1530
+    },
+    {
+      "air": 544,
+      "block_data_bytes": 960,
+      "blueprint": "02_enderman_hot_air_balloon.json",
+      "bytes": 683,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=y,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=y,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        8,
+        15,
+        8
+      ],
+      "non_air": 416,
+      "palette_entries": 23,
+      "schematic": "02_enderman_hot_air_balloon.mc26.1.schem",
+      "sha256": "0b3a9ae241b213f19a408162d632fa47891ed9c07a392be2f892662acd887c96",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 16,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 960
+    },
+    {
+      "air": 652,
+      "block_data_bytes": 1080,
+      "blueprint": "02_pig_hot_air_balloon.json",
+      "bytes": 718,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=y,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=y,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        8,
+        15,
+        9
+      ],
+      "non_air": 428,
+      "palette_entries": 24,
+      "schematic": "02_pig_hot_air_balloon.mc26.1.schem",
+      "sha256": "3e8c87ab84e763000a70ad05827c413aa8760e3d779290138b03f24972d932e0",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 17,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1080
+    },
+    {
+      "air": 4712,
+      "block_data_bytes": 5814,
+      "blueprint": "03_big_red_barn.json",
+      "bytes": 948,
+      "changes": [],
+      "dimensions": [
+        18,
+        17,
+        19
+      ],
+      "non_air": 1102,
+      "palette_entries": 26,
+      "schematic": "03_big_red_barn.mc26.1.schem",
+      "sha256": "76043eb727483c907abe77d8ab450021717b98ffeb0cdbe21a1ae3f4cc3038d3",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 16,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 5814
+    },
+    {
+      "air": 1247,
+      "block_data_bytes": 1863,
+      "blueprint": "03_storage_silo.json",
+      "bytes": 499,
+      "changes": [],
+      "dimensions": [
+        9,
+        23,
+        9
+      ],
+      "non_air": 616,
+      "palette_entries": 14,
+      "schematic": "03_storage_silo.mc26.1.schem",
+      "sha256": "e754a6b77a1b2428ace0e423b355e4b05dc914324c5edec3b3cf712804796a0c",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 14,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1863
+    },
+    {
+      "air": 6892,
+      "block_data_bytes": 9360,
+      "blueprint": "04_pagoda.json",
+      "bytes": 1416,
+      "changes": [],
+      "dimensions": [
+        15,
+        39,
+        16
+      ],
+      "non_air": 2468,
+      "palette_entries": 41,
+      "schematic": "04_pagoda.mc26.1.schem",
+      "sha256": "979c30ed434a7660c581377409530d4210ea26fc2e3fda95f89ffda3d7312791",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 19,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 9360
+    },
+    {
+      "air": 1144,
+      "block_data_bytes": 1428,
+      "blueprint": "05_allay_statue.json",
+      "bytes": 510,
+      "changes": [],
+      "dimensions": [
+        17,
+        14,
+        6
+      ],
+      "non_air": 284,
+      "palette_entries": 13,
+      "schematic": "05_allay_statue.mc26.1.schem",
+      "sha256": "54b4a01062670205f597a6d34c4666dcc5874309246174cecad4e0a8c68dd5e7",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 23,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1428
+    },
+    {
+      "air": 607,
+      "block_data_bytes": 1053,
+      "blueprint": "06_wild_west_jail.json",
+      "bytes": 1021,
+      "changes": [],
+      "dimensions": [
+        13,
+        9,
+        9
+      ],
+      "non_air": 446,
+      "palette_entries": 42,
+      "schematic": "06_wild_west_jail.mc26.1.schem",
+      "sha256": "9b7886b85bde7253972b17b54568d41c6c4f485598dca1113299b7f4dd261d5a",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 24,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1053
+    },
+    {
+      "air": 2834,
+      "block_data_bytes": 4056,
+      "blueprint": "07_secret_island_base.json",
+      "bytes": 969,
+      "changes": [],
+      "dimensions": [
+        13,
+        24,
+        13
+      ],
+      "non_air": 1222,
+      "palette_entries": 32,
+      "schematic": "07_secret_island_base.mc26.1.schem",
+      "sha256": "4c34afa2290bc721e74a0f6e168894328b688514c92e685e3d216d75e48cc486",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 29,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4056
+    },
+    {
+      "air": 3441,
+      "block_data_bytes": 4560,
+      "blueprint": "08_greenhouse.json",
+      "bytes": 1271,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=y,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=y,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        15,
+        16,
+        19
+      ],
+      "non_air": 1119,
+      "palette_entries": 38,
+      "schematic": "08_greenhouse.mc26.1.schem",
+      "sha256": "7489e183a9b3d98d874bedbca99a07cb4c2dec8bfa0ba31639fd3930948dba07",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 25,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4560
+    },
+    {
+      "air": 3383,
+      "block_data_bytes": 4576,
+      "blueprint": "09_river_steamboat.json",
+      "bytes": 1219,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=x,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=x,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        13,
+        16,
+        22
+      ],
+      "non_air": 1193,
+      "palette_entries": 34,
+      "schematic": "09_river_steamboat.mc26.1.schem",
+      "sha256": "bdecb70cf012d6ca18c96f5fdf17b91dd14a503d9de88fe4843c7133a4f7635b",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 29,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4576
+    },
+    {
+      "air": 688,
+      "block_data_bytes": 1344,
+      "blueprint": "10_pachinko_parkour.json",
+      "bytes": 754,
+      "changes": [],
+      "dimensions": [
+        14,
+        16,
+        6
+      ],
+      "non_air": 656,
+      "palette_entries": 20,
+      "schematic": "10_pachinko_parkour.mc26.1.schem",
+      "sha256": "65968f96875a6616f49dd810b9292c8b722056546fe48b05e18a90bdf74fc5b6",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 30,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1344
+    },
+    {
+      "air": 567,
+      "block_data_bytes": 936,
+      "blueprint": "11_grandstand.json",
+      "bytes": 432,
+      "changes": [],
+      "dimensions": [
+        13,
+        8,
+        9
+      ],
+      "non_air": 369,
+      "palette_entries": 9,
+      "schematic": "11_grandstand.mc26.1.schem",
+      "sha256": "956aa59c92488a75dcf77879b20cfa8ac5f4367930513865d993aa91ce2ba6ff",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 14,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 936
+    },
+    {
+      "air": 0,
+      "block_data_bytes": 576,
+      "blueprint": "11_hairpin.json",
+      "bytes": 305,
+      "changes": [],
+      "dimensions": [
+        24,
+        2,
+        12
+      ],
+      "non_air": 576,
+      "palette_entries": 6,
+      "schematic": "11_hairpin.mc26.1.schem",
+      "sha256": "d421133c0ec5c3c35ce8402721c7a2bb86adea1bfd426ed2824f4acc0bbb111f",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 7,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 576
+    },
+    {
+      "air": 60,
+      "block_data_bytes": 135,
+      "blueprint": "11_safety_fence.json",
+      "bytes": 301,
+      "changes": [],
+      "dimensions": [
+        9,
+        5,
+        3
+      ],
+      "non_air": 75,
+      "palette_entries": 7,
+      "schematic": "11_safety_fence.mc26.1.schem",
+      "sha256": "f855f444abeb051dd5c45639ef89594588175aa9ead6033c5b1e28b7aea51550",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 7,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 135
+    },
+    {
+      "air": 663,
+      "block_data_bytes": 847,
+      "blueprint": "11_starting_gate.json",
+      "bytes": 589,
+      "changes": [],
+      "dimensions": [
+        11,
+        11,
+        7
+      ],
+      "non_air": 184,
+      "palette_entries": 18,
+      "schematic": "11_starting_gate.mc26.1.schem",
+      "sha256": "a737c88ef84957451c926a0e69a8077343d6eac9a8b82772caf13f81dc7516c4",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 13,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 847
+    },
+    {
+      "air": 165,
+      "block_data_bytes": 513,
+      "blueprint": "11_starting_grid.json",
+      "bytes": 314,
+      "changes": [],
+      "dimensions": [
+        9,
+        3,
+        19
+      ],
+      "non_air": 348,
+      "palette_entries": 6,
+      "schematic": "11_starting_grid.mc26.1.schem",
+      "sha256": "ffc6784f7ccc93c8f6c57e6d2b508b9ea87f37e3b3335ceeb31c1b23aa7dbacd",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 8,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 513
+    },
+    {
+      "air": 0,
+      "block_data_bytes": 288,
+      "blueprint": "11_turn.json",
+      "bytes": 278,
+      "changes": [],
+      "dimensions": [
+        12,
+        2,
+        12
+      ],
+      "non_air": 288,
+      "palette_entries": 6,
+      "schematic": "11_turn.mc26.1.schem",
+      "sha256": "c5c777c73b1ef370237c5250b9b55d895ca5faa9c8333a0813116f27c365bd7e",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 6,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 288
+    },
+    {
+      "air": 3691,
+      "block_data_bytes": 4563,
+      "blueprint": "12_scouting_tower.json",
+      "bytes": 1108,
+      "changes": [],
+      "dimensions": [
+        13,
+        27,
+        13
+      ],
+      "non_air": 872,
+      "palette_entries": 36,
+      "schematic": "12_scouting_tower.mc26.1.schem",
+      "sha256": "c9f0d50f96318113e68ce805dd2dad58f8ff93c9456a9230a06de3324364deee",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 25,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4563
+    },
+    {
+      "air": 2481,
+      "block_data_bytes": 5120,
+      "blueprint": "13_skull_cave.json",
+      "bytes": 917,
+      "changes": [],
+      "dimensions": [
+        20,
+        16,
+        16
+      ],
+      "non_air": 2639,
+      "palette_entries": 23,
+      "schematic": "13_skull_cave.mc26.1.schem",
+      "sha256": "7e5908de8db1aa06454a81e375e2eb5b8ce0a1ce4a8ebf5b572c8ea1ce089a08",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 32,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 5120
+    },
+    {
+      "air": 737,
+      "block_data_bytes": 1200,
+      "blueprint": "14_school_monster_bus.json",
+      "bytes": 922,
+      "changes": [],
+      "dimensions": [
+        8,
+        10,
+        15
+      ],
+      "non_air": 463,
+      "palette_entries": 35,
+      "schematic": "14_school_monster_bus.mc26.1.schem",
+      "sha256": "772accc43f5a240fecdac64681e4d57e20f1b6f2a118f32dd52d39f5f15237d8",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 37,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 1200
+    },
+    {
+      "air": 2761,
+      "block_data_bytes": 3705,
+      "blueprint": "15_potion_factory.json",
+      "bytes": 1257,
+      "changes": [],
+      "dimensions": [
+        19,
+        13,
+        15
+      ],
+      "non_air": 944,
+      "palette_entries": 44,
+      "schematic": "15_potion_factory.mc26.1.schem",
+      "sha256": "e5d872238abed2a0bd66930be4e1807cba8b42223f41d2cce2fc7f992e6b5045",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 38,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 3705
+    },
+    {
+      "air": 245,
+      "block_data_bytes": 600,
+      "blueprint": "16_wishing_well.json",
+      "bytes": 730,
+      "changes": [],
+      "dimensions": [
+        5,
+        15,
+        8
+      ],
+      "non_air": 355,
+      "palette_entries": 21,
+      "schematic": "16_wishing_well.mc26.1.schem",
+      "sha256": "f12f2fe37407843c47dfc122d18b1fef2d5715a27d2b134d1420b23e660333b7",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 30,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 600
+    },
+    {
+      "air": 3630,
+      "block_data_bytes": 4913,
+      "blueprint": "17_carousel.json",
+      "bytes": 1252,
+      "changes": [],
+      "dimensions": [
+        17,
+        17,
+        17
+      ],
+      "non_air": 1283,
+      "palette_entries": 41,
+      "schematic": "17_carousel.mc26.1.schem",
+      "sha256": "7d8d3940632b83ee959390bb06360d911ca2ed38166257fd64b4c1948870a61f",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 28,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4913
+    },
+    {
+      "air": 560,
+      "block_data_bytes": 792,
+      "blueprint": "17_strider_bath.json",
+      "bytes": 443,
+      "changes": [],
+      "dimensions": [
+        9,
+        8,
+        11
+      ],
+      "non_air": 232,
+      "palette_entries": 10,
+      "schematic": "17_strider_bath.mc26.1.schem",
+      "sha256": "b88be8953b9dc0cd24e1da6d820abe6000e8201652be286e067e9db5672e51eb",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 17,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 792
+    },
+    {
+      "air": 94,
+      "block_data_bytes": 180,
+      "blueprint": "18_easter_island_head.json",
+      "bytes": 325,
+      "changes": [],
+      "dimensions": [
+        5,
+        9,
+        4
+      ],
+      "non_air": 86,
+      "palette_entries": 6,
+      "schematic": "18_easter_island_head.mc26.1.schem",
+      "sha256": "24a2fd74446907add98837ae47b772f0f0faad6530aff99eafccd88744d0219f",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 7,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 180
+    },
+    {
+      "air": 3410,
+      "block_data_bytes": 4719,
+      "blueprint": "18_giant_grandfather_clock.json",
+      "bytes": 1446,
+      "changes": [
+        {
+          "from": "minecraft:chain[axis=x,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=x,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        },
+        {
+          "from": "minecraft:chain[axis=y,waterlogged=false]",
+          "to": "minecraft:iron_chain[axis=y,waterlogged=false]",
+          "via": [
+            "minecraft:iron_chain"
+          ]
+        }
+      ],
+      "dimensions": [
+        13,
+        33,
+        11
+      ],
+      "non_air": 1309,
+      "palette_entries": 52,
+      "schematic": "18_giant_grandfather_clock.mc26.1.schem",
+      "sha256": "9305fec2a63ea06cfdc8d7172b20159cc7206116f1bee9817062d85c688d8317",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 19,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4719
+    },
+    {
+      "air": 541,
+      "block_data_bytes": 780,
+      "blueprint": "19_hot_spring_chalet.json",
+      "bytes": 475,
+      "changes": [],
+      "dimensions": [
+        10,
+        6,
+        13
+      ],
+      "non_air": 239,
+      "palette_entries": 13,
+      "schematic": "19_hot_spring_chalet.mc26.1.schem",
+      "sha256": "e9df05eaba25b27b976d001e9527c7b4c1dbe3a0188d1ad6f0ad40de61b413e9",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 14,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 780
+    },
+    {
+      "air": 2878,
+      "block_data_bytes": 4048,
+      "blueprint": "19_thermal_springs.json",
+      "bytes": 1029,
+      "changes": [],
+      "dimensions": [
+        23,
+        8,
+        22
+      ],
+      "non_air": 1170,
+      "palette_entries": 23,
+      "schematic": "19_thermal_springs.mc26.1.schem",
+      "sha256": "e6338a7523f9d492f0ef3f72383dcc457e94a6d32ed344b5de2731395e84658f",
+      "sourceDataVersion": 4189,
+      "sourceVersion": "1.21.4",
+      "spot_checks": 20,
+      "targetDataVersion": 4786,
+      "targetVersion": "26.1",
+      "volume": 4048
+    }
+  ],
+  "pack": "pack1",
+  "schemaVersion": 1,
+  "targetVersion": "26.1"
+}

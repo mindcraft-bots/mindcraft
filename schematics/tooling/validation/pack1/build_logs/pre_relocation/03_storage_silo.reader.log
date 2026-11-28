@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/03_storage_silo.json schematics/03_storage_silo.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/03_storage_silo.json",
+  "schematic": "schematics/03_storage_silo.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    9,
+    23,
+    9
+  ],
+  "volume": 1863,
+  "comparedVoxels": 1863,
+  "expectedNonAir": 616,
+  "parserDerivedAir": 1247,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 14,
+  "spotChecks": 14,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

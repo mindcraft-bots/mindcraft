@@ -1,0 +1,47 @@
+{
+  "single": {
+    "type": "schematic",
+    "agent_count": 1,
+    "human_count": 0,
+    "timeout": 120,
+    "schem_path": "ci/single.mc1.21.4.schem",
+    "origin": {
+      "x": 2,
+      "y": 80,
+      "z": 0
+    },
+    "orientation": "north",
+    "prepare_test_platform": true,
+    "goal": "Build the specified fixture. CI_BUILD single 2 80 0 north"
+  },
+  "pattern_north": {
+    "type": "schematic",
+    "agent_count": 1,
+    "human_count": 0,
+    "timeout": 120,
+    "schem_path": "ci/pattern.mc1.21.4.schem",
+    "origin": {
+      "x": 102,
+      "y": 80,
+      "z": 0
+    },
+    "orientation": "north",
+    "prepare_test_platform": true,
+    "goal": "Build the specified fixture. CI_BUILD pattern 102 80 0 north"
+  },
+  "pattern_east": {
+    "type": "schematic",
+    "agent_count": 1,
+    "human_count": 0,
+    "timeout": 120,
+    "schem_path": "ci/pattern.mc1.21.4.schem",
+    "origin": {
+      "x": 202,
+      "y": 80,
+      "z": 0
+    },
+    "orientation": "east",
+    "prepare_test_platform": true,
+    "goal": "Build the specified fixture. CI_BUILD pattern 202 80 0 east"
+  }
+}

@@ -1,0 +1,3 @@
+$ python3 schematics/compile_blueprint.py compile schematics/blueprints/13_skull_cave.json /tmp/schematic-audit-13_skull_cave-371jflvv/13_skull_cave.schem
+[exit code: 0]
+{"air": 2481, "block_data_bytes": 5120, "blueprint": "schematics/blueprints/13_skull_cave.json", "bytes": 915, "compiled": "/tmp/schematic-audit-13_skull_cave-371jflvv/13_skull_cave.schem", "dimensions": [20, 16, 16], "non_air": 2639, "palette_entries": 23, "sha256": "2305ac10ead58f88a1f7d21986c7248a7ecd30a610e21b58660556a8142c48d1", "spot_checks": 32, "volume": 5120}

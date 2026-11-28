@@ -90,7 +90,11 @@ class MindServerProxy {
                 if (response.error) {
                     return reject(new Error(response.error));
                 }
-                setSettings(response.settings);
+                try {
+                    setSettings(response.settings);
+                } catch (error) {
+                    return reject(error);
+                }
                 this.socket.emit('connect-agent-process', name);
                 resolve();
             });

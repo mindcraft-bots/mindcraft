@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Deterministic stand-in for Compose, invoked by the real shell trap."""
+import os
+from pathlib import Path
+import signal
+import sys
+import time
+
+directory = Path(os.environ['TMPDIR'])
+if 'up' in sys.argv:
+    def stop(signum, _frame):
+        (directory / 'up-signal').write_text(signal.Signals(signum).name)
+        sys.exit(128 + signum)
+    signal.signal(signal.SIGINT, stop)
+    signal.signal(signal.SIGTERM, stop)
+    (directory / 'group-id').write_text(str(os.getpgrp()))
+    (directory / 'up-ready').write_text(os.environ['COMPOSE_PROJECT_NAME'])
+    while True:
+        time.sleep(1)
+elif 'down' in sys.argv:
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    (directory / 'down-start').write_text(str(os.getpid()))
+    if os.environ['FIXTURE_CLEANUP'] == 'stuck':
+        while True:
+            time.sleep(1)
+    time.sleep(6.2)
+    (directory / 'down-done').write_text(os.environ['COMPOSE_PROJECT_NAME'])
+else:
+    sys.exit(2)

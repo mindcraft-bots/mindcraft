@@ -1,5 +1,6 @@
 import { cosineSimilarity } from './math.js';
 import { stringifyTurns, wordOverlapScore } from './text.js';
+import settings from '../agent/settings.js';
 
 export class Examples {
     constructor(model, select_num=2) {
@@ -19,6 +20,9 @@ export class Examples {
     }
 
     async load(examples) {
+        if (settings.allow_insecure_coding !== true) {
+            examples = examples.filter(turns => !turns.some(turn => /!newAction\b/.test(turn.content)));
+        }
         this.examples = examples;
         if (!this.model) return; // Early return if no embedding model
         

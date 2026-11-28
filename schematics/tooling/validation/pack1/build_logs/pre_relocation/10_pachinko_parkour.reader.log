@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/10_pachinko_parkour.json schematics/10_pachinko_parkour.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/10_pachinko_parkour.json",
+  "schematic": "schematics/10_pachinko_parkour.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    14,
+    16,
+    6
+  ],
+  "volume": 1344,
+  "comparedVoxels": 1344,
+  "expectedNonAir": 656,
+  "parserDerivedAir": 688,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 20,
+  "spotChecks": 30,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

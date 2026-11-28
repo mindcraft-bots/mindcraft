@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "blocks": {
+    "minecraft:chain": { "introduced": { "release": "1.16", "dataVersion": 2566 } },
+    "minecraft:iron_chain": { "introduced": { "release": "1.21.9", "dataVersion": 4554 } },
+    "minecraft:grass": { "introduced": { "release": "1.13", "dataVersion": 1519 } },
+    "minecraft:short_grass": { "introduced": { "release": "1.20.3", "dataVersion": 3698 } },
+    "minecraft:grass_path": { "introduced": { "release": "1.13", "dataVersion": 1519 } },
+    "minecraft:dirt_path": { "introduced": { "release": "1.17", "dataVersion": 2724 } }
+  },
+  "alternatives": [
+    {
+      "from": "minecraft:chain", "to": "minecraft:iron_chain",
+      "target": { "min": { "release": "1.21.9", "dataVersion": 4554 } },
+      "properties": { "rename": {}, "values": {} }
+    },
+    {
+      "from": "minecraft:iron_chain", "to": "minecraft:chain",
+      "target": { "min": { "release": "1.16", "dataVersion": 2566 }, "max": { "release": "1.21.8", "dataVersion": 4440 } },
+      "properties": { "rename": {}, "values": {} }
+    },
+    {
+      "from": "minecraft:grass", "to": "minecraft:short_grass",
+      "source": { "min": { "release": "1.13", "dataVersion": 1519 }, "max": { "release": "1.20.2", "dataVersion": 3578 } },
+      "target": { "min": { "release": "1.20.3", "dataVersion": 3698 }, "max": { "release": "26.3", "dataVersion": 5023 } },
+      "properties": { "rename": {}, "values": {} },
+      "evidence": { "claim": "Direct placed-block ID rename; no gameplay equivalence claimed.", "source": "https://minecraft.wiki/w/Java_Edition_1.20.3#Blocks", "sourceAttribution": "Minecraft Wiki contributors, CC BY-NC-SA 3.0", "registry": "Pinned Java release profiles and sources.lock.json; identifier transition 1.20.2 to 1.20.3, official full reports establish stateless schemas and legal combinations for these IDs wherever present across all 51 release profiles." }
+    },
+    {
+      "from": "minecraft:short_grass", "to": "minecraft:grass",
+      "source": { "min": { "release": "1.20.3", "dataVersion": 3698 }, "max": { "release": "26.3", "dataVersion": 5023 } },
+      "target": { "min": { "release": "1.13", "dataVersion": 1519 }, "max": { "release": "1.20.2", "dataVersion": 3578 } },
+      "properties": { "rename": {}, "values": {} },
+      "evidence": { "claim": "Reverse of direct placed-block ID rename; no gameplay equivalence claimed.", "source": "https://minecraft.wiki/w/Java_Edition_1.20.3#Blocks", "sourceAttribution": "Minecraft Wiki contributors, CC BY-NC-SA 3.0", "registry": "Pinned Java release profiles and sources.lock.json; identifier transition 1.20.2 to 1.20.3, official full reports establish stateless schemas and legal combinations for these IDs wherever present across all 51 release profiles." }
+    },
+    {
+      "from": "minecraft:grass_path", "to": "minecraft:dirt_path",
+      "source": { "min": { "release": "1.13", "dataVersion": 1519 }, "max": { "release": "1.16.5", "dataVersion": 2586 } },
+      "target": { "min": { "release": "1.17", "dataVersion": 2724 }, "max": { "release": "26.3", "dataVersion": 5023 } },
+      "properties": { "rename": {}, "values": {} },
+      "evidence": { "claim": "Direct placed-block ID rename; no gameplay equivalence claimed.", "source": "https://minecraft.wiki/w/Java_Edition_1.17#Blocks", "sourceAttribution": "Minecraft Wiki contributors, CC BY-NC-SA 3.0", "registry": "Pinned Java release profiles and sources.lock.json; identifier transition 1.16.5 to 1.17, official full reports establish stateless schemas and legal combinations for these IDs wherever present across all 51 release profiles." }
+    },
+    {
+      "from": "minecraft:dirt_path", "to": "minecraft:grass_path",
+      "source": { "min": { "release": "1.17", "dataVersion": 2724 }, "max": { "release": "26.3", "dataVersion": 5023 } },
+      "target": { "min": { "release": "1.13", "dataVersion": 1519 }, "max": { "release": "1.16.5", "dataVersion": 2586 } },
+      "properties": { "rename": {}, "values": {} },
+      "evidence": { "claim": "Reverse of direct placed-block ID rename; no gameplay equivalence claimed.", "source": "https://minecraft.wiki/w/Java_Edition_1.17#Blocks", "sourceAttribution": "Minecraft Wiki contributors, CC BY-NC-SA 3.0", "registry": "Pinned Java release profiles and sources.lock.json; identifier transition 1.16.5 to 1.17, official full reports establish stateless schemas and legal combinations for these IDs wherever present across all 51 release profiles." }
+    }
+  ]
+}

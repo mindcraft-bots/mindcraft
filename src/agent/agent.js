@@ -1,10 +1,11 @@
+import process from 'node:process';
 import { History } from './history.js';
 import { Coder } from './coder.js';
 import { VisionInterpreter } from './vision/vision_interpreter.js';
 import { Prompter } from '../models/prompter.js';
 import { initModes } from './modes.js';
 import { initBot } from '../utils/mcdata.js';
-import { containsCommand, commandExists, executeCommand, truncCommandMessage, isAction, blacklistCommands } from './commands/index.js';
+import { containsCommand, commandExists, executeCommand, parseCommandMessage, truncCommandMessage, isAction, blacklistCommands } from './commands/index.js';
 import { ActionManager } from './action_manager.js';
 import { NPCContoller } from './npc/controller.js';
 import { MemoryBank } from './memory_bank.js';
@@ -14,9 +15,148 @@ import { handleTranslation, handleEnglishTranslation } from '../utils/translator
 import { addBrowserViewer } from './vision/browser_viewer.js';
 import { serverProxy, sendOutputToServer } from './mindserver_proxy.js';
 import settings from './settings.js';
+import { isTrustedCommandSender } from '../utils/command_trust.js';
 import { Task } from './tasks/tasks.js';
 import { speak } from './speak.js';
 import { log, validateNameFormat, handleDisconnection } from './connection_handler.js';
+import { dispatchAddressedSchematicRequest, parseChatAddress, parseAddressedChatCommand, redactCommandFragments } from './schematic_request.js';
+import { resolvePlacementOptions } from '../utils/schematic/placement_options.js';
+import { buildTrustedDestructiveSchematic, continueSchematic } from '../utils/schematic/build_schematic.js';
+import { wasBotExposedToGeneratedCode } from '../utils/schematic/unsafe_code_history.js';
+import { authenticatedChatMessage, authenticatedPlayerName } from '../utils/authenticated_chat.js';
+
+// Capabilities require independent authenticated player-message metadata below.
+// Neither a sender label nor an object supplied to handleMessage grants one.
+const humanIngress = new WeakMap();
+// Only this module can create continuation grants. The builder can check and
+// consume them, but neither an exported function nor request data can mint one.
+const continuationGrants = new WeakMap();
+
+export function checkHumanContinuationGrant(grant, bot, filename, x, y, z, options, allowNonvalidated, strictValidation, claim = false) {
+    try {
+        const record = grant && continuationGrants.get(grant);
+        if (!record || record.bot !== bot || record.filename !== filename || record.x !== x || record.y !== y || record.z !== z
+            || record.options !== JSON.stringify(options) || record.allowNonvalidated !== allowNonvalidated
+            || record.strictValidation !== strictValidation || (claim ? record.claimed : !record.claimed)
+            || !record.current()) return false;
+        if (claim) record.claimed = true;
+        return true;
+    } catch { return false; }
+}
+
+function continuationIngressAllowed(agent, source, capability) {
+    const ingress = capability && humanIngress.get(capability);
+    const peers = [...(settings.known_bot_peers || []), ...convoManager.getInGameAgents()];
+    return settings.allow_insecure_coding !== true && !wasBotExposedToGeneratedCode(agent.bot)
+        && ingress?.agent === agent && ingress.source === source
+        && authenticatedPlayerName(agent.bot, ingress.sender, ingress.client) === source
+        && source !== 'system' && source !== agent.name && !peers.includes(source) && !convoManager.isOtherAgent(source)
+        && Array.isArray(settings.trusted_command_senders) && isTrustedCommandSender(settings.trusted_command_senders, source)
+        && Array.isArray(settings.only_chat_with) && (!settings.only_chat_with.length || settings.only_chat_with.includes(source));
+}
+
+async function executeHumanContinuation(agent, source, capability, message) {
+    if (!continuationIngressAllowed(agent, source, capability))
+        return 'Continuation requires an explicitly trusted authenticated human player and insecure code generation disabled; no build was started.';
+    const prepared = prepareHumanBuild(agent, source, capability, message);
+    if (prepared.error || prepared.options.mode !== 'delicate') return prepared.error || 'Continuation requires delicate mode.';
+    const result = await agent.actions.runAction('action:buildSchematic', async () => {
+        const current = prepareHumanBuild(agent, source, capability, message);
+        if (!continuationIngressAllowed(agent, source, capability) || current.error
+            || JSON.stringify(current.options) !== JSON.stringify(prepared.options)) {
+            agent.bot.output += 'Continuation authorization or settings changed; no build was started.\n';
+            return;
+        }
+        const allowNonvalidated = settings.allow_nonvalidated_schematic_builds === true;
+        const strictValidation = settings.require_strict_schematic_validation === true;
+        const bot = agent.bot;
+        const grant = {};
+        continuationGrants.set(grant, {
+            bot, filename: current.filename, x: current.x, y: current.y, z: current.z,
+            options: JSON.stringify(current.options), allowNonvalidated, strictValidation, claimed: false,
+            current: () => {
+                const latest = prepareHumanBuild(agent, source, capability, message);
+                return agent.bot === bot && continuationIngressAllowed(agent, source, capability) && !latest.error
+                    && latest.filename === current.filename && latest.x === current.x && latest.y === current.y && latest.z === current.z
+                    && JSON.stringify(latest.options) === JSON.stringify(current.options)
+                    && (settings.allow_nonvalidated_schematic_builds === true) === allowNonvalidated
+                    && (settings.require_strict_schematic_validation === true) === strictValidation
+                    && !agent.blocked_actions?.includes('!buildSchematic') && commandExists('!buildSchematic');
+            },
+        });
+        let success;
+        try {
+            success = await continueSchematic(bot, current.filename, current.x, current.y, current.z, {
+                placementOptions: current.options,
+                allowNonvalidatedSchematic: allowNonvalidated,
+                requireStrictSchematicValidation: strictValidation,
+                continuationGrant: grant,
+                writeLog: text => { bot.output += `${text}\n`; },
+            });
+        } finally { continuationGrants.delete(grant); }
+        agent.bot.output += success ? 'Schematic continuation completed and verified.\n' : 'Schematic continuation did not complete; see details above.\n';
+    }, { timeout: -1, resume: false });
+    if (result?.interrupted) return 'Schematic continuation interrupted; it will not automatically resume. Earlier confirmed edits are not rolled back.';
+    return result?.message || 'Schematic continuation stopped without a status report.';
+}
+
+function prepareHumanBuild(agent, source, capability, message) {
+    const parsed = parseCommandMessage(message);
+    if (typeof parsed === 'string') return { error: parsed };
+    if (parsed.commandName !== '!buildSchematic') return { error: 'Invalid schematic command; no build was started.' };
+    try {
+        const [filename, x, y, z, mode, radius, threshold, orientation, strategy, step, policy, bisectDepth] = parsed.args;
+        const options = resolvePlacementOptions(settings, { mode, radius, threshold, orientation, strategy, step, policy, bisectDepth });
+        if (options.mode === 'destructive') {
+            // Generated code receives the mutable bot, including its event emitter.
+            // It can forge native chat events; do not treat them as human ingress
+            // while that execution facility is enabled.
+            if (settings.allow_insecure_coding === true || wasBotExposedToGeneratedCode(agent.bot))
+                return { error: 'Destructive schematic mode requires insecure code generation to be disabled and a bot not previously exposed to generated code; restart after disabling it. No build was started.' };
+            const ingress = capability && humanIngress.get(capability);
+            if (!ingress || ingress.agent !== agent || ingress.source !== source
+                || authenticatedPlayerName(agent.bot, ingress.sender, ingress.client) !== source) {
+                console.warn('[DestructiveAuthorization] denied: authenticated player-message provenance unavailable or changed');
+                return { error: 'Destructive schematic mode requires an explicitly listed human sender with authenticated player-message provenance from supported public chat; no build was started.' };
+            }
+            const peers = [...(settings.known_bot_peers || []), ...convoManager.getInGameAgents()];
+            if (source === 'system' || source === agent.name || peers.includes(source) || convoManager.isOtherAgent(source)
+                || !Array.isArray(settings.trusted_command_senders)
+                || !isTrustedCommandSender(settings.trusted_command_senders, source)
+                || !Array.isArray(settings.only_chat_with)
+                || (settings.only_chat_with.length > 0 && !settings.only_chat_with.includes(source))) {
+                return { error: 'Destructive schematic mode requires an explicitly listed human sender through authenticated public player chat; no build was started.' };
+            }
+            if (agent.blocked_actions?.includes('!buildSchematic') || !commandExists('!buildSchematic'))
+                return { error: '!buildSchematic is unavailable or blocked by this agent configuration.' };
+        }
+        return { filename, x, y, z, options };
+    } catch (error) {
+        return { error: `Schematic placement rejected: ${error.message}; no build was started.` };
+    }
+}
+
+async function executeHumanBuild(agent, source, capability, message) {
+    const prepared = prepareHumanBuild(agent, source, capability, message);
+    if (prepared.error) return prepared.error;
+    if (prepared.options.mode !== 'destructive') return executeCommand(agent, message);
+    const result = await agent.actions.runAction('action:buildSchematic', async () => {
+        const current = prepareHumanBuild(agent, source, capability, message);
+        if (current.error || JSON.stringify(current.options) !== JSON.stringify(prepared.options)) {
+            agent.bot.output += `${current.error || 'Schematic authorization or settings changed; no build was started.'}\n`;
+            return;
+        }
+        const success = await buildTrustedDestructiveSchematic(agent.bot, current.filename, current.x, current.y, current.z, {
+            placementOptions: current.options,
+            allowNonvalidatedSchematic: settings.allow_nonvalidated_schematic_builds === true,
+            requireStrictSchematicValidation: settings.require_strict_schematic_validation === true,
+            writeLog: text => { agent.bot.output += `${text}\n`; },
+        });
+        agent.bot.output += success ? 'Destructive schematic build completed and verified.\n' : 'Destructive schematic build did not complete; see details above.\n';
+    }, { timeout: -1, resume: false });
+    if (result?.interrupted) return 'Destructive schematic build interrupted; it will not automatically resume. Earlier confirmed edits are not rolled back.';
+    return result?.message || 'Destructive schematic build stopped without a status report.';
+}
 
 export class Agent {
     async start(load_mem=false, init_message=null, count_id=0) {
@@ -122,7 +262,9 @@ export class Agent {
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
               
-                if (!load_mem) {
+                if (settings.task && this.task.task_type === 'schematic') {
+                    await this.task.initBotTask();
+                } else if (!load_mem) {
                     if (settings.task) {
                         this.task.initBotTask();
                         this.task.setAgentGoal();
@@ -139,7 +281,7 @@ export class Agent {
 
             } catch (error) {
                 console.error('Error in spawn event:', error);
-                process.exit(0);
+                process.exit(settings.task?.type === 'schematic' ? 2 : 0);
             }
         });
     }
@@ -154,9 +296,31 @@ export class Agent {
             "Gamerule "
         ];
         
-        const respondFunc = async (username, message) => {
+        const playerMessages = new WeakMap();
+        let playerMessage = null;
+        this.bot._client?.prependListener?.('playerChat', data => {
+            playerMessage = authenticatedChatMessage(this.bot, data);
+            const current = playerMessage;
+            queueMicrotask(() => { if (playerMessage === current) playerMessage = null; });
+        });
+        this.bot.on('message', (jsonMessage, position, sender, verified) => {
+            const identity = playerMessage;
+            playerMessage = null;
+            if (!identity || position !== 'chat' || verified !== true || sender !== identity.sender
+                || jsonMessage?.unsigned || jsonMessage?.extra?.length
+                || !Array.isArray(jsonMessage?.with) || jsonMessage.with.length !== 2
+                || jsonMessage.with[0]?.toString() !== identity.source
+                || jsonMessage.with[1]?.toString() !== identity.message) return;
+            playerMessages.set(jsonMessage, identity);
+            // Mineflayer synchronously emits its display-pattern event for this
+            // exact object. Do not retain authorization for later/replayed events.
+            queueMicrotask(() => playerMessages.delete(jsonMessage));
+        });
+        const receiveMessage = async (username, message, ingress) => {
             if (message === "") return;
             if (username === this.name) return;
+            // This source label is reserved for internal prompts, not Minecraft players.
+            if (username === 'system') return;
             if (settings.only_chat_with.length > 0 && !settings.only_chat_with.includes(username)) return;
             try {
                 if (ignore_messages.some((m) => message.startsWith(m))) return;
@@ -166,25 +330,35 @@ export class Agent {
                 console.log(this.name, 'received message from', username, ':', message);
 
                 if (convoManager.isOtherAgent(username)) {
-                    console.warn('received whisper from other bot??')
+                    console.warn('Ignoring public chat from a configured bot peer.');
+                    return;
                 }
-                else {
-                    let translation = await handleEnglishTranslation(message);
-                    this.handleMessage(username, translation);
+
+                let translation = await handleEnglishTranslation(message);
+                const capability = ingress && ingress.source === username && ingress.message === message
+                    && translation === message ? {} : null;
+                if (capability) humanIngress.set(capability, { ...ingress, agent: this });
+                // Never pass the capability through an overridable public method.
+                try {
+                    if (capability) await nativeHandleMessage.call(this, username, translation, null, capability);
+                    else await this.handleMessage(username, translation);
                 }
+                finally { if (capability) humanIngress.delete(capability); }
             } catch (error) {
                 console.error('Error handling message:', error);
             }
         }
 
-		this.respondFunc = respondFunc;
+		this.respondFunc = (username, message) => receiveMessage(username, message, null);
 
-        this.bot.on('whisper', respondFunc);
+        this.bot.on('whisper', (username, message) => receiveMessage(username, message, null));
         
-        this.bot.on('chat', (username, message) => {
+        this.bot.on('chat', (username, message, _translate, jsonMessage) => {
+            const ingress = jsonMessage && playerMessages.get(jsonMessage);
+            if (jsonMessage) playerMessages.delete(jsonMessage);
             if (serverProxy.getNumOtherAgents() > 0) return;
             // only respond to open chat messages when there are no other agents
-            respondFunc(username, message);
+            return receiveMessage(username, message, ingress);
         });
 
         // Set up auto-eat
@@ -251,7 +425,7 @@ export class Agent {
         convoManager.endAllConversations();
     }
 
-    async handleMessage(source, message, max_responses=null) {
+    async handleMessage(source, message, max_responses=null, capability=null) {
         await this.checkTaskDone();
         if (!source || !message) {
             console.warn('Received empty message from', source);
@@ -268,13 +442,53 @@ export class Agent {
 
         const self_prompt = source === 'system' || source === this.name;
         const from_other_bot = convoManager.isOtherAgent(source);
+        const commandSenders = settings.trusted_command_senders;
+        const trustedCommandSender = self_prompt || (!from_other_bot
+            && isTrustedCommandSender(commandSenders, source));
+
+        if (!self_prompt) {
+            const addressPeers = [...(settings.known_bot_peers || []), ...convoManager.getInGameAgents()];
+            const address = parseChatAddress(message, this.name, addressPeers);
+            if (address && address.addressedTo !== this.name) return true;
+            const routedSchematic = await dispatchAddressedSchematicRequest(this, source, message, {
+                agentName: this.name,
+                knownBotPeers: addressPeers,
+                trusted: trustedCommandSender,
+                checkBuild: command => prepareHumanBuild(this, source, capability, command).error,
+                executeBuild: (agent, command) => executeHumanBuild(agent, source, capability, command),
+                executeContinuation: (agent, command) => executeHumanContinuation(agent, source, capability, command),
+            });
+            if (routedSchematic) return true;
+
+            const addressedCommand = parseAddressedChatCommand(message, this.name, addressPeers);
+            if (addressedCommand) {
+                if (addressedCommand.addressedTo !== this.name) return true;
+                message = addressedCommand.command;
+            }
+        }
 
         if (!self_prompt && !from_other_bot) { // from user, check for forced commands
             const user_command_name = containsCommand(message);
             if (user_command_name) {
+                if (!message.trimStart().startsWith(user_command_name)
+                    || truncCommandMessage(message).trimEnd() !== message.trimEnd()) {
+                    await this.routeResponse(source, 'Command fragments embedded in chat are not executed. Send only a complete command, optionally addressed to this bot.');
+                    return false;
+                }
+                if (!trustedCommandSender) {
+                    await this.routeResponse(source, 'Chat commands are restricted to configured trusted command senders.');
+                    return false;
+                }
                 if (!commandExists(user_command_name)) {
                     this.routeResponse(source, `Command '${user_command_name}' does not exist.`);
                     return false;
+                }
+                if (user_command_name === '!buildSchematic') {
+                    const refusal = prepareHumanBuild(this, source, capability, message).error;
+                    if (refusal) {
+                        await this.routeResponse(source, refusal);
+                        return false;
+                    }
                 }
                 this.routeResponse(source, `*${source} used ${user_command_name.substring(1)}*`);
                 if (user_command_name === '!newAction') {
@@ -282,7 +496,11 @@ export class Agent {
                     // add the preceding message to the history to give context for newAction
                     this.history.add(source, message);
                 }
-                let execute_res = await executeCommand(this, message);
+                this.actions.cancelManagedResumeForUserCommand?.();
+                this.self_prompter.handleUserPromptedCmd(false, isAction(user_command_name));
+                let execute_res = user_command_name === '!buildSchematic'
+                    ? await executeHumanBuild(this, source, capability, message)
+                    : await executeCommand(this, message);
                 if (execute_res) 
                     this.routeResponse(source, execute_res);
                 return true;
@@ -291,6 +509,11 @@ export class Agent {
 
         if (from_other_bot)
             this.last_sender = source;
+
+        // Do not pass executable command snippets from known bot peers into inference/history.
+        if (from_other_bot && containsCommand(message)) {
+            message = message.replace(/!(\w+)(?:\([^\r\n)]*(?:\)|$))?/g, '[command fragment omitted from peer message]');
+        }
 
         // Now translate the message
         message = await handleEnglishTranslation(message);
@@ -329,7 +552,25 @@ export class Agent {
             let command_name = containsCommand(res);
 
             if (command_name) { // contains query or command
+                if (!trustedCommandSender) {
+                    await this.routeResponse(source, 'Chat commands are restricted to configured trusted command senders.');
+                    break;
+                }
+                const completeCommand = truncCommandMessage(res);
+                if (res.slice(completeCommand.length).trimStart().startsWith('(')
+                    || (command_name === '!buildSchematic' && res.slice(completeCommand.length).trim())) {
+                    this.history.add('system', 'Incomplete or malformed command arguments were not executed.');
+                    break;
+                }
                 res = truncCommandMessage(res); // everything after the command is ignored
+                if (command_name === '!buildSchematic') res = res.slice(res.indexOf(command_name));
+                if (command_name === '!buildSchematic') {
+                    const refusal = prepareHumanBuild(this, source, null, res).error;
+                    if (refusal) {
+                        await this.routeResponse(source, refusal);
+                        break;
+                    }
+                }
                 this.history.add(this.name, res);
                 
                 if (!commandExists(command_name)) {
@@ -392,7 +633,7 @@ export class Agent {
 
         if (convoManager.isOtherAgent(to_player) && convoManager.inConversation(to_player)) {
             // if we're in an ongoing conversation with the other bot, send the response to it
-            convoManager.sendToBot(to_player, message);
+            convoManager.sendToBot(to_player, redactCommandFragments(message));
         }
         else {
             // otherwise, use open chat
@@ -402,6 +643,9 @@ export class Agent {
     }
 
     async openChat(message) {
+        if ((settings.known_bot_peers || []).length > 0) {
+            message = redactCommandFragments(message);
+        }
         let to_translate = message;
         let remaining = '';
         let command_name = containsCommand(message);
@@ -541,7 +785,12 @@ export class Agent {
                 await this.history.add('system', `Task ended with score : ${res.score}`);
                 await this.history.save();
                 // await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 second for save to complete
-                console.log('Task finished:', res.message);
+                console.log('Task finished:', res.message, JSON.stringify(res));
+                if (this.task.task_type === 'schematic' && process.env.TASK_RESULT_FILE) {
+                    const { writeFileSync } = await import('node:fs');
+                    writeFileSync(process.env.TASK_RESULT_FILE, JSON.stringify({ task_id: this.task.data.task_id, ...res }));
+                }
+                if (this.task.task_type === 'schematic' && res.message !== 'Task successful') process.exit(2);
                 this.killAll();
             }
         }
@@ -551,3 +800,7 @@ export class Agent {
         serverProxy.shutdown();
     }
 }
+
+// Capture the implementation, rather than looking up a potentially replaced
+// public method while handing it the ingress capability.
+const nativeHandleMessage = Agent.prototype.handleMessage;

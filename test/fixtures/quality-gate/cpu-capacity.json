@@ -1,0 +1,63 @@
+[
+  {
+    "name": "v2 unlimited and affinity-limited cpuset",
+    "affinity": 8, "expected": 8,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "max 100000\n"}
+  },
+  {
+    "name": "v2 quota below affinity", "affinity": 12, "expected": 3,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "300000 100000\n"}
+  },
+  {
+    "name": "v2 fractional quota rounds down", "affinity": 12, "expected": 2,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "250000 100000\n"}
+  },
+  {
+    "name": "v2 sub-cpu quota retains one worker", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "50000 100000\n"}
+  },
+  {
+    "name": "v2 nested ancestor is tighter than leaf", "affinity": 12, "expected": 2,
+    "files": {"/proc/self/cgroup": "0::/parent/child\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "max 100000", "/cg/parent/cpu.max": "200000 100000", "/cg/parent/child/cpu.max": "800000 100000"}
+  },
+  {
+    "name": "v2 malformed ancestor fails closed", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "0::/child\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n", "/cg/cpu.max": "max nope", "/cg/child/cpu.max": "max 100000"}
+  },
+  {
+    "name": "v2 missing quota fails closed", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n"}
+  },
+  {
+    "name": "v1 unlimited and affinity-limited cpuset", "affinity": 4, "expected": 4,
+    "files": {"/proc/self/cgroup": "2:cpu,cpuacct:/\n", "/proc/self/mountinfo": "1 0 0:1 / /cpu rw - cgroup cgroup rw,cpu,cpuacct\n", "/cpu/cpu.cfs_quota_us": "-1", "/cpu/cpu.cfs_period_us": "100000"}
+  },
+  {
+    "name": "v1 constrained fractional quota", "affinity": 12, "expected": 2,
+    "files": {"/proc/self/cgroup": "2:cpu,cpuacct:/\n", "/proc/self/mountinfo": "1 0 0:1 / /cpu rw - cgroup cgroup rw,cpu,cpuacct\n", "/cpu/cpu.cfs_quota_us": "250000", "/cpu/cpu.cfs_period_us": "100000"}
+  },
+  {
+    "name": "v1 nested ancestor and hybrid hierarchy", "affinity": 12, "expected": 3,
+    "files": {"/proc/self/cgroup": "0::/system\n2:cpu,cpuacct:/parent/child\n", "/proc/self/mountinfo": "1 0 0:1 / /unified rw - cgroup2 cgroup rw\n2 0 0:2 / /cpu rw - cgroup cgroup rw,cpu,cpuacct\n", "/cpu/cpu.cfs_quota_us": "-1", "/cpu/cpu.cfs_period_us": "100000", "/cpu/parent/cpu.cfs_quota_us": "350000", "/cpu/parent/cpu.cfs_period_us": "100000", "/cpu/parent/child/cpu.cfs_quota_us": "-1", "/cpu/parent/child/cpu.cfs_period_us": "100000"}
+  },
+  {
+    "name": "v1 malformed quota fails closed", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "2:cpu:/\n", "/proc/self/mountinfo": "1 0 0:1 / /cpu rw - cgroup cgroup rw,cpu\n", "/cpu/cpu.cfs_quota_us": "-2", "/cpu/cpu.cfs_period_us": "100000"}
+  },
+  {
+    "name": "v1 zero period fails closed", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "2:cpu:/\n", "/proc/self/mountinfo": "1 0 0:1 / /cpu rw - cgroup cgroup rw,cpu\n", "/cpu/cpu.cfs_quota_us": "-1", "/cpu/cpu.cfs_period_us": "0"}
+  },
+  {
+    "name": "subtree mount may hide ancestor", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "0::/child\n", "/proc/self/mountinfo": "1 0 0:1 /parent /cg rw - cgroup2 cgroup rw\n", "/cg/child/cpu.max": "max 100000"}
+  },
+  {
+    "name": "invalid membership fails closed", "affinity": 12, "expected": 1,
+    "files": {"/proc/self/cgroup": "0::/../child\n", "/proc/self/mountinfo": "1 0 0:1 / /cg rw - cgroup2 cgroup rw\n"}
+  },
+  {
+    "name": "escaped mount path", "affinity": 12, "expected": 4,
+    "files": {"/proc/self/cgroup": "0::/\n", "/proc/self/mountinfo": "1 0 0:1 / /cg\\040space rw - cgroup2 cgroup rw\n", "/cg space/cpu.max": "400000 100000"}
+  }
+]

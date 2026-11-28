@@ -21,7 +21,7 @@ Do not connect this bot to public servers with coding enabled. This project allo
 ## Requirements
 
 - [Minecraft Java Edition](https://www.minecraft.net/en-us/store/minecraft-java-bedrock-edition-pc) (up to v1.21.11, recommend v1.21.6)
-- [Node.js Installed](https://nodejs.org/) (Node v18 or v20 LTS recommended. Node v24+ may cause issues with native dependencies)
+- [Node.js Installed](https://nodejs.org/) (Node 22 recommended; the installed Mineflayer dependency requires Node 22 or newer. Node v24+ may cause issues with native dependencies.)
 - At least one API key from a supported API provider. See [supported APIs](#model-customization). OpenAI is the default.
 
 > [!Important]
@@ -44,6 +44,28 @@ Do not connect this bot to public servers with coding enabled. This project allo
 6. Run `node main.js` from the installed directory
 
 If you encounter issues, check the [FAQ](https://github.com/mindcraft-bots/mindcraft/blob/main/FAQ.md) or find support on [discord](https://discord.gg/mp73p35dzC). We are currently not very responsive to github issues. To run tasks please refer to [Minecollab Instructions](minecollab.md#installation)
+
+## Build from a schematic
+
+Delicate is the default: it uses a fixed origin and refuses any clearing, terrain raising, occupied mismatch, or scaffolding. Raise provides a bounded dirt foundation under its documented constraints. Both place only into verified air and retain matching cells. See the [placement modes and limits](schematics/README.md#delicate-default-and-raise-mode).
+
+Mindcraft builds supported schematic files from [`schematics/schems/packN/`](schematics/schems/) and legacy files placed directly in [`schematics/`](schematics/). `!listSchematics` shows pack, screenshot-folder group, stable **file ID**, and exact **file name** as separate fields. Each file ID is a persistent mapping within its pack, for example in [`schematics/schems/pack1/index.json`](schematics/schems/pack1/index.json), not a sorted position. Pack1 is an example, not a requirement for reusable tooling. Direct commands use `pack:group:fileId`; for example [`!buildSchematic("pack1:02:01")`](src/agent/commands/actions.js:492) selects group 02, file ID 01. An explicitly addressed typed request such as `/msg Andy Andy build file id 01 from group 02 of pack1` selects that same entry. Human selectors also accept `id` for **file id**, `file` for **file name**, and `schema`, `schem`, `scheme`, or `schematic` as selector prefixes or filename-selector substitutes; exact forms and restrictions are in the [schematic building guide](schematics/README.md). Typed parser/listing objects use `fileId` and `fileName`; legacy `id` and `filename` fields remain mapped aliases for existing consumers. The script command still takes its filename selector first, followed by optional `x`, `y`, and `z`. This is a narrow typed route, not arbitrary natural-language intent recognition. Direct commands and routed requests are limited to configured trusted command senders; a non-empty `only_chat_with` list also needs to allow the sender. The bot needs permission to switch into Creative mode; on permission-managed servers, grant applicable least-privilege game-mode nodes rather than `/op`.
+
+The index names a logical base; with a known engine version, numeric and base-name selectors choose the highest known compatible release variant, and `!listSchematics` identifies the selected file and version. For example, the bee selects `02_bee_hot_air_balloon.mc1.21.4.schem` on 1.21.4 and `02_bee_hot_air_balloon.mc26.1.schem` on 26.1. Version eligibility is not a guarantee of palette compatibility or successful placement. The schematic guide records a historical migration of 30 original pack1 files and 60 versioned derivatives; the referenced `schematic-archive/pack1_originals/` directory is absent from this checkout, so those originals are not available here. Historical hash pins and reports remain evidence of their recorded state, not proof of the missing originals or their encoding. The current reproducible symmetry audit checks all 60 versioned variants; the frozen symmetry and batch reports are historical snapshots, not fresh-output baselines. See the [compiler guide](schematics/tooling/BLUEPRINT_TOOLING.md) and [symmetry guide](schematics/tooling/SYMMETRY.md) for reviewed history, pack compilation, and the wardrobe repair.
+
+Explicit placement coordinates are available only on the direct command: [`!buildSchematic("pack1:01:01", 100, 64, -20)`](src/agent/commands/actions.js:492). Supply all three finite coordinates or omit all three; human typed requests do not accept coordinates. The direct positional form also accepts a quoted mode and balanced options, for example `!buildSchematic("pack1:02:01", null, null, null, "balanced", 6, 12)`; send nondestructive commands through the trusted command route, such as `/msg Andy !buildSchematic("pack1:02:01")`. Use [`!stop`](src/agent/commands/actions.js:54) to cancel an active build. Delicate and balanced builds may resume only after eligible hostile-mob self-preservation, cowardice, or self-defense interruptions and successful cleanup/revalidation; raise and destructive builds never auto-resume. Trusted user commands, replacement actions, failures, death, disconnects, and world changes cancel recovery. See the [schematic building guide](schematics/README.md) for exact recovery policy, supported human and script forms, file formats, stable index maintenance, placement details, security restrictions, and reusable prompts. After changing application source, rebuild and recreate the Docker image; restarting an existing image does not load source changes.
+
+Placement settings are `schematic_placement_mode` (`delicate` by default; options: `delicate`, `raise`, `balanced`, `destructive`; missing/null settings mean delicate and a null override inherits settings), `schematic_balanced_radius` (integer 0–16, default 4), and `schematic_balanced_threshold` (integer 1–4097, default 9). Balanced accepts a candidate only when its full-volume mismatch count is **strictly less than** the threshold. Addressed player-request examples are `Andy build file id 01 from group 02 of pack1 using raise mode`, `Andy build file id 01 from group 02 of pack1 using balanced mode radius=6 threshold=12`, and `Andy build file id 01 from group 02 of pack1 using destructive mode`; balanced suffix options may be supplied in either order. Direct commands can pass the mode as the fifth argument and balanced radius/threshold as the sixth/seventh arguments, as in the example above. Unknown mode values are rejected. See [placement configuration and syntax](schematics/README.md#placement-configuration-and-overrides) for ranges, defaults, and validation.
+
+Balanced search strategy, step, policy, and bisect depth can also be configured or supplied as overrides; they control bounded candidate generation and selection. See the placement guide for syntax and defaults.
+
+After a complete selector, request a rotation such as `Andy build id 1 from group 2 of pack1 facing south` or `Andy build id 1 from group 2 of pack1 using balanced mode then rotate to face east`. Facing, oriented, rotate, rotated and rotating all mean the same absolute world-cardinal rotation, not entrance detection or bot yaw; north preserves the authored axes. Directions and their single-letter shorthands are case-insensitive. The optional eighth direct-command argument carries the direction, for example `!buildSchematic("pack1:02:01", null, null, null, null, null, null, "E")`. East/west swap horizontal dimensions; the transformed volume is normalized to its minimum corner, with search modes using an anchor. Unsupported rotated stateful placements are refused before edits. See [orientation syntax and limitations](schematics/README.md#orientation).
+
+Raise placement is bounded: it can raise a fixed-X/Z anchor by at most 32 blocks, requires supported placements within four blocks of the bot's assumed eye position and an in-reach upward reference, does not navigate or dig, and refuses unsupported plans before Creative. Raise auto-resume is disabled. Destructive placement requires `allow_insecure_coding: false`, an explicitly trusted player, and verified authenticated ordinary public player chat; whispers, display labels, and system/plugin messages do not authorize it. Both shipped configurations use offline authentication, so they deny destructive requests. **Java 1.21.4** is the only newly reviewed sequence-only terrain-digging path and needs permission level 2 for its read-only confirmation commands; other sequence-only versions remain unsupported for digging. See the [human-only destructive-mode requirements](schematics/README.md#human-only-destructive-mode) and [Java 1.21.4 evidence and limits](schematics/DESTRUCTIVE_JAVA_1_21_4.md).
+
+For safety, schematics containing doors, beds, or known two-cell/tall plants are currently rejected before mutation because their complete orientation-dependent secondary placement footprints are not modeled. Waterlogged/fluid-bearing natural obstruction states are also refused. Actual Mineflayer respawn events invalidate active builds and recovery even when the dimension and world/entity references appear unchanged; details and limitations are in the [schematic building guide](schematics/README.md).
+
+From the repository root, `npm run test:schematic` recursively discovers the full schematic suite, including pack-specific tests. The pack audit `python3 schematics/tooling/audit_batch.py --pack pack1 --minecraft-version 1.21.4 --data-version 4189 --output-dir tmp/pack1-audit-new` is an example that writes to a new isolated directory. The prior [`schematics/tooling/validation/pack1/batch_validation.json`](schematics/tooling/validation/pack1/batch_validation.json) is historical evidence; see the [compiler guide](schematics/tooling/BLUEPRINT_TOOLING.md). Potted plants and multi-cell placements remain limited, and registry or simulated tests do not establish live-server compatibility. The request parser and command documentation are in [`src/agent/schematic_request.js`](src/agent/schematic_request.js) and [`src/agent/commands/actions.js`](src/agent/commands/actions.js); `!listSchematics` is described in [`src/agent/commands/queries.js`](src/agent/commands/queries.js). For Docker, rebuild and recreate the relevant services (for example, `docker compose up -d --build`); source is baked into the image.
 
 
 # Configuration
@@ -158,6 +180,31 @@ When running in docker, if you want the bot to join your local minecraft server,
 
 To connect to an unsupported minecraft version, you can try to use [viaproxy](services/viaproxy/README.md)
 
+## Transfer reviewed updates to another Docker host
+
+Use Git to move reviewed project changes between clones rather than copying the whole working directory. Commit the intended changes, inspect the commit, then push the exact tracked branch to the intended repository/fork. On the destination, configure that clone's intended remote and branch as its Git upstream; [`scripts/update_project.sh`](scripts/update_project.sh) derives both from the current checkout and never assumes a remote name or branch. It does not push, switch branches, install dependencies, run `rsync`, or build/deploy Docker images. See the [script naming and migration guide](scripts/README.md) for renamed commands.
+
+The script is not available in an old target clone until its first update. For that bootstrap, reconcile and back up the target manually first, review its remote/branch and all local tracked, untracked, and ignored runtime data, then use the target's normal reviewed Git procedure to obtain this script. Do not use the script to bypass that initial review. Before applying later updates, review the target host's configuration: clean tracked files can still be replaced by a fast-forward, and some tracked host-specific settings/profile files may differ from what the destination needs.
+
+From the repository root, after reviewing and backing up the destination state, the update/build/recreate chain for the two Compose bot services is:
+
+```sh
+scripts/update_project.sh --apply && docker compose build bots && docker compose up -d --force-recreate bots
+```
+
+Because the commands use `&&`, a blocked or failed update stops the chain before Docker build/deployment. Verify the services and inspect fresh startup logs locally:
+
+```sh
+docker compose ps bots
+docker compose logs --tail=100 bots
+```
+
+[`scripts/update_project.sh --check`](scripts/update_project.sh) is an offline check against the locally cached upstream-tracking ref; it does not contact the remote, refresh the index, or establish whether that ref is fresh. It is not an incoming-file/deployment safety preview. `--apply` fetches only the configured branch into its tracking ref, disables opportunistic ref mappings, tag updates, pruning, submodule recursion, and automatic maintenance, and only permits a clean, non-shallow, non-sparse, non-partial named checkout to fast-forward exactly to the fetched upstream commit. It refuses local changes, untracked files, ahead/diverged history, configured checkout filters, and unsafe Git states; it does not clean, reset, stash, rebase, force-push, merge-commit, or intentionally overwrite ignored files. Git's no-overwrite-ignore protection refuses ignored-path collisions, including parent directory/file/symlink collisions tested with Git 2.53.0. A general filesystem/I/O failure or interruption can still leave partial checkout changes: failure is not proof of rollback. Inspect HEAD, index, and files before retrying; do not automatically reset/clean. This is not an atomic transaction and cannot protect against unrelated processes writing to the checkout concurrently; the advisory lock coordinates only this updater in that worktree. Inspect the script's documented limitations in [`schematics/README.md`](schematics/README.md#safe-code-updates-and-docker-redeployment).
+
+Git transfers committed/tracked assets, including schematic indexes, binaries, blueprints, screenshots, source and tests. Verify intended assets are tracked (`git ls-files`) and handle Git LFS or submodules explicitly if introduced; this updater refuses submodules and LFS pointer content. Ignored files do not transfer: provision `keys.json` and other credentials securely, and intentionally migrate bot histories/state or dependencies only when needed. If using `rsync` for selected operational data, stop writers first, use a dry run, review each selected path, and never use `--delete` or blanket-copy `.git`, dependencies, credentials, or bot state. The ignored `package-lock.json` also means this workflow does not guarantee reproducible dependency resolution or image builds.
+
+The Dockerfile copies application source into the image; these two services do not bind-mount that source, so updating host source alone does not update a running container: rebuild and recreate it. The Compose file does bind-mount schematic assets, settings, profiles, credentials, and bot state from the destination host; mounted host contents take precedence over corresponding image contents at runtime. The current `.dockerignore` excludes `keys.json` but does not exclude `.git`, so Git metadata (potentially including credential-bearing remote configuration) can enter the build context/image. Review that separately before building; the updater does not change Docker-context policy. A successful Git update does not validate host configuration, secrets, bind-mounted data, or the resulting image, and it does not guarantee a safe/reproducible build. Never publish credentials or complete history/model logs when sharing status or logs.
+
 # Bot Profiles
 
 Bot profiles are json files (such as `andy.json`) that define:
@@ -208,9 +255,11 @@ All apis have default models and urls, so those fields are optional. The `params
 
 Embedding models are used to embed and efficiently select relevant examples for conversation and coding.
 
+Set `"embedding": "none"` in a profile to disable embeddings and use word overlap for examples and skill documentation. When omitted, the chat model's API remains the default embedding provider.
+
 Supported Embedding APIs: `openai`, `google`, `replicate`, `huggingface`, `novita`
 
-If you try to use an unsupported model, then it will default to a simple word-overlap method. Expect reduced performance. We recommend using supported embedding APIs.
+If an embedding provider does not support embeddings, initialization falls back to a simple word-overlap method. An unrecognized embedding selector instead retains the default chat API provider. Expect reduced performance with word overlap. We recommend using supported embedding APIs.
 
 ## Voice Synthesis Models
 
@@ -252,3 +301,7 @@ This work is published in the paper [Collaborating Action by Action: A Multi-age
 Thanks to everyone who has submitted issues on and off Github, made suggestions, and generally helped make this a better project.
 
 ![Contributors](https://contrib.rocks/image?repo=mindcraft-bots/mindcraft)
+
+### Local schematic end-to-end test
+
+Run `task test:schematics` (or `make test-schematics`) to build the local bot image and exercise the schematic suite against a disposable Purpur world and deterministic mock model. See [the local test guide](ci/README.md) for host and Docker prerequisites, the unresolved Mineflayer patch failure, safety, and task format.

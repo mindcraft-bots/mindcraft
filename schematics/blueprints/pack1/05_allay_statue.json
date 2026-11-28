@@ -1,0 +1,528 @@
+{
+  "name": "05_allay_statue",
+  "folder": "05",
+  "source_title": "Статуя збирача / Allay statue",
+  "source_images": [
+    "schematics/screenshots/pack1/5/IMG_20261115_155935-1536x1152.jpg"
+  ],
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 17,
+  "height_y": 14,
+  "length_z": 6,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Minimum envelope corner, not pedestal corner. +X east/right, +Y up, +Z south/front. Pedestal northwest bottom is (6,0,0). Wings lie in rear z0 plane; eyes face south at z4. Zero schematic offset."
+  },
+  "dimension_audit": {
+    "distinct_builds": 1,
+    "printed_head_xyz": [
+      5,
+      5,
+      5
+    ],
+    "head_bounds": {
+      "x": [
+        6,
+        10
+      ],
+      "y": [
+        9,
+        13
+      ],
+      "z": [
+        0,
+        4
+      ]
+    },
+    "printed_torso_xyz": [
+      3,
+      5,
+      3
+    ],
+    "torso_bounds": {
+      "x": [
+        7,
+        9
+      ],
+      "y": [
+        4,
+        8
+      ],
+      "z": [
+        1,
+        3
+      ]
+    },
+    "printed_each_wing_span_height": [
+      8,
+      4
+    ],
+    "inferred_wing_thickness": 1,
+    "wing_bounds": [
+      {
+        "x": [
+          0,
+          7
+        ],
+        "y": [
+          5,
+          8
+        ],
+        "z": [
+          0,
+          0
+        ]
+      },
+      {
+        "x": [
+          9,
+          16
+        ],
+        "y": [
+          5,
+          8
+        ],
+        "z": [
+          0,
+          0
+        ]
+      }
+    ],
+    "printed_each_arm_length": 4,
+    "inferred_arm_cross_section": [
+      1,
+      1
+    ],
+    "arm_bounds": [
+      {
+        "x": [
+          6,
+          6
+        ],
+        "y": [
+          8,
+          8
+        ],
+        "z": [
+          2,
+          5
+        ]
+      },
+      {
+        "x": [
+          10,
+          10
+        ],
+        "y": [
+          8,
+          8
+        ],
+        "z": [
+          2,
+          5
+        ]
+      }
+    ],
+    "printed_pedestal_xyz": [
+      5,
+      3,
+      5
+    ],
+    "pedestal_bounds": {
+      "x": [
+        6,
+        10
+      ],
+      "y": [
+        0,
+        2
+      ],
+      "z": [
+        0,
+        4
+      ]
+    },
+    "inferred_levitation_gap_y": [
+      3,
+      3
+    ],
+    "attachment_inclusive_xyz": [
+      17,
+      14,
+      6
+    ],
+    "printed_overall_dimensions": null,
+    "physical_top": 14,
+    "slabs": "None labeled or encoded. Pedestal stair half=top is inferred, not a printed half-height."
+  },
+  "material_audit": [
+    {
+      "printed": "білий бетон",
+      "block": "minecraft:white_concrete",
+      "use": "two front 1x2 eyes"
+    },
+    {
+      "printed": "світло-блакитний бетон",
+      "block": "minecraft:light_blue_concrete",
+      "use": "head, hollow torso and two wing panels"
+    },
+    {
+      "printed": "світло-блакитна вовна",
+      "block": "minecraft:light_blue_wool",
+      "use": "head crown and two four-block arms"
+    },
+    {
+      "printed": "бірюзовий бетон",
+      "block": "minecraft:cyan_concrete",
+      "use": "dark blue-green pixel patches and wing/foot tips"
+    },
+    {
+      "printed": "морські ліхтарі",
+      "block": "minecraft:sea_lantern",
+      "use": "nine-block luminous pedestal top"
+    },
+    {
+      "printed": "точена кам’яна цегла",
+      "block": "minecraft:chiseled_stone_bricks",
+      "use": "twelve decorative side panel cells"
+    },
+    {
+      "printed": "кам’яна цегла; сходи з кам’яної цегли; камінь",
+      "blocks": [
+        "minecraft:stone_bricks",
+        "minecraft:stone_brick_stairs",
+        "minecraft:stone"
+      ],
+      "use": "pedestal frame, top-half stair rim, and solid concealed core"
+    }
+  ],
+  "state_audit": [
+    "No doors, logs, slabs, fluids, entities or complex block-entity NBT. Door hinge, log axis and open states are not applicable.",
+    "Stone-brick rim stairs explicitly encode facing, half=top, shape=straight and waterlogged=false; front south, back north, left west, right east. Four rim corners are full stone-brick blocks, avoiding unsupported inferred corner-stair shape.",
+    "All other legend entries are propertyless vanilla full blocks. Sea lanterns need no block-entity NBT."
+  ],
+  "assumptions": [
+    "Only one distinct build. The five exploded component groups are parts of the same Allay statue, not independent builds. The player miniature, landscape, clouds and book-page background are excluded.",
+    "Printed component measurements are retained exactly. No total assembled width, height, depth, levitation-gap measurement or block inventory is printed. The 17x14x6 envelope and all component offsets are inferred from the master render, not claimed exact photographic recovery.",
+    "The two 8-block wing bars are placed x0..7 and x9..16, with a one-cell centre gap hidden behind the torso. Their inner ends connect to the rear torso across adjacent z planes. Alternative overlap depths cannot be excluded from a single view.",
+    "Wing cutouts and cyan pixel patches are approximated from the exploded silhouettes. Each wing is one block thick, mirrored for the obscured opposite side; exact notch widths and colour boundaries are uncertain.",
+    "The hollow 3x3 torso follows the visible open-top cutaway. Its centre remains air at all five levels and the bottom centre front/back cells are omitted to separate two feet. Cyan patches and concealed rear pattern are inferred.",
+    "Head is a complete solid 5-cube because no hollow head cutaway is shown. Hidden interior fill is an explicit choice, not directly observed. The top wool course, partial second-course border and two 1x2 white eyes follow visible block proportions; hidden back and left-side pattern use symmetry.",
+    "Each arm is a 1x1x4 light-blue-wool strip, attached at upper torso level and projecting one cell beyond the face. The diagram labels length four but exact attachment coordinates are not printed.",
+    "A single air course separates feet from pedestal to preserve the floating pose; no invisible or invented support column is added.",
+    "The 5x5x3 pedestal has full-block corners, twelve chiseled middle-course side cells, eighteen hidden stone cells, nine sea lanterns and a twelve-stair top rim. Exact rim stair halves and concealed pedestal fill are inferred. No extra slabs are substituted for the printed stair material.",
+    "Local verification can prove registry legality and artifact consistency only. It cannot prove unique photographic reconstruction, neighbor-update appearance, survival placement feasibility, pathfinding or live-server build success. Genuine reader mismatches must be reported without changing intended blocks to conceal them."
+  ],
+  "layer_format": "layers[y][z][x], explicit single-character rows including air",
+  "legend": {
+    ".": "minecraft:air",
+    "L": "minecraft:light_blue_concrete",
+    "C": "minecraft:cyan_concrete",
+    "W": "minecraft:light_blue_wool",
+    "E": "minecraft:white_concrete",
+    "B": "minecraft:stone_bricks",
+    "S": "minecraft:stone",
+    "Q": "minecraft:chiseled_stone_bricks",
+    "G": "minecraft:sea_lantern",
+    "N": "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]",
+    "T": "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]",
+    "A": "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]",
+    "R": "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "......BBBBB......",
+      "......BSSSB......",
+      "......BSSSB......",
+      "......BSSSB......",
+      "......BBBBB......",
+      "................."
+    ],
+    [
+      "......BQQQB......",
+      "......QSSSQ......",
+      "......QSSSQ......",
+      "......QSSSQ......",
+      "......BQQQB......",
+      "................."
+    ],
+    [
+      "......BNNNB......",
+      "......AGGGR......",
+      "......AGGGR......",
+      "......AGGGR......",
+      "......BTTTB......",
+      "................."
+    ],
+    [
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      ".................",
+      "................."
+    ],
+    [
+      ".................",
+      ".......C.C.......",
+      ".......C.C.......",
+      ".......C.C.......",
+      ".................",
+      "................."
+    ],
+    [
+      ".C...CC...CC...C.",
+      ".......CLC.......",
+      ".......L.L.......",
+      ".......CCL.......",
+      ".................",
+      "................."
+    ],
+    [
+      ".CL..CL...LC..LC.",
+      ".......LLL.......",
+      ".......L.L.......",
+      ".......LLC.......",
+      ".................",
+      "................."
+    ],
+    [
+      ".LL...LL.LL...LL.",
+      ".......LLL.......",
+      ".......L.L.......",
+      ".......LLL.......",
+      ".................",
+      "................."
+    ],
+    [
+      "LLLLLLLL.LLLLLLLL",
+      ".......LLL.......",
+      "......WL.LW......",
+      "......WLLLW......",
+      "......W...W......",
+      "......W...W......"
+    ],
+    [
+      "......LLLLL......",
+      "......LLLLL......",
+      "......CLLLC......",
+      "......LLLLL......",
+      "......LLLLL......",
+      "................."
+    ],
+    [
+      "......CLLLC......",
+      "......CLLLC......",
+      "......LLLLL......",
+      "......LLLLL......",
+      "......LELEL......",
+      "................."
+    ],
+    [
+      "......LLLLL......",
+      "......CLLLC......",
+      "......LLLLL......",
+      "......LLLLL......",
+      "......LELEL......",
+      "................."
+    ],
+    [
+      "......WWWWW......",
+      "......WLLLW......",
+      "......WLLLW......",
+      "......WLLLW......",
+      "......WLLLW......",
+      "................."
+    ],
+    [
+      "......WWWWW......",
+      "......WWWWW......",
+      "......WWWWW......",
+      "......WWWWW......",
+      "......WWWWW......",
+      "................."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 1144,
+    "minecraft:chiseled_stone_bricks": 12,
+    "minecraft:cyan_concrete": 29,
+    "minecraft:light_blue_concrete": 130,
+    "minecraft:light_blue_wool": 46,
+    "minecraft:sea_lantern": 9,
+    "minecraft:stone": 18,
+    "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 3,
+    "minecraft:stone_bricks": 24,
+    "minecraft:white_concrete": 4
+  },
+  "non_air_count": 284,
+  "spot_checks": [
+    {
+      "x": 6,
+      "y": 0,
+      "z": 0,
+      "char": "B",
+      "reason": "minimum pedestal corner"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 2,
+      "char": "S",
+      "reason": "concealed stone pedestal core"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 4,
+      "char": "Q",
+      "reason": "front chiseled panel"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 2,
+      "char": "G",
+      "reason": "3x3 luminous top centre"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "z": 4,
+      "char": "T",
+      "reason": "south-facing top-half front rim"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "z": 2,
+      "char": "A",
+      "reason": "west-facing rim"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 2,
+      "char": ".",
+      "reason": "one-block levitation gap"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "z": 3,
+      "char": "C",
+      "reason": "cyan left foot"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "z": 3,
+      "char": ".",
+      "reason": "gap between feet"
+    },
+    {
+      "x": 8,
+      "y": 7,
+      "z": 2,
+      "char": ".",
+      "reason": "hollow torso centre"
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "z": 3,
+      "char": "L",
+      "reason": "torso upper front"
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "z": 0,
+      "char": "L",
+      "reason": "left wing eight-block bar outer endpoint"
+    },
+    {
+      "x": 16,
+      "y": 8,
+      "z": 0,
+      "char": "L",
+      "reason": "right wing endpoint"
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "z": 0,
+      "char": ".",
+      "reason": "open wing silhouette"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "z": 0,
+      "char": "C",
+      "reason": "cyan outer wing tip"
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "z": 5,
+      "char": "W",
+      "reason": "left arm forward wool end"
+    },
+    {
+      "x": 10,
+      "y": 8,
+      "z": 5,
+      "char": "W",
+      "reason": "right arm forward wool end"
+    },
+    {
+      "x": 7,
+      "y": 10,
+      "z": 4,
+      "char": "E",
+      "reason": "left eye lower"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "z": 4,
+      "char": "E",
+      "reason": "right eye upper"
+    },
+    {
+      "x": 8,
+      "y": 12,
+      "z": 4,
+      "char": "L",
+      "reason": "blue forehead between wool edges"
+    },
+    {
+      "x": 6,
+      "y": 12,
+      "z": 4,
+      "char": "W",
+      "reason": "wool crown side edge"
+    },
+    {
+      "x": 8,
+      "y": 13,
+      "z": 2,
+      "char": "W",
+      "reason": "wool head top"
+    },
+    {
+      "x": 10,
+      "y": 11,
+      "z": 1,
+      "char": "C",
+      "reason": "cyan side-head patch"
+    }
+  ]
+}

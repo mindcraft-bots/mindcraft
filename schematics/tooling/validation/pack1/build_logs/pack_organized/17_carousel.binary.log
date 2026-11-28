@@ -1,0 +1,3 @@
+$ python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/17_carousel.json schematics/schems/pack1/17_carousel.schem
+[exit code: 0]
+{"air": 3630, "block_data_bytes": 4913, "bytes": 1250, "dimensions": [17, 17, 17], "non_air": 1283, "palette_entries": 41, "sha256": "028eed1433bda710e3e0723fa96cc227d5f4f3296267fa617e7cbae9570a7df2", "spot_checks": 28, "volume": 4913}

@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/05_allay_statue.json schematics/05_allay_statue.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/05_allay_statue.json",
+  "schematic": "schematics/05_allay_statue.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    17,
+    14,
+    6
+  ],
+  "volume": 1428,
+  "comparedVoxels": 1428,
+  "expectedNonAir": 284,
+  "parserDerivedAir": 1144,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 13,
+  "spotChecks": 23,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

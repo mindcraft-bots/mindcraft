@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [{
+    "label": "Test Mindcraft Schematics (E2E)",
+    "type": "shell",
+    "command": "task test:schematics",
+    "problemMatcher": []
+  }]
+}

@@ -1,0 +1,1240 @@
+{
+  "algorithm": "sha256",
+  "entries": [
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_bee_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_bee_hot_air_balloon.binary.log",
+      "sha256": "810c38f7cd30c9ad496f23283d9823bff754707f12e778d21f57e23ca36d47d2"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_bee_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_bee_hot_air_balloon.determinism.log",
+      "sha256": "6421c26f5107d20cb1554cd04054ca2492708e0a143081fb7dc6374110cc958c"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_bee_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_bee_hot_air_balloon.reader.log",
+      "sha256": "ca0a67e427760c1353e7b336f432a674ff3221013bbb06b53ca2b3fe25348f2e"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_enderman_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_enderman_hot_air_balloon.binary.log",
+      "sha256": "66226fdafaaee4e7195b3640bebf7e469b8098848347f0d87c5d99f49eb3a826"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_enderman_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_enderman_hot_air_balloon.determinism.log",
+      "sha256": "8f38ccc511a4081e80048962966c0d8a16413a2923f4ab78f2bd52aff2ac34a9"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_enderman_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_enderman_hot_air_balloon.reader.log",
+      "sha256": "5d8be299230a61e03e17676f286660ca48d1890b031d4537d1cccbbc750f9a86"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_pig_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_pig_hot_air_balloon.binary.log",
+      "sha256": "8fa47e035f7e82d56a0c7343d89e240ca5943ed50158255ae02455d8ce801ce6"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_pig_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_pig_hot_air_balloon.determinism.log",
+      "sha256": "f643e4c2179c1b8ad1cb69119498fef09b03f549f75a3ab83c6b1678db9d7496"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/02_pig_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/02_pig_hot_air_balloon.reader.log",
+      "sha256": "6a2dbd70d405acd7de2cbd52eea1bbce86f904b373cf59f5605c3eef19b7f237"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_big_red_barn.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_big_red_barn.binary.log",
+      "sha256": "ae735194355508e9c8f29b18e2e2d172ac7ea7fc4f542c05f945a9a82f64486b"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_big_red_barn.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_big_red_barn.determinism.log",
+      "sha256": "8606d25e2951a26d32ed801a8657ce3daf037a1bc5956e079ddf342350a2ba32"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_big_red_barn.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_big_red_barn.reader.log",
+      "sha256": "ff14a7da7dc4624d03867dd51d0fd0e1989c883da2741785989ee062058a6a26"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_storage_silo.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_storage_silo.binary.log",
+      "sha256": "3b6763bd461c4eca2d10f0766ab30b575d4ea54b20a615ea887295a853a14b49"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_storage_silo.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_storage_silo.determinism.log",
+      "sha256": "4ed9fbafe3d9b04178f565d881a170ab6b8db737fb81a7e6ea2218b0bf69a8ce"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/03_storage_silo.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/03_storage_silo.reader.log",
+      "sha256": "57470f9c8b706fd7297d5eaf3128de6667b47fb8af90f72b03fb8d14a0aec92b"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/04_pagoda.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/04_pagoda.binary.log",
+      "sha256": "411df855b2aa7bdbc0320478ea2f4b8bd10a0de36bc960f73241385de9165dc0"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/04_pagoda.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/04_pagoda.determinism.log",
+      "sha256": "574c3ecb9a05a6c7ed3a4edaf1b775dd7363a08e9ef906164d97a883ba49dad8"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/04_pagoda.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/04_pagoda.reader.log",
+      "sha256": "34d21ff03244ba961a251b0b1f4c7c7bf4f121044826d176add5b8402bc056c5"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/05_allay_statue.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/05_allay_statue.binary.log",
+      "sha256": "4477ac5643760d9da00d74567af075c081468560c0dc78d95c643d404e0e6a8f"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/05_allay_statue.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/05_allay_statue.determinism.log",
+      "sha256": "c818e5c2a49dc81721627bb8526b99c3c54130ae4bcb5ae5ed025d01aa4dfa64"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/05_allay_statue.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/05_allay_statue.reader.log",
+      "sha256": "5da5fffb10a7035c62f4c251a1ea331e5e9ab6ac27b888e3e0d18103618c08b8"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/06_wild_west_jail.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/06_wild_west_jail.binary.log",
+      "sha256": "40d704e18e5448506ec56a3456e2b78271edbb4b5c9a0c26d9d4df6e56c147c4"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/06_wild_west_jail.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/06_wild_west_jail.determinism.log",
+      "sha256": "ab89c9cdbfe67d123ca0f3b71afae2fc65468ecf7e339bd4c4d42f656a7056d4"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/06_wild_west_jail.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/06_wild_west_jail.reader.log",
+      "sha256": "690d4a901430520aac429682317f3ec6df2dee4d75af39267e43ffeea4895fee"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/07_secret_island_base.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/07_secret_island_base.binary.log",
+      "sha256": "d40505d98971adbda15c0f2e1c368612a5bfbca7fa2643f1b8f69681061c04da"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/07_secret_island_base.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/07_secret_island_base.determinism.log",
+      "sha256": "d86ed6987d81426135a0e9283eb65cb6c10d1565e3bad3b510f5d860f453d579"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/07_secret_island_base.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/07_secret_island_base.reader.log",
+      "sha256": "c763551b091b3e985c2981dc8b4f85219882b8c1f3b3c27c777d6dd6cd71ae8e"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/08_greenhouse.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/08_greenhouse.binary.log",
+      "sha256": "79988e6ea6c460423a9c5c2e7b61660d6f20edd00613485bf18a531951adb43b"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/08_greenhouse.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/08_greenhouse.determinism.log",
+      "sha256": "8e7bd9dbdae81b7daedbdd260607e1cfcd45dc00bc6eb7041ffa014451b3cadf"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/08_greenhouse.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/08_greenhouse.reader.log",
+      "sha256": "1892028d5a78f65e0ab51c55ea95844b864fdd9a037dd2ba4409f7c87ac90806"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/09_river_steamboat.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/09_river_steamboat.binary.log",
+      "sha256": "21234ad5d19e6950db35fe89eac7b0e3df6c0c39a42119d7cb8898682af42515"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/09_river_steamboat.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/09_river_steamboat.determinism.log",
+      "sha256": "e0dfb5ce634552fc9008b31a63871a1730860d56a6174f76ee9b90775a18529f"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/09_river_steamboat.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/09_river_steamboat.reader.log",
+      "sha256": "6e6e76b3c4359cefcc9bc51ab0daaf65fcf2de2e2f5837865e80e631c5d9ae6c"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/10_pachinko_parkour.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/10_pachinko_parkour.binary.log",
+      "sha256": "656c7e4b1f3cbdfd6cac946c95bf099c358d8169c7d625d9962b71262f2c2af4"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/10_pachinko_parkour.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/10_pachinko_parkour.determinism.log",
+      "sha256": "44d85e336d67bfca9e918fbc7a59cd356407235f7d039ab5d8dbc9cca640e7ce"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/10_pachinko_parkour.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/10_pachinko_parkour.reader.log",
+      "sha256": "f1f72df9102970ee583621734b98e9f0a1275b5cf8190eb077665a8b591f5324"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_grandstand.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_grandstand.binary.log",
+      "sha256": "ed43daf9c4e5ebbb57eae9b6dd77929249997927e3a1af31b3c97fb96e637387"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_grandstand.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_grandstand.determinism.log",
+      "sha256": "f49a06862edb581eedf8eea4a2e67e8b732c66cfe21634a4eb4ed127fd708b7a"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_grandstand.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_grandstand.reader.log",
+      "sha256": "aae9996e5bfb892e4f1ed286acc594884025a0fc1907ed01db04eb865675268b"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_hairpin.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_hairpin.binary.log",
+      "sha256": "f87d174d1f471f1bcea051b7ea628a8906c3be40013c4843e49c1559f2f6736c"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_hairpin.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_hairpin.determinism.log",
+      "sha256": "cfcde0ada230305d035aa0777f85b9faa79359310fd3fcb1846dced096c2168a"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_hairpin.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_hairpin.reader.log",
+      "sha256": "a4c69e2940fe354100ee977943cb337dbe7be3c63f36e489ef2db8d77e8a561b"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_safety_fence.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_safety_fence.binary.log",
+      "sha256": "f2079d5186681c9f8cc835f988b1d860e8c22176dcd4fa28e870d392b6faffd0"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_safety_fence.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_safety_fence.determinism.log",
+      "sha256": "1bd5bdba2bf6f7b2367eef848f01c41d72f6c0c858ed5ce1475d2a8b3cc95e9d"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_safety_fence.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_safety_fence.reader.log",
+      "sha256": "f5c03eff653426cf7c0adf1fa3965f06fad790cc939cc0227dcb46b5bbbfe17f"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_gate.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_gate.binary.log",
+      "sha256": "1e627bdfe9b4b0c0ca1949f3b169cf5200661ff630f8fb6671a829d88962491a"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_gate.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_gate.determinism.log",
+      "sha256": "468c7dc997364ec601b3e788d04540fe7602300c549e75d683e4fb1645919775"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_gate.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_gate.reader.log",
+      "sha256": "991d2b631ee0340d7b055e67291b1e41bc4e0baafcf136f5ddf204dedbbaf161"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_grid.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_grid.binary.log",
+      "sha256": "4e84b3323a109616623f7e92408d6ba3a21d54f6a1792e76ae60ea03230b456c"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_grid.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_grid.determinism.log",
+      "sha256": "5ced6d65dae3dc8672ba8b352289adbda91f24780b3bebf8363872379bebe35a"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_starting_grid.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_starting_grid.reader.log",
+      "sha256": "a4c4dfc2ecc81121fabcf95b7766f25903c1c82b7e14cdb279f5e215e0cb0b04"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_turn.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_turn.binary.log",
+      "sha256": "c420583e19aab57ffcf050a96a50e7aeec54716dc76674d8c8c37a7e65c8a9f1"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_turn.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_turn.determinism.log",
+      "sha256": "41e9567e776381c4f177d6d362d892bb12e10ec5f8489f1487a66d63804c52a9"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/11_turn.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/11_turn.reader.log",
+      "sha256": "a4096bee2d38d52210b659d68e411327343222f04542eea94f17a6297b2b28cf"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/12_scouting_tower.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/12_scouting_tower.binary.log",
+      "sha256": "a9c901bc276033ea5e1162731471f980c034a7699b2670ac82071b111c505d33"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/12_scouting_tower.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/12_scouting_tower.determinism.log",
+      "sha256": "2852e84101bb0972554b9210445660eb0606f15d943f6f405b52f5ed1da71d54"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/12_scouting_tower.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/12_scouting_tower.reader.log",
+      "sha256": "e9bf9a08ca8cfbe3224b8d840d003360420c6a36084502cc3929778b31620d36"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/13_skull_cave.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/13_skull_cave.binary.log",
+      "sha256": "a39bb010e3ad5a9e458cee075db4f45200ea08baff858763b3eada70c35b66fd"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/13_skull_cave.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/13_skull_cave.determinism.log",
+      "sha256": "916326f8d14988808bbcab2ebc7ac818f42af59300b181082475ab35ff193551"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/13_skull_cave.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/13_skull_cave.reader.log",
+      "sha256": "b54f165511ef8395b37401a9c381a0b95e426d4ffd898081edc6e0da1f1d5749"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/14_school_monster_bus.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/14_school_monster_bus.binary.log",
+      "sha256": "7d532578fc20c62186952e68373746bef935f0b079fd2e5d7896eea2cd012910"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/14_school_monster_bus.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/14_school_monster_bus.determinism.log",
+      "sha256": "d453b011b35a6f3cd6bec21100d62c27f2c8341518f5bc090d37ad809338eccc"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/14_school_monster_bus.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/14_school_monster_bus.reader.log",
+      "sha256": "a6dbd4a02a226539b7e13f560a73d7cb74bbfae17c9122a9a11f4faf0ad36aac"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/15_potion_factory.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/15_potion_factory.binary.log",
+      "sha256": "8578218de8bfabc8bc2366c0ab2fe93ed17ea741fed7e049f04b2c30f1cffbff"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/15_potion_factory.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/15_potion_factory.determinism.log",
+      "sha256": "60bb7597a388037ff082eddb814de421c4b80e79da8f735995b1217d7cb22063"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/15_potion_factory.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/15_potion_factory.reader.log",
+      "sha256": "1ac7f05045de59a272f267108907cfac200b0ca3c5e8dfbd2b5b68f8b69b59a9"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/16_wishing_well.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/16_wishing_well.binary.log",
+      "sha256": "eff7ff984f61b923860f4c07f1caf5343735ac6f108295de54e108c7b3a5a12e"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/16_wishing_well.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/16_wishing_well.determinism.log",
+      "sha256": "8d4ea16328fb8522a93870b98b815f2230c6acf5a6c55d39596b8f0e86b1a02f"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/16_wishing_well.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/16_wishing_well.reader.log",
+      "sha256": "ed07706de069ff65616190fed9ff3a8c444300b6afbeea0b36eda3c22b330f71"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_carousel.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_carousel.binary.log",
+      "sha256": "78e16af8fb3ca5572a9bec49f9b04fde9ad6e25acfd19e8e641c9c2a524b9826"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_carousel.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_carousel.determinism.log",
+      "sha256": "a32e5619745c9cd02f2f086617cf4f640d002e34990dbfa4c9eb1d00f820fde8"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_carousel.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_carousel.reader.log",
+      "sha256": "de7a4dc099bd93b9a2ea428f9e2bbb1a452d58c9a07b577c3690414923f733f1"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_strider_bath.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_strider_bath.binary.log",
+      "sha256": "2a3720b427c88a183276c04141b64ccf2d92e30d162d7639d2eea8a785b3c2c0"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_strider_bath.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_strider_bath.determinism.log",
+      "sha256": "ad23c29e7278d8279cebf771eefb9fbe5a6f3acd4376683de7b4c69ee2c036eb"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/17_strider_bath.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/17_strider_bath.reader.log",
+      "sha256": "8ac42e90cd9351bedd44298288dc429ffbf1b1ab0db6a7ae5d6bf8eb78c3d8a6"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_easter_island_head.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_easter_island_head.binary.log",
+      "sha256": "9827f1bff25829209165a8a8184013bfd97e9d39842d9a00857db6dbf27ed942"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_easter_island_head.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_easter_island_head.determinism.log",
+      "sha256": "2ae22d4dd65a3314c22c231edd395d489a27f08aacbf6f3b9b4551bbe22c4ff2"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_easter_island_head.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_easter_island_head.reader.log",
+      "sha256": "ab78bd8fc5e62df3057036e58db613a4b87abec5cf3d95fa509d66b91cd0b467"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_giant_grandfather_clock.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_giant_grandfather_clock.binary.log",
+      "sha256": "21eea4eadff4d1792fa63d44c2d2dc63872f5e6fb6adba54d12e8c8c27c9e3b4"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_giant_grandfather_clock.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_giant_grandfather_clock.determinism.log",
+      "sha256": "8402ba426e89ed96e88a5fd25467d8b97fd65bcde08ff598615d71142b66753c"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/18_giant_grandfather_clock.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/18_giant_grandfather_clock.reader.log",
+      "sha256": "227815e6d356e075853c5df662d51a7e4be89fce67f1cf52c65bd786f1749adc"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_hot_spring_chalet.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_hot_spring_chalet.binary.log",
+      "sha256": "a1d415663ec6f767fbddf4c8656532f09b4b1a7f6d36a847e5845b52c5b4c942"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_hot_spring_chalet.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_hot_spring_chalet.determinism.log",
+      "sha256": "207a95abf97d40afef2f239d2cea1d0479c973fb12e69d5729b51d2b776feca7"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_hot_spring_chalet.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_hot_spring_chalet.reader.log",
+      "sha256": "c6b2a81931bd891a533a6e5be6e2a2ced4addda0133176531d8d7f5f16de00e6"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_thermal_springs.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_thermal_springs.binary.log",
+      "sha256": "f6fa23173998347cd9d0a1f804344bf38460eb1be4d46d11dbc408ffde45aa72"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_thermal_springs.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_thermal_springs.determinism.log",
+      "sha256": "9b2da689a4faff6e578e897189889598ad448937d604e8fb5ce6e9e34c89e231"
+    },
+    {
+      "original": "schematics/tooling/validation/build_logs/pack1/19_thermal_springs.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pre_relocation/19_thermal_springs.reader.log",
+      "sha256": "c2f0d441d3671efc0e6d58fe99d583275b5234ec8aa21b02f3037183955bcf68"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/01_wardrobe_nether_portal.binary.log",
+      "sha256": "d570bde5eac752d46a9d73fc39c3797678a1e7ede7e323d58f23f5a41b3b641f"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/01_wardrobe_nether_portal.determinism.log",
+      "sha256": "7cf8dd24c9abeeb60e63820231ad1e42f160ea8b76136143130bbe39854048a5"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/01_wardrobe_nether_portal.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/01_wardrobe_nether_portal.reader.log",
+      "sha256": "58efb2022f07379d7c21dd6cd78b7bd21de76423029615562eb314c551ae7e0d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_bee_hot_air_balloon.binary.log",
+      "sha256": "140dbdc6bb1bbb77108b8e8ad69b26dfa217f56d7f5e8771ec02b26c9aabeb7d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_bee_hot_air_balloon.determinism.log",
+      "sha256": "26524fcec0763cd5b8344d1beb25a94d4e8610cb5ee1909fad20400613904c00"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_bee_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_bee_hot_air_balloon.reader.log",
+      "sha256": "15a4574015126f4c45314bcef706777dcc3f923240015c5b64ea6632aeb37ab5"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_enderman_hot_air_balloon.binary.log",
+      "sha256": "8559b941e7c371f08b81d556a66a70d1dee14472c68d320bd06fb88ac694c652"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_enderman_hot_air_balloon.determinism.log",
+      "sha256": "1259f073613c4217f843172ce1015d784cab74aba5e8efc3ef9e554614c16e1e"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_enderman_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_enderman_hot_air_balloon.reader.log",
+      "sha256": "d4a516bfe65c072097e8889ce4ae658fe96fbad6f56767a0e5d5d2c412641407"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_pig_hot_air_balloon.binary.log",
+      "sha256": "ea881fd4e847125b9ba980f975b89f5d93bc426a3e9bf243a91fc9c753242721"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_pig_hot_air_balloon.determinism.log",
+      "sha256": "d5b1889f837e1fb5147719c01dce05a08f5879069e16c27ad7480ebb37a386f5"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/02_pig_hot_air_balloon.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/02_pig_hot_air_balloon.reader.log",
+      "sha256": "87279c179f35524dc3623923291a2857939bbd3701688ee52d6a6bbcf2bdf3eb"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_big_red_barn.binary.log",
+      "sha256": "a6c6bae9abe49cca5088a5ce9dc5dac95673df187ca0dc74982c34e23ff65a99"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_big_red_barn.determinism.log",
+      "sha256": "6e83d17c12b504ac9755a24f8f9c31a4382ac6c3edd44c6f6d439b2d425aa26b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_big_red_barn.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_big_red_barn.reader.log",
+      "sha256": "70090060209bc2013d79637ff160c4d8baf78f4a16211d1d17e13f2c7bb706e6"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_storage_silo.binary.log",
+      "sha256": "bc67a4626a5a1080d5f765bf92e6795c7cd6c46678e7426fdd2cff916cef0033"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_storage_silo.determinism.log",
+      "sha256": "10578c9cbe3a64bd14f1be4081bc92b19490982fd2746e6b8d553aeaccecca79"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/03_storage_silo.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/03_storage_silo.reader.log",
+      "sha256": "7959ab92f2d746de51e23212c194861f84fede5befe77dfd9a2ea9ff73c22130"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/04_pagoda.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/04_pagoda.binary.log",
+      "sha256": "e8dc297f1a415629a506e7f64211756cf042f52dc4bbeec25f9b9526b865a84b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/04_pagoda.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/04_pagoda.determinism.log",
+      "sha256": "4e17a585b9c14f470b296a7c17e28ca47ff897b56d611d57bf39ad3a5b78f78a"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/04_pagoda.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/04_pagoda.reader.log",
+      "sha256": "57dcdb27263c15ac3bbf154b326bfe10393d022c3c9fca03a366ffd5b064bbd8"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/05_allay_statue.binary.log",
+      "sha256": "cf73c2b24eb40f739947624f5dfab94516feda3ce0e56f1b009e2b29f6e9bb19"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/05_allay_statue.determinism.log",
+      "sha256": "9aefe782bab5c5f0176e4a721604db8eb24f2f487273c3ff59c6a9e6d9db6b65"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/05_allay_statue.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/05_allay_statue.reader.log",
+      "sha256": "96fbdfa8091413713f07f8d151baa3cca155c5187a341e1c20fb6e08a4c02bb7"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/06_wild_west_jail.binary.log",
+      "sha256": "d79d150cc29148df08495140f5a573620247610b77adf2e8689033be71731b51"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/06_wild_west_jail.determinism.log",
+      "sha256": "cc7d99c84588e12c3d2db31a6643596e6dc27e507513a0381849d773f82f71f2"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/06_wild_west_jail.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/06_wild_west_jail.reader.log",
+      "sha256": "a55cd08d00bb19a39231504bef07a5d20443e7d2685d2747981ed283be2e56df"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/07_secret_island_base.binary.log",
+      "sha256": "b2dfba7720b54a6b5f743c9ebb4a940d7c0c5a08c9a4fe6d5958156738ec3b68"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/07_secret_island_base.determinism.log",
+      "sha256": "a16cd6dec99d61857145b19b660f77299f8bd89aa29e5de77a0eb12619b2e061"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/07_secret_island_base.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/07_secret_island_base.reader.log",
+      "sha256": "33f5110c9e97a77e6a3f4979cb6e92f335fe03cb386cd1d93613d5924753a5ae"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/08_greenhouse.binary.log",
+      "sha256": "99f32340edd094aa6e9dce99b9776bbd0d17c6099d5f883aab8854edfef57f6e"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/08_greenhouse.determinism.log",
+      "sha256": "d2b5704072cb8dd20fbff5e998504954bb1658399c51c175882597ae7419785e"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/08_greenhouse.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/08_greenhouse.reader.log",
+      "sha256": "742088e827d0bf4d22e1eb46b91e26a5957ff6c0c30dbba01eba3ca6a6a5029d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/09_river_steamboat.binary.log",
+      "sha256": "981806aa07a9899b327493bd475382f6955472491b1952892661779c4a8cca06"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/09_river_steamboat.determinism.log",
+      "sha256": "942295bca8b5a8eed4ab3183a8757c596a2a96a60e541312567c63b9b2e8ce89"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/09_river_steamboat.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/09_river_steamboat.reader.log",
+      "sha256": "0bf63fd1742966b7f2efbe459ff9c2a4e4ba44c72088fb1cd660bcea302893cd"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/10_pachinko_parkour.binary.log",
+      "sha256": "f855377770c1a6d8e691529047c6cefb618ac364eee03a023e62ecdd28b1f09e"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/10_pachinko_parkour.determinism.log",
+      "sha256": "b221a36f61733214a4b509ecdc4e15c8f5243ae3d354174783e5f5d34b841048"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/10_pachinko_parkour.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/10_pachinko_parkour.reader.log",
+      "sha256": "c6efd2ab565461e8dc2ab3a7ce9098954447734343a4e02d7a5a0984eedc2a14"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_grandstand.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_grandstand.binary.log",
+      "sha256": "6b1a318e2e170db6819ceaf67cb82919bf35378a42bdab371f2131939137a8ff"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_grandstand.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_grandstand.determinism.log",
+      "sha256": "2cd5c5328ca244e78f4ee495bb237e4e82da958ececa8f9ed71d7c976aa8e05b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_grandstand.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_grandstand.reader.log",
+      "sha256": "0e5623b81d6fd44fdc7d8e4c8d6b81837d552f7cd73a87afb372be1da414ad0d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_hairpin.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_hairpin.binary.log",
+      "sha256": "b2766ecc88ea2ef2a9d8389fe7d54477e107a93d67f7992425456e6b111b5b4f"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_hairpin.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_hairpin.determinism.log",
+      "sha256": "1d9d0290458c9ff99b1e53478a1616e231c2cceb1279fb6ca1c5825637d9aaac"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_hairpin.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_hairpin.reader.log",
+      "sha256": "ac63b8cfb0d0049fd9e596f517ac2c61d7b77a417f9559045c7dc6ef8471cc3c"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_safety_fence.binary.log",
+      "sha256": "1b99aa13a822fe5529011b707f3fd3053fcdd8b7958dc3088ba410ede0ea8358"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_safety_fence.determinism.log",
+      "sha256": "42b21697ff21db4ec00fecc00215a80a2f88c89a65c52ffa7aa90af1250b41b8"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_safety_fence.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_safety_fence.reader.log",
+      "sha256": "71b3457d739f7f1c4c296494f60a929936464beda9c98444f928ae5b5cf9ce6b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_gate.binary.log",
+      "sha256": "aee24aa114669d4a157b228e30e664849dacc366e0f66540e9e661120da0e7d3"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_gate.determinism.log",
+      "sha256": "ab7788e48e462e01200a2868a68b636de35448754d93d5fe479364e6c1781b73"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_gate.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_gate.reader.log",
+      "sha256": "48f743bd3395a66872bba00e0df89231de55377fbee092841e24bc5b12772074"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_grid.binary.log",
+      "sha256": "c00a148bf1f0adf115404e9f16744bf04483d835fa0cb548ba2c12c362678d15"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_grid.determinism.log",
+      "sha256": "ebce5508f6c72c1aa2501d7067e4bce4176c51c061acf0fec918c0c41b9796d2"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_starting_grid.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_starting_grid.reader.log",
+      "sha256": "096bed785642d7ea8b8cb0caca191aa22335d43b7e206e0320a599656973edff"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_turn.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_turn.binary.log",
+      "sha256": "3f687d67c6463216402e6d7003c1d6e6741ed01942e9034907f95f8f322f553d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_turn.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_turn.determinism.log",
+      "sha256": "c69bd32ff470582cedc6d73c9ec1153d16eb0b1924ebf5a4e713bf6b52cb4801"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/11_turn.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/11_turn.reader.log",
+      "sha256": "3e50e21ffcda28c188f30ffb806baf1ca798ebb62e4313aec1e8764c7ecfc983"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/12_scouting_tower.binary.log",
+      "sha256": "3a0585a3d61d8e5044370a456b057b9fbc9b3b25e2f80e3780a64fb52f61f130"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/12_scouting_tower.determinism.log",
+      "sha256": "e2ae4c37b0a440974ee63d635908f7f9081ef621dae99eaaf3a26c52a461b727"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/12_scouting_tower.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/12_scouting_tower.reader.log",
+      "sha256": "571d5cd73a34eb9c2ef3f7decc6c30da950a7fdd6fc9244d15accf88a9ee2369"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/13_skull_cave.binary.log",
+      "sha256": "12b15084b028ccbf2ea5d7f55bba83c1e9a96df4a7d5fcc9328d217229382f6a"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/13_skull_cave.determinism.log",
+      "sha256": "cbd9c4d63db7193035715181b544b44aa0f90ea520dec324b2596f2370842242"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/13_skull_cave.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/13_skull_cave.reader.log",
+      "sha256": "97812082c51d1d3ffa853d972330d75f7c1ad4b2cd754a56496c7af79ff6c819"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/14_school_monster_bus.binary.log",
+      "sha256": "5e71656636dc0158485ed911d610c48dc149bb92a69fdc81c7104b777ab8b108"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/14_school_monster_bus.determinism.log",
+      "sha256": "c26f7a38a3d6cdb2348c3f4f1394cc2f8f4adab48e8f4cbd31a68c67bb398eb3"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/14_school_monster_bus.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/14_school_monster_bus.reader.log",
+      "sha256": "bbca83c8c11c2ce240cd713a5151fa5eace343470c488cfda4bd6742eb3b9130"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/15_potion_factory.binary.log",
+      "sha256": "96f6cff7b38c65383c00965cd8c599866a78aca6b9e8326bef4ffbc52de6eb9b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/15_potion_factory.determinism.log",
+      "sha256": "40b42d8115676df01ec169b1fcd90b2bfcdf9ffb1f3b20268a1dd3e615c0acfc"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/15_potion_factory.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/15_potion_factory.reader.log",
+      "sha256": "b7284bffe14af61af30fffe8ec191fc80836e2a6447bf4fb34b75a7bd9184581"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/16_wishing_well.binary.log",
+      "sha256": "7e0f63ab44e8194a3be7a9741a6443f5172aa5312f3db3394c91da072cb9eb2f"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/16_wishing_well.determinism.log",
+      "sha256": "ee19342b81cace8a2691c20d766cec9827107a545236b29a20ac88473890bc1d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/16_wishing_well.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/16_wishing_well.reader.log",
+      "sha256": "7503bc7a21c329e3a806f0c79d5873526a2fb11dfb22718f101ed2ab8aa674d7"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_carousel.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_carousel.binary.log",
+      "sha256": "5a3a94625540d59f46d1c5eb0ddd6aaf6e6ef55f72b3dd83d6434f587035b366"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_carousel.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_carousel.determinism.log",
+      "sha256": "f5b5ca4294c905e8716944c214c01bb9ba7b59dec967c9e2b4217ad5645a1981"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_carousel.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_carousel.reader.log",
+      "sha256": "d6d0a979e3ac84a5310c32c7568ed73862f224542a7e65c31fa404d8b5456146"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_strider_bath.binary.log",
+      "sha256": "f27f59095af02796f81cb4be1ec09ef68e247a12270d8131d2d6c9743fbf6458"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_strider_bath.determinism.log",
+      "sha256": "1d23fc1981154949be155afb4c1629d34fbc898e6641b92610bb33fe97c5a329"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/17_strider_bath.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/17_strider_bath.reader.log",
+      "sha256": "6849696317818fa05002fe2d39ca2f9508225f1e3e5ce207101f46ff5bcc62be"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_easter_island_head.binary.log",
+      "sha256": "bc8837d695dfa4a2c6b90f4b11d4d2a3dced2b78ad00b3f97d04516a46e9195b"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_easter_island_head.determinism.log",
+      "sha256": "310f172ebc283ef7df3bc0b6e1491867296335687ab785e76d002ec9830d0350"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_easter_island_head.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_easter_island_head.reader.log",
+      "sha256": "9cf6b1838405bfd3ba7dea204c343829034b99c524e0b373eb41ffc656c948ee"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_giant_grandfather_clock.binary.log",
+      "sha256": "2884c67e34ca9805ecd3aa6e1914049c9ae388bd7a52a33128cb587f7c4c9f39"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_giant_grandfather_clock.determinism.log",
+      "sha256": "3c5257c70779267b61fa944246ab7142f915a2a147ab82e841c3ebd7a7c1cacb"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/18_giant_grandfather_clock.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/18_giant_grandfather_clock.reader.log",
+      "sha256": "b48c1733e901da170f05fa6dc216d4a5125361a41f2e62a7a3d11216a70fcf2d"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_hot_spring_chalet.binary.log",
+      "sha256": "8a1f7d2937e0331ec66b5c49b740b2b0b718f07616b2ed229b50dd50be68de82"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_hot_spring_chalet.determinism.log",
+      "sha256": "42540b6511aef1a506f7e5c0bfe7d41a024d6c9d38bd8e151cb3623fb937374a"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_hot_spring_chalet.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_hot_spring_chalet.reader.log",
+      "sha256": "213d1441de67799f2a24ea83c06c855c7c2db81c03d941e35d8bb869c5794262"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.binary.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_thermal_springs.binary.log",
+      "sha256": "aecee63dc9e7b5dace5ec446f48f9ff26b2c55bd827e30858fb8d70cb73c3322"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.determinism.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_thermal_springs.determinism.log",
+      "sha256": "46200369d2c8a3d31f523ac5d48790d55c820bb1816772c3cb75851e577a354a"
+    },
+    {
+      "original": "schematics/tooling/validation/pack1/build_logs/19_thermal_springs.reader.log",
+      "destination": "schematics/tooling/validation/pack1/build_logs/pack_organized/19_thermal_springs.reader.log",
+      "sha256": "dbe8218f30e55012e133ac0963e87e7d4053f7f445906bcd97e756db618d4feb"
+    }
+  ],
+  "missing_historical_references": [
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_bee_hot_air_balloon.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_bee_hot_air_balloon.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_bee_hot_air_balloon.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_enderman_hot_air_balloon.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_enderman_hot_air_balloon.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_enderman_hot_air_balloon.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_pig_hot_air_balloon.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_pig_hot_air_balloon.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/02_pig_hot_air_balloon.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_big_red_barn.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_big_red_barn.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_big_red_barn.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_storage_silo.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_storage_silo.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/03_storage_silo.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/04_pagoda.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/04_pagoda.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/04_pagoda.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/05_allay_statue.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/05_allay_statue.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/05_allay_statue.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/06_wild_west_jail.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/06_wild_west_jail.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/06_wild_west_jail.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/07_secret_island_base.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/07_secret_island_base.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/07_secret_island_base.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/08_greenhouse.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/08_greenhouse.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/08_greenhouse.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/09_river_steamboat.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/09_river_steamboat.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/09_river_steamboat.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/10_pachinko_parkour.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/10_pachinko_parkour.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/10_pachinko_parkour.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_grandstand.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_grandstand.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_grandstand.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_hairpin.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_hairpin.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_hairpin.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_safety_fence.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_safety_fence.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_safety_fence.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_gate.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_gate.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_gate.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_grid.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_grid.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_starting_grid.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_turn.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_turn.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/11_turn.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/12_scouting_tower.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/12_scouting_tower.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/12_scouting_tower.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/13_skull_cave.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/13_skull_cave.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/13_skull_cave.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/14_school_monster_bus.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/14_school_monster_bus.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/14_school_monster_bus.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/15_potion_factory.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/15_potion_factory.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/15_potion_factory.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/16_wishing_well.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/16_wishing_well.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/16_wishing_well.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_carousel.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_carousel.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_carousel.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_strider_bath.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_strider_bath.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/17_strider_bath.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_easter_island_head.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_easter_island_head.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_easter_island_head.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_giant_grandfather_clock.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_giant_grandfather_clock.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/18_giant_grandfather_clock.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_hot_spring_chalet.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_hot_spring_chalet.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_hot_spring_chalet.reader.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_thermal_springs.binary.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_thermal_springs.determinism.log"
+    },
+    {
+      "report": "schematics/tooling/validation/pre_relocation_batch_validation.json",
+      "original": "schematics/validation/build_logs/19_thermal_springs.reader.log"
+    }
+  ]
+}

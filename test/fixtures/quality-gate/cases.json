@@ -1,0 +1,13 @@
+{
+  "barrier-a": { "action": "barrier", "peer": "barrier-b" },
+  "barrier-b": { "action": "barrier", "peer": "barrier-a" },
+  "triple-a": { "action": "barrier", "peers": ["triple-b", "triple-c"] },
+  "triple-b": { "action": "barrier", "peers": ["triple-a", "triple-c"] },
+  "triple-c": { "action": "barrier", "peers": ["triple-a", "triple-b"] },
+  "isolate-a": { "action": "isolate", "peer": "isolate-b" },
+  "isolate-b": { "action": "isolate", "peer": "isolate-a" },
+  "failure": { "action": "exit", "code": 9 },
+  "after": { "action": "exit", "code": 0 },
+  "parent": { "action": "parent" },
+  "descendant": { "action": "descendant" }
+}

@@ -562,6 +562,11 @@
                 label.title = cfg.description || '';
                 let input;
                 switch (cfg.type) {
+                    case 'placementMode':
+                        input = document.createElement('select');
+                        for (const value of ['delicate', 'raise', 'balanced', 'destructive']) input.add(new Option(value, value));
+                        input.value = cfg.default ?? 'delicate';
+                        break;
                     case 'boolean':
                         input = document.createElement('input');
                         input.type = 'checkbox';
@@ -619,8 +624,9 @@
                 if (!input) return;
                 const type = settingsSpec[key].type;
                 let val;
-                if (type === 'boolean') val = input.checked;
-                else if (type === 'number') val = Number(input.value);
+                if (type === 'placementMode') val = input.value || null;
+                else if (type === 'boolean') val = input.checked;
+                else if (type === 'number') val = input.value === '' ? null : Number(input.value);
                 else if (type === 'array' || type === 'object') {
                     try { val = JSON.parse(input.value); }
                     catch { val = input.value; }
@@ -783,6 +789,18 @@
                 label.title = cfg.description || '';
                 let input;
                 switch (cfg.type) {
+                    case 'placementMode':
+                        input = document.createElement('select');
+                        for (const value of ['delicate', 'raise', 'balanced', 'destructive']) input.add(new Option(value, value));
+                        const configured = settings[key] ?? 'delicate';
+                        const normalized = typeof configured === 'string' ? configured.toLowerCase() : String(configured);
+                        if (!['delicate', 'raise', 'balanced', 'destructive'].includes(normalized)) {
+                            const invalid = new Option(`Invalid mode: ${normalized} (choose a valid mode)`, normalized);
+                            invalid.disabled = true;
+                            input.add(invalid);
+                        }
+                        input.value = normalized;
+                        break;
                     case 'boolean':
                         input = document.createElement('input');
                         input.type = 'checkbox';
@@ -801,7 +819,7 @@
                 }
                 input.id = `agent-setting-${key}`;
                 input.addEventListener('input', onAgentSettingsChanged);
-                if (input.type === 'checkbox') input.addEventListener('change', onAgentSettingsChanged);
+                if (input.type === 'checkbox' || cfg.type === 'placementMode') input.addEventListener('change', onAgentSettingsChanged);
                 wrapper.appendChild(label);
                 wrapper.appendChild(input);
                 agentSettingsForm.appendChild(wrapper);
@@ -821,15 +839,18 @@
         window.openAgentSettings = openAgentSettings;
 
         function getEditedAgentSettings() {
-            const newSettings = { profile: (originalAgentSettings && originalAgentSettings.profile) || {} };
+            // The form schema is not the full settings contract. Keep hidden and
+            // future settings (including security restrictions) when editing.
+            const newSettings = { ...originalAgentSettings, profile: originalAgentSettings?.profile || {} };
             Object.keys(settingsSpec).forEach(key => {
                 if (key === 'profile') return;
                 const cfg = settingsSpec[key];
                 const input = document.getElementById(`agent-setting-${key}`);
                 if (!input) return;
                 let val;
-                if (cfg.type === 'boolean') val = input.checked;
-                else if (cfg.type === 'number') val = Number(input.value);
+                if (cfg.type === 'placementMode') val = input.value || null;
+                else if (cfg.type === 'boolean') val = input.checked;
+                else if (cfg.type === 'number') val = input.value === '' ? null : Number(input.value);
                 else if (cfg.type === 'array' || cfg.type === 'object') {
                     try { val = JSON.parse(input.value); }
                     catch { val = input.value; }
@@ -885,11 +906,12 @@
         applyBtn.addEventListener('click', () => {
             if (!currentAgentName) return;
             const edited = getEditedAgentSettings();
-            socket.emit('set-agent-settings', currentAgentName, edited);
-            // Update local settings immediately
-            agentSettings[currentAgentName] = { ...edited, fetched: true };
-            updateAgentViewer(currentAgentName);
-            closeAgentSettings();
+            socket.emit('set-agent-settings', currentAgentName, edited, result => {
+                if (!result.success) { alert(result.error); return; }
+                agentSettings[currentAgentName] = { ...edited, fetched: true };
+                updateAgentViewer(currentAgentName);
+                closeAgentSettings();
+            });
         });
 
         closeAgentSettingsBtn.addEventListener('click', closeAgentSettings);

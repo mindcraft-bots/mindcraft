@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/11_safety_fence.json schematics/schems/pack1/11_safety_fence.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/11_safety_fence.json",
+  "schematic": "schematics/schems/pack1/11_safety_fence.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    9,
+    5,
+    3
+  ],
+  "volume": 135,
+  "comparedVoxels": 135,
+  "expectedNonAir": 75,
+  "parserDerivedAir": 60,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 7,
+  "spotChecks": 7,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

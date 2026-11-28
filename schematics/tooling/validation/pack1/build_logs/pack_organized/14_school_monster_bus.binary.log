@@ -1,0 +1,3 @@
+$ python3 schematics/tooling/compile_blueprint.py validate schematics/blueprints/pack1/14_school_monster_bus.json schematics/schems/pack1/14_school_monster_bus.schem
+[exit code: 0]
+{"air": 737, "block_data_bytes": 1200, "bytes": 920, "dimensions": [8, 10, 15], "non_air": 463, "palette_entries": 35, "sha256": "dc1785bb1c523fa34d049b7937b950a313d245eae7313df21d398522090eb6d9", "spot_checks": 37, "volume": 1200}

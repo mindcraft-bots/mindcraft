@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+"""Stand in for an npm lifecycle process until the wrapper is interrupted."""
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+directory = Path(os.environ['TMPDIR'])
+def stop(signum, _frame):
+    (directory / 'npm-cleanup').write_text(signal.Signals(signum).name)
+    sys.exit(0)
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+subprocess.Popen([sys.executable, '-c',
+                  'import signal,time; signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+                  'signal.signal(signal.SIGINT,signal.SIG_IGN); time.sleep(30)'])
+(directory / 'npm-ready').touch()
+while True:
+    time.sleep(1)

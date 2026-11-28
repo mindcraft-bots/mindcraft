@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/06_wild_west_jail.json schematics/schems/pack1/06_wild_west_jail.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/06_wild_west_jail.json",
+  "schematic": "schematics/schems/pack1/06_wild_west_jail.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    13,
+    9,
+    9
+  ],
+  "volume": 1053,
+  "comparedVoxels": 1053,
+  "expectedNonAir": 446,
+  "parserDerivedAir": 607,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 42,
+  "spotChecks": 24,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

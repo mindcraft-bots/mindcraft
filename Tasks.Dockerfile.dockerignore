@@ -1,0 +1,10 @@
+.git
+.vscode
+node_modules
+tmp
+keys.json
+package-lock.json
+bots/*
+!bots/execTemplate.js
+!bots/lintTemplate.js
+server_data*

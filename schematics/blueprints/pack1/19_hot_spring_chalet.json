@@ -1,0 +1,295 @@
+{
+  "schema": "explicit_layers_v1",
+  "name": "19_hot_spring_chalet",
+  "folder": 19,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 10,
+  "height_y": 6,
+  "length_z": 13,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Northwest lowest bounding-box corner; +x east, +y up, +z south.",
+    "layer_order": "layers[y][z][x]; rows advance south, characters east"
+  },
+  "sources": [
+    "schematics/screenshots/pack1/19/IMG_20261115_160635-1536x1152.jpg",
+    "schematics/screenshots/pack1/19/IMG_20261115_160646-1536x1152.jpg"
+  ],
+  "title": "Hot-spring chalet / open birch pavilion",
+  "distinct_build_audit": "Part2 chalet is a distinct standalone reusable build. Steps1-4 are the same pavilion, not four separate builds. Thermal landscape and its benches are in19_thermal_springs. No book-background environment included.",
+  "printed_callout_audit": [
+    {
+      "page": 89,
+      "step": 1,
+      "printed": "8 blocks x 11 blocks; stripped birch wood foundation",
+      "implementation": "Foundation envelope x1..8,z1..11 is8x11, including6 post plinths and8x8 rear deck. Roof eaves expand output to10x13. The unfilled porch bay is inferred from the two free plinths in steps1-3."
+    },
+    {
+      "page": 89,
+      "step": 2,
+      "printed": "Six cobblestone posts: three front3 blocks high and three back4 blocks high; birch-plank floor",
+      "implementation": "Front/east x8 at z1,6,11 has y1..3. Rear/west x1 at z1,6,11 has y1..4. Narrow cobblestone-wall blocks follow pictured slender columns; floor y0 interior birch planks."
+    },
+    {
+      "page": 89,
+      "step": 3,
+      "printed": "Birch fences around tops of rear posts as pictured",
+      "implementation": "Connected fence rail along x1,y4, between/around rear posts with end returns. Roof conceals some end portions."
+    },
+    {
+      "page": 89,
+      "step": 4,
+      "printed": "Roof of polished granite slabs and blocks; hang lantern inside below roof",
+      "implementation": "Polished granite roof with staggered full-block/slab raised tiles, one-cell overhang; bottom/top slab states explicit. One hanging lantern beneath front roof at6,3,4."
+    }
+  ],
+  "printed_material_audit": {
+    "stripped birch wood": "stripped_birch_wood axis=y, full foundation/plinth cells.",
+    "cobblestone": "cobblestone_wall posts chosen from slender illustrated cross section; ambiguity with full cobblestone blocks documented.",
+    "birch planks": "Deck interior.",
+    "birch fences": "Rear top rail/end returns.",
+    "polished granite slabs and blocks": "Stepped shed roof and staggered raised tile pattern; no granite stairs introduced.",
+    "lantern": "One hanging=true lantern with no block-entity payload."
+  },
+  "state_audit": [
+    "All slab type values explicit; top slabs on middle roof band, bottom slabs at low/high bands, full blocks for raised tiles. No double slabs.",
+    "Cobblestone wall posts up=true/all lateral none; rear birch fence connections specified. No doors; hinge rule not applicable. Stripped birch wood axis=y.",
+    "No waterlogged states, fluids, entities or complex NBT; one hanging lantern attached below roof."
+  ],
+  "uncertainty": [
+    "Printed8x11 refers to foundation, not eaves. Output10x6x13 includes inferred one-cell roof overhang. Total roof height and pitch are unprinted.",
+    "Pictured unequal3/4 post heights interpreted as low single-slope shed roof with stepped half-block bands; exact roof tile positions, slab halves, fence-end details and rear face are uncertain. No exact hidden-fidelity claim.",
+    "Foundation image has an L-shaped back and isolated front plinths; deck8x8 and open3-row porch bay inferred. Exact deck board extent is not dimensioned, unlike8x11 outer foundation.",
+    "Printed round-stone/cobblestone wording does not explicitly distinguish wall-block columns from full blocks. Narrow cobblestone_wall selected from renders; quantities cannot be verified against a printed bill of materials because none is shown.",
+    "Hanging lantern count one is explicit in prose; exact attachment position inferred. No added furnishings, fireplace, doors or walls.",
+    "Exported independently from terrain because placement/overlap relative to pools is not measured. No live server/placement/physics test; local checks establish artifact consistency only."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:birch_fence[east=false,north=false,south=false,waterlogged=false,west=true]",
+    "B": "minecraft:birch_fence[east=false,north=false,south=true,waterlogged=false,west=false]",
+    "C": "minecraft:birch_fence[east=false,north=true,south=false,waterlogged=false,west=false]",
+    "D": "minecraft:birch_fence[east=false,north=true,south=true,waterlogged=false,west=false]",
+    "E": "minecraft:birch_fence[east=true,north=false,south=false,waterlogged=false,west=false]",
+    "F": "minecraft:birch_planks",
+    "G": "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]",
+    "H": "minecraft:lantern[hanging=true,waterlogged=false]",
+    "I": "minecraft:polished_granite",
+    "J": "minecraft:polished_granite_slab[type=bottom,waterlogged=false]",
+    "K": "minecraft:polished_granite_slab[type=top,waterlogged=false]",
+    "L": "minecraft:stripped_birch_wood[axis=y]"
+  },
+  "layers": [
+    [
+      "..........",
+      ".LLLLLLLL.",
+      ".LFFFFFFL.",
+      ".LFFFFFFL.",
+      ".LFFFFFFL.",
+      ".LFFFFFFL.",
+      ".LFFFFFFL.",
+      ".LFFFFFFL.",
+      ".LLLLLLLL.",
+      "..........",
+      "..........",
+      ".L......L.",
+      ".........."
+    ],
+    [
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      ".G......G.",
+      ".........."
+    ],
+    [
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      ".G......G.",
+      ".........."
+    ],
+    [
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "......H...",
+      "..........",
+      ".G......G.",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      ".G......G.",
+      ".........."
+    ],
+    [
+      ".B.KKKIJIJ",
+      "EGAKKKJJJJ",
+      ".D.KKKIJIJ",
+      ".D.KKKJJJJ",
+      ".D.KKKIJIJ",
+      ".D.KKKJJJJ",
+      ".G.KKKIJIJ",
+      ".D.KKKJJJJ",
+      ".D.KKKIJIJ",
+      ".D.KKKJJJJ",
+      ".D.KKKIJIJ",
+      "EGAKKKJJJJ",
+      ".C.KKKIJIJ"
+    ],
+    [
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J.....",
+      "JJJ.......",
+      "IJI.J....."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 541,
+    "minecraft:birch_fence[east=false,north=false,south=false,waterlogged=false,west=true]": 2,
+    "minecraft:birch_fence[east=false,north=false,south=true,waterlogged=false,west=false]": 1,
+    "minecraft:birch_fence[east=false,north=true,south=false,waterlogged=false,west=false]": 1,
+    "minecraft:birch_fence[east=false,north=true,south=true,waterlogged=false,west=false]": 8,
+    "minecraft:birch_fence[east=true,north=false,south=false,waterlogged=false,west=false]": 2,
+    "minecraft:birch_planks": 36,
+    "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 21,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 1,
+    "minecraft:polished_granite": 28,
+    "minecraft:polished_granite_slab[type=bottom,waterlogged=false]": 70,
+    "minecraft:polished_granite_slab[type=top,waterlogged=false]": 39,
+    "minecraft:stripped_birch_wood[axis=y]": 30
+  },
+  "non_air_count": 239,
+  "spot_checks": [
+    {
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "char": "L",
+      "description": "Northwest stripped-birch foundation"
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "z": 11,
+      "char": "L",
+      "description": "Southeast isolated porch plinth"
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "z": 2,
+      "char": "F",
+      "description": "Birch-plank deck"
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 10,
+      "char": ".",
+      "description": "Open porch gap"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 6,
+      "char": "G",
+      "description": "Front post third block"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "z": 6,
+      "char": "G",
+      "description": "Rear post fourth block"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "z": 6,
+      "char": "I",
+      "description": "Front roof above third post block"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "z": 4,
+      "char": "D",
+      "description": "Birch fence rear upper rail"
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "z": 0,
+      "char": "I",
+      "description": "Polished granite raised roof tile"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "z": 2,
+      "char": "J",
+      "description": "High bottom-slab roof band"
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "z": 2,
+      "char": "K",
+      "description": "Middle top-slab roof band"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "z": 2,
+      "char": "J",
+      "description": "Raised bottom-slab middle tile"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "z": 12,
+      "char": "J",
+      "description": "Low bottom-slab eave"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 4,
+      "char": "H",
+      "description": "Hanging lantern"
+    }
+  ]
+}

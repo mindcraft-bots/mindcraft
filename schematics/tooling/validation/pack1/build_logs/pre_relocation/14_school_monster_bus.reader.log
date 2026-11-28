@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/14_school_monster_bus.json schematics/14_school_monster_bus.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/14_school_monster_bus.json",
+  "schematic": "schematics/14_school_monster_bus.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    8,
+    10,
+    15
+  ],
+  "volume": 1200,
+  "comparedVoxels": 1200,
+  "expectedNonAir": 463,
+  "parserDerivedAir": 737,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 35,
+  "spotChecks": 37,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

@@ -3,12 +3,63 @@ import * as world from "./world.js";
 import pf from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import settings from "../../../settings.js";
+import agentSettings from '../settings.js';
+import { resolvePlacementOptions, validateResolvedPlacementOptions } from '../../utils/schematic/placement_options.js';
+import { buildSchematic as buildSchematicImplementation, discardSchematicRecovery } from "../../utils/schematic/build_schematic.js";
+import { serializeCreativeSlotWrite } from "../../utils/creative_slot.js";
 
 const blockPlaceDelay = settings.block_place_delay == null ? 0 : settings.block_place_delay;
 const useDelay = blockPlaceDelay > 0;
+const schematicResumeSessions = new WeakMap();
 
 export function log(bot, message) {
     bot.output += message + '\n';
+}
+
+export function setSchematicResumeSession(bot, session) {
+    if (!bot || (typeof bot !== 'object' && typeof bot !== 'function')) return;
+    const previous = schematicResumeSessions.get(bot);
+    if (previous && previous !== session) discardSchematicRecovery(previous);
+    if (session) schematicResumeSessions.set(bot, session);
+    else schematicResumeSessions.delete(bot);
+}
+
+export async function buildSchematic(bot, fileName, x = null, y = null, z = null, placementOptions = resolvePlacementOptions(agentSettings)) {
+    /**
+     * Build and verify a compatible version-suffixed .schem variant from the schematics directory.
+     * @param {MinecraftBot} bot - the bot that will build the schematic.
+     * @param {string} fileName - a safe file name or pack selector such as "pack1:1:1" (pack:group:fileId; the stable fileId resolves through the pack index) or literal file name/stem "pack1:01_wardrobe_nether_portal".
+     * @param {?number} x - optional integer/fractional world x coordinate.
+     * @param {?number} y - optional integer/fractional world y coordinate.
+     * @param {?number} z - optional integer/fractional world z coordinate.
+     * @returns {Promise<boolean>} true only when the build and world verification succeed.
+     * @example
+     * await skills.buildSchematic(bot, "pack1:01:01");
+     **/
+    try {
+        placementOptions = validateResolvedPlacementOptions(placementOptions);
+    } catch (error) {
+        log(bot, `Schematic placement rejected: ${error.message}`);
+        return false;
+    }
+    const resumeSession = schematicResumeSessions.get(bot) ?? null;
+    const result = await buildSchematicImplementation(bot, fileName, x, y, z, {
+        resumeSession,
+        placementOptions,
+        allowNonvalidatedSchematic: agentSettings.allow_nonvalidated_schematic_builds === true,
+        requireStrictSchematicValidation: agentSettings.require_strict_schematic_validation === true,
+        writeLog: (message) => log(bot, message),
+    });
+    const sessionStillValid = resumeSession?.context != null
+        && resumeSession.resumeEligible === true
+        && !resumeSession.cancelled
+        && resumeSession.isWorldValid?.(bot) === true;
+    if (resumeSession && !sessionStillValid) {
+        resumeSession.cancelled = true;
+        resumeSession.context = null;
+        schematicResumeSessions.delete(bot);
+    }
+    return result;
 }
 
 async function autoLight(bot) {
@@ -690,7 +741,7 @@ export async function placeBlock(bot, blockType, x, y, z, placeOn='bottom', dont
     }
     let block_item = bot.inventory.findInventoryItem(item_name);
     if (!block_item && bot.game.gameMode === 'creative' && !bot.restrict_to_inventory) {
-        await bot.creative.setInventorySlot(36, mc.makeItem(item_name, 1)); // 36 is first hotbar slot
+        await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(36, mc.makeItem(item_name, 1))); // 36 is first hotbar slot
         block_item = bot.inventory.findInventoryItem(item_name);
     }
     if (!block_item) {
@@ -805,7 +856,7 @@ export async function equip(bot, itemName) {
     let item = bot.inventory.slots.find(slot => slot && slot.name === itemName);
     if (!item) {
         if (bot.game.gameMode === "creative") {
-            await bot.creative.setInventorySlot(36, mc.makeItem(itemName, 1));
+            await serializeCreativeSlotWrite(bot, 36, () => bot.creative.setInventorySlot(36, mc.makeItem(itemName, 1)));
             item = bot.inventory.findInventoryItem(itemName);
         }
         else {

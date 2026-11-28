@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+"""Record only isolation assertions, never environment values or secret contents."""
+import json
+import os
+from pathlib import Path
+
+root = Path.cwd()
+names = ('repo-secret', 'info-secret', 'global secret', 'package-lock.json')
+result = {
+    'ignored_present': [name for name in names[:3] if (root / name).exists()],
+    'visible': (root / 'visible file').read_text(),
+    'tracked': (root / 'tracked secret').read_text(),
+    'credential_present': any(name in os.environ for name in ('FIXTURE_CREDENTIAL', 'GIT_CONFIG_GLOBAL_PRIVATE', 'HTTP_PROXY')),
+    'git_config_clean': os.environ.get('GIT_CONFIG_GLOBAL') == '/dev/null',
+    'private_home': os.environ.get('HOME', '').endswith('/home'),
+    'npm_config_empty': all(not Path(os.environ[name]).read_text() for name in ('NPM_CONFIG_USERCONFIG', 'NPM_CONFIG_GLOBALCONFIG')),
+    'lock_is_ci': (root / 'package-lock.json').read_text() == '{}',
+}
+(root / 'npm-result.json').write_text(json.dumps(result))

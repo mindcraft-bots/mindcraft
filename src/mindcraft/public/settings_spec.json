@@ -46,6 +46,46 @@
         "description": "List of agents to only chat with. If empty, the bot will chat publicly",
         "default": []
     },
+    "schematic_placement_mode": {
+        "type": "placementMode",
+        "description": "Delicate (default, no clearing), raise (bounded dirt foundation), balanced, or destructive for explicitly listed humans via authenticated public Minecraft chat.",
+        "default": "delicate"
+    },
+    "schematic_continuation_policy": {
+        "type": "string",
+        "description": "ask fails closed (no approval prompt); allow permits explicit authenticated fixed-origin delicate continuation; deny refuses it; off disables continuation detection and uses legacy new-build behavior.",
+        "default": "ask"
+    },
+    "schematic_balanced_radius": {
+        "type": "number",
+        "description": "Balanced horizontal search radius, integer 0–16.",
+        "default": 4
+    },
+    "schematic_balanced_threshold": {
+        "type": "number",
+        "description": "Strict balanced full-volume mismatch threshold, integer 1–4097.",
+        "default": 9
+    },
+    "schematic_balanced_strategy": {
+        "type": "string",
+        "description": "Balanced search strategy (exact lowercase): all, stepped, or bisect.",
+        "default": "stepped"
+    },
+    "schematic_balanced_step": {
+        "type": "number",
+        "description": "Balanced search step, integer 1–16.",
+        "default": 2
+    },
+    "schematic_balanced_policy": {
+        "type": "string",
+        "description": "Balanced selection policy (exact lowercase): first_valid or exhaustive.",
+        "default": "first_valid"
+    },
+    "schematic_balanced_bisect_depth": {
+        "type": "number",
+        "description": "Balanced bisect depth, integer 0–3.",
+        "default": 2
+    },
     "speak": {
         "type": "boolean",
         "description": "Whether to enable text-to-speech reading on the host machine",

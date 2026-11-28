@@ -1,0 +1,25 @@
+$ node schematics/tooling/validate_blueprint.mjs schematics/blueprints/pack1/19_thermal_springs.json schematics/schems/pack1/19_thermal_springs.schem 1.21.4
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/pack1/19_thermal_springs.json",
+  "schematic": "schematics/schems/pack1/19_thermal_springs.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    23,
+    8,
+    22
+  ],
+  "volume": 4048,
+  "comparedVoxels": 4048,
+  "expectedNonAir": 1170,
+  "parserDerivedAir": 2878,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 23,
+  "spotChecks": 20,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

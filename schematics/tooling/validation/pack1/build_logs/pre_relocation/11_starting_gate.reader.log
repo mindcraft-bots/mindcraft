@@ -1,0 +1,25 @@
+$ node schematics/validate_blueprint.mjs schematics/blueprints/11_starting_gate.json schematics/11_starting_gate.schem
+[exit code: 0]
+{
+  "blueprint": "schematics/blueprints/11_starting_gate.json",
+  "schematic": "schematics/11_starting_gate.schem",
+  "parser": "src/utils/schematic/reader.js readSchematic -> prismarine-schematic",
+  "registry": "minecraft-data 1.21.4",
+  "dimensions": [
+    11,
+    11,
+    7
+  ],
+  "volume": 847,
+  "comparedVoxels": 847,
+  "expectedNonAir": 184,
+  "parserDerivedAir": 663,
+  "parserDerivedCountsMatch": true,
+  "countDiffs": [],
+  "legendEntriesValidated": 18,
+  "spotChecks": 13,
+  "spotCheckFailures": [],
+  "parserMismatches": 0,
+  "firstMismatches": [],
+  "fullVoxelAndStateComparison": "PASS"
+}

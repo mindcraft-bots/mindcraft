@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as mindcraft from './mindcraft.js';
 import { readFileSync } from 'fs';
+import { resolvePlacementOptions } from '../utils/schematic/placement_options.js';
+import { validateTrustedCommandSenders } from '../utils/command_trust.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Mindserver is:
@@ -33,6 +35,7 @@ class AgentConnection {
 }
 
 export function registerAgent(settings, viewer_port) {
+    validateTrustedCommandSenders(settings.trusted_command_senders);
     let agentConnection = new AgentConnection(settings, viewer_port);
     agent_connections[settings.profile.name] = agentConnection;
 }
@@ -133,10 +136,14 @@ export function createMindServer(host_public = false, port = 8080) {
                     }
                 }
             }
-            for (let key in settings) {
-                if (!(key in settings_spec)) {
-                    delete settings[key];
-                }
+            // settings_spec describes the UI/defaults, not every runtime setting.
+            // In particular, API-supplied hidden restrictions must survive creation.
+            try {
+                resolvePlacementOptions(settings);
+                validateTrustedCommandSenders(settings.trusted_command_senders);
+            } catch (error) {
+                callback({ success: false, error: error.message });
+                return;
             }
             if (settings.profile?.name) {
                 if (settings.profile.name in agent_connections) {
@@ -206,11 +213,23 @@ export function createMindServer(host_public = false, port = 8080) {
             agent_connections[agentName].socket.emit('chat-message', curAgentName, json);
         });
 
-        socket.on('set-agent-settings', (agentName, settings) => {
+        socket.on('set-agent-settings', (agentName, settings, callback = () => {}) => {
             const agent = agent_connections[agentName];
             if (agent) {
-                agent.setSettings(settings);
-                agent.socket.emit('restart-agent');
+                // Updates are top-level patches: omission must not delete hidden
+                // settings. Explicit values (including null/[] where supported)
+                // still replace old values; validate before committing anything.
+                const updatedSettings = { ...agent.settings, ...settings };
+                try {
+                    resolvePlacementOptions(updatedSettings);
+                    validateTrustedCommandSenders(updatedSettings.trusted_command_senders);
+                }
+                catch (error) { callback({ success: false, error: error.message }); return; }
+                agent.setSettings(updatedSettings);
+                agent.socket?.emit('restart-agent');
+                callback({ success: true });
+            } else {
+                callback({ success: false, error: 'Agent not found' });
             }
         });
 

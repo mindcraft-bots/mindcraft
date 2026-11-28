@@ -1,0 +1,505 @@
+{
+  "schema": "explicit-layer-matrix-v1",
+  "name": "16_wishing_well",
+  "folder": 16,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 5,
+  "height_y": 15,
+  "length_z": 8,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Minimum envelope corner. +x east across printed 3-block excavation width; +z south along its 6-block length; +y up. Front/north is z0. Ground surface blocks y7 (top elevation8); excavation x1..3,z1..6,y1..6 is exactly3x6x6 below ground, excluding the included stone support floor y0. This export includes a minimal host-terrain border. Place schematic origin eight blocks below the desired walkable grass-top elevation."
+  },
+  "source_images": [
+    "schematics/screenshots/pack1/16/IMG_20261115_160507-1536x1152.jpg"
+  ],
+  "distinct_build_audit": "One wishing well (Ukrainian title ЧАРІВНИЙ КОЛОДЯЗЬ), pages72-73. Steps1-3 and both redstone close-ups depict subassemblies of the same well, integrated here rather than exported as duplicate builds. Player, thrown gold/potion items and potion particles are not builds.",
+  "printed_dimension_audit": [
+    {
+      "page": 73,
+      "step": 1,
+      "printed": "Dig a 6x3 hole six blocks deep; diagram labels 3 blocks and 6 blocks.",
+      "realization": "Excavation x1..3,z1..6,y1..6 inclusive before installation =3x6x6. Minimal border gives5x8 footprint, support floor y0, grass y7. Installed masonry and wiring intentionally occupy the excavation."
+    },
+    {
+      "page": 73,
+      "step": 2,
+      "printed": "Line shaft below hopper with stone bricks, mossy stone bricks and mossy cobblestone; roof of stone bricks, warped planks and slabs. No numerical well/roof dimensions.",
+      "realization": "Inferred3x3 hollow shaft/rim x1..3,z1..3; hopper y2, mouth y7..8; four corner posts y9..12;5x5 eaves y13 and3x3 upper tier y14. All these non-excavation measurements are inferred, not printed."
+    },
+    {
+      "page": 73,
+      "step": 3,
+      "printed": "Hide hole under grass, cover dispenser, place nearby leaves as if overgrown for many years.",
+      "realization": "Grass cover y7 outside mouth; grass immediately above dispenser(2,6,5). Local azalea/flowering azalea leaf mass integrated. No printed foliage envelope/count."
+    }
+  ],
+  "printed_material_audit": [
+    {
+      "printed": "Stone bricks, redstone torch, dust, comparator, dispenser, chest, hopper (step1 and redstone explanation).",
+      "used": [
+        "stone_bricks",
+        "redstone_torch",
+        "redstone_wire",
+        "comparator",
+        "dispenser",
+        "chest",
+        "hopper"
+      ],
+      "notes": "One chest, one hopper, one comparator, one dust, two standing torches and one up-facing dispenser. Positions/rising torch stack and rest-state values inferred from exploded perspective; inventory deliberately empty."
+    },
+    {
+      "printed": "Stone bricks, mossy stone bricks, mossy cobblestone; warped planks and slabs (step2).",
+      "used": [
+        "stone_bricks",
+        "mossy_stone_bricks",
+        "mossy_cobblestone",
+        "stone_brick_wall",
+        "warped_fence",
+        "warped_planks",
+        "warped_slab"
+      ],
+      "notes": "Masonry necks and warped-fence shafts follow visible post geometry; wall/fence variants visually inferred. Warped planks rather than prismarine match explicit Ukrainian warped-board wording. Slabs all bottom half; exact tier half-levels uncertain."
+    },
+    {
+      "printed": "Grass and nearby leaves (step3); cyan lantern and pink flowers visible in final render.",
+      "used": [
+        "grass_block",
+        "dirt",
+        "stone",
+        "azalea_leaves",
+        "flowering_azalea_leaves",
+        "soul_lantern"
+      ],
+      "notes": "Soul lantern inferred from cyan light. Flowering azalea leaves inferred from pink patterned foliage; nonflowering leaves mixed locally. Stone/dirt are minimal host terrain, not a claimed book materials inventory. No printed numeric material list exists."
+    }
+  ],
+  "inferred_detail_uncertainty": [
+    "Single perspective photo does not uniquely determine hidden voxels; this is a documented best-effort reconstruction, not an exact-fidelity certification. Printed pit3x6 depth6 is the only numerical structural dimension on this page.",
+    "Overall5x15x8 includes inferred one-block stone support floor, minimum one-block dirt/grass border, foliage, roof and underground circuit; it is not a claimed printed well envelope. Ground grass y7, roof summit top elevation15 gives seven blocks visible above walkable surface.",
+    "3x3 well lining/rim and5x5 roof are inferred from corner spacing and step diagrams. The closed outer underground lining, masonry weathering pattern, post heights and tier half-levels cannot be fully counted from the photograph. Slabs bottom half; no doors/axis-bearing logs occur.",
+    "The shaft is dry and open above the hopper; no water is depicted unambiguously or added. Comparator shares the rear lower lining at y2,z3. Exact compass direction, redstone tower offset, torque/rest states and concealed wiring are inferred. Dust climbs toward solid support at y2,z5; explicit initial north/south side states may update at runtime. Functional redstone timing is not certified.",
+    "Dispenser is upward-facing below grass per pictured instruction to conceal it. Empty hopper/chest/dispenser have no inventory/block-entity NBT. Book calls for splash potions, intentionally omitted under no complex NBT/entity requirement. No usable rewards or automatic wish effect claimed.",
+    "Included host dirt/stone is minimal placement context around measured excavation, not a recreation of the forest/cutaway background. It will overwrite blocks within that host volume. No side cutaway is baked into the finished build.",
+    "Azalea foliage locations, counts, persistent=true and distance=7 are inferred; exact foliage registry distance is not visually recoverable. Retain intended vanilla states even if the installed application reader misdecodes them; report discrepancies honestly rather than change states.",
+    "Soul lantern is inferred from the cyan hanging lamp visible in master render, partially occluded in construction diagrams. Local foliage only, not full forest, flowers on ground, hills, tall grass, player, particles or items.",
+    "No entities, fluid blocks or complex block-entity payloads. No live-server placement, physics, redstone-function or exact rendered-image comparison test."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "S": "minecraft:stone",
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "B": "minecraft:stone_bricks",
+    "M": "minecraft:mossy_stone_bricks",
+    "C": "minecraft:mossy_cobblestone",
+    "w": "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]",
+    "f": "minecraft:warped_fence[east=false,north=false,south=false,waterlogged=false,west=false]",
+    "P": "minecraft:warped_planks",
+    "s": "minecraft:warped_slab[type=bottom,waterlogged=false]",
+    "h": "minecraft:hopper[enabled=true,facing=down]",
+    "c": "minecraft:chest[facing=north,type=single,waterlogged=false]",
+    "q": "minecraft:comparator[facing=south,mode=compare,powered=false]",
+    "r": "minecraft:redstone_wire[east=none,north=side,power=0,south=side,west=none]",
+    "t": "minecraft:redstone_torch[lit=true]",
+    "u": "minecraft:redstone_torch[lit=false]",
+    "d": "minecraft:dispenser[facing=up,triggered=false]",
+    "l": "minecraft:soul_lantern[hanging=true,waterlogged=false]",
+    "a": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+    "o": "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]"
+  },
+  "layers": [
+    [
+      "SSSSS",
+      "SSSSS",
+      "SSSSS",
+      "SSSSS",
+      "SSSSS",
+      "SSSSS",
+      "SSSSS",
+      "SSSSS"
+    ],
+    [
+      "DDDDD",
+      "DBBBD",
+      "DBcBD",
+      "DBBBD",
+      "D.B.D",
+      "D...D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "DDDDD",
+      "DBBBD",
+      "DBhBD",
+      "DBqBD",
+      "D.r.D",
+      "D.B.D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "DDDDD",
+      "DBBBD",
+      "DB.BD",
+      "DBBBD",
+      "D...D",
+      "D.u.D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "DDDDD",
+      "DBBBD",
+      "DB.BD",
+      "DBBBD",
+      "D...D",
+      "D.B.D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "DDDDD",
+      "DBBMD",
+      "DM.BD",
+      "DBBBD",
+      "D...D",
+      "D.t.D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "DDDDD",
+      "DCMBD",
+      "DC.BD",
+      "DBBMD",
+      "D...D",
+      "D.d.D",
+      "D...D",
+      "DDDDD"
+    ],
+    [
+      "GGGGG",
+      "GCBBG",
+      "GC.BG",
+      "GBMBG",
+      "GGGGG",
+      "GGGGG",
+      "GGGGG",
+      "GGGGG"
+    ],
+    [
+      "a....",
+      "oBBB.",
+      ".B.M.",
+      "aMBBo",
+      "oaa.a",
+      "aa...",
+      ".....",
+      "....."
+    ],
+    [
+      ".....",
+      "aw.w.",
+      ".....",
+      "ow.w.",
+      "aao.a",
+      "ao...",
+      ".....",
+      "....."
+    ],
+    [
+      ".....",
+      ".B.B.",
+      ".....",
+      "aB.M.",
+      "aoa..",
+      "o....",
+      ".....",
+      "....."
+    ],
+    [
+      ".....",
+      ".f.f.",
+      ".....",
+      ".f.f.",
+      "oaa..",
+      ".....",
+      ".....",
+      "....."
+    ],
+    [
+      ".....",
+      ".flf.",
+      ".....",
+      ".f.f.",
+      "aa...",
+      ".....",
+      ".....",
+      "....."
+    ],
+    [
+      "sssss",
+      "sPPPs",
+      "sPPPs",
+      "sPPPs",
+      "sssss",
+      ".....",
+      ".....",
+      "....."
+    ],
+    [
+      ".....",
+      ".sss.",
+      ".sPs.",
+      ".sss.",
+      ".....",
+      ".....",
+      ".....",
+      "....."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 245,
+    "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]": 9,
+    "minecraft:chest[facing=north,type=single,waterlogged=false]": 1,
+    "minecraft:comparator[facing=south,mode=compare,powered=false]": 1,
+    "minecraft:dirt": 132,
+    "minecraft:dispenser[facing=up,triggered=false]": 1,
+    "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]": 19,
+    "minecraft:grass_block[snowy=false]": 31,
+    "minecraft:hopper[enabled=true,facing=down]": 1,
+    "minecraft:mossy_cobblestone": 4,
+    "minecraft:mossy_stone_bricks": 8,
+    "minecraft:redstone_torch[lit=false]": 1,
+    "minecraft:redstone_torch[lit=true]": 1,
+    "minecraft:redstone_wire[east=none,north=side,power=0,south=side,west=none]": 1,
+    "minecraft:soul_lantern[hanging=true,waterlogged=false]": 1,
+    "minecraft:stone": 40,
+    "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 4,
+    "minecraft:stone_bricks": 58,
+    "minecraft:warped_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 8,
+    "minecraft:warped_planks": 10,
+    "minecraft:warped_slab[type=bottom,waterlogged=false]": 24
+  },
+  "block_count": 355,
+  "air_count": 245,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "char": "S",
+      "description": "included natural stone support below six-deep excavation"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "z": 6,
+      "char": ".",
+      "description": "excavation bottom air at rear corner"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "z": 6,
+      "char": ".",
+      "description": "excavation upper air at rear corner"
+    },
+    {
+      "x": 0,
+      "y": 6,
+      "z": 6,
+      "char": "D",
+      "description": "host dirt border, not excavated"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "z": 6,
+      "char": "G",
+      "description": "grass trench cover"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "char": "c",
+      "description": "empty collection chest"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "char": "h",
+      "description": "downward hopper directly below dry well shaft"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 3,
+      "char": "q",
+      "description": "south-facing comparator reads north-side hopper"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 4,
+      "char": "r",
+      "description": "north-south dust output"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 5,
+      "char": "B",
+      "description": "lower torch tower support"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 5,
+      "char": "u",
+      "description": "lower torch initially unlit"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "z": 5,
+      "char": "B",
+      "description": "upper torch support"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "z": 5,
+      "char": "t",
+      "description": "upper torch initially lit"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "z": 5,
+      "char": "d",
+      "description": "empty upward-facing dispenser"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "z": 5,
+      "char": "G",
+      "description": "grass hides dispenser"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "z": 2,
+      "char": ".",
+      "description": "well mouth at ground remains open"
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "z": 2,
+      "char": ".",
+      "description": "open center of raised well rim"
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "z": 1,
+      "char": "B",
+      "description": "rim corner"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "z": 1,
+      "char": "w",
+      "description": "stone brick wall lower post"
+    },
+    {
+      "x": 1,
+      "y": 10,
+      "z": 1,
+      "char": "B",
+      "description": "full stone brick post capital"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "z": 3,
+      "char": "M",
+      "description": "mossy rear capital"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "z": 1,
+      "char": "f",
+      "description": "lower warped fence post"
+    },
+    {
+      "x": 1,
+      "y": 12,
+      "z": 1,
+      "char": "f",
+      "description": "upper warped fence post"
+    },
+    {
+      "x": 2,
+      "y": 12,
+      "z": 1,
+      "char": "l",
+      "description": "hanging soul lantern"
+    },
+    {
+      "x": 0,
+      "y": 13,
+      "z": 0,
+      "char": "s",
+      "description": "bottom-half warped eave slab"
+    },
+    {
+      "x": 1,
+      "y": 13,
+      "z": 1,
+      "char": "P",
+      "description": "warped plank roof inner course"
+    },
+    {
+      "x": 1,
+      "y": 14,
+      "z": 1,
+      "char": "s",
+      "description": "bottom-half upper-tier slab"
+    },
+    {
+      "x": 2,
+      "y": 14,
+      "z": 2,
+      "char": "P",
+      "description": "full warped plank roof summit"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "z": 4,
+      "char": "a",
+      "description": "pink flowering leaf background"
+    },
+    {
+      "x": 0,
+      "y": 14,
+      "z": 7,
+      "char": ".",
+      "description": "envelope air"
+    }
+  ]
+}

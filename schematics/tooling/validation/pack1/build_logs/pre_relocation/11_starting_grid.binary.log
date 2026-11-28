@@ -1,0 +1,3 @@
+$ python3 schematics/compile_blueprint.py validate schematics/blueprints/11_starting_grid.json schematics/11_starting_grid.schem
+[exit code: 0]
+{"air": 165, "block_data_bytes": 513, "bytes": 312, "dimensions": [9, 3, 19], "non_air": 348, "palette_entries": 6, "sha256": "37becd6d5f84d877c949112f75e64cdb2f35ecee7abecb4ba978129efe4c3b5f", "spot_checks": 8, "volume": 513}

@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "name": "Horse Racing Turn",
+  "slug": "11_turn",
+  "folder": "11",
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "source_images": [
+    "schematics/screenshots/pack1/11/IMG_20261115_160237-1536x1152.jpg",
+    "schematics/screenshots/pack1/11/IMG_20261115_160250-1536x1152.jpg",
+    "schematics/screenshots/pack1/11/IMG_20261115_160304-1536x1152.jpg"
+  ],
+  "distinct_build_audit": {
+    "count": 6,
+    "components": [
+      "starting_gate",
+      "hairpin",
+      "turn",
+      "starting_grid",
+      "grandstand",
+      "safety_fence"
+    ],
+    "interpretation": "Six reusable distinct components across pages48-53. Grandstand steps are one assembly. No invented complete landscape circuit; raised/lowered gate is one stateful build."
+  },
+  "width_x": 12,
+  "height_y": 2,
+  "length_z": 12,
+  "origin": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "description": "Northwest bottom corner of template; road connects east and south edges. x east/right, y up, z south/back; zero schematic offset."
+  },
+  "coordinate_convention": "layers[y][z][x]; all cells explicit, including air; x fastest",
+  "dimension_audit": [
+    {
+      "feature": "tile footprint",
+      "printed": "12 blocks by12 blocks",
+      "implemented": "width_x12,length_z12; substrate y0,surface y1",
+      "confidence": "Printed footprint exact; quarter-round contour pixels and thickness inferred."
+    }
+  ],
+  "material_audit": [
+    {
+      "source": "p49 road concrete; p51 colored template renders",
+      "labels": "gray/white concrete explicitly on p49; red-white curbs, pale shoulder and grass visible on p51",
+      "implemented": "gray_concrete,white_concrete,red_concrete,gravel,grass_block,dirt. Gravel shoulder identification is visual, not a printed material list."
+    }
+  ],
+  "state_audit": {
+    "surface": "All full cubes; grass snowy=false. No slabs,mechanisms,doors,fluids or entities."
+  },
+  "occlusion_uncertainties": [
+    "Oblique photographs do not determine every voxel. Printed callouts are prioritized; unprinted silhouettes, hidden supports and pixel patterns are inferred, not certified exact.",
+    "No fluids, entities or complex block-entity NBT. No live-world, redstone-timing, gravity-update or placement tests.",
+    "The large landscape circuits on pages51 and53 are explicitly customizable examples, not a dimensioned seventh build. Trees, river, horses and riders are not included. Start-line direction/powered vignettes are states/views of one mechanism, not duplicate builds.",
+    "Quarter-round red-white outer curb and tiny inner grass corner follow p51 silhouette; exact raster/checker phase unprinted.",
+    "No printed shoulder material name; pale shoulder modeled as gravel, grass/dirt from thumbnail."
+  ],
+  "legend": {
+    "D": "minecraft:dirt",
+    "G": "minecraft:grass_block[snowy=false]",
+    "A": "minecraft:gray_concrete",
+    "W": "minecraft:white_concrete",
+    "R": "minecraft:red_concrete",
+    "V": "minecraft:gravel"
+  },
+  "layers": [
+    [
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD",
+      "DDDDDDDDDDDD"
+    ],
+    [
+      "GGVVVVVVVVGG",
+      "GGVVVVVVVRGG",
+      "VVVVVVRWRWRW",
+      "VVVVVRWAAAAA",
+      "VVVVRWAAAAAA",
+      "VVVRWAAAAAAA",
+      "VVRWAAAAAAAA",
+      "VVWAAAAAAAAA",
+      "VVRAAAAAAAAA",
+      "VRWAAAAAAAAA",
+      "GGRAAAAAAAGG",
+      "GGWAAAAAAAGG"
+    ]
+  ],
+  "spot_checks": [
+    {
+      "description": "outer grass corner",
+      "x": 0,
+      "y": 1,
+      "z": 0,
+      "char": "G",
+      "state": "minecraft:grass_block[snowy=false]"
+    },
+    {
+      "description": "gray road",
+      "x": 6,
+      "y": 1,
+      "z": 6,
+      "char": "A",
+      "state": "minecraft:gray_concrete"
+    },
+    {
+      "description": "inner grass corner",
+      "x": 11,
+      "y": 1,
+      "z": 11,
+      "char": "G",
+      "state": "minecraft:grass_block[snowy=false]"
+    },
+    {
+      "description": "south road exit",
+      "x": 5,
+      "y": 1,
+      "z": 11,
+      "char": "A",
+      "state": "minecraft:gray_concrete"
+    },
+    {
+      "description": "east road exit",
+      "x": 11,
+      "y": 1,
+      "z": 5,
+      "char": "A",
+      "state": "minecraft:gray_concrete"
+    },
+    {
+      "description": "substrate",
+      "x": 11,
+      "y": 0,
+      "z": 11,
+      "char": "D",
+      "state": "minecraft:dirt"
+    }
+  ],
+  "expected_counts": {
+    "minecraft:dirt": 144,
+    "minecraft:grass_block[snowy=false]": 16,
+    "minecraft:gravel": 40,
+    "minecraft:gray_concrete": 67,
+    "minecraft:red_concrete": 11,
+    "minecraft:white_concrete": 10
+  },
+  "non_air_count": 288,
+  "air_count": 0
+}

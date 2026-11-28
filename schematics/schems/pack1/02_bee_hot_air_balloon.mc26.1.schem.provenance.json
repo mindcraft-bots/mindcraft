@@ -1,0 +1,12 @@
+{
+  "artifact": "02_bee_hot_air_balloon.mc26.1.schem",
+  "blueprint": "schematics/blueprints/pack1/02_bee_hot_air_balloon.json",
+  "blueprintSha256": "64e2841e2239a1597be721e5a0a6ed0cb7bdf8f4d28682e411df75434b8b2c2c",
+  "convertTo": "26.1",
+  "packReport": null,
+  "packReportSha256": null,
+  "schemaVersion": 1,
+  "sha256": "0f7945a43f00d7e8a417de1e66f9db2da06e2fdd7fa6d474147c8cc3c0583f1a",
+  "targetVersion": null,
+  "validation": "STRICT_VALIDATED"
+}

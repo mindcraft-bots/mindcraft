@@ -1,0 +1,5 @@
+{
+  "name": "SchemTester",
+  "model": { "api": "openai", "model": "mock", "url": "http://mock-llm:8080/v1" },
+  "embedding": "none"
+}

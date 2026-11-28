@@ -7,6 +7,11 @@ export class ActionManager {
         this.timedout = false;
         this.resume_func = null;
         this.resume_name = '';
+        this.resume_guard = null;
+        this.resume_options = null;
+        this.lastInterruption = null;
+        this.managedResumeSessions = new Set();
+        this.transitionReservations = 0;
         this.last_action_time = 0;
         this.recent_action_counter = 0;
     }
@@ -15,12 +20,70 @@ export class ActionManager {
         return this._executeResume(actionFn, timeout);
     }
 
-    async runAction(actionLabel, actionFn, { timeout, resume = false } = {}) {
+    async runAction(actionLabel, actionFn, { timeout, resume = false, managedSession = null } = {}) {
         if (resume) {
             return this._executeResume(actionLabel, actionFn, timeout);
         } else {
+            // A queued/active managed resume belongs to the interrupted action.
+            // Do not let a replacement action invalidate the session it just started.
+            if (!String(actionLabel).startsWith('mode:')) this.cancelManagedResumeForReplacement(managedSession);
             return this._executeAction(actionLabel, actionFn, timeout);
         }
+    }
+
+    beginManagedResume(onCancel, actionLabel = null) {
+        const session = { cancelled: false, onCancel, actionLabel, cancelCalled: false };
+        this.managedResumeSessions.add(session);
+        return session;
+    }
+
+    finishManagedResume(session) {
+        if (session) this.managedResumeSessions.delete(session);
+    }
+
+    hasPendingManagedResumeFor(actionLabel) {
+        return this.resume_name === actionLabel
+            || [...this.managedResumeSessions].some((session) => session.actionLabel === actionLabel);
+    }
+
+    cancelManagedSession(session) {
+        if (!session || session.cancelCalled) return;
+        session.cancelled = true;
+        session.cancelCalled = true;
+        this.managedResumeSessions.delete(session);
+        try { session.onCancel?.(); } catch (error) { console.error('Managed resume cancellation callback failed:', error); }
+    }
+
+    cancelManagedResumeForReplacement(except = null) {
+        if (this.resume_options?.cancelOnReplacement) this.cancelResume();
+        for (const session of [...this.managedResumeSessions]) {
+            if (session !== except) this.cancelManagedSession(session);
+        }
+    }
+
+    reserveTransition() {
+        this.transitionReservations++;
+        let released = false;
+        return () => {
+            if (released) return;
+            released = true;
+            this.transitionReservations = Math.max(0, this.transitionReservations - 1);
+        };
+    }
+
+    registerResume(actionLabel, actionFn, {
+        guard = null,
+        onCancel = null,
+        cancelOnSuccess = false,
+        cancelOnReplacement = false,
+        managedSession = null,
+    } = {}) {
+        if (managedSession?.cancelled) return false;
+        this.resume_name = actionLabel;
+        this.resume_func = actionFn;
+        this.resume_guard = guard;
+        this.resume_options = { onCancel, cancelOnSuccess, cancelOnReplacement, managedSession };
+        return true;
     }
 
     async stop() {
@@ -37,8 +100,19 @@ export class ActionManager {
     } 
 
     cancelResume() {
+        const managedSession = this.resume_options?.managedSession;
+        const onCancel = this.resume_options?.onCancel;
         this.resume_func = null;
         this.resume_name = null;
+        this.resume_guard = null;
+        this.resume_options = null;
+        this.lastInterruption = null;
+        if (managedSession) this.cancelManagedSession(managedSession);
+        try { onCancel?.(); } catch (error) { console.error('Resume cancellation callback failed:', error); }
+    }
+
+    cancelManagedResumeForUserCommand() {
+        this.cancelManagedResumeForReplacement();
     }
 
     async _executeResume(actionLabel = null, actionFn = null, timeout = 10) {
@@ -48,10 +122,22 @@ export class ActionManager {
             assert(actionLabel != null, 'actionLabel is required for new resume');
             this.resume_name = actionLabel;
         }
-        if (this.resume_func != null && (this.agent.isIdle() || new_resume) && (!this.agent.self_prompter.isActive() || new_resume)) {
+        if (this.resume_func != null && this.transitionReservations === 0
+            && (this.agent.isIdle() || new_resume) && (!this.agent.self_prompter.isActive() || new_resume)) {
+            if (!new_resume && this.resume_guard && !this.resume_guard()) {
+                this.cancelResume();
+                return { success: false, message: null, interrupted: false, timedout: false };
+            }
+            if (!new_resume) this.lastInterruption = null;
             this.currentActionLabel = this.resume_name;
             let res = await this._executeAction(this.resume_name, this.resume_func, timeout);
             this.currentActionLabel = '';
+            if (this.resume_options) {
+                if ((res.interrupted && this.resume_guard && !this.resume_guard())
+                    || (!res.interrupted && this.resume_options.cancelOnSuccess)) {
+                    this.cancelResume();
+                }
+            }
             return res;
         } else {
             return { success: false, message: null, interrupted: false, timedout: false };
@@ -60,7 +146,10 @@ export class ActionManager {
 
     async _executeAction(actionLabel, actionFn, timeout = 10) {
         let TIMEOUT;
+        let releaseTransition = null;
         try {
+            let interruption = null;
+            if (String(actionLabel).startsWith('mode:')) releaseTransition = this.reserveTransition();
             if (this.last_action_time > 0) {
                 let time_diff = Date.now() - this.last_action_time;
                 if (time_diff < 20) {
@@ -76,6 +165,7 @@ export class ActionManager {
                 if (this.recent_action_counter > 5) {
                     console.error('Infinite action loop detected, shutting down.');
                     this.agent.cleanKill('Infinite action loop detected, shutting down.');
+                    releaseTransition?.();
                     return { success: false, message: 'Infinite action loop detected, shutting down.', interrupted: false, timedout: false };
                 }
             }
@@ -86,7 +176,13 @@ export class ActionManager {
             // also tell agent.bot to stop various actions
             if (this.executing) {
                 console.log(`action "${actionLabel}" trying to interrupt current action "${this.currentActionLabel}"`);
+                interruption = {
+                    interruptedLabel: this.currentActionLabel,
+                    byActionLabel: actionLabel,
+                    at: Date.now(),
+                };
             }
+            this.lastInterruption = interruption;
             await this.stop();
 
             // clear bot logs and reset interrupt code
@@ -109,6 +205,8 @@ export class ActionManager {
             this.currentActionLabel = '';
             this.currentActionFn = null;
             clearTimeout(TIMEOUT);
+            releaseTransition?.();
+            releaseTransition = null;
 
             // get bot activity summary
             let output = this.getBotOutputSummary();
@@ -124,6 +222,8 @@ export class ActionManager {
             // return action status report
             return { success: true, message: output, interrupted, timedout };
         } catch (err) {
+            releaseTransition?.();
+            releaseTransition = null;
             this.executing = false;
             this.currentActionLabel = '';
             this.currentActionFn = null;

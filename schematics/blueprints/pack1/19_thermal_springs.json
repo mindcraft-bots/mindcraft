@@ -1,0 +1,561 @@
+{
+  "schema": "explicit_layers_v1",
+  "name": "19_thermal_springs",
+  "folder": 19,
+  "minecraft_version": "1.21.4",
+  "data_version": 4189,
+  "width_x": 23,
+  "height_y": 8,
+  "length_z": 22,
+  "origin": {
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "description": "Northwest lowest bounding-box corner; +x east, +y up, +z south.",
+    "layer_order": "layers[y][z][x]; rows advance south, characters east"
+  },
+  "sources": [
+    "schematics/screenshots/pack1/19/IMG_20261115_160635-1536x1152.jpg",
+    "schematics/screenshots/pack1/19/IMG_20261115_160646-1536x1152.jpg"
+  ],
+  "title": "Thermal springs / terraced hot-spring landscape (dry block-only reconstruction)",
+  "distinct_build_audit": "Landscape steps 1-8 are stages of one terrain build. Five basins follow initial pool + one + three in the printed instructions. Three birch seats/fire, bamboo, shrubs and rock vignettes are integrated decorations. The separately taught chalet is exported independently; players and pictured ambient background are not builds.",
+  "printed_callout_audit": [
+    {
+      "page": 87,
+      "step": 1,
+      "printed": "23 blocks x 22 blocks; flat broad area, ideally snowy biome; first spring soul-sand bottom and basalt shore",
+      "implementation": "Exact 23x22 snow-block plot at y=0. Main basin soul-sand floor y=0, dry air y=1, vertical basalt rim. Bounds include the landscape and its small lounge vignette."
+    },
+    {
+      "page": 87,
+      "step": "2-3",
+      "printed": "Add another basalt/soul-sand pond, then three more; each subsequent pond higher than previous",
+      "implementation": "Five total basins; floors y=0,2,3,4,5. Relative order is retained; individual diameters, rise increments and positions have no printed measurements."
+    },
+    {
+      "page": 87,
+      "step": 4,
+      "printed": "Fill with water, remove some basalt so water flows down",
+      "implementation": "Water deliberately omitted under no-fluid instruction. Four dry outlet notches retained, no substitute colored blocks."
+    },
+    {
+      "page": 88,
+      "step": "5-8",
+      "printed": "Bulk basalt with deepslate slabs/additional basalt; small rocks; birch stairs, stone walls and lanterns; fire and benches of birch stairs and signs; bamboo and azalea-leaf shrubs",
+      "implementation": "Named materials and decorative categories represented; static unlit campfire, blank sign arms, mature bamboo, flowering azalea shrubs and snow caps."
+    }
+  ],
+  "printed_material_audit": {
+    "soul sand": "All five basin floors.",
+    "basalt": "Vertical axis basalt shore and raised basin retaining fill.",
+    "deepslate slabs": "Cobbled deepslate slabs and cobbled deepslate weathered outcrop mass; exact deepslate variant inferred from coarse render.",
+    "birch stairs/signs": "Two stair approaches and three seated bench units, blank wall-sign arms.",
+    "stone walls/lanterns": "Cobblestone wall lamp stands and additional rock-top lanterns.",
+    "bamboo/azalea leaves": "Mature bamboo edge clusters and persistent flowering azalea leaf shrubs. Flowering variant selected from master render pink flowers.",
+    "snow biome": "One structural snow-block layer and selected one-layer snow caps. Snow biome itself not encoded.",
+    "water": "Excluded, not replaced; not a functioning hot spring.",
+    "campfire": "Unlit campfire with no entity payload; smoke/flame from illustration intentionally not reproduced."
+  },
+  "basin_audit": [
+    {
+      "name": "lower",
+      "floor_y": 0,
+      "center_xz": [
+        10,
+        14
+      ],
+      "outline_row_half_widths": [
+        3,
+        4,
+        5,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        4,
+        3
+      ],
+      "comment": "Outline is source-informed inference, not a printed plan; overlap may hide shared wall cells."
+    },
+    {
+      "name": "west_middle",
+      "floor_y": 2,
+      "center_xz": [
+        7,
+        7
+      ],
+      "outline_row_half_widths": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        4,
+        3,
+        2,
+        1
+      ],
+      "comment": "Outline is source-informed inference, not a printed plan; overlap may hide shared wall cells."
+    },
+    {
+      "name": "east_middle",
+      "floor_y": 3,
+      "center_xz": [
+        15,
+        7
+      ],
+      "outline_row_half_widths": [
+        1,
+        2,
+        3,
+        3,
+        3,
+        2,
+        1
+      ],
+      "comment": "Outline is source-informed inference, not a printed plan; overlap may hide shared wall cells."
+    },
+    {
+      "name": "rear_east",
+      "floor_y": 4,
+      "center_xz": [
+        15,
+        3
+      ],
+      "outline_row_half_widths": [
+        1,
+        2,
+        2,
+        2,
+        1
+      ],
+      "comment": "Outline is source-informed inference, not a printed plan; overlap may hide shared wall cells."
+    },
+    {
+      "name": "highest",
+      "floor_y": 5,
+      "center_xz": [
+        10,
+        3
+      ],
+      "outline_row_half_widths": [
+        1,
+        2,
+        3,
+        3,
+        3,
+        2,
+        1
+      ],
+      "comment": "Outline is source-informed inference, not a printed plan; overlap may hide shared wall cells."
+    }
+  ],
+  "state_audit": [
+    "Basalt axis=y; stairs bottom/straight with explicit facing. All waterlogged=false.",
+    "Snow caps layers=1; bamboo age1 with explicit leaves/stage. No fluids, waterlogged blocks, entities or complex block-entity NBT.",
+    "Leaf distance=7/persistent=true is intended, not changed to mask installed parser errors. Wall/sign connections and snow layers can be affected by neighbor updates.",
+    "Wall sign arms blank, no text/wax/color payload. Campfire unlit, lanterns standing."
+  ],
+  "uncertainty": [
+    "Only overall landscape footprint23x22 is dimensioned. Total height8, individual pool outlines/locations, retaining-wall heights, outlet alignment and snow distribution are inferred from perspective; exact hidden fidelity cannot be established.",
+    "Printed prose implies five basins while final small view visually merges some rear rims; five distinct floor regions are encoded. Shared retaining fill/partial occlusion is inferred.",
+    "Water is the dominant visual material in reference and is intentionally absent under no-fluid rule; this is a material and functional fidelity limitation, not an exact wet replica. No bubbles, swimming, cascades or heated-water claims.",
+    "Furniture vignette shown beside the terrain is integrated into southeast part of the23x22 plot; exact chair sizes and final placement are unmeasured. Chalet is a separate reusable export and is not inserted into the main pool.",
+    "Cobbled deepslate selected as slab/rock variant, cobblestone walls selected for narrow stands; exact rock weathering and unseen back are uncertain. No blue substitute blocks or invented decorative materials.",
+    "No live server, placement, fluid, physics, particle or functional testing. Local serialization checks do not certify visual identity."
+  ],
+  "legend": {
+    ".": "minecraft:air",
+    "A": "minecraft:bamboo[age=1,leaves=large,stage=0]",
+    "B": "minecraft:bamboo[age=1,leaves=large,stage=1]",
+    "C": "minecraft:bamboo[age=1,leaves=none,stage=0]",
+    "D": "minecraft:bamboo[age=1,leaves=small,stage=0]",
+    "E": "minecraft:basalt[axis=y]",
+    "F": "minecraft:birch_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]",
+    "G": "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]",
+    "H": "minecraft:birch_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+    "I": "minecraft:birch_wall_sign[facing=east,waterlogged=false]",
+    "J": "minecraft:birch_wall_sign[facing=north,waterlogged=false]",
+    "K": "minecraft:birch_wall_sign[facing=south,waterlogged=false]",
+    "L": "minecraft:birch_wall_sign[facing=west,waterlogged=false]",
+    "M": "minecraft:campfire[facing=south,lit=false,signal_fire=false,waterlogged=false]",
+    "N": "minecraft:cobbled_deepslate",
+    "O": "minecraft:cobbled_deepslate_slab[type=bottom,waterlogged=false]",
+    "P": "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]",
+    "Q": "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]",
+    "R": "minecraft:grass_block[snowy=false]",
+    "S": "minecraft:lantern[hanging=false,waterlogged=false]",
+    "T": "minecraft:snow[layers=1]",
+    "U": "minecraft:snow_block",
+    "V": "minecraft:soul_sand"
+  },
+  "layers": [
+    [
+      "UURUUUUUUEEEUUUUUUURRUU",
+      "URUUUUUUEEEEEUEEEUUUURR",
+      "RUUUUUUEEEEEEEEEEEUUUUR",
+      "RUUUUUEEEEEEEEEEEEUUUUU",
+      "UUUUUEEEEEEEEEEEEEUUUUU",
+      "UUUUEEEEEEEEEEEEEEUUUUU",
+      "UUUEEEEEEEEEEEEEEEEUUUU",
+      "UUUEEEEEEEEEEEEEEEEUUUU",
+      "UUUEEEEEEEEEEEEEEEEUUUU",
+      "UUUUEEEVVVVVVVEEEEUUUUU",
+      "UUUUUEVVVVVVVVVEEUUUUUU",
+      "UUUUUEVVVVVVVVVEUUUUUUU",
+      "UUUUEVVVVVVVVVVVEUUUUUU",
+      "UUUUEVVVVVVVVVVVEUUUUUU",
+      "UUUUEVVVVVVVVVVVEUUUUUU",
+      "UUUUEVVVVVVVVVVVEUUUUUU",
+      "UUUUEVVVVVVVVVVVEUUUUUU",
+      "UUUUUEVVVVVVVVVEUUUUUUU",
+      "UUUUUEVVVVVVVVVEUUUUUUU",
+      "UUUUUUEVVVVVVVEUUUUUUUU",
+      "UUUUUUUEEEEEEEUUUUUUUUU",
+      "UUUUUUUUUUUUUUUUUUUUUUU"
+    ],
+    [
+      "..C......EEE.......CC..",
+      ".C......EEEEENEEE....CC",
+      "C.O...NEEEEEEEEEEE....C",
+      "CON..NEEEEEEEEEEEE..NO.",
+      ".....EEEEEEEEEEEEE..O..",
+      "....EEEEEEEEEEEEEEN....",
+      "...EEEEEEEEEEEEEEEEP...",
+      "QQ.EEEEEEEEEEEEEEEEN...",
+      "Q..EEEEEEEEEEEEEEEE.QQQ",
+      "...EEEEEEEE..EEEEEE.QQQ",
+      "...E.EEEEE....EEENE....",
+      "...GOEEEE......E.NG.NN.",
+      "....E...........E....N.",
+      "..P.E...........E......",
+      "....E...........E...P..",
+      "....E...........EO.....",
+      "....E...........E.....J",
+      "....OE.........ELGI...F",
+      ".....E.........E......F",
+      "......E.......E....M..K",
+      "......OEEEEEEEO........",
+      ".................LHHI.."
+    ],
+    [
+      "..C......EEE.......CC..",
+      ".C......EEEEENEEE....CC",
+      "C.....NEEEEEEEEEEE....D",
+      "C.N..NEEEEEEEEEEEE..N..",
+      ".....EVEEEEEEEEEEE.....",
+      "....EVVVEEEEEEEEEEN....",
+      "...EVVVVVEEEEEEEEEES...",
+      "TT.EVVVVVVVEEEEEEEEO...",
+      "T..EVVVVVVVEEEEEEEE.TTT",
+      "...EEVVVVVE..EEEEEE.TTT",
+      "...G.EVVVE....EEENG....",
+      "......EEE........O...O.",
+      ".......................",
+      "..S....................",
+      "....................S..",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ],
+    [
+      "..D......EEE.......CC..",
+      ".C......EEEEENEEE....DC",
+      "D.....NEEEEEEEEEEE....A",
+      "C.T..OEEEEEEEEEEEE..T..",
+      ".....E.EEEEEEEEEEE.....",
+      "....E...EEEEEEEEEEN....",
+      "...EO....EEEEVVVVVE....",
+      "...E.......EEVVVVVE....",
+      "...E.......EEVVVVVE....",
+      "...GE.....E..EVVVEG....",
+      ".....E...E....EEE......",
+      "......E.E............T.",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ],
+    [
+      "..A......EEE.......DC..",
+      ".C......EEEEENEEE....AD",
+      "A.....OEEEEEEEVVVE....B",
+      "D.....NEEEEEEEVVVE.....",
+      ".......EEEEEEEVVVE.....",
+      "........EEEEEEEEEET....",
+      "....S....EEEE.....E....",
+      "............E.....E....",
+      "............E.....G....",
+      ".............E...E.....",
+      "..............E.E......",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ],
+    [
+      "..B......EEE.......AD..",
+      ".D......EVVVEOEEE....BA",
+      "B.....SEVVVVVE...E.....",
+      "A.....TEVVVVVE...E.....",
+      ".......EVVVVVE...E.....",
+      "........EVVVE.E.E......",
+      ".........EEE...........",
+      "..................S....",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ],
+    [
+      ".........EEE.......BA..",
+      ".A......E...ES........B",
+      ".......E.....E.........",
+      "B......E.....E.........",
+      ".......E.....E.........",
+      "........E...E..........",
+      ".........E.E...........",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ],
+    [
+      "....................B..",
+      ".B.....................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      ".......................",
+      "......................."
+    ]
+  ],
+  "expected_counts": {
+    "minecraft:air": 2878,
+    "minecraft:bamboo[age=1,leaves=large,stage=0]": 9,
+    "minecraft:bamboo[age=1,leaves=large,stage=1]": 9,
+    "minecraft:bamboo[age=1,leaves=none,stage=0]": 24,
+    "minecraft:bamboo[age=1,leaves=small,stage=0]": 9,
+    "minecraft:basalt[axis=y]": 586,
+    "minecraft:birch_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:birch_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
+    "minecraft:birch_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+    "minecraft:birch_wall_sign[facing=east,waterlogged=false]": 2,
+    "minecraft:birch_wall_sign[facing=north,waterlogged=false]": 1,
+    "minecraft:birch_wall_sign[facing=south,waterlogged=false]": 1,
+    "minecraft:birch_wall_sign[facing=west,waterlogged=false]": 2,
+    "minecraft:campfire[facing=south,lit=false,signal_fire=false,waterlogged=false]": 1,
+    "minecraft:cobbled_deepslate": 24,
+    "minecraft:cobbled_deepslate_slab[type=bottom,waterlogged=false]": 16,
+    "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 3,
+    "minecraft:flowering_azalea_leaves[distance=7,persistent=true,waterlogged=false]": 9,
+    "minecraft:grass_block[snowy=false]": 9,
+    "minecraft:lantern[hanging=false,waterlogged=false]": 7,
+    "minecraft:snow[layers=1]": 14,
+    "minecraft:snow_block": 248,
+    "minecraft:soul_sand": 184
+  },
+  "non_air_count": 1170,
+  "spot_checks": [
+    {
+      "x": 0,
+      "y": 0,
+      "z": 21,
+      "char": "U",
+      "description": "Snow plot southwest corner"
+    },
+    {
+      "x": 22,
+      "y": 0,
+      "z": 21,
+      "char": "U",
+      "description": "Snow plot southeast corner"
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "z": 14,
+      "char": "V",
+      "description": "Largest basin soul-sand floor"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 14,
+      "char": ".",
+      "description": "Largest basin deliberately dry"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "z": 20,
+      "char": "E",
+      "description": "South basalt rim"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "z": 7,
+      "char": "V",
+      "description": "West intermediate floor"
+    },
+    {
+      "x": 15,
+      "y": 3,
+      "z": 7,
+      "char": "V",
+      "description": "East intermediate floor"
+    },
+    {
+      "x": 15,
+      "y": 4,
+      "z": 3,
+      "char": "V",
+      "description": "Rear east floor"
+    },
+    {
+      "x": 10,
+      "y": 5,
+      "z": 3,
+      "char": "V",
+      "description": "Highest floor"
+    },
+    {
+      "x": 10,
+      "y": 6,
+      "z": 3,
+      "char": ".",
+      "description": "Highest pool deliberately dry"
+    },
+    {
+      "x": 10,
+      "y": 6,
+      "z": 6,
+      "char": ".",
+      "description": "Highest dry cascade opening"
+    },
+    {
+      "x": 18,
+      "y": 4,
+      "z": 8,
+      "char": "G",
+      "description": "Eastern birch stair top"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 13,
+      "char": "P",
+      "description": "Cobblestone wall lamp base"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 13,
+      "char": "S",
+      "description": "Standing lantern"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "z": 1,
+      "char": "B",
+      "description": "Tall bamboo top"
+    },
+    {
+      "x": 20,
+      "y": 1,
+      "z": 8,
+      "char": "Q",
+      "description": "Flowering azalea shrub intended state"
+    },
+    {
+      "x": 20,
+      "y": 2,
+      "z": 8,
+      "char": "T",
+      "description": "One-layer snow cap"
+    },
+    {
+      "x": 19,
+      "y": 1,
+      "z": 19,
+      "char": "M",
+      "description": "Unlit campfire"
+    },
+    {
+      "x": 18,
+      "y": 1,
+      "z": 21,
+      "char": "H",
+      "description": "South bench birch stair"
+    },
+    {
+      "x": 17,
+      "y": 1,
+      "z": 21,
+      "char": "L",
+      "description": "Blank bench arm sign"
+    }
+  ]
+}

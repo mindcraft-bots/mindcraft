@@ -1,0 +1,220 @@
+diff --git a/node_modules/mineflayer-schem/index.js b/node_modules/mineflayer-schem/index.js
+index a5f0d68..cbcf45f 100644
+--- a/node_modules/mineflayer-schem/index.js
++++ b/node_modules/mineflayer-schem/index.js
+@@ -8,6 +8,10 @@ function wait(ms) {
+     return new Promise(resolve => setTimeout(resolve, ms)); 
+ }
+ 
++function isBuildCancelled(build) {
++    return Boolean(build?.isCancelled);
++}
++
+ function inject(bot, options = {}) {
+     if (!bot.pathfinder) {
+         throw new Error('mineflayer-pathfinder must be loaded before mineflayer-schem');
+@@ -143,11 +147,14 @@ function inject(bot, options = {}) {
+         return null;
+     }
+ 
+-    bot.builder.equipItem = async function(itemId) {
++    bot.builder.equipItem = async function(itemId, build = currentBuild) {
+         try {
++            if (isBuildCancelled(build)) return null;
+             if (bot.inventory.items().length > 30) {
+                 await bot.chat('/clear');
++                if (isBuildCancelled(build)) return null;
+                 await wait(100);
++                if (isBuildCancelled(build)) return null;
+             }
+ 
+             let item = bot.inventory.items().find(i => i.type === itemId);
+@@ -157,8 +164,11 @@ function inject(bot, options = {}) {
+                 const slot = emptySlot !== null ? emptySlot : 36;
+                 
+                 const newItem = new Item(itemId, 64, 0);
++                if (isBuildCancelled(build)) return null;
+                 await bot.creative.setInventorySlot(slot, newItem);
++                if (isBuildCancelled(build)) return null;
+                 await wait(50);
++                if (isBuildCancelled(build)) return null;
+                 
+                 item = bot.inventory.items().find(i => i.type === itemId);
+             }
+@@ -167,7 +177,9 @@ function inject(bot, options = {}) {
+                 throw new Error(`Could not get item ${itemId}`);
+             }
+ 
++            if (isBuildCancelled(build)) return null;
+             await bot.equip(item, 'hand');
++            if (isBuildCancelled(build)) return null;
+             return item;
+         } catch (error) {
+             throw new Error(`Error equipping item: ${error.message}`);
+@@ -196,6 +208,7 @@ function inject(bot, options = {}) {
+         let failed = 0;
+         
+         for (const pos of blocksToRemove) {
++            if (isBuildCancelled(build)) break;
+             try {
+                 const block = bot.blockAt(pos);
+                 if (!block || block.name === 'air') continue;
+@@ -204,16 +217,22 @@ function inject(bot, options = {}) {
+                 if (distance > 4.5) {
+                     try {
+                         await bot.pathfinder.goto(new goals.GoalNear(pos.x, pos.y, pos.z, 3));
++                        if (isBuildCancelled(build)) break;
+                     } catch (pathError) {
++                        if (isBuildCancelled(build)) break;
+                         failed++;
+                         continue;
+                     }
+                 }
+                 
++                if (isBuildCancelled(build)) break;
+                 await bot.dig(block);
++                if (isBuildCancelled(build)) break;
+                 removed++;
+                 await wait(50);
++                if (isBuildCancelled(build)) break;
+             } catch (e) {
++                if (isBuildCancelled(build)) break;
+                 failed++;
+             }
+         }
+@@ -227,6 +246,7 @@ function inject(bot, options = {}) {
+         try {
+             if (settings.clearArea) {
+                 await bot.builder.clearArea(build);
++                if (isBuildCancelled(build)) return;
+             }
+             
+             console.log(`🏗️  Starting build of ${build.actions.length} blocks...`);
+@@ -243,6 +263,7 @@ function inject(bot, options = {}) {
+ 
+                 if (build.isPaused) {
+                     await wait(1000);
++                    if (isBuildCancelled(build)) break;
+                     continue;
+                 }
+ 
+@@ -254,6 +275,7 @@ function inject(bot, options = {}) {
+                 if (availableActions.length === 0) {
+                     console.warn('⚠️  No available actions');
+                     await wait(2000);
++                    if (isBuildCancelled(build)) break;
+                     
+                     const toMove = Math.min(20, build.actions.length);
+                     for (let i = 0; i < toMove; i++) {
+@@ -294,12 +316,18 @@ function inject(bot, options = {}) {
+                                 const distance = bot.entity.position.distanceTo(action.pos);
+                                 if (distance > 4.5) {
+                                     await bot.pathfinder.goto(new goals.GoalNear(action.pos.x, action.pos.y, action.pos.z, 3));
++                                    if (isBuildCancelled(build)) break;
+                                 }
++                                if (isBuildCancelled(build)) break;
+                                 await bot.dig(targetBlock);
++                                if (isBuildCancelled(build)) break;
+                                 await wait(200);
++                                if (isBuildCancelled(build)) break;
+                             } catch (e) {
++                                if (isBuildCancelled(build)) break;
+                             }
+                         }
++                        if (isBuildCancelled(build)) break;
+ 
+                         const directions = getPossibleDirections(action.pos);
+                         
+@@ -339,38 +367,47 @@ function inject(bot, options = {}) {
+                             try {
+                                 await bot.pathfinder.goto(new goals.GoalNear(action.pos.x, action.pos.y, action.pos.z, 3));
+                             } catch (e) {
++                                if (isBuildCancelled(build)) break;
+                                 build.actions = build.actions.filter(a => a !== action);
+                                 build.statistics.blocksFailed++;
+                                 consecutiveFailures++;
+                                 continue;
+                             }
++                            if (isBuildCancelled(build)) break;
+                         }
+ 
+                         await bot.builder.equipItem(item.id);
++                        if (isBuildCancelled(build)) break;
+                         
+                         const blockFacing = getBlockFacing(action.metadata, action.blockName);
+                         
+                         const faceCenter = refBlock.position.offset(0.5, 0.5, 0.5).plus(face.scaled(0.5));
+                         await bot.lookAt(faceCenter);
++                        if (isBuildCancelled(build)) break;
+                         
+                         if (blockFacing && blockFacing.facing) {
+                             const targetLook = action.pos.offset(0.5, 0.5, 0.5).plus(blockFacing.facing.scaled(0.3));
+                             await bot.lookAt(targetLook);
++                            if (isBuildCancelled(build)) break;
+                         }
+ 
++                        if (isBuildCancelled(build)) break;
+                         const shouldSneak = isInteractable(refBlock.name);
+                         if (shouldSneak) {
+                             bot.setControlState('sneak', true);
+                         }
+ 
+                         try {
++                            if (isBuildCancelled(build)) break;
+                             await bot.placeBlock(refBlock, face);
++                            if (isBuildCancelled(build)) break;
+                             
+                             if (shouldSneak) {
+                                 bot.setControlState('sneak', false);
+                             }
+ 
+                             await wait(100);
++                            if (isBuildCancelled(build)) break;
+                             const placedBlock = bot.blockAt(action.pos);
+                             
+                             if (placedBlock && placedBlock.name !== 'air') {
+@@ -404,6 +441,7 @@ function inject(bot, options = {}) {
+                                 consecutiveFailures++;
+                             }
+                         } catch (e) {
++                            if (isBuildCancelled(build)) break;
+                             if (shouldSneak) {
+                                 bot.setControlState('sneak', false);
+                             }
+@@ -424,11 +462,15 @@ function inject(bot, options = {}) {
+                         }
+                         consecutiveFailures = 0;
+                         await wait(2000);
++                        if (isBuildCancelled(build)) break;
+                     }
+ 
++                    if (isBuildCancelled(build)) break;
+                     await wait(1000 / settings.buildSpeed);
++                    if (isBuildCancelled(build)) break;
+                     
+                 } catch (e) {
++                    if (isBuildCancelled(build)) break;
+                     console.error('❌ Error:', e.message);
+                     bot.emit('builder_error', e);
+                     consecutiveFailures++;
+@@ -451,9 +493,10 @@ function inject(bot, options = {}) {
+             }
+             
+         } catch (e) {
++            if (isBuildCancelled(build)) return;
+             bot.emit('builder_error', e);
+         } finally {
+-            currentBuild = null;
++            if (currentBuild === build) currentBuild = null;
+         }
+     };
+ 
+@@ -485,6 +528,8 @@ function inject(bot, options = {}) {
+     };
+ }
+ 
++inject.cancellationSafetyVersion = 'mindcraft-cancellation-v1';
++
+ module.exports = {
+     Build: Build,
+     builder: inject,

@@ -1,0 +1,987 @@
+import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
+import { EventEmitter } from "node:events";
+import { createRequire } from "node:module";
+import { setImmediate } from "node:timers";
+import test from "node:test";
+import { buildSchematic } from "../../src/utils/schematic/build_schematic.js";
+import { resolvePlacementOptions } from "../../src/utils/schematic/placement_options.js";
+import { acquireBuildLifecycle } from "../../src/utils/schematic/run_build.js";
+import { provenanceFixtureDependencies } from "./provenance_fixture.js";
+import agentSettings from "../../src/agent/settings.js";
+
+const require = createRequire(import.meta.url);
+const Vec3 = require("vec3");
+const data = require("minecraft-data")("1.20.4");
+const Block = require("prismarine-block")("1.20.4");
+const key = p => `${p.x},${p.y},${p.z}`;
+
+function fixture(names = ["stone"], options = {}, version = "1.20.4") {
+  const data = require("minecraft-data")(version);
+  const Block = require("prismarine-block")(version);
+  const world = new Map();
+  const calls = { writes: [], modes: [], logs: [], origins: [], reads: [], supply: 0 };
+  let phase = "planning", activeBuild;
+  const entity = { position: new Vec3(100, 64, 100), width: 0.6, height: 1.8 };
+  const bot = Object.assign(new EventEmitter(), {
+    version, registry: data, game: { gameMode: "survival", dimension: "overworld" },
+    world: {}, _client: Object.assign(new EventEmitter(), { socket: {} }), entity, entities: { 1: entity },
+    position: new Vec3(-2, 64, -2), interrupt_code: false,
+    heldItem: { name: names.find(name => name !== "air") ?? "stone" },
+    supportFeature: name => ["usesMultiblockSingleLong", "usesMultiblock3DChunkCoords", "blockPlaceHasInsideBlock"].includes(name),
+    digTime: () => 0,
+    lookAt: async () => {},
+    swingArm: () => {},
+    blockAt(position) {
+      calls.reads.push(key(position));
+      const name = world.has(key(position)) ? world.get(key(position)) : position.y === 63 ? "dirt" : "air";
+      if (name == null) return null;
+      if (!data.blocksByName[name]) return { name, position, diggable: true, getProperties: () => ({}) };
+      const block = Block.fromStateId(data.blocksByName[name].defaultState, 0);
+      block.position = position;
+      return block;
+    },
+    dig(block) { calls.writes.push([phase, "dig", key(block.position)]); world.set(key(block.position), "air"); },
+    placeBlock(reference, face) {
+      const target = reference.position.plus(face);
+      calls.writes.push([phase, "place", key(target)]);
+      const name = activeBuild.cells.find(cell => key(cell.position) === key(target))?.name;
+      world.set(key(target), name);
+      dependencies.onPlace?.(name, target);
+    },
+    pathfinder: { movements: {}, setMovements(movements) { this.movements = movements; }, goto: async () => {} },
+    builder: { clearArea: async () => {} },
+  });
+  bot._client.write = (packet, dataPacket) => {
+    if (packet === "block_dig" && [0, 2].includes(dataPacket.status)) {
+      const position = dataPacket.location;
+      if (dataPacket.status === 0) calls.writes.push([phase, "dig", key(position)]);
+      setImmediate(() => {
+        const old = bot.blockAt(position);
+        world.set(key(position), "air");
+        const air = bot.blockAt(position);
+        bot.emit(`blockUpdate:${position}`, old, air);
+        bot._client.emit("block_change", { location: position, type: air.stateId });
+        bot._client.emit("acknowledge_player_digging", { location: position, block: air.stateId, status: dataPacket.status, successful: true });
+      });
+      return;
+    }
+    if (packet !== "block_place") return;
+    const offsets = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+    const target = dataPacket.location.offset(...offsets[dataPacket.direction]);
+    const name = activeBuild.cells.find(cell => key(cell.position) === key(target))?.name;
+    calls.writes.push([phase, "place", key(target)]);
+    setImmediate(() => {
+      const reference = bot.blockAt(dataPacket.location);
+      bot._client.emit("block_change", { location: dataPacket.location, type: reference.stateId });
+      bot.emit(`blockUpdate:${dataPacket.location}`, reference, reference);
+      const old = bot.blockAt(target);
+      world.set(key(target), name);
+      dependencies.onPlace?.(name, target);
+      const placed = bot.blockAt(target);
+      bot._client.emit("block_change", { location: target, type: placed.stateId });
+      bot.emit(`blockUpdate:${target}`, old, placed);
+    });
+  };
+  const palette = names.map(name => data.blocksByName[name].defaultState);
+  const schematic = { version, size: new Vec3(names.length, 1, 1), offset: new Vec3(0, 0, 0), palette,
+    blocks: names.map((_, i) => i), getBlock: position => Block.fromStateId(palette[position.x], 0) };
+  const dependencies = provenanceFixtureDependencies({
+    resolvePath: () => `/schematics/test.mc${version}.schem`, fsAccess: () => {}, fsReadFile: () => Buffer.from("synthetic"),
+    validateSource: () => {}, SchematicClass: { read: () => schematic },
+    placementOptions: resolvePlacementOptions({ schematic_placement_mode: "balanced", schematic_balanced_radius: 1, schematic_balanced_threshold: 9 }, options),
+    changeGameMode: async (_bot, mode) => {
+      calls.modes.push(mode);
+      if (mode === "creative") { phase = "editing"; await dependencies.onTransition?.(); }
+      return true;
+    },
+    startSupply: () => { calls.supply++; const cleanup = () => {}; cleanup.cancel = () => {}; return cleanup; },
+    executeBuild: async (_bot, build) => {
+      activeBuild = build;
+      calls.origins.push({ ...build.cells[0].position });
+      if (dependencies.onBuild) return dependencies.onBuild(build);
+      for (const cell of build.cells) {
+        if (cell.name !== "air" && bot.blockAt(new Vec3(cell.position.x, cell.position.y, cell.position.z)).name === "air") {
+          bot.heldItem = { name: cell.name };
+          await bot.placeBlock({ position: new Vec3(cell.position.x, cell.position.y - 1, cell.position.z) }, new Vec3(0, 1, 0));
+        }
+      }
+      return { status: "finished", errors: [] };
+    },
+    writeLog: message => calls.logs.push(message),
+  });
+  return { bot, world, calls, dependencies, schematic, run: (x = 0, y = 64, z = 0) => buildSchematic(bot, "test.schem", x, y, z, dependencies) };
+}
+
+test("balanced selected-site exact match is refused before mutation", async () => {
+  const f = fixture(["stone"], { radius: 1, threshold: 1, strategy: "all" });
+  f.world.set("-1,64,0", "stone");
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.match(f.calls.logs.join(" "), /No fully inspected balanced candidate/);
+  assert.deepEqual(f.calls.modes, []); assert.deepEqual(f.calls.writes, []);
+  assert.equal(f.calls.supply, 0);
+});
+
+test("balanced searches past overlapping candidates without filling observed intended air", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["air", "stone"], { radius: 2, strategy: "all" });
+    f.world.set("1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.equal(f.bot.blockAt(new Vec3(0,64,0)).name, "air");
+    assert.equal(f.bot.blockAt(new Vec3(1,64,0)).name, "stone");
+    assert.ok(f.calls.writes.every(([, , position]) => !["0,64,0", "1,64,0"].includes(position)));
+    assert.match(f.calls.logs.join(" "), /overlaps a protected matching volume/);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced protects late candidate intended air before first-valid selection, including rotation", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    for (const [orientation, existing, protectedCells] of [
+      ["north", "-2,64,0", ["-2,64,0", "-1,64,0", "0,64,0"]],
+      ["east", "0,64,-2", ["0,64,-2", "0,64,-1", "0,64,0"]],
+    ]) {
+      const f = fixture(["stone", "air", "air"], { radius: 2, strategy: "all", policy: "first_valid", orientation });
+      f.world.set(existing, "stone");
+      assert.equal(await f.run(), true, f.calls.logs.join("; "));
+      assert.equal(f.world.get(existing), "stone");
+      assert.ok(f.calls.writes.every(([, , position]) => !protectedCells.includes(position)), f.calls.logs.join("; "));
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced exhaustive retains earliest equal-score alternative after a late match invalidates the incumbent", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air"], { radius: 2, strategy: "all", policy: "exhaustive" });
+    f.world.set("-2,64,0", "stone");
+    // Eliminate every candidate visited after the late matching anchor, while
+    // leaving the earlier equal-score alternative's own foundation intact.
+    for (const p of ["0,63,-2", "0,63,2", "4,63,0"]) f.world.set(p, "air");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: -1 }]);
+    assert.equal(f.world.get("-2,64,0"), "stone");
+    assert.ok(f.calls.writes.every(([, , position]) => !["-2,64,0", "-1,64,0", "0,64,0"].includes(position)));
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced protects unsampled candidate anchors within the declared radius", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air"], { radius: 2, step: 2, strategy: "stepped", policy: "first_valid" });
+    f.world.set("-1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.ok(f.calls.writes.every(([, , position]) => !["-1,64,0", "0,64,0", "1,64,0"].includes(position)));
+    assert.equal(f.world.get("-1,64,0"), "stone");
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced fails closed on late unavailable evidence and cancellation before any edit", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    for (const failure of ["unloaded", "cancelled", "uncertain"]) {
+      const f = fixture(["stone"], { radius: 2, strategy: "all" });
+      const read = f.bot.blockAt.bind(f.bot);
+      f.bot.blockAt = position => {
+        const block = read(position);
+        if (key(position) !== "-2,64,0") return block;
+        if (failure === "unloaded") return null;
+        if (failure === "cancelled") f.bot.interrupt_code = true;
+        if (failure === "uncertain") block.getProperties = () => { throw new Error("unreadable"); };
+        return block;
+      };
+      assert.equal(await f.run(), false, failure);
+      assert.deepEqual(f.calls.writes, [], failure);
+      assert.deepEqual(f.calls.modes, [], failure);
+      assert.equal(f.calls.supply, 0, failure);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced rechecks remote candidate evidence after the mode transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone", "air", "air", "air", "air"], { radius: 4, strategy: "all" });
+    f.dependencies.onTransition = () => f.world.set("-4,64,0", "stone");
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.writes, []);
+    assert.equal(f.world.get("-4,64,0"), "stone");
+    assert.match(f.calls.logs.join(" "), /protection evidence changed/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced discovery deadline cannot return an early site", async t => {
+  const { performance } = await import("node:perf_hooks");
+  let now = 0;
+  t.mock.method(performance, "now", () => now);
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "deny";
+  try {
+    const f = fixture(["stone"], { radius: 2, strategy: "all" });
+    const read = f.bot.blockAt.bind(f.bot);
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "-2,64,0") now = 2001;
+      return block;
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.deepEqual(f.calls.writes, []);
+    assert.deepEqual(f.calls.modes, []);
+    assert.match(f.calls.logs.join(" "), /timed out/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced refuses the radius-zero redstone/TNT induced-physics reproduction before Creative or supply", async () => {
+  const f = fixture(["redstone_block"], { radius: 0 });
+  f.world.set("0,63,0", "stone");
+  f.world.set("1,64,0", "redstone_wire");
+  f.world.set("2,64,0", "tnt");
+  f.world.set("3,63,0", "gold_block");
+  // Deterministic hazard oracle, not a Minecraft physics simulator: if the
+  // forbidden placement reaches the real pipeline's guarded write, the
+  // external marker/support is lost despite no direct out-of-volume write.
+  f.dependencies.onPlace = name => {
+    if (name === "redstone_block") f.world.set("3,63,0", "air");
+  };
+  assert.equal(await f.run(), false);
+  assert.equal(f.world.get("3,63,0"), "gold_block");
+  assert.deepEqual(f.calls.modes, []);
+  assert.deepEqual(f.calls.writes, []);
+  assert.equal(f.calls.supply, 0);
+  assert.match(f.calls.logs.join(" "), /unsupported balanced target.*redstone_block/i);
+});
+
+test("balanced supports a positive inert target set, not every placeable single-block item", async () => {
+  for (const name of ["redstone_block", "sponge", "wet_sponge", "piston", "sticky_piston", "observer", "tnt", "sand", "gravel", "oak_sapling", "carved_pumpkin", "white_concrete_powder"]) {
+    const f = fixture([name], { radius: 0 });
+    assert.equal(await f.run(), false, name);
+    assert.deepEqual(f.calls.modes, [], name);
+    assert.deepEqual(f.calls.writes, [], name);
+    assert.equal(f.calls.supply, 0, name);
+    assert.match(f.calls.logs.join(" "), /unsupported balanced target/i, name);
+  }
+});
+
+test("balanced rejects update-sensitive, unknown, unloaded and attached neighboring states", async () => {
+  for (const [position, name] of [
+    ["1,64,0", "redstone_wire"], ["2,64,0", "piston"], ["1,65,0", "observer"],
+    ["1,64,0", "tnt"], ["1,64,0", "water"], ["1,64,0", "lava"],
+    ["0,65,0", "sand"], ["1,64,0", "sponge"], ["1,64,0", "oak_sapling"],
+    ["1,64,0", "mystery"], ["1,64,0", null],
+  ]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.world.set(position, name);
+    assert.equal(await f.run(), false, `${position} ${name}`);
+    assert.deepEqual(f.calls.modes, []);
+    assert.deepEqual(f.calls.writes, []);
+    assert.equal(f.calls.supply, 0);
+    assert.match(f.calls.logs.join(" "), /balanced neighbor|Unavailable block/i);
+  }
+});
+
+test("balanced rejects incomplete, extra, fluid-bearing and invalid passive target properties", async () => {
+  for (const [name, properties] of [["stone", { waterlogged: true }], ["stone", { powered: true }],
+    ["oak_log", {}], ["oak_log", { axis: "diagonal" }], ["grass_block", { snowy: "false" }]]) {
+    const f = fixture([name], { radius: 0 });
+    f.schematic.getBlock = () => ({ name, stateId: f.schematic.palette[0], getProperties: () => properties });
+    assert.equal(await f.run(), false, `${name}: ${JSON.stringify(properties)}`);
+    assert.deepEqual(f.calls.modes, []);
+    assert.deepEqual(f.calls.writes, []);
+    assert.equal(f.calls.supply, 0);
+    assert.match(f.calls.logs.join(" "), /state ID\/properties mismatch|unclassified|unsupported balanced target/i);
+  }
+});
+
+test("balanced rejects attached data and ambiguous passive neighbor properties before and after selection", async () => {
+  for (const mutation of [block => { block.nbt = { protected: true }; },
+    block => { block.getProperties = () => ({ waterlogged: true }); },
+    block => { block.getProperties = () => { throw new Error("unavailable"); }; }]) {
+    for (const afterSelection of [false, true]) {
+      const f = fixture(["stone"], { radius: 0 });
+      f.world.set("1,64,0", "stone");
+      let enabled = !afterSelection;
+      const read = f.bot.blockAt.bind(f.bot);
+      f.bot.blockAt = position => {
+        const block = read(position);
+        if (enabled && key(position) === "1,64,0") mutation(block);
+        return block;
+      };
+      f.dependencies.onTransition = () => { enabled = true; };
+      assert.equal(await f.run(), false);
+      assert.deepEqual(f.calls.writes, []);
+      assert.deepEqual(f.calls.modes, afterSelection ? ["creative", "survival"] : []);
+    }
+  }
+});
+
+test("balanced revalidates neighboring physics after transitions and immediately before guarded writes", async () => {
+  for (const name of ["redstone_wire", "piston", "water", "sponge"]) {
+    for (const boundary of ["transition", "write"]) {
+      const f = fixture(["stone"], { radius: 0 });
+      const change = () => f.world.set("1,64,0", name);
+      if (boundary === "transition") f.dependencies.onTransition = change;
+      else f.dependencies.onBuild = async build => {
+        change();
+        await f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0));
+        return { status: "finished", errors: [] };
+      };
+      assert.equal(await f.run(), false, `${boundary}: ${name}`);
+      assert.deepEqual(f.calls.writes, []);
+      assert.deepEqual(f.calls.modes, ["creative", "survival"]);
+      assert.match(f.calls.logs.join(" "), /balanced.*neighbor|neighbor.*changed/i);
+    }
+  }
+});
+
+test("balanced inert materials remain useful across multiple guarded placements and revalidation", async () => {
+  const f = fixture(["stone", "oak_planks", "glass", "white_wool", "bricks", "oak_log"], { radius: 0 });
+  assert.equal(await f.run(), true);
+  assert.equal(f.calls.writes.length, 6);
+  assert.equal(f.calls.supply, 1);
+  assert.deepEqual(f.calls.modes, ["creative", "survival"]);
+});
+
+test("balanced positively classifies actual in-volume states, not just requested targets and exterior neighbors", async () => {
+  for (const name of ["oak_sapling", "brown_mushroom", "crimson_fungus", "wheat", "azalea"]) {
+    const f = fixture(["air", "stone"], { radius: 0 });
+    f.world.set("0,64,0", name);
+    assert.equal(await f.run(), false, name);
+    assert.deepEqual(f.calls.modes, [], name);
+    assert.deepEqual(f.calls.writes, [], name);
+    assert.equal(f.calls.supply, 0, name);
+    assert.match(f.calls.logs.join(" "), /Unsupported balanced volume state/, name);
+  }
+  for (const mutation of [block => { block.nbt = { protected: true }; },
+    block => { block.getProperties = () => ({ powered: true }); },
+    block => { block.getProperties = () => []; }]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.world.set("0,64,0", "stone");
+    const read = f.bot.blockAt.bind(f.bot);
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "0,64,0") mutation(block);
+      return block;
+    };
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.modes, []);
+    assert.deepEqual(f.calls.writes, []);
+    assert.equal(f.calls.supply, 0);
+  }
+});
+
+test("balanced rechecks unsafe neighbors after asynchronous navigation before a clearing dig", async () => {
+  for (const name of ["redstone_wire", "piston", "water", "sand", "oak_leaves"]) {
+    const f = fixture(["air"], { radius: 0 }, "1.18.2");
+    f.world.set("0,64,0", "poppy");
+    f.bot.pathfinder.goto = async () => {
+      await new Promise(resolve => setImmediate(resolve));
+      f.world.set("1,64,0", name);
+    };
+    assert.equal(await f.run(), false, name);
+    assert.deepEqual(f.calls.writes, [], name);
+    assert.equal(f.world.get("0,64,0"), "poppy", name);
+    assert.equal(f.calls.supply, 0, name);
+    assert.match(f.calls.logs.join(" "), /Unsupported balanced neighbor/, name);
+  }
+});
+
+test("balanced rechecks after builder waits and refuses an unsafe state before the next edit", async () => {
+  for (const edit of ["dig", "place"]) {
+    const f = fixture([edit === "dig" ? "air" : "stone"], { radius: 0 });
+    f.dependencies.onBuild = async () => {
+      await new Promise(resolve => setImmediate(resolve));
+      f.world.set("1,65,0", "observer");
+      if (edit === "dig") await f.bot.dig(f.bot.blockAt(new Vec3(0, 64, 0)));
+      else await f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0));
+      return { status: "finished", errors: [] };
+    };
+    assert.equal(await f.run(), false, edit);
+    assert.deepEqual(f.calls.writes, [], edit);
+    assert.match(f.calls.logs.join(" "), /Unsupported balanced neighbor/, edit);
+  }
+});
+
+test("balanced does not silently approve changed passive neighbors or unsafe targets at write time", async () => {
+  for (const change of [f => f.world.set("1,64,0", "glass"), (_f, build) => {
+    build.cells = build.cells.map(cell => ({ ...cell, name: "sponge", stateId: data.blocksByName.sponge.defaultState }));
+  }, (_f, build) => {
+    build.cells = build.cells.map(cell => ({ ...cell, properties: { powered: true } }));
+  }]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.dependencies.onBuild = async build => {
+      change(f, build);
+      await f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0));
+      return { status: "finished", errors: [] };
+    };
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.writes, []);
+    assert.match(f.calls.logs.join(" "), /Unsupported balanced target|balanced neighbor changed/);
+  }
+});
+
+test("balanced resumes recheck neighboring physics at the frozen origin before Creative", async () => {
+  const f = fixture(["stone"], { radius: 0 });
+  f.dependencies.resumeSession = { cancelled: false };
+  f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+  assert.equal(await f.run(), false);
+  assert.equal(f.dependencies.resumeSession.resumeEligible, true);
+  f.world.set("1,64,0", "piston");
+  f.calls.modes.length = 0;
+  f.calls.writes.length = 0;
+  f.calls.supply = 0;
+  assert.equal(await f.run(99, 70, 99), false);
+  assert.deepEqual(f.calls.modes, []);
+  assert.deepEqual(f.calls.writes, []);
+  assert.equal(f.calls.supply, 0);
+});
+
+test("the delicate default also refuses active targets before Creative", async () => {
+  for (const name of ["redstone_block", "sponge", "piston"]) {
+    const f = fixture([name]);
+    f.dependencies.placementOptions = resolvePlacementOptions({});
+    assert.equal(await f.run(), false, name);
+    assert.equal(f.calls.writes.length, 0);
+    assert.deepEqual(f.calls.modes, []);
+  }
+});
+
+test("balanced ranking skips matching sites and selects an alternative", async () => {
+  const f = fixture(["stone"], { radius: 1, threshold: 2, strategy: "all", policy: "exhaustive" });
+  f.world.set("-1,64,0", "stone");
+  f.world.set("0,64,-1", "stone");
+  assert.equal(await f.run(), true, f.calls.logs.join("; "));
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }]);
+  assert.equal(f.world.get("-1,64,0"), "stone");
+  // Surrounding cells are now deliberately read, not ranked as extra origins.
+  assert.ok(f.calls.reads.includes("-1,64,-1"));
+});
+
+test("threshold is strict and counts both empty solid targets and intended-air obstructions", async () => {
+  const f = fixture(["stone", "air"], { radius: 0, threshold: 2 }, "1.18.2");
+  f.world.set("1,64,0", "poppy");
+  assert.equal(await f.run(), false);
+  assert.match(f.calls.logs.join(" "), /strict obstruction threshold/);
+  assert.deepEqual(f.calls.modes, []);
+  assert.deepEqual(f.calls.writes, []);
+  f.dependencies.placementOptions = resolvePlacementOptions({ schematic_placement_mode: "balanced" }, { radius: 0, threshold: 3 });
+  assert.equal(await f.run(), true);
+  assert.deepEqual(f.calls.writes.map(item => item[1]), ["dig", "place"]);
+  assert.ok(f.calls.writes.every(item => item[0] === "editing"));
+});
+
+test("protected, unknown and unloaded cells, unsafe ground and entity occupancy prevent a build", async () => {
+  for (const [position, name] of [["0,64,0", "oak_leaves"], ["0,64,0", "chest"], ["0,64,0", "mystery"], ["0,64,0", null], ["0,63,0", "sand"], ["0,63,0", null], ["0,63,0", "oak_slab"]]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.world.set(position, name);
+    assert.equal(await f.run(), false, `${position} ${name}`);
+    assert.deepEqual(f.calls.writes, []);
+    assert.deepEqual(f.calls.modes, []);
+  }
+  for (const blocker of [ { position: new Vec3(0.5, 64, 0.5), width: 0.6, height: 1.8 }, { position: new Vec3(20, 64, 20) } ]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.bot.entities[2] = blocker;
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.writes, []);
+  }
+});
+
+test("changes after Creative transition abort without approving new blocks, support, or entities", async () => {
+  for (const change of [f => f.world.set("0,64,0", "poppy"), f => f.world.set("0,63,0", "stone"), f => { f.bot.entities[2] = { position: new Vec3(0.5, 64, 0.5), width: 0.6, height: 1.8 }; }]) {
+    const f = fixture(["stone"], { radius: 0 });
+    f.dependencies.onTransition = () => change(f);
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.writes, []);
+    assert.deepEqual(f.calls.modes, ["creative", "survival"]);
+  }
+});
+
+test("budget and cancellation abort without writes or Creative transition", async () => {
+  const big = fixture(Array(160).fill("air"), { radius: 16 });
+  assert.equal(await big.run(), true); // Actual reads, not a pessimistic full-search estimate.
+  const cancelled = fixture(["stone"], { radius: 1 });
+  cancelled.bot.interrupt_code = true;
+  assert.equal(await cancelled.run(), false);
+  assert.deepEqual(cancelled.calls.modes, []);
+  assert.deepEqual(cancelled.calls.writes, []);
+});
+
+test("planning holds the build lease and observes cancellation during a yielded scan", async () => {
+  const f = fixture(["stone"], { radius: 4 });
+  const read = f.bot.blockAt.bind(f.bot);
+  let checked = false;
+  f.bot.blockAt = position => {
+    if (!checked) {
+      checked = true;
+      assert.equal(acquireBuildLifecycle(f.bot), null);
+      setImmediate(() => { f.bot.interrupt_code = true; });
+    }
+    return read(position);
+  };
+  assert.equal(await f.run(), false);
+  assert.equal(checked, true);
+  assert.deepEqual(f.calls.writes, []);
+  assert.deepEqual(f.calls.modes, []);
+  const lease = acquireBuildLifecycle(f.bot);
+  assert.ok(lease);
+  lease.release();
+});
+
+test("a different safe obstruction appearing during navigation is not newly approved", async () => {
+  const f = fixture(["air", "air"], { radius: 0, threshold: 3 }, "1.18.2");
+  f.world.set("0,64,0", "poppy");
+  f.bot.pathfinder.goto = () => { f.world.set("1,64,0", "poppy"); };
+  assert.equal(await f.run(), false);
+  assert.deepEqual(f.calls.writes, []);
+  assert.match(f.calls.logs.join(" "), /Selected site changed/);
+});
+
+test("eligible resume retains selected origin and options without searching again", async () => {
+  const f = fixture(["stone"], { radius: 1, strategy: "all", policy: "exhaustive" });
+  const session = { cancelled: false };
+  f.dependencies.resumeSession = session;
+  f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+  assert.equal(await f.run(), false);
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(session.context.origin, { x: 0, y: 64, z: 0 });
+  delete f.dependencies.onBuild;
+  f.calls.reads.length = 0;
+  assert.equal(await f.run(99, 70, 99), true);
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }, { x: 0, y: 64, z: 0 }]);
+  assert.ok(!f.calls.reads.includes("99,70,99"));
+});
+
+test("balanced recovery rejects untracked matches after preflight and preserves off behavior", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true); assert.deepEqual(f.calls.writes, []);
+      f.world.set("0,64,0", "stone");
+      session.placements = new Set(["0,64,0"]);
+      delete f.dependencies.onBuild;
+      const modes = f.calls.modes.length, supply = f.calls.supply;
+      assert.equal(await f.run(), policy === "off", `${policy}: ${f.calls.logs.join("; ")}`);
+      if (policy === "off") assert.deepEqual(f.calls.writes, [["editing", "place", "1,64,0"]]);
+      else {
+        assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+        assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.modes.length, modes);
+        assert.equal(f.calls.supply, supply); assert.equal(session.resumeEligible, false);
+      }
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery refuses an externally cleared original obstruction", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "air"], { radius: 0 }, "1.18.2");
+      f.world.set("1,64,0", "poppy");
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onTransition = () => { f.bot.interrupt_code = true; };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.calls.logs.join("; "));
+      assert.equal(f.world.get("1,64,0"), "poppy");
+      f.world.set("1,64,0", "air");
+      f.bot.interrupt_code = false; delete f.dependencies.onTransition;
+      const modes = f.calls.modes.length;
+      assert.equal(await f.run(), false, policy);
+      assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+      assert.equal(f.calls.modes.length, modes);
+      assert.deepEqual(f.calls.writes, []);
+      assert.equal(session.cancelled, true);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced public safety callbacks cannot manufacture managed placement proof", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = build => {
+      const position = new Vec3(0, 64, 0);
+      f.world.set(key(position), "stone");
+      build.afterSchematicEdit(position);
+      return { status: "interrupted", errors: [] };
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(session.cancelled, true);
+    assert.equal(session.context, null);
+    assert.match(f.calls.logs.join(" "), /recovery refused: clearing occurred or the original volume changed/i);
+    assert.deepEqual(f.calls.writes, []);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced refuses recovery of even confirmed placements under detection policies", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask", "allow"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "stone"], { radius: 0, threshold: 3 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = async () => {
+        await f.bot.placeBlock(f.bot.blockAt(new Vec3(0, 63, 0)), new Vec3(0, 1, 0));
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.equal(session.context, null, policy);
+      assert.match(f.calls.logs.join(" "), /recovery refused: prior placement updates cannot be attributed/i);
+      assert.deepEqual(f.calls.writes, [["editing", "place", "0,64,0"]]);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery rechecks placement proof after Creative transition", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone", "stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false); assert.equal(session.resumeEligible, true);
+    delete f.dependencies.onBuild;
+    f.dependencies.onTransition = () => f.world.set("0,64,0", "stone");
+    const supply = f.calls.supply;
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+    assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.supply, supply);
+    assert.equal(session.resumeEligible, false);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery inspection reads scale linearly with volume", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const counts = [];
+    for (const size of [64, 128]) {
+      const f = fixture(Array(size).fill("stone"), { radius: 0, threshold: size + 1 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true);
+      f.calls.reads.length = 0;
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(session.resumeEligible, true, f.calls.logs.join("; "));
+      counts.push(f.calls.reads.length);
+    }
+    assert.ok(counts[1] < counts[0] * 2.5, `recovery reads: ${counts.join(", ")}`);
+    assert.ok(counts[1] < 25000, `recovery reads: ${counts.join(", ")}`);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced recovery rechecks the plan after yielded inspection", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(Array(160).fill("stone"), { radius: 0, threshold: 161 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, true);
+    const blockAt = f.bot.blockAt;
+    let scheduled = false;
+    f.bot.blockAt = function (position) {
+      if (!scheduled) {
+        scheduled = true;
+        setImmediate(() => f.world.set("159,64,0", "stone"));
+      }
+      return blockAt.call(this, position);
+    };
+    const modes = f.calls.modes.length;
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(f.calls.modes.length, modes);
+    assert.deepEqual(f.calls.writes, []);
+    assert.match(f.calls.logs.join(" "), /refusing unsafe resume/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interrupted detached private placement is not eligible while unresolved", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "off"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      let settle;
+      f.bot.lookAt = () => new Promise(resolve => { settle = resolve; });
+      f.dependencies.onBuild = async () => {
+        f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0)).catch(() => {});
+        await new Promise(resolve => setImmediate(resolve));
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, f.calls.logs.join("; "));
+      assert.equal(typeof settle, "function");
+      assert.equal(session.resumeEligible, false, policy);
+      assert.equal(session.cancelled, true, policy);
+      assert.equal(session.context, null, policy);
+      assert.equal(acquireBuildLifecycle(f.bot), null, "pending write keeps the bot quarantined");
+      settle();
+      await new Promise(resolve => setImmediate(resolve));
+      const lease = acquireBuildLifecycle(f.bot);
+      assert.ok(lease); lease.release();
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interruption before an unconfirmed edit returns revokes recovery", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    agentSettings.schematic_continuation_policy = "deny";
+    const f = fixture(["stone"], { radius: 0 });
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.bot._client.write = packet => {
+      if (packet === "block_place") f.bot.interrupt_code = true;
+    };
+    f.dependencies.onBuild = async () => {
+      try { await f.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0)); } catch { /* interrupted */ }
+      return { status: "interrupted", errors: [] };
+    };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(session.resumeEligible, false);
+    assert.equal(session.cancelled, true);
+    assert.match(f.calls.logs.join(" "), /recovery unavailable.*unresolved/i);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced interrupted builder settlement cannot advertise recovery", async () => {
+  const f = fixture(["stone"], { radius: 0 });
+  const session = f.dependencies.resumeSession = { cancelled: false };
+  let settle;
+  const pending = new Promise(resolve => { settle = resolve; });
+  f.dependencies.executeBuild = (_bot, _build, { lifecycle, onPendingSettlement }) => {
+    lifecycle.hold(pending);
+    onPendingSettlement(pending);
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.equal(session.resumeEligible, false);
+  assert.equal(session.cancelled, true);
+  assert.equal(acquireBuildLifecycle(f.bot), null);
+  settle();
+  await new Promise(resolve => setImmediate(resolve));
+  const lease = acquireBuildLifecycle(f.bot);
+  assert.ok(lease); lease.release();
+});
+
+test("rotated balanced plan resumes at its frozen origin", async () => {
+  const f = fixture(["stone", "air", "air", "air", "air", "air"], { radius: 1, strategy: "all", policy: "exhaustive" });
+  f.schematic.size = new Vec3(3, 1, 2);
+  f.schematic.offset = new Vec3(4, -2, 8);
+  let decodes = 0;
+  f.schematic.getBlock = p => {
+    decodes++;
+    const index = (p.z - 8) * 3 + p.x - 4;
+    return Block.fromStateId(f.schematic.palette[index], 0);
+  };
+  f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+  const session = { cancelled: false };
+  f.dependencies.resumeSession = session;
+  let captured;
+  f.dependencies.onBuild = build => {
+    captured = build;
+    return { status: "interrupted", errors: [] };
+  };
+  assert.equal(await f.run(), false, f.calls.logs.join("; "));
+  assert.equal(decodes, 6, "site relocation does not rotate or decode again");
+  assert.equal(session.resumeEligible, true);
+  assert.deepEqual(session.context.origin, { x: 0, y: 64, z: 0 });
+  assert.equal(session.context.placementOptions.orientation, "east");
+  assert.deepEqual(captured.dimensions, { width: 2, height: 1, length: 3 });
+  assert.deepEqual(captured.cells.map(c => [key(c.position), c.name]), [
+    ["0,64,0", "air"], ["1,64,0", "stone"], ["0,64,1", "air"],
+    ["1,64,1", "air"], ["0,64,2", "air"], ["1,64,2", "air"],
+  ]);
+  assert.ok(Object.isFrozen(session.context.placementOptions));
+  delete f.dependencies.onBuild;
+  assert.equal(await f.run(99, 80, 99), true, f.calls.logs.join("; "));
+  assert.equal(decodes, 12);
+  assert.deepEqual(f.calls.origins, [{ x: 0, y: 64, z: 0 }, { x: 0, y: 64, z: 0 }]);
+});
+
+test("balanced recovery refuses changed orientation, changed rotated source, and legacy sessions before edits", async () => {
+  for (const mutation of ["orientation", "source", "legacy"]) {
+    const f = fixture(["stone", "air"], { radius: 0 });
+    f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "south" };
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.dependencies.onBuild = () => ({ status: "interrupted", errors: [] });
+    assert.equal(await f.run(), false);
+    assert.equal(session.resumeEligible, true);
+    if (mutation === "orientation") f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "west" };
+    if (mutation === "source") f.schematic.blocks.reverse();
+    if (mutation === "legacy") delete session.context.planContract;
+    f.calls.modes.length = 0; f.calls.writes.length = 0; f.calls.supply = 0;
+    assert.equal(await f.run(), false);
+    assert.deepEqual(f.calls.modes, []); assert.deepEqual(f.calls.writes, []); assert.equal(f.calls.supply, 0);
+    assert.equal(session.context, null);
+  }
+});
+
+test("final verification rejects a matching name and properties with a wrong state ID", async () => {
+  const f = fixture(["stone"], { radius: 0 });
+  f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+  const read = f.bot.blockAt.bind(f.bot);
+  f.dependencies.onBuild = () => {
+    f.world.set("0,64,0", "stone");
+    f.bot.blockAt = position => {
+      const block = read(position);
+      if (key(position) === "0,64,0") block.stateId++;
+      return block;
+    };
+    return { status: "finished", errors: [] };
+  };
+  assert.equal(await f.run(), false);
+  assert.match(f.calls.logs.join(" "), /verification failed.*expected state/i);
+  assert.deepEqual(f.calls.writes, []);
+});
+
+test("balanced forwards search settings and reports sampled versus complete selection", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
+  for (const [options, origin, status] of [
+    [{ radius: 1, strategy: "all", policy: "exhaustive" }, -1, /sampled search \(all\/exhaustive, 2\/5 candidates/],
+    [{ radius: 1, strategy: "all", policy: "first_valid" }, 0, /sampled search \(all\/first_valid/],
+    [{ radius: 1, strategy: "stepped", step: 2, policy: "exhaustive" }, 0, /sampled search \(stepped\/exhaustive/],
+    [{ radius: 1, strategy: "bisect", bisectDepth: 0, policy: "exhaustive" }, 0, /sampled search \(bisect\/exhaustive/],
+  ]) {
+    const f = fixture(["stone"], options);
+    f.world.set("-1,64,0", "stone");
+    assert.equal(await f.run(), true, f.calls.logs.join("; "));
+    assert.equal(f.calls.origins[0].x, origin);
+    assert.match(f.calls.logs.join(" "), status);
+  }
+  const complete = fixture(["stone"], { radius: 1, strategy: "all", policy: "exhaustive" });
+  assert.equal(await complete.run(), true, complete.calls.logs.join("; "));
+  assert.equal(complete.calls.origins[0].x, 0);
+  assert.match(complete.calls.logs.join(" "), /complete search \(all\/exhaustive, 5\/5 candidates/);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced searches past a matching anchor", async () => {
+  const f = fixture(["stone"], { radius: 1, threshold: 2, strategy: "all", policy: "first_valid" });
+  f.world.set("0,64,0", "stone");
+  assert.equal(await f.run(), true, f.calls.logs.join("; "));
+  assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }]);
+  assert.equal(f.world.get("0,64,0"), "stone");
+});
+
+test("legacy rotated balanced relocation resumes at its frozen selected origin", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  agentSettings.schematic_continuation_policy = "off";
+  try {
+    const f = fixture(["stone", "air", "air", "air", "air", "air"], { radius: 1, strategy: "all", policy: "exhaustive" });
+    f.schematic.size = new Vec3(3, 1, 2);
+    f.schematic.offset = new Vec3(4, -2, 8);
+    let decodes = 0;
+    f.schematic.getBlock = p => { decodes++; return Block.fromStateId(f.schematic.palette[(p.z - 8) * 3 + p.x - 4], 0); };
+    f.dependencies.placementOptions = { ...f.dependencies.placementOptions, orientation: "east" };
+    const session = f.dependencies.resumeSession = { cancelled: false };
+    f.world.set("0,64,0", "stone");
+    let captured;
+    f.dependencies.onBuild = build => { captured = build; return { status: "interrupted", errors: [] }; };
+    assert.equal(await f.run(), false, f.calls.logs.join("; "));
+    assert.equal(decodes, 6); assert.equal(session.resumeEligible, true);
+    assert.deepEqual(session.context.origin, { x: -1, y: 64, z: 0 });
+    assert.equal(session.context.placementOptions.orientation, "east");
+    assert.deepEqual(captured.dimensions, { width: 2, height: 1, length: 3 });
+    assert.deepEqual(captured.cells.map(c => [key(c.position), c.name]), [
+      ["-1,64,0", "air"], ["0,64,0", "stone"], ["-1,64,1", "air"],
+      ["0,64,1", "air"], ["-1,64,2", "air"], ["0,64,2", "air"],
+    ]);
+    assert.ok(Object.isFrozen(session.context.placementOptions));
+    f.dependencies.onBuild = () => ({ status: "finished", errors: [] });
+    assert.equal(await f.run(99, 80, 99), true, f.calls.logs.join("; "));
+    assert.equal(decodes, 12);
+    assert.deepEqual(f.calls.origins, [{ x: -1, y: 64, z: 0 }, { x: -1, y: 64, z: 0 }]);
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced rejects an unrelated destination update without a reference reply and refuses recovery", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const policy of ["deny", "ask"]) {
+      agentSettings.schematic_continuation_policy = policy;
+      const f = fixture(["stone", "oak_planks"], { radius: 0 });
+      const session = f.dependencies.resumeSession = { cancelled: false };
+      let packets = 0;
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.bot._client.write = (name, packet) => {
+        if (name !== "block_place") return;
+        packets++;
+        const target = packet.location.offset(0, 1, 0);
+        setImmediate(() => {
+          const old = f.bot.blockAt(target);
+          f.world.set(key(target), "stone");
+          const actual = f.bot.blockAt(target);
+          f.bot._client.emit("block_change", { location: target, type: actual.stateId });
+          f.bot.emit(`blockUpdate:${target}`, old, actual);
+          f.bot.interrupt_code = true;
+        });
+      };
+      require("mineflayer/lib/plugins/generic_place")(f.bot);
+      require("mineflayer/lib/plugins/place_block")(f.bot);
+      f.dependencies.onBuild = async () => {
+        try { await f.bot.placeBlock(f.bot.blockAt(new Vec3(0, 63, 0)), new Vec3(0, 1, 0)); } catch { /* interrupted */ }
+        return { status: "interrupted", errors: [] };
+      };
+      assert.equal(await f.run(), false, policy);
+      assert.equal(packets, 1);
+      assert.ok(phases.includes("placement-target-before-reference-response"));
+      assert.ok(!phases.includes("server-confirmed"));
+      assert.equal(session.resumeEligible, false);
+      f.bot.interrupt_code = false;
+      delete f.dependencies.onBuild;
+      assert.equal(await f.run(), false);
+      assert.equal(packets, 1);
+      assert.equal(f.world.get("1,64,0"), undefined);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});
+
+test("balanced reauthorizes policy, cancellation, and world state after native aiming before dispatch", async () => {
+  const previous = agentSettings.schematic_continuation_policy;
+  try {
+    for (const change of ["policy", "interrupt", "world", "target", "reference", "neighbor", "heldItem"]) {
+      agentSettings.schematic_continuation_policy = "deny";
+      const f = fixture(["stone"], { radius: 0 });
+      const phases = [];
+      f.bot.on("schematicEditAuthorization", event => phases.push(event.phase));
+      f.bot.lookAt = () => {
+        if (change === "policy") agentSettings.schematic_continuation_policy = "ask";
+        if (change === "interrupt") f.bot.interrupt_code = true;
+        if (change === "world") f.bot._client.emit("respawn");
+        if (change === "target") f.world.set("0,64,0", "stone");
+        if (change === "reference") f.world.set("0,63,0", "stone");
+        if (change === "neighbor") f.world.set("1,64,0", "piston");
+        if (change === "heldItem") f.bot.heldItem = { name: "oak_planks" };
+        return Promise.resolve();
+      };
+      require("mineflayer/lib/plugins/generic_place")(f.bot);
+      require("mineflayer/lib/plugins/place_block")(f.bot);
+      assert.equal(await f.run(), false, `${change}: ${f.calls.logs.join("; ")}`);
+      assert.deepEqual(f.calls.writes, [], change);
+      assert.ok(phases.includes("rejected"), change);
+      assert.ok(!phases.includes("authorized"), change);
+    }
+  } finally { agentSettings.schematic_continuation_policy = previous; }
+});

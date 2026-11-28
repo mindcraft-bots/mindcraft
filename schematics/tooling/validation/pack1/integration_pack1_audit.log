@@ -1,0 +1,27 @@
+$ python3 schematics/tooling/audit_batch.py --pack pack1
+[exit code: 1]
+{
+  "audit": "schematics/tooling/validation/pack1/batch_validation.json",
+  "report": "schematics/schems/pack1/batch_report.md",
+  "pack": "pack1",
+  "builds": {
+    "build_count": 30,
+    "binary_pass": 30,
+    "binary_fail": 0,
+    "deterministic_pass": 29,
+    "deterministic_fail": 1,
+    "reader_pass": 30,
+    "reader_mismatch": 0,
+    "reader_error": 0
+  },
+  "coverage": {
+    "blueprint_count": 30,
+    "schematic_count": 30,
+    "notes_nonempty_count": 30,
+    "artifact_issues": []
+  },
+  "tests": {
+    "varint": 0,
+    "npm_test": 0
+  }
+}
